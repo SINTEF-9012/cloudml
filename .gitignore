@@ -1,0 +1,14 @@
+**.settings/
+**.project
+**.classpath
+**target/
+**bin/
+**.jar
+**.war
+**.class
+**.ear
+**~
+**.idea
+**.iml
+**nbactions.xml
+**.cache
