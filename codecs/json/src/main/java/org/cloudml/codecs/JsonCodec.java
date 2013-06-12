@@ -24,9 +24,11 @@ package org.cloudml.codecs;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.cloudml.loader.JSONModelLoader;
-import net.cloudml.serializer.JSONModelSerializer;
 import net.cloudml.loader.ModelLoader;
+import net.cloudml.serializer.JSONModelSerializer;
 import net.cloudml.serializer.ModelSerializer;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.CloudMLElement;
@@ -38,6 +40,8 @@ import org.cloudml.core.DeploymentModel;
  * @author Brice MORIN
  */
 public class JsonCodec implements Codec {
+    
+    private static final Logger journal = Logger.getLogger(JsonCodec.class.getName());
     
     KMFBridge bridge = new KMFBridge();
     
@@ -52,12 +56,23 @@ public class JsonCodec implements Codec {
 
     public CloudMLElement load(InputStream content) {
         ModelLoader loader = new JSONModelLoader();
-        net.cloudml.core.DeploymentModel kDeploy = (net.cloudml.core.DeploymentModel) loader.loadModelFromStream(content).get(0);//beware of this cast...
-        return bridge.toPOJO(kDeploy);
+        try {
+            net.cloudml.core.DeploymentModel kDeploy = (net.cloudml.core.DeploymentModel) loader.loadModelFromStream(content).get(0);//beware of this cast...
+            return bridge.toPOJO(kDeploy);
+        } catch (Exception e) {
+            System.err.println(e.getLocalizedMessage());
+            journal.log(Level.SEVERE, e.getLocalizedMessage());
+        }
+        return null;
     }
 
     public void save(CloudMLElement model, OutputStream content) {
         ModelSerializer serializer = new JSONModelSerializer();
-        serializer.serialize(bridge.toKMF((DeploymentModel)model), content);
+        try {
+            serializer.serialize(bridge.toKMF((DeploymentModel)model), content);
+        } catch (Exception e) {
+            System.err.println(e.getLocalizedMessage());
+            journal.log(Level.SEVERE, e.getLocalizedMessage());
+        }
     }
 }

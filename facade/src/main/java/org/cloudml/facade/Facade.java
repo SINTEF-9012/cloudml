@@ -61,7 +61,6 @@ import org.jclouds.compute.domain.NodeMetadata;
  */
 class Facade implements CloudML, CommandHandler {
 
-    private static final Logger journal = Logger.getLogger(Facade.class.getName());
     private final ArrayList<EventHandler> handlers;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private DeploymentModel deploy;
@@ -134,7 +133,7 @@ class Facade implements CloudML, CommandHandler {
                 dispatch(failure);
             } else {
                 final String text = "Timeout on command: " + command;
-                Message message = new Message(command, Category.INFORMATION, text);
+                final Message message = new Message(command, Category.INFORMATION, text);
                 dispatch(message);
             }
         }
@@ -316,17 +315,15 @@ class Facade implements CloudML, CommandHandler {
                 deploy = (DeploymentModel) getCodec(extension).load(new FileInputStream(f));
                 final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
                 dispatch(message);
-
             } catch (FileNotFoundException ex) {
                 final Message message = new Message(command, Category.ERROR, "Unable to find file: " + command.getPathToModel());
                 dispatch(message);
-                journal.log(Level.INFO, "Unable to access the requested file", ex);
+            } catch (Exception e) {
+                final Message message = new Message(command, Category.ERROR, "Error while loading model: " + e.getLocalizedMessage());
+                dispatch(message);
             }
-
         } else {
-            final String text = "Cannot handle this type of file. Please provide file with an extension CloudML codecs can manage";
-            final Message message = new Message(command, Category.ERROR, text);
-            dispatch(message);
+            wrongFileFormat(command.getPathToModel(), command);
         }
         //command.markAsCompleted();
     }
@@ -341,16 +338,14 @@ class Facade implements CloudML, CommandHandler {
                 dispatch(message);
 
             } catch (FileNotFoundException ex) {
-                final Message message = new Message(command, Category.ERROR, "Error when saving model to serialized form.");
+                final Message message = new Message(command, Category.ERROR, "Cannot save model to specified destination.");
                 dispatch(message);
-                journal.log(Level.INFO, "Error during serialization", ex);
-
+            } catch (Exception e) {
+                final Message message = new Message(command, Category.ERROR, "Error while saving model: " + e.getLocalizedMessage());
+                dispatch(message);
             }
         } else {
-            final String text = "Cannot handle this type of file. Please provide file with an extension CloudML codecs can manage";
-            final Message message = new Message(command, Category.ERROR, text);
-            dispatch(message);
-
+            wrongFileFormat(command.getDestination(), command);
         }
         //command.markAsCompleted();
     }
@@ -467,6 +462,27 @@ class Facade implements CloudML, CommandHandler {
         } else {
             return null;
         }
+    }
+    
+    /**
+     * Formats and emits a proper error message if the model located at 'pathName' 
+     * cannot be handled by 'command' (i.e. if canHandle(pathName) == null)
+     * @param pathName
+     * @param command 
+     */
+    private void wrongFileFormat(String pathName, CloudMlCommand command) {
+        final StringBuilder ext = new StringBuilder();
+        int i = 0;
+        for (String e : Codec.extensions.keySet()) {
+            if (i > 0) {
+                ext.append(", ");
+            }
+            ext.append(e);
+            i++;
+        }
+        final String text = "Cannot handle this type of file (" + FilenameUtils.getExtension(pathName) + ").\nPlease provide file with an extension CloudML codecs can manage (" + ext.toString() + ")";
+        final Message message = new Message(command, Category.ERROR, text);
+        dispatch(message);
     }
 
     /**
