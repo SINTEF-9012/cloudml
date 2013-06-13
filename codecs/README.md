@@ -1,4 +1,4 @@
-cloudml.codecs
+Codecs
 ==============
 
-Codecs to serialize the CloudML model into Cloud-app template file or to transform a template file into a CloudML model
+A set of codecs to load/save CloudML models from/to serialized forms (_e.g._ JSON, XMI).
