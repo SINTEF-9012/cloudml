@@ -20,4 +20,14 @@ Codecs implement this simple Java interface:
   public void save(CloudMLElement model, OutputStream content);
 ```
 
-> 
+> Note that streams can easily be created from files
+
+```java
+  InputStream stream = new FileInputStream(input);
+  CloudMLElement model = codec.load(stream);
+  stream.close();
+                
+  File result = new File("my.json");
+  OutputStream streamResult = new FileOutputStream(result);
+  codec.save(model, streamResult);
+```
