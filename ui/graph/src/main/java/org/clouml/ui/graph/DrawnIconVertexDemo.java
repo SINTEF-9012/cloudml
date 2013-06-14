@@ -308,7 +308,7 @@ public class DrawnIconVertexDemo implements Serializable {
 		for(ArtefactInstance x : dm.getArtefactInstances()){
 			if(x.getDestination() != null){
 				Vertex v1=findVertex(x.getName(), v);
-				Vertex v2=findVertex(x.getDestination().getOwner().getName(), v);
+				Vertex v2=findVertex(x.getDestination().getName(), v);
 				createEdge(v1.getName()+" on "+v2.getName(), v1, v2);
 			}
 			if(x.getRequired().size() > 0){

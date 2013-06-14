@@ -182,7 +182,7 @@ class Facade implements CloudML, CommandHandler {
      * @param user the user associated
      */
     public void executeOnNode(ArtefactInstance a, String command, String user) {
-        Node ownerNode = a.getDestination().getOwner().getType();
+        Node ownerNode = a.getDestination().getType();
         Provider p = ownerNode.getProvider();
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
                 p.getPasswd());
@@ -296,7 +296,7 @@ class Facade implements CloudML, CommandHandler {
                 dispatch(message);
 
             } else {
-                Node ownerNode = instance.getDestination().getOwner().getType();
+                Node ownerNode = instance.getDestination().getType();
                 Provider p = ownerNode.getProvider();
                 JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
                 ComputeMetadata c = jc.getNodeByName(instance.getName());
