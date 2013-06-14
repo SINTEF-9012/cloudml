@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Node extends WithProperties{
-	private List<NodePort> provided = new LinkedList<NodePort>();
 	private Provider cloudProvider;
 	
         public Node() {}
@@ -40,30 +39,16 @@ public class Node extends WithProperties{
 		this.cloudProvider=provider;
 	}
 	
-	public Node(String name, Provider provider, List<NodePort> provided){
-		super(name);
-		this.cloudProvider=provider;
-		this.provided=provided;
-	}
 	
-	public Node(String name, List<NodePort> provided){
-		super(name);
-		this.provided=provided;
-	}
-	
-	public Node(String name, List<NodePort> provided, List<Property> properties){
+	public Node(String name, List<Property> properties){
 		super(name,properties);
-		this.provided=provided;
 	}
 	
-	public Node(String name, List<NodePort> provided, List<Property> properties, Provider provider){
+	public Node(String name, List<Property> properties, Provider provider){
 		super(name,properties);
-		this.provided=provided;
 		this.cloudProvider=provider;
 	}
-	public List<NodePort> getProvided() {
-        return this.provided;
-    }
+
 	
 	public Provider getProvider(){
     	return cloudProvider;
@@ -77,7 +62,7 @@ public class Node extends WithProperties{
     public boolean equals(Object other) {
         if (other instanceof Node) {
             Node otherNode = (Node) other;
-            return name.equals(otherNode.getName()) && cloudProvider.equals(otherNode.getProvider()) && provided.equals(otherNode.getProvided());
+            return name.equals(otherNode.getName()) && cloudProvider.equals(otherNode.getProvider());
         } else {
             return false;
         }

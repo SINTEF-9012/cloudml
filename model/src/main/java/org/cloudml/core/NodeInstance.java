@@ -29,7 +29,6 @@ public class NodeInstance extends WithProperties {
 
     private Node type;
     private String publicAddress="";
-    private List<NodePortInstance> provided = new LinkedList<NodePortInstance>();
     private String id="";
     
     public NodeInstance() {
@@ -40,20 +39,9 @@ public class NodeInstance extends WithProperties {
         this.type = type;
     }
 
-    public NodeInstance(String name, Node type, List<NodePortInstance> provided) {
-        super(name);
-        this.type = type;
-        this.provided = provided;
-    }
-
-    public NodeInstance(String name, Node type, List<NodePortInstance> provided, List<Property> properties) {
+    public NodeInstance(String name, Node type, List<Property> properties) {
         super(name, properties);
         this.type = type;
-        this.provided = provided;
-    }
-
-    public List<NodePortInstance> getProvided() {
-        return this.provided;
     }
 
     public Node getType() {

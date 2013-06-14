@@ -24,22 +24,25 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public class ArtefactPort extends WithProperties {
+public abstract class ArtefactPort extends WithProperties {
 
-    private Artefact owner;
-    private int portNumber = 0;
+	protected boolean isRemote=false;
+    protected Artefact owner;
+    protected int portNumber = 0;
 
     public ArtefactPort() {
     }
 
-    public ArtefactPort(String name, Artefact owner) {
+    public ArtefactPort(String name, Artefact owner, boolean isRemote) {
         super(name);
         this.owner = owner;
+        this.isRemote=isRemote;
     }
 
-    public ArtefactPort(String name, List<Property> properties, Artefact owner) {
+    public ArtefactPort(String name, List<Property> properties, Artefact owner, boolean isRemote) {
         super(name, properties);
         this.owner = owner;
+        this.isRemote=isRemote;
     }
 
     public Artefact getOwner() {
@@ -56,6 +59,14 @@ public class ArtefactPort extends WithProperties {
 
     public void setPortNumber(int n) {
         this.portNumber = n;
+    }
+    
+    public void setIsRemote(boolean isRemote){
+    	this.isRemote=isRemote;
+    }
+    
+    public boolean getIsRemote(){
+    	return this.isRemote;
     }
 
     @Override

@@ -33,16 +33,12 @@ public class Artefact extends WithProperties {
 
     private ArtefactPort destination;
     private Resource resource;
-    /*
-     * Communication channels <PortName,Port Reference>
-     */
-    private List<ArtefactPort> inputs = new LinkedList<ArtefactPort>();
-    private List<ArtefactPort> outputs = new LinkedList<ArtefactPort>();
+
     /*
      * Dependencies <PortName,Port Reference>
      */
-    private List<ArtefactPort> required = new LinkedList<ArtefactPort>();
-    private List<ArtefactPort> provided = new LinkedList<ArtefactPort>();
+    private List<ClientPort> required = new LinkedList<ClientPort>();
+    private List<ServerPort> provided = new LinkedList<ServerPort>();
 
     public Artefact() {
     }
@@ -65,10 +61,8 @@ public class Artefact extends WithProperties {
         this.destination = destination;
     }
 
-    public Artefact(String name, List<Property> properties, List<ArtefactPort> inputs, List<ArtefactPort> outputs, List<ArtefactPort> required, List<ArtefactPort> provided) {
+    public Artefact(String name, List<Property> properties, List<ClientPort> required, List<ServerPort> provided) {
         super(name, properties);
-        this.inputs = inputs;
-        this.outputs = outputs;
         this.required = required;
         this.provided = provided;
     }
@@ -92,42 +86,27 @@ public class Artefact extends WithProperties {
         return new ArtefactInstance(name, this);
     }
 
-    public ArtefactInstance instanciates(String name, NodePortInstance destination) {
+    public ArtefactInstance instanciates(String name, NodeInstance destination) {
         return new ArtefactInstance(name, this, destination);
     }
 
     /*
      * Getters & Setters
      */
-    public List<ArtefactPort> getInputs() {
-        return this.inputs;
-    }
 
-    public List<ArtefactPort> getOutputs() {
-        return this.outputs;
-    }
-
-    public List<ArtefactPort> getRequired() {
+    public List<ClientPort> getRequired() {
         return this.required;
     }
 
-    public List<ArtefactPort> getProvided() {
+    public List<ServerPort> getProvided() {
         return this.provided;
     }
 
-    public void setInputs(List<ArtefactPort> inputs) {
-        this.inputs = inputs;
-    }
-
-    public void setOutputs(List<ArtefactPort> outputs) {
-        this.outputs = outputs;
-    }
-
-    public void setProvided(List<ArtefactPort> provided) {
+    public void setProvided(List<ServerPort> provided) {
         this.provided = provided;
     }
 
-    public void setRequired(List<ArtefactPort> required) {
+    public void setRequired(List<ClientPort> required) {
         this.required = required;
     }
 

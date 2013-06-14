@@ -30,15 +30,15 @@ package org.cloudml.core;
  */
 public class Binding extends WithProperties{
 	
-	private ArtefactPort client;
-	private ArtefactPort server;
+	private ClientPort client;
+	private ServerPort server;
 	
 	private Resource clientResource;
 	private Resource serverResource;
 	
 	public Binding(){}
 	
-	public Binding(ArtefactPort client, ArtefactPort server){
+	public Binding(ClientPort client, ServerPort server){
 		this.client=client;
 		this.server=server;
 	}
@@ -47,23 +47,23 @@ public class Binding extends WithProperties{
         return new BindingInstance(name, this);
     }
 
-    public BindingInstance instanciates(ArtefactPortInstance client, ArtefactPortInstance server) {
+    public BindingInstance instanciates(ClientPortInstance client, ServerPortInstance server) {
         return new BindingInstance(client, server, this);
     }
 	
-	public void setClient(ArtefactPort p){
+	public void setClient(ClientPort p){
 		this.client=p;
 	}
 	
-	public void setServer(ArtefactPort p){
+	public void setServer(ServerPort p){
 		this.server=p;
 	}
 	
-	public ArtefactPort getClient(){
+	public ClientPort getClient(){
 		return this.client;
 	}
 	
-	public ArtefactPort getServer(){
+	public ServerPort getServer(){
 		return this.server;
 	}
 	

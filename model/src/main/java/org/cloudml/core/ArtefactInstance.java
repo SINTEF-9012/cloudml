@@ -33,17 +33,13 @@ import java.util.List;
 public class ArtefactInstance extends WithProperties {
 
     private Artefact type;
-    private NodePortInstance destination = null;
-    /*
-     * Communication channels <PortName,PortInstance Reference>
-     */
-    private List<ArtefactPortInstance> inputs = new LinkedList<ArtefactPortInstance>();
-    private List<ArtefactPortInstance> outputs = new LinkedList<ArtefactPortInstance>();
+    private NodeInstance destination = null;
+
     /*
      * Dependencies <PortName,PortInstance Reference>
      */
-    private List<ArtefactPortInstance> required = new LinkedList<ArtefactPortInstance>();
-    private List<ArtefactPortInstance> provided = new LinkedList<ArtefactPortInstance>();
+    private List<ClientPortInstance> required = new LinkedList<ClientPortInstance>();
+    private List<ServerPortInstance> provided = new LinkedList<ServerPortInstance>();
 
     public ArtefactInstance() {
     }
@@ -53,7 +49,7 @@ public class ArtefactInstance extends WithProperties {
         this.type = type;
     }
 
-    public ArtefactInstance(String name, Artefact type, NodePortInstance destination) {
+    public ArtefactInstance(String name, Artefact type, NodeInstance destination) {
         super(name);
         this.type = type;
         this.destination = destination;
@@ -64,15 +60,13 @@ public class ArtefactInstance extends WithProperties {
         this.type = type;
     }
 
-    public ArtefactInstance(String name, List<Property> properties, Artefact type, NodePortInstance destination) {
+    public ArtefactInstance(String name, List<Property> properties, Artefact type, NodeInstance destination) {
         super(name, properties);
         this.destination = destination;
     }
 
-    public ArtefactInstance(String name, List<Property> properties, List<ArtefactPortInstance> inputs, List<ArtefactPortInstance> outputs, List<ArtefactPortInstance> required, List<ArtefactPortInstance> provided) {
+    public ArtefactInstance(String name, List<Property> properties, List<ClientPortInstance> required, List<ServerPortInstance> provided) {
         super(name, properties);
-        this.inputs = inputs;
-        this.outputs = outputs;
         this.required = required;
         this.provided = provided;
     }
@@ -95,19 +89,12 @@ public class ArtefactInstance extends WithProperties {
     /*
      * Getters
      */
-    public List<ArtefactPortInstance> getInputs() {
-        return this.inputs;
-    }
 
-    public List<ArtefactPortInstance> getOutputs() {
-        return this.outputs;
-    }
-
-    public List<ArtefactPortInstance> getRequired() {
+    public List<ClientPortInstance> getRequired() {
         return this.required;
     }
 
-    public List<ArtefactPortInstance> getProvided() {
+    public List<ServerPortInstance> getProvided() {
         return this.provided;
     }
 
@@ -115,19 +102,12 @@ public class ArtefactInstance extends WithProperties {
         return this.type;
     }
 
-    public void setInputs(List<ArtefactPortInstance> inputs) {
-        this.inputs = inputs;
-    }
 
-    public void setOutputs(List<ArtefactPortInstance> outputs) {
-        this.outputs = outputs;
-    }
-
-    public void setProvided(List<ArtefactPortInstance> provided) {
+    public void setProvided(List<ServerPortInstance> provided) {
         this.provided = provided;
     }
 
-    public void setRequired(List<ArtefactPortInstance> required) {
+    public void setRequired(List<ClientPortInstance> required) {
         this.required = required;
     }
 
@@ -135,11 +115,11 @@ public class ArtefactInstance extends WithProperties {
         this.type = type;
     }
 
-    public void setDestination(NodePortInstance destination) {
+    public void setDestination(NodeInstance destination) {
         this.destination = destination;
     }
 
-    public NodePortInstance getDestination() {
+    public NodeInstance getDestination() {
         return destination;
     }
 }

@@ -24,15 +24,16 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public class ArtefactPortInstance extends WithProperties {
+public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithProperties {
 
-    private ArtefactPort type;
-    private ArtefactInstance owner;
+    protected T type;
+    protected ArtefactInstance owner;
+    protected boolean isRemote=false;
 
     public ArtefactPortInstance() {
     }
 
-    public ArtefactPortInstance(String name, ArtefactPort type, ArtefactInstance owner) {
+    public ArtefactPortInstance(String name, T type, ArtefactInstance owner) {
         super(name);
         this.type = type;
         this.owner = owner;
@@ -41,10 +42,27 @@ public class ArtefactPortInstance extends WithProperties {
         owner.getType().getProvided().add(type);*/
     }
 
-    public ArtefactPortInstance(String name, ArtefactPort type, List<Property> properties, ArtefactInstance owner) {
+    public ArtefactPortInstance(String name, T type, ArtefactInstance owner, boolean isRemote) {
+        super(name);
+        this.type = type;
+        this.owner = owner;
+        this.isRemote=isRemote;
+    }
+    
+    public ArtefactPortInstance(String name, T type, List<Property> properties, ArtefactInstance owner) {
         super(name, properties);
         this.type = type;
         this.owner = owner;
+        //If we define the owner of the port, then we can add it in the provided port list
+        /*owner.getProvided().add(this);
+        owner.getType().getProvided().add(type);*/
+    }
+    
+    public ArtefactPortInstance(String name, T type, List<Property> properties, ArtefactInstance owner, boolean isRemote) {
+        super(name, properties);
+        this.type = type;
+        this.owner = owner;
+        this.isRemote=isRemote;
         //If we define the owner of the port, then we can add it in the provided port list
         /*owner.getProvided().add(this);
         owner.getType().getProvided().add(type);*/
@@ -54,11 +72,11 @@ public class ArtefactPortInstance extends WithProperties {
         return this.owner;
     }
 
-    public void setType(ArtefactPort type) {
+    public void setType(T type) {
         this.type = type;
     }
 
-    public ArtefactPort getType() {
+    public T getType() {
         return this.type;
     }
 
