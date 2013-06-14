@@ -41,9 +41,11 @@ public class KMFBridge {
         Map<String, Node> nodes = new HashMap<String, Node>();
         Map<String, Provider> providers = new HashMap<String, Provider>();
         Map<String, Artefact> artefacts = new HashMap<String, Artefact>();
-        Map<String, ArtefactPort> artefactPorts = new HashMap<String, ArtefactPort>();
+        Map<String, ClientPort> clientPorts = new HashMap<String, ClientPort>();
+        Map<String, ServerPort> serverPorts = new HashMap<String, ServerPort>();
         Map<String, ArtefactInstance> artefactInstances = new HashMap<String, ArtefactInstance>();
-        Map<String, ArtefactPortInstance> artefactPortInstances = new HashMap<String, ArtefactPortInstance>();
+        Map<String, ClientPortInstance> clientPortInstances = new HashMap<String, ClientPortInstance>();
+        Map<String, ServerPortInstance> serverPortInstances = new HashMap<String, ServerPortInstance>();
         Map<String, NodeInstance> nodeInstances = new HashMap<String, NodeInstance>();
         Map<String, Binding> bindings = new HashMap<String, Binding>();
 
@@ -118,7 +120,7 @@ public class KMFBridge {
                 ap.setPortNumber(kap.getPortNumber());
                 a.getProvided().add(ap);//!
 
-                artefactPorts.put(ap.getName(), ap);
+                serverPorts.put(ap.getName(), ap);
             }
             
             for (net.cloudml.core.ArtefactPort kap : ka.getRequired()) {//TODO: duplicated code to be rationalized
@@ -127,7 +129,7 @@ public class KMFBridge {
                 ap.setPortNumber(kap.getPortNumber());
                 a.getRequired().add(ap);//!
 
-                artefactPorts.put(ap.getName(), ap);
+                clientPorts.put(ap.getName(), ap);
             }
 
 
@@ -147,13 +149,13 @@ public class KMFBridge {
             }*/
 
             if (ka.getDestination() != null) {
-                a.setDestination(artefactPorts.get(ka.getDestination().getName()));
+                a.setDestination(serverPorts.get(ka.getDestination().getName()));
             }
 
         }
 
         for (net.cloudml.core.Binding kb : kDeploy.getBindingTypes()) {
-            Binding b = new Binding((ClientPort)artefactPorts.get(kb.getClient().getName()), (ServerPort)artefactPorts.get(kb.getServer().getName()));
+            Binding b = new Binding(clientPorts.get(kb.getClient().getName()), serverPorts.get(kb.getServer().getName()));
             b.setName(kb.getName());
             if (kb.getClientResource() != null) {
                 Resource cr = new Resource(kb.getClientResource().getName());
@@ -234,17 +236,17 @@ public class KMFBridge {
             }*/
 
             for (net.cloudml.core.ArtefactPortInstance kapi : kai.getProvided()) {
-                ServerPortInstance api = new ServerPortInstance(kapi.getName(), (ServerPort)artefactPorts.get(kapi.getType().getName()), ai, true);//TODO
+                ServerPortInstance api = new ServerPortInstance(kapi.getName(), serverPorts.get(kapi.getType().getName()), ai, true);//TODO
                 initProperties(kapi, api);
                 ai.getProvided().add(api);
-                artefactPortInstances.put(api.getName(), api);
+                serverPortInstances.put(api.getName(), api);
             }
             
             for (net.cloudml.core.ArtefactPortInstance kapi : kai.getRequired()) {
-                ClientPortInstance api = new ClientPortInstance(kapi.getName(), (ClientPort)artefactPorts.get(kapi.getType().getName()), ai, true, true);//TODO
+                ClientPortInstance api = new ClientPortInstance(kapi.getName(), clientPorts.get(kapi.getType().getName()), ai, true, true);//TODO
                 initProperties(kapi, api);
                 ai.getRequired().add(api);
-                artefactPortInstances.put(api.getName(), api);
+                clientPortInstances.put(api.getName(), api);
             }
 
             model.getArtefactInstances().add(ai);
@@ -254,16 +256,16 @@ public class KMFBridge {
             ArtefactInstance ai = artefactInstances.get(kai.getName());
 
             for (net.cloudml.core.ArtefactPortInstance kapi : kai.getRequired()) {
-                ai.getRequired().add((ClientPortInstance)artefactPortInstances.get(kapi.getName()));
+                ai.getRequired().add(clientPortInstances.get(kapi.getName()));
             }
             
             for (net.cloudml.core.ArtefactPortInstance kapi : kai.getProvided()) {
-                ai.getProvided().add((ServerPortInstance)artefactPortInstances.get(kapi.getName()));
+                ai.getProvided().add(serverPortInstances.get(kapi.getName()));
             }
         }
 
         for (net.cloudml.core.BindingInstance kb : kDeploy.getBindingInstances()) {
-            BindingInstance b = new BindingInstance((ClientPortInstance)artefactPortInstances.get(kb.getClient().getName()), (ServerPortInstance)artefactPortInstances.get(kb.getServer().getName()), bindings.get(kb.getType().getName()));
+            BindingInstance b = new BindingInstance(clientPortInstances.get(kb.getClient().getName()), serverPortInstances.get(kb.getServer().getName()), bindings.get(kb.getType().getName()));
             b.setName(kb.getName());
             model.getBindingInstances().add(b);
         }
