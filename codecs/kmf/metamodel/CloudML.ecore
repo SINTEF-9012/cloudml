@@ -46,26 +46,28 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="bindingInstances" upperBound="-1"
           eType="#//core/BindingInstance" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="ArtefactPort" eSuperTypes="#//core/WithProperties">
+    <eClassifiers xsi:type="ecore:EClass" name="ArtefactPort" abstract="true" eSuperTypes="#//core/WithProperties">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="portNumber" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="isRemote" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+          defaultValueLiteral="false"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ServerPort" eSuperTypes="#//core/ArtefactPort"/>
+    <eClassifiers xsi:type="ecore:EClass" name="ClientPort" eSuperTypes="#//core/ArtefactPort">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="isOptional" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+          defaultValueLiteral="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Artefact" eSuperTypes="#//core/WithProperties">
       <eStructuralFeatures xsi:type="ecore:EReference" name="destination" eType="#//core/ArtefactPort"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="resource" eType="#//core/Resource"
           containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="inputs" upperBound="-1"
-          eType="#//core/ArtefactPort" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="outputs" upperBound="-1"
-          eType="#//core/ArtefactPort" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="provided" upperBound="-1"
-          eType="#//core/ArtefactPort" containment="true"/>
+          eType="#//core/ServerPort" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="required" upperBound="-1"
-          eType="#//core/ArtefactPort"/>
+          eType="#//core/ClientPort" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="NodePort" eSuperTypes="#//core/WithProperties"/>
     <eClassifiers xsi:type="ecore:EClass" name="Node" eSuperTypes="#//core/WithProperties">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="provided" upperBound="-1"
-          eType="#//core/NodePort" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="cloudProvider" lowerBound="1"
           eType="#//core/Provider"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="minRam" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
@@ -84,38 +86,38 @@
     <eClassifiers xsi:type="ecore:EClass" name="ArtefactPortInstance" eSuperTypes="#//core/WithProperties">
       <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
           eType="#//core/ArtefactPort"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="isRemote" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+          defaultValueLiteral="false"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ServerPortInstance" eSuperTypes="#//core/ArtefactPortInstance"/>
+    <eClassifiers xsi:type="ecore:EClass" name="ClientPortInstance" eSuperTypes="#//core/ArtefactPortInstance">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="isOptional" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+          defaultValueLiteral="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ArtefactInstance" eSuperTypes="#//core/WithProperties">
       <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
           eType="#//core/Artefact"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="destination" eType="#//core/NodePortInstance"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="inputs" upperBound="-1"
-          eType="#//core/ArtefactPortInstance" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="outputs" upperBound="-1"
-          eType="#//core/ArtefactPortInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="destination" eType="#//core/NodeInstance"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="provided" upperBound="-1"
-          eType="#//core/ArtefactPortInstance" containment="true"/>
+          eType="#//core/ServerPortInstance" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="required" upperBound="-1"
-          eType="#//core/ArtefactPortInstance"/>
-    </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="NodePortInstance" eSuperTypes="#//core/WithProperties">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
-          eType="#//core/NodePort"/>
+          eType="#//core/ClientPortInstance" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="NodeInstance" eSuperTypes="#//core/WithProperties">
       <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
           eType="#//core/Node"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="provided" upperBound="-1"
-          eType="#//core/NodePortInstance" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="publicAddress" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Composite" eSuperTypes="#//core/NamedElement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="containedArtefacts" upperBound="-1"
           eType="#//core/ArtefactInstance" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Binding" eSuperTypes="#//core/WithProperties">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="client" eType="#//core/ArtefactPort"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="server" eType="#//core/ArtefactPort"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="client" eType="#//core/ClientPort"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="server" eType="#//core/ServerPort"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="clientResource" eType="#//core/Resource"
           containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="serverResource" eType="#//core/Resource"
@@ -124,8 +126,8 @@
     <eClassifiers xsi:type="ecore:EClass" name="BindingInstance" eSuperTypes="#//core/WithProperties">
       <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
           eType="#//core/Binding"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="client" eType="#//core/ArtefactPortInstance"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="server" eType="#//core/ArtefactPortInstance"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="client" eType="#//core/ClientPortInstance"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="server" eType="#//core/ServerPortInstance"/>
     </eClassifiers>
   </eSubpackages>
 </ecore:EPackage>
