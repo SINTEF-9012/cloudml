@@ -57,4 +57,14 @@ public class ClientPortInstance extends ArtefactPortInstance<ClientPort>{
         return "ClientPortInstance " + name + " owner:" + owner.getName() + " optional:"+ isOptional;
     }
 	
+	@Override
+    public boolean equals(Object other) {
+        if (other instanceof ClientPortInstance) {
+        	ClientPortInstance otherNode = (ClientPortInstance) other;
+            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
+        } else {
+            return false;
+        }
+    }
+	
 }

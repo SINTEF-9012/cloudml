@@ -39,7 +39,7 @@ public class CloudAppDeployer {
 
 	ArrayList<ArtefactInstance> alreadyDeployed=new ArrayList<ArtefactInstance>();
 	ArrayList<ArtefactInstance> alreadyStarted=new ArrayList<ArtefactInstance>();
-	
+
 	/**
 	 * The deployment process
 	 * @param dm a deployment model
@@ -48,10 +48,10 @@ public class CloudAppDeployer {
 		JCloudsConnector jc;
 		alreadyDeployed=new ArrayList<ArtefactInstance>();
 		alreadyStarted=new ArrayList<ArtefactInstance>();
-		
+
 		// Provisioning nodes
 		provisioning(dm);
-		
+
 		// Deploying on nodes
 		// need to be recursive
 		for(ArtefactInstance x : dm.getArtefactInstances()){
@@ -62,7 +62,7 @@ public class CloudAppDeployer {
 				jc.execCommand(ownerNode.getId(), x.getType().getResource().getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
 				alreadyDeployed.add(x);
 
-				buildPaas(x);
+				buildPaas(x,dm);
 
 				jc.execCommand(ownerNode.getId(), x.getType().getResource().getDeployingResourceCommand(),"ubuntu",n.getPrivateKey());
 				jc.closeConnection();
@@ -80,27 +80,32 @@ public class CloudAppDeployer {
 	 * Build the paas of an artefact instance
 	 * @param x An artefactInstance
 	 */
-	private void buildPaas(ArtefactInstance x){
+	private void buildPaas(ArtefactInstance x, DeploymentModel dm){
 		NodeInstance ownerNode = x.getDestination();
 		Node n=ownerNode.getType();
-		
+
 		JCloudsConnector jc;
 		jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
-		for(ArtefactPortInstance p : x.getRequired()){
-			if(!alreadyDeployed.contains(p.getOwner())){
-				jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getRetrievingResourceCommand() ,"ubuntu",n.getPrivateKey());
-				jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getDeployingResourceCommand(),"ubuntu",n.getPrivateKey());
 
-				String configurationCommand=p.getOwner().getType().getResource().getConfigurationResourceCommand();
-				String startCommand=p.getOwner().getType().getResource().getStartResourceCommand();
-				configureAndStart(jc, n, ownerNode, configurationCommand, startCommand);
-				alreadyDeployed.add(p.getOwner());
-				alreadyStarted.add(p.getOwner());
+		for(BindingInstance bi : dm.getBindingInstances()){
+			if(!bi.getClient().getIsRemote() && x.getRequired().contains(bi.getClient())){
+				ServerPortInstance p=bi.getServer();
+				if(!alreadyDeployed.contains(p.getOwner())){
+					jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getRetrievingResourceCommand() ,"ubuntu",n.getPrivateKey());
+					jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getDeployingResourceCommand(),"ubuntu",n.getPrivateKey());
+
+					String configurationCommand=p.getOwner().getType().getResource().getConfigurationResourceCommand();
+					String startCommand=p.getOwner().getType().getResource().getStartResourceCommand();
+					configureAndStart(jc, n, ownerNode, configurationCommand, startCommand);
+					alreadyDeployed.add(p.getOwner());
+					alreadyStarted.add(p.getOwner());
+				}
 			}
 		}
+
 	}
-	
+
 
 	/**
 	 * Configure and start SaaS artefacts
@@ -121,7 +126,7 @@ public class CloudAppDeployer {
 			}
 		}
 	}
-	
+
 
 	/**
 	 * Configure and start an artefact
@@ -168,24 +173,26 @@ public class CloudAppDeployer {
 		//Configure on the basis of the bindings
 		//parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
 		for(BindingInstance bi : dm.getBindingInstances()){
-			ClientPortInstance client=bi.getClient();
-			ServerPortInstance server=bi.getServer();
+			if(bi.getClient().getIsRemote()){
+				ClientPortInstance client=bi.getClient();
+				ServerPortInstance server=bi.getServer();
 
-			Resource clientResource=bi.getType().getClientResource();
-			Resource serverResource=bi.getType().getServerResource();
+				Resource clientResource=bi.getType().getClientResource();
+				Resource serverResource=bi.getType().getServerResource();
 
-			String destinationIpAddress=server.getOwner().getDestination().getPublicAddress();
-			int destinationPortNumber=server.getType().getPortNumber();
-			String ipAddress=client.getOwner().getDestination().getPublicAddress();
+				String destinationIpAddress=server.getOwner().getDestination().getPublicAddress();
+				int destinationPortNumber=server.getType().getPortNumber();
+				String ipAddress=client.getOwner().getDestination().getPublicAddress();
 
-			//client resources
-			configureWithIP(clientResource,client,destinationIpAddress,ipAddress,destinationPortNumber);
+				//client resources
+				configureWithIP(clientResource,client,destinationIpAddress,ipAddress,destinationPortNumber);
 
-			//server resources
-			configureWithIP(serverResource,server,destinationIpAddress,ipAddress,destinationPortNumber);
+				//server resources
+				configureWithIP(serverResource,server,destinationIpAddress,ipAddress,destinationPortNumber);
+			}
 		}
 	}
-	
+
 	/**
 	 * Configuration with parameters IP, IPDest, PortDest
 	 * @param r resource for configuration

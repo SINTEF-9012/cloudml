@@ -45,5 +45,14 @@ public class ServerPortInstance extends ArtefactPortInstance<ServerPort>{
         return "ServerPortInstance " + name + " owner:" + owner.getName() + " remote:"+ isRemote;
     }
 	
+	@Override
+    public boolean equals(Object other) {
+        if (other instanceof ServerPortInstance) {
+        	ServerPortInstance otherNode = (ServerPortInstance) other;
+            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
+        } else {
+            return false;
+        }
+    }
 	
 }
