@@ -56,7 +56,7 @@ public class CloudAppDeployer {
 		// need to be recursive
 		for(ArtefactInstance x : dm.getArtefactInstances()){
 			if(!alreadyDeployed.contains(x) && (x.getDestination() != null)){
-				NodeInstance ownerNode = x.getDestination().getOwner();
+				NodeInstance ownerNode = x.getDestination();
 				Node n=ownerNode.getType();
 				jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 				jc.execCommand(ownerNode.getId(), x.getType().getResource().getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
@@ -81,7 +81,7 @@ public class CloudAppDeployer {
 	 * @param x An artefactInstance
 	 */
 	private void buildPaas(ArtefactInstance x){
-		NodeInstance ownerNode = x.getDestination().getOwner();
+		NodeInstance ownerNode = x.getDestination();
 		Node n=ownerNode.getType();
 		
 		JCloudsConnector jc;
@@ -110,7 +110,7 @@ public class CloudAppDeployer {
 		JCloudsConnector jc;
 		for(ArtefactInstance x : dm.getArtefactInstances()){
 			if(!alreadyStarted.contains(x)){
-				NodeInstance ownerNode = x.getDestination().getOwner();
+				NodeInstance ownerNode = x.getDestination();
 				Node n=ownerNode.getType();
 				jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
@@ -168,15 +168,15 @@ public class CloudAppDeployer {
 		//Configure on the basis of the bindings
 		//parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
 		for(BindingInstance bi : dm.getBindingInstances()){
-			ArtefactPortInstance client=bi.getClient();
-			ArtefactPortInstance server=bi.getServer();
+			ClientPortInstance client=bi.getClient();
+			ServerPortInstance server=bi.getServer();
 
 			Resource clientResource=bi.getType().getClientResource();
 			Resource serverResource=bi.getType().getServerResource();
 
-			String destinationIpAddress=server.getOwner().getDestination().getOwner().getPublicAddress();
+			String destinationIpAddress=server.getOwner().getDestination().getPublicAddress();
 			int destinationPortNumber=server.getType().getPortNumber();
-			String ipAddress=client.getOwner().getDestination().getOwner().getPublicAddress();
+			String ipAddress=client.getOwner().getDestination().getPublicAddress();
 
 			//client resources
 			configureWithIP(clientResource,client,destinationIpAddress,ipAddress,destinationPortNumber);
@@ -197,7 +197,7 @@ public class CloudAppDeployer {
 	private void configureWithIP(Resource r, ArtefactPortInstance i, String destinationIpAddress, String ipAddress, int destinationPortNumber){
 		JCloudsConnector jc;
 		if(r != null){
-			NodeInstance ownerNode = i.getOwner().getDestination().getOwner();
+			NodeInstance ownerNode = i.getOwner().getDestination();
 			Node n=ownerNode.getType();
 			jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 			jc.execCommand(ownerNode.getId(), r.getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
