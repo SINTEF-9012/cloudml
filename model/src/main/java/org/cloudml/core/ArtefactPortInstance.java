@@ -28,7 +28,6 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
 
     protected T type;
     protected ArtefactInstance owner;
-    protected boolean isRemote=false;
 
     public ArtefactPortInstance() {
     }
@@ -40,13 +39,6 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
         // If we define the owner of the port, then we can add it in the provided port list
         /*owner.getProvided().add(this);
         owner.getType().getProvided().add(type);*/
-    }
-
-    public ArtefactPortInstance(String name, T type, ArtefactInstance owner, boolean isRemote) {
-        super(name);
-        this.type = type;
-        this.owner = owner;
-        this.isRemote=isRemote;
     }
     
     public ArtefactPortInstance(String name, T type, List<Property> properties, ArtefactInstance owner) {
@@ -62,7 +54,6 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
         super(name, properties);
         this.type = type;
         this.owner = owner;
-        this.isRemote=isRemote;
         //If we define the owner of the port, then we can add it in the provided port list
         /*owner.getProvided().add(this);
         owner.getType().getProvided().add(type);*/
@@ -79,13 +70,7 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
     public T getType() {
         return this.type;
     }
-
-    public boolean getIsRemote() {
-        return isRemote;
-    }
-
-    
-    
+   
     @Override
     public String toString() {
         return "ArtefactPortInstance " + name + " owner:" + owner.getName();

@@ -182,14 +182,14 @@ public class KMFBridge {
             }
 
             for (net.cloudml.core.ServerPortInstance kapi : kai.getProvided()) {
-                ServerPortInstance api = new ServerPortInstance(kapi.getName(), serverPorts.get(kapi.getType().getName()), ai, kapi.getIsRemote());
+                ServerPortInstance api = new ServerPortInstance(kapi.getName(), serverPorts.get(kapi.getType().getName()), ai);
                 initProperties(kapi, api);
                 ai.getProvided().add(api);
                 serverPortInstances.put(api.getName(), api);
             }
             
             for (net.cloudml.core.ClientPortInstance kapi : kai.getRequired()) {
-                ClientPortInstance api = new ClientPortInstance(kapi.getName(), clientPorts.get(kapi.getType().getName()), ai, kapi.getIsRemote(), kapi.getIsOptional());
+                ClientPortInstance api = new ClientPortInstance(kapi.getName(), clientPorts.get(kapi.getType().getName()), ai);
                 initProperties(kapi, api);
                 ai.getRequired().add(api);
                 clientPortInstances.put(api.getName(), api);
@@ -423,7 +423,6 @@ public class KMFBridge {
                 net.cloudml.core.ServerPortInstance kapi = factory.createServerPortInstance();
                 kapi.setName(api.getName());
                 kapi.setType(serverPorts.get(api.getType().getName()));
-                kapi.setIsRemote(api.getIsRemote());
                 //kapi.setOwner(artefactInstances.get(ai.getName()));
                 initProperties(api, kapi, factory);
                 kai.addProvided(kapi);
@@ -434,8 +433,6 @@ public class KMFBridge {
                 net.cloudml.core.ClientPortInstance kapi = factory.createClientPortInstance();
                 kapi.setName(api.getName());
                 kapi.setType(clientPorts.get(api.getType().getName()));
-                kapi.setIsRemote(api.getIsRemote());
-                kapi.setIsOptional(api.getIsOptional());
                 //kapi.setOwner(artefactInstances.get(ai.getName()));
                 initProperties(api, kapi, factory);
                 kai.addRequired(kapi);

@@ -28,8 +28,8 @@ import java.util.List;
 public class ServerPortInstance extends ArtefactPortInstance<ServerPort>{
 	
 	
-	public ServerPortInstance(String name, ServerPort type, ArtefactInstance owner, boolean isRemote) {
-		super(name, type, owner, isRemote);
+	public ServerPortInstance(String name, ServerPort type, ArtefactInstance owner) {
+		super(name, type, owner);
 	}
 	
 	public ServerPortInstance(String name, ServerPort type, List<Property> properties, ArtefactInstance owner) {
@@ -42,7 +42,7 @@ public class ServerPortInstance extends ArtefactPortInstance<ServerPort>{
 	
 	@Override
     public String toString() {
-        return "ServerPortInstance " + name + " owner:" + owner.getName() + " remote:"+ isRemote;
+        return "ServerPortInstance " + name + " owner:" + owner.getName();
     }
 	
 	@Override
