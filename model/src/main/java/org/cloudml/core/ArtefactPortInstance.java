@@ -80,6 +80,12 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
         return this.type;
     }
 
+    public boolean getIsRemote() {
+        return isRemote;
+    }
+
+    
+    
     @Override
     public String toString() {
         return "ArtefactPortInstance " + name + " owner:" + owner.getName();
