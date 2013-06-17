@@ -89,7 +89,7 @@ public class CloudAppDeployer {
 
 
 		for(BindingInstance bi : dm.getBindingInstances()){
-			if(!bi.getClient().getIsRemote() && x.getRequired().contains(bi.getClient())){
+			if(!bi.getClient().getType().getIsRemote() && x.getRequired().contains(bi.getClient())){
 				ServerPortInstance p=bi.getServer();
 				if(!alreadyDeployed.contains(p.getOwner())){
 					jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getRetrievingResourceCommand() ,"ubuntu",n.getPrivateKey());
@@ -173,7 +173,7 @@ public class CloudAppDeployer {
 		//Configure on the basis of the bindings
 		//parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
 		for(BindingInstance bi : dm.getBindingInstances()){
-			if(bi.getClient().getIsRemote()){
+			if(bi.getClient().getType().getIsRemote()){
 				ClientPortInstance client=bi.getClient();
 				ServerPortInstance server=bi.getServer();
 
