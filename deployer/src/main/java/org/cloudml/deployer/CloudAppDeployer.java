@@ -89,7 +89,7 @@ public class CloudAppDeployer {
 
 
 		for(BindingInstance bi : dm.getBindingInstances()){
-			if(!bi.getClient().getType().getIsRemote() && x.getRequired().contains(bi.getClient())){
+			if(!bi.getClient().getType().getIsOptional() && x.getRequired().contains(bi.getClient())){
 				ServerPortInstance p=bi.getServer();
 				if(!alreadyDeployed.contains(p.getOwner())){
 					jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getRetrievingResourceCommand() ,"ubuntu",n.getPrivateKey());
