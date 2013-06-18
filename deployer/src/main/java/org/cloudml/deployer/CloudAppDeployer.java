@@ -103,6 +103,7 @@ public class CloudAppDeployer {
 				}
 			}
 		}
+		jc.closeConnection();
 
 	}
 
@@ -123,6 +124,7 @@ public class CloudAppDeployer {
 				String startCommand= x.getType().getResource().getStartResourceCommand();
 				configureAndStart(jc, n, ownerNode, configurationCommand, startCommand);
 				alreadyStarted.add(x);
+				jc.closeConnection();
 			}
 		}
 	}
