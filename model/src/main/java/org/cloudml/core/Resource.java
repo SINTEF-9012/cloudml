@@ -87,8 +87,8 @@ public class Resource extends WithProperties{
 		this.startResourceCommand=startCommand;
 	}
 	
-	public void setStopCommand(String startCommand){
-		this.stopResourceCommand=startCommand;
+	public void setStopCommand(String stopCommand){
+		this.stopResourceCommand=stopCommand;
 	}
 	
 	@Override
