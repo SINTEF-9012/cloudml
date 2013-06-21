@@ -106,7 +106,7 @@ public class KMFBridge {
             }
 
 
-            Resource r = new Resource(ka.getResource().getName(), ka.getResource().getDeployingCommand(), ka.getResource().getRetrievingCommand(), ka.getResource().getConfigurationCommand(), ka.getResource().getStartCommand());
+            Resource r = new Resource(ka.getResource().getName(), ka.getResource().getDeployingCommand(), ka.getResource().getRetrievingCommand(), ka.getResource().getConfigurationCommand(), ka.getResource().getStartCommand(), ka.getResource().getStopCommand());
 
             a.setResource(r);
 
@@ -139,6 +139,9 @@ public class KMFBridge {
                 if (kb.getClientResource().getStartCommand() != null) {
                     cr.setStartCommand(kb.getClientResource().getStartCommand());
                 }
+                if (kb.getClientResource().getStopCommand() != null) {
+                    cr.setStopCommand(kb.getClientResource().getStopCommand());
+                }
                 b.setClientResource(cr);
             }
             if (kb.getServerResource() != null) {
@@ -154,6 +157,9 @@ public class KMFBridge {
                 }
                 if (kb.getServerResource().getStartCommand() != null) {
                     cr.setStartCommand(kb.getServerResource().getStartCommand());
+                }
+                if (kb.getServerResource().getStopCommand() != null) {
+                    cr.setStopCommand(kb.getServerResource().getStopCommand());
                 }
                 b.setServerResource(cr);
             }
@@ -336,6 +342,7 @@ public class KMFBridge {
             kr.setRetrievingCommand(a.getResource().getRetrievingResourceCommand());
             kr.setConfigurationCommand(a.getResource().getConfigurationResourceCommand());
             kr.setStartCommand(a.getResource().getStartResourceCommand());
+            kr.setStopCommand(a.getResource().getStopResourceCommand());
             ka.setResource(kr);
 
             kDeploy.addArtefactTypes(ka);
@@ -369,6 +376,9 @@ public class KMFBridge {
                 if (b.getClientResource().getStartResourceCommand() != null) {
                     cr.setStartCommand(b.getClientResource().getStartResourceCommand());
                 }
+                if (b.getClientResource().getStopResourceCommand() != null) {
+                    cr.setStopCommand(b.getClientResource().getStopResourceCommand());
+                }
                 kb.setClientResource(cr);
             }
 
@@ -386,6 +396,9 @@ public class KMFBridge {
                 }
                 if (b.getServerResource().getStartResourceCommand() != null) {
                     cr.setStartCommand(b.getServerResource().getStartResourceCommand());
+                }
+                if (b.getServerResource().getStopResourceCommand() != null) {
+                    cr.setStopCommand(b.getServerResource().getStopResourceCommand());
                 }
                 kb.setServerResource(cr);
             }
