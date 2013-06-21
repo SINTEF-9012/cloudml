@@ -1,0 +1,5 @@
+<component id="<!--ID-->">
+    <IP><!--IP--></IP>
+    <type><!--TYPE--></type>
+    <scalingGroup>apache</scalingGroup>
+</component>
