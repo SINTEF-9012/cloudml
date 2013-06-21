@@ -1,37 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>autoscalar</artifactId>
-		<groupId>org.cloudml</groupId>
-		<version>1.3-SNAPSHOT</version>
-	</parent>
-	<artifactId>misc.autoscalar</artifactId>
-	<name>CloudML :: Misc :: Autoscalar</name>
-	<description>A bridge to the Autoscalar tool</description>
-	<inceptionYear>2013</inceptionYear>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>misc</artifactId>
+        <groupId>org.cloudml</groupId>
+        <version>1.3-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>misc.autoscalar</artifactId>
+    <name>CloudML :: Misc :: Autoscalar</name>
+    <description>A bridge to the Autoscalar tool</description>
+    <inceptionYear>2013</inceptionYear>
 
-	<properties>
-		<maven.compiler.source>1.5</maven.compiler.source>
-		<maven.compiler.target>1.5</maven.compiler.target>
-		<encoding>UTF-8</encoding>
-	</properties>
+    <properties>
+        <maven.compiler.source>1.5</maven.compiler.source>
+        <maven.compiler.target>1.5</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+    </properties>
 
 
-	<dependencies>
+    <dependencies>
 		<!-- Dependencies towards other CloudML modules -->
-		<dependency>
-			<groupId>org.cloudml</groupId>
-			<artifactId>model</artifactId>
-			<version>1.3-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>model</artifactId>
+            <version>1.3-SNAPSHOT</version>
+        </dependency>
+                
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.0.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
