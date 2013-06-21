@@ -27,6 +27,7 @@ public class Resource extends WithProperties{
 	private String retrievingResourceCommand="";
 	private String configurationResourceCommand="";
 	private String startResourceCommand="";
+	private String stopResourceCommand="";
 	
 	
 	public Resource(){}
@@ -41,12 +42,13 @@ public class Resource extends WithProperties{
 		this.retrievingResourceCommand=retrievingCommand;
 	}
 	
-	public Resource(String name, String deployingCommand,String retrievingCommand, String configurationCommand, String startCommand){
+	public Resource(String name, String deployingCommand,String retrievingCommand, String configurationCommand, String startCommand, String stopCommand){
 		super(name);
 		this.deployingResourceCommand=deployingCommand;
 		this.retrievingResourceCommand=retrievingCommand;
 		this.configurationResourceCommand=configurationCommand;
 		this.startResourceCommand=startCommand;
+		this.stopResourceCommand=stopCommand;
 	}
 	
 	public String getDeployingResourceCommand(){
@@ -64,6 +66,10 @@ public class Resource extends WithProperties{
 	public String getStartResourceCommand(){
 		return startResourceCommand;
 	}
+	
+	public String getStopResourceCommand(){
+		return stopResourceCommand;
+	}
 
 	public void setDeployingCommand(String deployingCommand){
 		this.deployingResourceCommand=deployingCommand;
@@ -79,6 +85,10 @@ public class Resource extends WithProperties{
 	
 	public void setStartCommand(String startCommand){
 		this.startResourceCommand=startCommand;
+	}
+	
+	public void setStopCommand(String startCommand){
+		this.stopResourceCommand=startCommand;
 	}
 	
 	@Override
