@@ -55,7 +55,7 @@ public class DeploymentModelComparator {
 	private Map<BindingInstance,BindingInstance> matchingBindings = new Hashtable<BindingInstance,BindingInstance>();
 	private List<BindingInstance> removedBindings = new ArrayList<BindingInstance>();
 	private List<BindingInstance> addedBindings = new ArrayList<BindingInstance>();
-	
+
 	// The commands resulting from the diff
 	private Set<String> commands = new HashSet<String>();
 
@@ -76,7 +76,7 @@ public class DeploymentModelComparator {
 		this.currentDM=currentDM;
 		clean();
 	}
-	
+
 	public Set<String> getCommands(){
 		return this.commands;
 	}
@@ -89,17 +89,19 @@ public class DeploymentModelComparator {
 		compareNodes();
 		journal.log(Level.INFO, ">> Removed nodes :" + removedNodes.toString());
 		journal.log(Level.INFO, ">> Added nodes  :" + addedNodes.toString());
-		
+
 		compareBindings();
+		//journal.log(Level.INFO, ">> current bindings :" + currentDM.getBindingInstances());
+		//journal.log(Level.INFO, ">> Matching bindings :" + matchingBindings.toString());
 		journal.log(Level.INFO, ">> Removed bindings :" + removedBindings.toString());
 		journal.log(Level.INFO, ">> Added bindings :" + addedBindings.toString());
-		
-		
+
+
 		compareArtefacts();
 		journal.log(Level.INFO, ">> Removed artefacts: " + removedArtefacts.toString());
 		journal.log(Level.INFO, ">> Added artefacts: " + addedArtefacts.toString());
 	}
-	
+
 	/**
 	 * Compares the nodes between the targeted and the current deployment model
 	 */
@@ -114,29 +116,26 @@ public class DeploymentModelComparator {
 					break secondloop;
 				}
 			}}
-			if(!match){
-				removeNode(ni);
-			}
+		if(!match){
+			removeNode(ni);
+		}
 		}
 		//add the rest
 		addNodes();
 	}
-	
+
 	private void removeNode(NodeInstance ni){
 		removedNodes.add(ni);
 		//create action
-		
+
 	}
-	
+
 	private void addNodes(){
 		addedNodes =  new ArrayList<NodeInstance>(targetDM.getNodeInstances()); 
 		addedNodes.removeAll(matchingNodes.values());
-		for(NodeInstance n : addedNodes){
-			//create action
-		}
 	}
-	
-	
+
+
 	/**
 	 * Compares the bindings between the targeted and the current deployment model
 	 */
@@ -151,14 +150,14 @@ public class DeploymentModelComparator {
 					break secondloop;
 				}
 			}}
-			if(!match){
-				removedBindings.add(ni);
-			}
+		if(!match){
+			removedBindings.add(ni);
+		}
 		}
 		//add the rest
 		addBindings();
 	}
-	
+
 	private void removedBinding(BindingInstance ni){
 		removedBindings.add(ni);
 		//create action
@@ -167,11 +166,22 @@ public class DeploymentModelComparator {
 	private void addBindings(){
 		addedBindings =  new ArrayList<BindingInstance>(targetDM.getBindingInstances()); 
 		addedBindings.removeAll(matchingBindings.values());
-		for(BindingInstance b : addedBindings){
-			//create action
+		for(BindingInstance ni : addedBindings){
+			int i=currentDM.getArtefactInstances().indexOf(ni.getClient().getOwner());
+			if(i >= 0){
+				ArtefactInstance a=currentDM.getArtefactInstances().get(i);
+				int j=a.getRequired().indexOf(ni.getClient());
+				ni.setClient(a.getRequired().get(j));
+			}
+			i=currentDM.getArtefactInstances().indexOf(ni.getServer().getOwner());
+			if(i >= 0){
+				ArtefactInstance a=currentDM.getArtefactInstances().get(i);
+				int j=a.getProvided().indexOf(ni.getServer());
+				ni.setServer(a.getProvided().get(j));
+			}
 		}
 	}
-	
+
 	/**
 	 * Compares the artefacts between the targeted and the current deployment model
 	 */
@@ -186,25 +196,22 @@ public class DeploymentModelComparator {
 					break secondloop;
 				}
 			}}
-			if(!match){
-				removedArtefacts.add(ni);
-			}
+		if(!match){
+			removedArtefacts.add(ni);
+		}
 		}
 		//add the rest
 		addArtefacts();
 	}
-	
+
 	private void removedArtefact(ArtefactInstance ni){
 		removedArtefacts.add(ni);
 		//create action
 	}
-	
+
 	private void addArtefacts(){
 		addedArtefacts =  new ArrayList<ArtefactInstance>(targetDM.getArtefactInstances()); 
 		addedArtefacts.removeAll(matchingArtefacts.values());
-		for(ArtefactInstance a : addedArtefacts){
-			//create action
-		}
 	}
 
 	/**
@@ -222,42 +229,42 @@ public class DeploymentModelComparator {
 		matchingBindings.clear();
 		removedBindings.clear();
 		addedBindings.clear();
-		
+
 		commands.clear();
 	}
-	
+
 	public List<ArtefactInstance> getRemovedArtefacts(){
 		return this.removedArtefacts;
 	}
-	
+
 	public List<ArtefactInstance> getAddedArtefacts(){
 		return this.addedArtefacts;
 	}
-	
+
 	public List<NodeInstance> getRemovedNodes(){
 		return this.removedNodes;
 	}
-	
+
 	public List<NodeInstance> getAddedNodes(){
 		return this.addedNodes;
 	}
-	
+
 	public List<BindingInstance> getRemovedBindings(){
 		return this.removedBindings;
 	}
-	
+
 	public List<BindingInstance> getAddedBindings(){
 		return this.addedBindings;
 	}
-	
+
 	public Map<BindingInstance,BindingInstance> getMatchingBindings(){
 		return this.matchingBindings;
 	}
-	
+
 	public Map<ArtefactInstance,ArtefactInstance> getMatchingArtefacts(){
 		return this.matchingArtefacts;
 	}
-	
+
 	public Map<NodeInstance,NodeInstance> getMatchingNodes(){
 		return this.matchingNodes;
 	}

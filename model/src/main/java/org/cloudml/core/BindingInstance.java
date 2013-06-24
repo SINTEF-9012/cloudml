@@ -76,7 +76,7 @@ public class BindingInstance extends WithProperties{
     public boolean equals(Object other) {
         if (other instanceof BindingInstance) {
         	BindingInstance otherBinding = (BindingInstance) other;
-            return (client.getName().equals(otherBinding.getClient().getName()) && server.getName().equals(otherBinding.getServer().getName()));
+            return (client.equals(otherBinding.getClient()) && server.equals(otherBinding.getServer()));
         } else {
             return false;
         }
