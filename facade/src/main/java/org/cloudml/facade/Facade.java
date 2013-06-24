@@ -65,7 +65,8 @@ class Facade implements CloudML, CommandHandler {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private DeploymentModel deploy;
     private boolean stopOnTimeout = false;
-
+    private CloudAppDeployer deployer;
+    
     /**
      * Default constructor
      */
@@ -73,6 +74,7 @@ class Facade implements CloudML, CommandHandler {
         this.handlers = new ArrayList<EventHandler>();
         XmiCodec.init();
         JsonCodec.init();
+        this.deployer = new CloudAppDeployer();
     }
 
     /*
@@ -357,7 +359,6 @@ class Facade implements CloudML, CommandHandler {
             dispatch(message);
 
         } else {
-            CloudAppDeployer deployer = new CloudAppDeployer();
             deployer.deploy(deploy);
             dispatch(new Message(command, Category.INFORMATION, "Deployment Complete."));
         }
