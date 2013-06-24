@@ -48,4 +48,13 @@ public class Property {
     public void setValue(String value) {
         this.value = value;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (! (obj instanceof Property))
+            return false;
+        return (((Property)obj).getName().equals(getName()) && ((Property)obj).getValue().equals(getValue()));
+    }
+    
+    
 }
