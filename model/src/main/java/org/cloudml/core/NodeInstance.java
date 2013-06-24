@@ -64,6 +64,7 @@ public class NodeInstance extends WithProperties {
     	return this.id;
     }
     
+    
     @Override
     public String toString() {
         return "NodeInstance: "+name+" Type:"+type.getName()+"{\n" +
