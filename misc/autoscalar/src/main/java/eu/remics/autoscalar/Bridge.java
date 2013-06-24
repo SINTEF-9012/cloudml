@@ -42,9 +42,9 @@ class Bridge {
 
     public static void toXML(DeploymentModel model, String path) {
         try {
-            String config = FileUtils.readFileToString(new File(bridge.getClass().getResource("/config.xml").toURI()));
-            final String component = FileUtils.readFileToString(new File(bridge.getClass().getResource("/component.xml").toURI()));
-            final String group = FileUtils.readFileToString(new File(bridge.getClass().getResource("/group.xml").toURI()));
+            String config = FileUtils.readFileToString(new File(bridge.getClass().getResource("/config.xmlt").toURI()));
+            final String component = FileUtils.readFileToString(new File(bridge.getClass().getResource("/component.xmlt").toURI()));
+            final String group = FileUtils.readFileToString(new File(bridge.getClass().getResource("/group.xmlt").toURI()));
 
             Map<String, Node> groups = new HashMap<String, Node>();
 
