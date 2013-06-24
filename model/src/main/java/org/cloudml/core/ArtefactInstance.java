@@ -32,94 +32,97 @@ import java.util.List;
  */
 public class ArtefactInstance extends WithProperties {
 
-    private Artefact type;
-    private NodeInstance destination = null;
+	private Artefact type;
+	private NodeInstance destination = null;
 
-    /*
-     * Dependencies <PortName,PortInstance Reference>
-     */
-    private List<ClientPortInstance> required = new LinkedList<ClientPortInstance>();
-    private List<ServerPortInstance> provided = new LinkedList<ServerPortInstance>();
+	/*
+	 * Dependencies <PortName,PortInstance Reference>
+	 */
+	private List<ClientPortInstance> required = new LinkedList<ClientPortInstance>();
+	private List<ServerPortInstance> provided = new LinkedList<ServerPortInstance>();
 
-    public ArtefactInstance() {
-    }
+	public ArtefactInstance() {
+	}
 
-    public ArtefactInstance(String name, Artefact type) {
-        super(name);
-        this.type = type;
-    }
+	public ArtefactInstance(String name, Artefact type) {
+		super(name);
+		this.type = type;
+	}
 
-    public ArtefactInstance(String name, Artefact type, NodeInstance destination) {
-        super(name);
-        this.type = type;
-        this.destination = destination;
-    }
+	public ArtefactInstance(String name, Artefact type, NodeInstance destination) {
+		super(name);
+		this.type = type;
+		this.destination = destination;
+	}
 
-    public ArtefactInstance(String name, List<Property> properties, Artefact type) {
-        super(name, properties);
-        this.type = type;
-    }
+	public ArtefactInstance(String name, List<Property> properties, Artefact type) {
+		super(name, properties);
+		this.type = type;
+	}
 
-    public ArtefactInstance(String name, List<Property> properties, Artefact type, NodeInstance destination) {
-        super(name, properties);
-        this.destination = destination;
-    }
+	public ArtefactInstance(String name, List<Property> properties, Artefact type, NodeInstance destination) {
+		super(name, properties);
+		this.destination = destination;
+	}
 
-    public ArtefactInstance(String name, List<Property> properties, List<ClientPortInstance> required, List<ServerPortInstance> provided) {
-        super(name, properties);
-        this.required = required;
-        this.provided = provided;
-    }
+	public ArtefactInstance(String name, List<Property> properties, List<ClientPortInstance> required, List<ServerPortInstance> provided) {
+		super(name, properties);
+		this.required = required;
+		this.provided = provided;
+	}
 
-    @Override
-    public String toString() {
-        return "Instance " + name + " : " + getType().getName();
-    }
+	@Override
+	public String toString() {
+		return "Instance " + name + " : " + getType().getName();
+	}
 
-    @Override
-    public boolean equals(Object other) {
-        if (other instanceof ArtefactInstance) {
-            ArtefactInstance otherArt = (ArtefactInstance) other;
-            return name.equals(otherArt.getName()) && type.equals(otherArt.getType());
-        } else {
-            return false;
-        }
-    }
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ArtefactInstance) {
+			ArtefactInstance otherArt = (ArtefactInstance) other;
+			Boolean match= name.equals(otherArt.getName()) && type.equals(otherArt.getType());
+			if(destination != null)
+				return name.equals(otherArt.getName()) && type.equals(otherArt.getType()) && destination.equals(otherArt.getDestination());
+			else return match && (otherArt.getDestination() == null);
+		} else {
+			return false;
+		}
+	}
 
-    /*
-     * Getters
-     */
+	/*
+	 * Getters
+	 */
 
-    public List<ClientPortInstance> getRequired() {
-        return this.required;
-    }
+	public List<ClientPortInstance> getRequired() {
+		return this.required;
+	}
 
-    public List<ServerPortInstance> getProvided() {
-        return this.provided;
-    }
+	public List<ServerPortInstance> getProvided() {
+		return this.provided;
+	}
 
-    public Artefact getType() {
-        return this.type;
-    }
+	public Artefact getType() {
+		return this.type;
+	}
 
 
-    public void setProvided(List<ServerPortInstance> provided) {
-        this.provided = provided;
-    }
+	public void setProvided(List<ServerPortInstance> provided) {
+		this.provided = provided;
+	}
 
-    public void setRequired(List<ClientPortInstance> required) {
-        this.required = required;
-    }
+	public void setRequired(List<ClientPortInstance> required) {
+		this.required = required;
+	}
 
-    public void setType(Artefact type) {
-        this.type = type;
-    }
+	public void setType(Artefact type) {
+		this.type = type;
+	}
 
-    public void setDestination(NodeInstance destination) {
-        this.destination = destination;
-    }
+	public void setDestination(NodeInstance destination) {
+		this.destination = destination;
+	}
 
-    public NodeInstance getDestination() {
-        return destination;
-    }
+	public NodeInstance getDestination() {
+		return destination;
+	}
 }

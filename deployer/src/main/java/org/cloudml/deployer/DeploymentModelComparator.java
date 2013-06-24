@@ -91,12 +91,13 @@ public class DeploymentModelComparator {
 		journal.log(Level.INFO, ">> Added nodes  :" + addedNodes.toString());
 		
 		compareBindings();
-		journal.log(Level.INFO, ">> Removed artefacts: " + removedArtefacts.toString());
-		journal.log(Level.INFO, ">> Added artefacts: " + addedArtefacts.toString());
-		
-		compareArtefacts();
 		journal.log(Level.INFO, ">> Removed bindings :" + removedBindings.toString());
 		journal.log(Level.INFO, ">> Added bindings :" + addedBindings.toString());
+		
+		
+		compareArtefacts();
+		journal.log(Level.INFO, ">> Removed artefacts: " + removedArtefacts.toString());
+		journal.log(Level.INFO, ">> Added artefacts: " + addedArtefacts.toString());
 	}
 	
 	/**
