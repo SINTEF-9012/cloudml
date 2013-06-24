@@ -253,7 +253,9 @@ public class JCloudsConnector {
 
 		template = templateBuilder.build();
 		journal.log(Level.INFO, ">> node type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
-
+		a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
+		a.getProperties().add(new Property("location", template.getLocation().getId()));
+		
 		if(provider.equals("aws-ec2")){
 			template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", node.getMinDisk(), true);
 			template.getOptions().as(EC2TemplateOptions.class).securityGroups(node.getSecurityGroup());
