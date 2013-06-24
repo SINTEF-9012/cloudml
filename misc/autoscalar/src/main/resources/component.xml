@@ -1,5 +1,5 @@
 <component id="<!--ID-->">
     <IP><!--IP--></IP>
     <type><!--TYPE--></type>
-    <scalingGroup>apache</scalingGroup>
+    <scalingGroup><!--GROUP--></scalingGroup>
 </component>
