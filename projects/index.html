@@ -1,0 +1,23 @@
+---
+layout: default
+title: Projects contributing/using CloudML
+---
+
+<section>
+  <div class="grid">
+    <div class="unit whole center-on-mobiles">
+  {% for post in site.categories.project %}
+  {% if post.categories contains 'past' %}
+    <h2 class="pastProject">{{ post.title }}</h2>
+  {% else %}
+    <h2 class="project">{{ post.title }}</h2>
+  {% endif %}
+    <div class="post">
+      <p><b>until {{post.date | date: "%d %b %Y"}}</b></p>
+      {{ post.content }}
+    </div>
+  {% endfor %}
+
+</div>
+</div>
+</section>

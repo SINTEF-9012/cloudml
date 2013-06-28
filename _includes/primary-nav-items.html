@@ -1,0 +1,14 @@
+<ul>
+  <li class="{% if page.overview %}current{% endif %}">
+    <a href="{{ site.url }}/"><i class="icon-home"></i>Home</a>
+  </li>
+  <li class="{% if page.title contains "publications" %}current{% endif %}">
+    <a href="{{ site.url }}/papers"><i class="icon-file-alt"></i>Publi<span class="show-on-mobiles">s</span><span class="hide-on-mobiles">cations</span></a>
+  </li>
+  <li class="{% if page.title contains "projects" %}current{% endif %}">
+    <a href="{{ site.url }}/projects"><i class="icon-search"></i>Projects</a>
+  </li>
+  <li class="{% if page.title contains "prototypes" %}current{% endif %}">
+    <a href="{{ site.url }}/prototypes"><i class="icon-save"></i>Proto<span class="hide-on-mobiles">types</span></a>
+  </li>
+</ul>

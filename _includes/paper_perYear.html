@@ -1,0 +1,67 @@
+  {% assign currentYear = 0 %}
+  {% assign counter = 0 %}
+  {% for post in site.categories.paper %}
+      {% capture year %}{{post.date | date: "%Y"}}{% endcapture %}
+      {% if currentYear !=  year %}
+        {% assign counter=counter | plus:1 %}
+        {% unless counter == 1 %}
+          </div>
+        {% endunless %}
+        {% assign currentYear = year %}
+    <div>
+	<h2 id="{{ currentYear }}">{{currentYear}}</h2>
+	{% if counter > 4%} 
+	<a id="{{ currentYear }}_a"><div id="{{ currentYear }}_zoomIn_div"><h4><a href="#{{ currentYear }}_a"><i id="{{ currentYear }}_zoomIn" class="icon-zoom-in">See {{ currentYear }} papers</i></a></h4></div>
+	<div id="{{ currentYear }}_zoomOut_div"><h4><a href="#{{ currentYear }}_a"><i id="{{ currentYear }}_zoomOut" class="icon-zoom-out">Hide {{ currentYear }} papers</i></a></h4></div>
+	</a>
+	{% endif %}
+	
+    <div id="publications{{ currentYear }}">
+      {% endif %}
+
+      {% if post.categories contains 'conference' %}
+      <h3 class="conference">
+      {% elsif post.categories contains 'workshop' %}
+      <h3 class="workshop">
+      {% elsif post.categories contains 'journal' %}
+      <h3 class="journal">
+      {% elsif post.categories contains 'invited talk' %}
+      <h3 class="invitedTalk">
+      {% elsif post.categories contains 'chapter' %}
+      <h3 class="chapter">
+      {% else %}
+      <h3 class="paper">
+      {% endif%}
+      [{{ forloop.rindex }}] {{ post.title }}</h3>
+      <div class="compactPost">
+        {{ post.content }}
+      </div>
+  {% endfor %}
+
+  {% assign currentYear = 0 %}
+  {% assign counter = 0 %}
+  {% for post in site.categories.paper %}
+      {% capture year %}{{post.date | date: "%Y"}}{% endcapture %}
+      {% if currentYear !=  year %}
+          {% assign currentYear = year %}
+	  {% assign counter=counter | plus:1 %}
+          {% if counter > 4%}
+            <script async>
+			  $('#{{ currentYear }}_zoomIn').click(function() {
+              $('#publications{{ currentYear }}').toggle('slow', function() {
+                $('#{{ currentYear }}_zoomIn_div').hide();
+				$('#{{ currentYear }}_zoomOut_div').show();
+              });
+              });
+			  $('#{{ currentYear }}_zoomOut').click(function() {
+              $('#publications{{ currentYear }}').toggle('slow', function() {
+                $('#{{ currentYear }}_zoomOut_div').hide();
+				$('#{{ currentYear }}_zoomIn_div').show();
+              });
+              });
+	      $('#publications{{ currentYear }}').hide();
+		  $('#{{ currentYear }}_zoomOut_div').hide();
+           </script>
+          {% endif %}
+      {% endif %}
+  {% endfor %}

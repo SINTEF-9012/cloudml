@@ -1,4 +1,0 @@
-cloudml
-=======
-
-CloudML user interface.
