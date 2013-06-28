@@ -2,7 +2,7 @@
   <div class="grid">
     <div class="unit one-third">
       <p>By <a href="http://www.sintef.no">SINTEF ICT</a>.</p>
-<p><i class="icon-envelope"></i> <script>mail2("franck.chauvel","sintef",6,"","Contact us")</script></p>
+	  <p><i class="icon-envelope"></i> <script>mail2("franck.chauvel","sintef",6,"","Contact us")</script></p>
     </div>
     <div class="unit one-third">
       <p>Powered and Inspired by <a href="http://jekyllrb.com/">Jekyll</a>.</p>

@@ -2,5 +2,5 @@ safe: false
 lsi: false
 pygments: true
 permalink: /:categories/:year/:title/
-url: http://sintef-9012.github.io/cloudml
+url: http://sintef-9012.github.io/cloudml/
 author: SINTEF ICT

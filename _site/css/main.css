@@ -1,0 +1,80 @@
+p {
+  margin: 0em;
+}
+
+.post {
+  font-size: 80%;
+  line-height: 50%;
+  margin: 0em;
+}
+
+.compactPost {
+  font-size: 65%;
+  line-height: 50%;
+  margin: 0em;
+}
+
+.conference {
+  font-size: smaller;
+  color: #99CCCC;
+}
+
+.paper {
+  font-size: smaller;
+}
+
+.journal {
+  font-size: smaller;
+  color: #6699FF;
+}
+
+.chapter {
+  font-size: smaller;
+  color: #666699;
+}
+
+.workshop {
+  font-size: smaller;
+  color: #99FF99;
+}
+
+.invitedTalk {
+  font-size: smaller;
+  color: #FFFF66;
+}
+
+.project {
+  color: #6699FF;
+}
+
+.pastProject {
+  color: #666699;
+}
+
+.prototype {
+  color: #6699FF;
+}
+
+.error {
+  color: #FF6600;
+}
+
+.diploma {
+  font-size: smaller;
+  color: #99FF99;
+}
+
+.work {
+  font-size: smaller;
+  color: #6699FF;
+}
+
+.student {
+  font-size: smaller;
+  color: #6699FF;
+}
+
+.service {
+  font-size: smaller;
+  color: #6699FF;
+}
