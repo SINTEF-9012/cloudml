@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>ui</artifactId>
 		<groupId>org.cloudml</groupId>
-		<version>1.3-BETA1</version>
+		<version>1.3-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>ui.graph</artifactId>
@@ -18,27 +18,27 @@
 		<dependency>
 			<groupId>org.cloudml</groupId>
 			<artifactId>model</artifactId>
-			<version>1.3-BETA1</version>
+			<version>1.3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cloudml</groupId>
 			<artifactId>codecs.json</artifactId>
-			<version>1.3-BETA1</version>
+			<version>1.3-SNAPSHOT</version>
                         <!-- <scope>test</scope>-->
 		</dependency>
 
 		<dependency>
 			<groupId>org.cloudml</groupId>
 			<artifactId>codecs.commons</artifactId>
-			<version>1.3-BETA1</version>
+			<version>1.3-SNAPSHOT</version>
                       <!-- <scope>test</scope>-->
 		</dependency>
 
 		<dependency>
 			<groupId>org.cloudml</groupId>
 			<artifactId>codecs.xmi</artifactId>
-			<version>1.3-BETA1</version>
+			<version>1.3-SNAPSHOT</version>
                        <!--   <scope>test</scope>-->
 		</dependency>
 
