@@ -167,13 +167,12 @@ class Facade implements CloudML, CommandHandler {
      *
      * @param a
      */
-    public NodeMetadata createNode(NodeInstance a) {
+    public void createNode(NodeInstance a) {
         Provider p = a.getType().getProvider();
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
                 p.getPasswd());
-        NodeMetadata node = jc.createInstance(a);
+        jc.createInstance(a);
         jc.closeConnection();
-        return node;
     }
 
     /**

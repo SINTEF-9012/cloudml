@@ -231,7 +231,7 @@ public class CloudAppDeployer {
 		ComputeMetadata cm= jc.getNodeByName(n.getName());
 		/* UPDATE THE MODEL */
 		if(cm == null){
-			NodeMetadata testNode=jc.createInstance(n);
+			jc.createInstance(n);
 		}else{
 			n.setPublicAddress(jc.getNodeById(cm.getId()).getPublicAddresses().iterator().next());
 			n.setId(cm.getId());
