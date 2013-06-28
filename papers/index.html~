@@ -2,7 +2,6 @@
 layout: default
 title: Publications around CloudML
 ---
-{% include paper.html %}
 <section>
     <div class="grid">
       <div class="unit four-fifths">
