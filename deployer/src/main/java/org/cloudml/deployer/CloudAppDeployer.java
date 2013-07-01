@@ -155,13 +155,16 @@ public class CloudAppDeployer {
 		for(BindingInstance bi : bindings){
 			if(!bi.getClient().getType().getIsOptional() && x.getRequired().contains(bi.getClient())){
 				ServerPortInstance p=bi.getServer();
+				NodeInstance owner=p.getOwner().getDestination();
+				if(owner == null)
+					owner=ownerNode;
 				if(!alreadyDeployed.contains(p.getOwner())){
-					jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getRetrievingResourceCommand() ,"ubuntu",n.getPrivateKey());
-					jc.execCommand(ownerNode.getId(), p.getOwner().getType().getResource().getDeployingResourceCommand(),"ubuntu",n.getPrivateKey());
+					jc.execCommand(owner.getId(), p.getOwner().getType().getResource().getRetrievingResourceCommand() ,"ubuntu",n.getPrivateKey());
+					jc.execCommand(owner.getId(), p.getOwner().getType().getResource().getDeployingResourceCommand(),"ubuntu",n.getPrivateKey());
 
 					String configurationCommand=p.getOwner().getType().getResource().getConfigurationResourceCommand();
 					String startCommand=p.getOwner().getType().getResource().getStartResourceCommand();
-					configureAndStart(jc, n, ownerNode, configurationCommand, startCommand);
+					configureAndStart(jc, n, owner, configurationCommand, startCommand);
 					alreadyDeployed.add(p.getOwner());
 					alreadyStarted.add(p.getOwner());
 				}

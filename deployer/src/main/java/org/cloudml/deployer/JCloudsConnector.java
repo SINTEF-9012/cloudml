@@ -30,6 +30,7 @@ import static org.jclouds.scriptbuilder.domain.Statements.exec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -41,6 +42,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.cloudml.core.*;
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
@@ -79,7 +81,7 @@ import static org.jclouds.Constants.*;
  * @author Nicolas Ferry
  *
  */
-public class JCloudsConnector {
+public class JCloudsConnector implements Connector{
 
 	private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
 
@@ -198,7 +200,7 @@ public class JCloudsConnector {
 	 * @param id id of the node
 	 * @param command the command to be executed
 	 * @param login username
-	 * @param key sshkey for connection
+	 * @param keyPath sshkey for connection
 	 */
 	public void execCommand(String id, String command, String login, String key){
 		journal.log(Level.INFO, ">> executing command...");
@@ -212,6 +214,7 @@ public class JCloudsConnector {
 				.wrapInInitScript(false));// run command directly
 
 		journal.log(Level.INFO, ">> "+response.getOutput());
+
 	}
 
 	/**
@@ -219,7 +222,7 @@ public class JCloudsConnector {
 	 * @param a description of the node to be created
 	 * @return
 	 */
-	public NodeMetadata createInstance(NodeInstance a){
+	public void createInstance(NodeInstance a){
 		Template template=null;
 		NodeMetadata nodeInstance = null;
 		Node node= a.getType();
@@ -255,7 +258,7 @@ public class JCloudsConnector {
 		journal.log(Level.INFO, ">> node type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
 		a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
 		a.getProperties().add(new Property("location", template.getLocation().getId()));
-		
+
 		if(provider.equals("aws-ec2")){
 			template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", node.getMinDisk(), true);
 			template.getOptions().as(EC2TemplateOptions.class).securityGroups(node.getSecurityGroup());
@@ -272,14 +275,13 @@ public class JCloudsConnector {
 
 			journal.log(Level.INFO, ">> Running node: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() + 
 					" on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
-			
+
 		} catch (RunNodesException e) {
 			e.printStackTrace();
 		}	
-		
+
 		a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
 		a.setId(nodeInstance.getId());
-		return nodeInstance;
 
 	}
 

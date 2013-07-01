@@ -175,7 +175,11 @@ public class Node extends WithProperties {
 	}
 
 	public void setPrivateKey(String privateKey) {
-		this.privateKey = privateKey;
+		try {
+			String contentKey=FileUtils.readFileToString(new File(privateKey));
+		} catch (IOException e) {
+			this.privateKey = privateKey;
+		}
 	}
 
 	public void setIs64os(Boolean is64os) {
