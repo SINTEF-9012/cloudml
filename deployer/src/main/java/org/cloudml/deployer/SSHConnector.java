@@ -24,70 +24,62 @@ package org.cloudml.deployer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.jcraft.jsch.*;
 
 public class SSHConnector {
-	
-	private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
-	
 	String keyPath="";
 	String user="";
 	String host="";
-
+	
 	public SSHConnector(String keyPath, String user, String host){
 		this.keyPath=keyPath;
 		this.user=user;
 		this.host=host;
 	}
-
+	
 	public void execCommandSsh(String command){
-		journal.log(Level.INFO, ">> executing command...");
-		journal.log(Level.INFO, ">> "+ command);
 		JSch jsch = new JSch();
 		Properties config = new Properties();
 		config.put("StrictHostKeyChecking", "no");
 		try {
 			jsch.addIdentity(keyPath);
-
+			
 			Session session = jsch.getSession(user, host, 22);
 			session.setConfig(config);
-			session.connect(30000);
-
-			Channel channel = session.openChannel("exec");
-			ChannelExec channelExec=((ChannelExec)channel);
-			channelExec.setCommand(command);
-			channelExec.setErrStream(System.err);
-
-			InputStream in;
+		    session.connect(30000);
+		    
+		    Channel channel = session.openChannel("exec");
+		    ChannelExec channelExec=((ChannelExec)channel);
+		    channelExec.setCommand(command);
+		    channelExec.setErrStream(System.err);
+		    
+		    InputStream in;
 			in = channel.getInputStream();
-			channel.connect();
-			byte[] tmp=new byte[1024];
-			while(true){
-				while(in.available()>0){
-					int i=in.read(tmp, 0, 1024);
-					if(i<0)break;
-					journal.log(Level.INFO, ">> "+ new String(tmp, 0, i));
-				}
-				if(channel.isClosed()){
-					journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
-					break;
-				}
-				try{Thread.sleep(1000);}catch(Exception ee){}
-			}
-
-			channel.disconnect();
-			session.disconnect();
+		    channel.connect();
+		    byte[] tmp=new byte[1024];
+		      while(true){
+		        while(in.available()>0){
+		          int i=in.read(tmp, 0, 1024);
+		          if(i<0)break;
+		          System.out.print(">> "+new String(tmp, 0, i));
+		        }
+		        if(channel.isClosed()){
+		          System.out.println("exit-status: "+channel.getExitStatus());
+		          break;
+		        }
+		        try{Thread.sleep(1000);}catch(Exception ee){}
+		      }
+		      
+		      channel.disconnect();
+		      session.disconnect();
 
 		} catch (JSchException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			journal.log(Level.SEVERE,"File access error");
+		// TODO Auto-generated catch block
+		e.printStackTrace();
 		}
 	}
 

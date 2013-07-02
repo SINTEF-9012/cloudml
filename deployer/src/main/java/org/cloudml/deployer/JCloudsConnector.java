@@ -183,6 +183,7 @@ public class JCloudsConnector implements Connector{
 	public void execCommandInGroup(String group, String command, String login, String key) throws RunScriptOnNodesException{
 		journal.log(Level.INFO, ">> executing command...");
 		journal.log(Level.INFO, ">> "+ command);
+
 		Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
 				runningInGroup(group), 
 				exec(command),
@@ -204,6 +205,7 @@ public class JCloudsConnector implements Connector{
 	public void execCommand(String id, String command, String login, String key){
 		journal.log(Level.INFO, ">> executing command...");
 		journal.log(Level.INFO, ">> "+ command);
+
 		ExecResponse response = compute.runScriptOnNode(
 				id, 
 				exec(command),
