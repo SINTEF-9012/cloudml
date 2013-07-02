@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.cloudml</groupId>
         <artifactId>codecs</artifactId>
-        <version>1.3-BETA2</version>
+        <version>1.3-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -25,19 +25,19 @@
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>codecs.commons</artifactId>
-            <version>1.3-BETA2</version>
+            <version>1.3-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>ui.graph</artifactId>
-            <version>1.3-BETA2</version>
+            <version>1.3-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>codecs.xmi</artifactId>
-            <version>1.3-BETA2</version>
+            <version>1.3-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
