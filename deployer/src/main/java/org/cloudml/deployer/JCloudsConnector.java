@@ -183,15 +183,21 @@ public class JCloudsConnector implements Connector{
 	public void execCommandInGroup(String group, String command, String login, String key) throws RunScriptOnNodesException{
 		journal.log(Level.INFO, ">> executing command...");
 		journal.log(Level.INFO, ">> "+ command);
-		Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
-				runningInGroup(group), 
-				exec(command),
-				overrideLoginCredentials(new LoginCredentials(login, null, key, false)) 
-				.runAsRoot(false) 
-				.wrapInInitScript(false));// run command directly
 
-		for(Entry<? extends NodeMetadata, ExecResponse> r : responses.entrySet())
-			journal.log(Level.INFO, ">> "+r.getValue());
+		try {
+			String contentKey=FileUtils.readFileToString(new File(key));
+			Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
+					runningInGroup(group), 
+					exec(command),
+					overrideLoginCredentials(new LoginCredentials(login, null, contentKey, false)) 
+					.runAsRoot(false) 
+					.wrapInInitScript(false));// run command directly
+
+			for(Entry<? extends NodeMetadata, ExecResponse> r : responses.entrySet())
+				journal.log(Level.INFO, ">> "+r.getValue());
+		} catch (IOException e) {
+			journal.log(Level.SEVERE, ">> Unable to find key file - check your path!");
+		}
 	}
 
 	/**
@@ -204,15 +210,20 @@ public class JCloudsConnector implements Connector{
 	public void execCommand(String id, String command, String login, String key){
 		journal.log(Level.INFO, ">> executing command...");
 		journal.log(Level.INFO, ">> "+ command);
-		ExecResponse response = compute.runScriptOnNode(
-				id, 
-				exec(command),
-				overrideLoginCredentials(new LoginCredentials(login, null, key, false)) 
-				.runAsRoot(false) 
-				.wrapInInitScript(false));// run command directly
 
-		journal.log(Level.INFO, ">> "+response.getOutput());
+		try {
+			String contentKey=FileUtils.readFileToString(new File(key));
+			ExecResponse response = compute.runScriptOnNode(
+					id, 
+					exec(command),
+					overrideLoginCredentials(new LoginCredentials(login, null, contentKey, false)) 
+					.runAsRoot(false) 
+					.wrapInInitScript(false));// run command directly
 
+			journal.log(Level.INFO, ">> "+response.getOutput());
+		} catch (IOException e) {
+			journal.log(Level.SEVERE, ">> Unable to find key file - check your path!");
+		}
 	}
 
 	/**
@@ -221,66 +232,73 @@ public class JCloudsConnector implements Connector{
 	 * @return
 	 */
 	public void createInstance(NodeInstance a){
-		Template template=null;
-		NodeMetadata nodeInstance = null;
 		Node node= a.getType();
-		String groupName="cloudml-instance";
-		if(!node.getGroupName().equals(""))
-			groupName=node.getGroupName();
+		ComputeMetadata cm= getNodeByName(a.getName());
+		/* UPDATE THE MODEL */
+		if(cm != null){
+			a.setPublicAddress(getNodeById(cm.getId()).getPublicAddresses().iterator().next());
+			a.setId(cm.getId());
+		}else{
+			Template template=null;
+			NodeMetadata nodeInstance = null;
+			String groupName="cloudml-instance";
+			if(!node.getGroupName().equals(""))
+				groupName=node.getGroupName();
 
-		TemplateBuilder templateBuilder = compute.templateBuilder();
+			TemplateBuilder templateBuilder = compute.templateBuilder();
 
-		if(!node.getImageId().equals("")){
-			templateBuilder.imageId(node.getImageId());
-		}
+			if(!node.getImageId().equals("")){
+				templateBuilder.imageId(node.getImageId());
+			}
 
-		journal.log(Level.INFO, ">> Provisioning a node ...");
+			journal.log(Level.INFO, ">> Provisioning a node ...");
 
-		if (node.getMinRam() > 0)
-			templateBuilder.minRam(node.getMinRam());
-		if (node.getMinCore() > 0)
-			templateBuilder.minCores(node.getMinCore());
-		if (!node.getLocation().equals(""))
-			templateBuilder.locationId(node.getLocation());
-		if (!node.getOS().equals(""))
-			templateBuilder.imageDescriptionMatches(node.getOS());
-		else templateBuilder.osFamily(OsFamily.UBUNTU);
-		templateBuilder.os64Bit(node.getIs64os());
+			if (node.getMinRam() > 0)
+				templateBuilder.minRam(node.getMinRam());
+			if (node.getMinCore() > 0)
+				templateBuilder.minCores(node.getMinCore());
+			if (!node.getLocation().equals(""))
+				templateBuilder.locationId(node.getLocation());
+			if (!node.getOS().equals(""))
+				templateBuilder.imageDescriptionMatches(node.getOS());
+			else templateBuilder.osFamily(OsFamily.UBUNTU);
+			templateBuilder.os64Bit(node.getIs64os());
 
-		/*if(node.getMinDisk() > 0 && provider.equals("aws-ec2")){
+			/*if(node.getMinDisk() > 0 && provider.equals("aws-ec2")){
     		Hardware hw=findHardwareByDisk(node.getMinDisk());
     		templateBuilder.hardwareId(hw.getId());
     	}*/
 
-		template = templateBuilder.build();
-		journal.log(Level.INFO, ">> node type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
-		a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
-		a.getProperties().add(new Property("location", template.getLocation().getId()));
+			template = templateBuilder.build();
+			journal.log(Level.INFO, ">> node type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
+			a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
+			a.getProperties().add(new Property("location", template.getLocation().getId()));
 
-		if(provider.equals("aws-ec2")){
-			template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", node.getMinDisk(), true);
-			template.getOptions().as(EC2TemplateOptions.class).securityGroups(node.getSecurityGroup());
-			template.getOptions().as(EC2TemplateOptions.class).keyPair(node.getSshKey());
-			template.getOptions().as(EC2TemplateOptions.class).userMetadata("Name", a.getName());
-			template.getOptions().as(EC2TemplateOptions.class).overrideLoginUser(a.getName());
+			if(provider.equals("aws-ec2")){
+				template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", node.getMinDisk(), true);
+				template.getOptions().as(EC2TemplateOptions.class).securityGroups(node.getSecurityGroup());
+				template.getOptions().as(EC2TemplateOptions.class).keyPair(node.getSshKey());
+				template.getOptions().as(EC2TemplateOptions.class).userMetadata("Name", a.getName());
+				template.getOptions().as(EC2TemplateOptions.class).overrideLoginUser(a.getName());
+			}
+
+			template.getOptions().blockUntilRunning(true);
+
+			try {
+				Set<? extends NodeMetadata> nodes = compute.createNodesInGroup(groupName, 1, template);
+				nodeInstance = nodes.iterator().next();
+
+				journal.log(Level.INFO, ">> Running node: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() + 
+						" on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
+
+			} catch (RunNodesException e) {
+				e.printStackTrace();
+			}	
+
+			a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
+			a.setId(nodeInstance.getId());
+
 		}
-
-		template.getOptions().blockUntilRunning(true);
-
-		try {
-			Set<? extends NodeMetadata> nodes = compute.createNodesInGroup(groupName, 1, template);
-			nodeInstance = nodes.iterator().next();
-
-			journal.log(Level.INFO, ">> Running node: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() + 
-					" on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
-
-		} catch (RunNodesException e) {
-			e.printStackTrace();
-		}	
-
-		a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
-		a.setId(nodeInstance.getId());
-
 	}
 
 	/**

@@ -54,7 +54,7 @@ public class SSHConnector {
 
 			Session session = jsch.getSession(user, host, 22);
 			session.setConfig(config);
-			session.connect(30000);
+			session.connect(0);
 
 			Channel channel = session.openChannel("exec");
 			ChannelExec channelExec=((ChannelExec)channel);

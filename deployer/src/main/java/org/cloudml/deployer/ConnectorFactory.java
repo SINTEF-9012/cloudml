@@ -22,17 +22,22 @@
  */
 package org.cloudml.deployer;
 
-import org.cloudml.core.NodeInstance;
-import org.jclouds.compute.domain.NodeMetadata;
+import java.net.MalformedURLException;
 
-public interface Connector {
-	
-	public void execCommand(String id, String command, String login, String key);
-	
-	public void createInstance(NodeInstance a);
-	
-	public void destroyNode(String id);
-	
-	public void closeConnection();
+import org.cloudml.core.Provider;
 
+public class ConnectorFactory {
+	
+	public static Connector createConnector(Provider p){
+		try {
+			if(p.getName().equals("aws-ec2"))
+				return new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd()); 
+			if(p.getName().equals("flexiant"))
+				return new FlexiantConnector(p.getProperty("endPoint"), p.getLogin(), p.getPasswd());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+
+		throw new IllegalArgumentException("No such connector");
+	}
 }

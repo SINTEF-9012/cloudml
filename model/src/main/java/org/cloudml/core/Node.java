@@ -163,12 +163,7 @@ public class Node extends WithProperties {
 	}
 
 	public void setSshKey(String sshKey) {
-		try {
-			this.sshKey = FileUtils.readFileToString(new File(sshKey));
-		} catch (IOException ex) {
-			//Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-			this.sshKey = sshKey;//if we cannot access the file, we assume the key is directly passed
-		}
+		this.sshKey = sshKey;//if we cannot access the file, we assume the key is directly passed
 	} 
 
 	public void setSecurityGroup(String securityGroup) {
@@ -180,11 +175,7 @@ public class Node extends WithProperties {
 	}
 
 	public void setPrivateKey(String privateKey) {
-		try {
-			this.privateKey=FileUtils.readFileToString(new File(privateKey));
-		} catch (IOException e) {
-			this.privateKey = privateKey;
-		}
+		this.privateKey = privateKey;
 	}
 
 	public void setIs64os(Boolean is64os) {

@@ -23,16 +23,13 @@
 package org.cloudml.deployer;
 
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cloudml.core.*;
-import org.jclouds.compute.RunScriptOnNodesException;
-import org.jclouds.compute.domain.ComputeMetadata;
-import org.jclouds.compute.domain.NodeMetadata;
 
 /*
  * The deployment Engine
@@ -42,13 +39,15 @@ import org.jclouds.compute.domain.NodeMetadata;
 public class CloudAppDeployer {
 
 	private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
-	
+
 	ArrayList<ArtefactInstance> alreadyDeployed=new ArrayList<ArtefactInstance>();
 	ArrayList<ArtefactInstance> alreadyStarted=new ArrayList<ArtefactInstance>();
 
 	private DeploymentModel currentModel;
 
-	public CloudAppDeployer(){}
+	public CloudAppDeployer(){
+		System.setProperty ("jsse.enableSNIExtension", "false");
+	}
 
 
 	/**
@@ -61,7 +60,7 @@ public class CloudAppDeployer {
 		if(currentModel == null){
 			journal.log(Level.INFO, ">> First deployment...");
 			this.currentModel=targetModel;
-			
+
 			// Provisioning nodes
 			provisioning(targetModel.getNodeInstances());
 
@@ -102,7 +101,7 @@ public class CloudAppDeployer {
 		currentModel.getArtefactInstances().removeAll(diff.getRemovedArtefacts());
 		currentModel.getBindingInstances().removeAll(diff.getRemovedBindings());
 		currentModel.getNodeInstances().removeAll(diff.getRemovedNodes());
-		
+
 		currentModel.getArtefactInstances().addAll(diff.getAddedArtefacts());
 		currentModel.getBindingInstances().addAll(diff.getAddedBindings());
 		currentModel.getNodeInstances().addAll(diff.getAddedNodes());
@@ -111,8 +110,9 @@ public class CloudAppDeployer {
 	/**
 	 * Prepare the artefacts before their start. Retrieves their resources, builds their PaaS and installs them
 	 * @param dm a deployment model
+	 * @throws MalformedURLException 
 	 */
-	private void prepareArtefacts(List<ArtefactInstance> artefacts, List<BindingInstance> bindings){
+	private void prepareArtefacts(List<ArtefactInstance> artefacts, List<BindingInstance> bindings) {
 		for(ArtefactInstance x : artefacts){
 			prepareAnArtefact(x, artefacts, bindings);
 		}
@@ -122,13 +122,17 @@ public class CloudAppDeployer {
 	 * Prepare an artefact before it starts. Retrieves its resources, builds its PaaS and installs it
 	 * @param x an ArtefactInstance
 	 * @param dm the deployment model used to build the artefact's PaaS
+	 * @throws MalformedURLException 
 	 */
-	private void prepareAnArtefact(ArtefactInstance x, List<ArtefactInstance> artefacts, List<BindingInstance> bindings){
-		JCloudsConnector jc;
+	private void prepareAnArtefact(ArtefactInstance x, List<ArtefactInstance> artefacts, List<BindingInstance> bindings) {
+		Connector jc;
 		if(!alreadyDeployed.contains(x) && (x.getDestination() != null)){
 			NodeInstance ownerNode = x.getDestination();
 			Node n=ownerNode.getType();
-			jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+
+			jc=ConnectorFactory.createConnector(n.getProvider());
+
+			//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 			jc.execCommand(ownerNode.getId(), x.getType().getResource().getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
 			alreadyDeployed.add(x);
 
@@ -143,13 +147,15 @@ public class CloudAppDeployer {
 	/**
 	 * Build the paas of an artefact instance
 	 * @param x An artefactInstance
+	 * @throws MalformedURLException 
 	 */
-	private void buildPaas(ArtefactInstance x, List<BindingInstance> bindings){
+	private void buildPaas(ArtefactInstance x, List<BindingInstance> bindings) {
 		NodeInstance ownerNode = x.getDestination();
 		Node n=ownerNode.getType();
 
-		JCloudsConnector jc;
-		jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+		Connector jc;
+		jc=ConnectorFactory.createConnector(n.getProvider());
+		//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
 
 		for(BindingInstance bi : bindings){
@@ -174,19 +180,21 @@ public class CloudAppDeployer {
 
 	}
 
-	
+
 
 	/**
 	 * Configure and start SaaS artefacts
 	 * @param dm a deployment model
+	 * @throws MalformedURLException 
 	 */
-	private void configureSaas(List<ArtefactInstance> artefacts){
-		JCloudsConnector jc;
+	private void configureSaas(List<ArtefactInstance> artefacts) {
+		Connector jc;
 		for(ArtefactInstance x : artefacts){
 			if(!alreadyStarted.contains(x)){
 				NodeInstance ownerNode = x.getDestination();
 				Node n=ownerNode.getType();
-				jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+				jc=ConnectorFactory.createConnector(n.getProvider());
+				//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
 				String configurationCommand=x.getType().getResource().getConfigurationResourceCommand();
 				String startCommand= x.getType().getResource().getStartResourceCommand();
@@ -206,7 +214,7 @@ public class CloudAppDeployer {
 	 * @param configurationCommand the command to configure the artefact, parameters are: IP IPDest portDest
 	 * @param startCommand the command to start the artefact
 	 */
-	private void configureAndStart(JCloudsConnector jc, Node n, NodeInstance ni, String configurationCommand, String startCommand){
+	private void configureAndStart(Connector jc, Node n, NodeInstance ni, String configurationCommand, String startCommand){
 		if(!configurationCommand.equals(""))
 			jc.execCommand(ni.getId(), configurationCommand,"ubuntu",n.getPrivateKey());
 		if(!startCommand.equals(""))
@@ -230,15 +238,9 @@ public class CloudAppDeployer {
 	 */
 	private void provisionANode(NodeInstance n){
 		Provider p=n.getType().getProvider();
-		JCloudsConnector jc=new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
-		ComputeMetadata cm= jc.getNodeByName(n.getName());
-		/* UPDATE THE MODEL */
-		if(cm == null){
-			jc.createInstance(n);
-		}else{
-			n.setPublicAddress(jc.getNodeById(cm.getId()).getPublicAddresses().iterator().next());
-			n.setId(cm.getId());
-		}
+		Connector jc=ConnectorFactory.createConnector(p);
+		//JCloudsConnector jc=new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
+		jc.createInstance(n);
 		jc.closeConnection();
 	}
 
@@ -246,8 +248,9 @@ public class CloudAppDeployer {
 	/**
 	 * Configure Artefacts according to the bindings
 	 * @param dm a deployment model
+	 * @throws MalformedURLException 
 	 */
-	private void configureWithBindings(List<BindingInstance> bindings){
+	private void configureWithBindings(List<BindingInstance> bindings) {
 		//Configure on the basis of the bindings
 		//parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
 		for(BindingInstance bi : bindings){
@@ -278,13 +281,15 @@ public class CloudAppDeployer {
 	 * @param destinationIpAddress IP of the server
 	 * @param ipAddress IP of the client
 	 * @param destinationPortNumber port of the server
+	 * @throws MalformedURLException 
 	 */
-	private void configureWithIP(Resource r, ArtefactPortInstance i, String destinationIpAddress, String ipAddress, int destinationPortNumber){
-		JCloudsConnector jc;
+	private void configureWithIP(Resource r, ArtefactPortInstance i, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
+		Connector jc;
 		if(r != null){
 			NodeInstance ownerNode = i.getOwner().getDestination();
 			Node n=ownerNode.getType();
-			jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+			jc=ConnectorFactory.createConnector(n.getProvider());
+			//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 			jc.execCommand(ownerNode.getId(), r.getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
 			String configurationCommand=r.getConfigurationResourceCommand()+" \""+ipAddress+"\" \""+destinationIpAddress+"\" "+destinationPortNumber;
 			configureAndStart(jc, n, ownerNode, configurationCommand, "");
@@ -295,8 +300,9 @@ public class CloudAppDeployer {
 	/**
 	 * Terminates a set of nodes
 	 * @param nodes A list of nodeInstances
+	 * @throws MalformedURLException 
 	 */
-	private void teminateNodes(List<NodeInstance> nodes){
+	private void teminateNodes(List<NodeInstance> nodes) {
 		for(NodeInstance n: nodes){
 			terminateNode(n);
 		}
@@ -305,10 +311,12 @@ public class CloudAppDeployer {
 	/**
 	 * Terminate a node
 	 * @param n A node instance to be terminated
+	 * @throws MalformedURLException 
 	 */
 	private void terminateNode(NodeInstance n){
 		Provider p=n.getType().getProvider();
-		JCloudsConnector jc=new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
+		Connector jc=ConnectorFactory.createConnector(p);
+		//JCloudsConnector jc=new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
 		jc.destroyNode(n.getId());
 		jc.closeConnection();
 	}
@@ -316,8 +324,9 @@ public class CloudAppDeployer {
 	/**
 	 * Stop a list of artefacts
 	 * @param artefacts a list of ArtefactInstance
+	 * @throws MalformedURLException 
 	 */
-	private void stopArtefacts(List<ArtefactInstance> artefacts){
+	private void stopArtefacts(List<ArtefactInstance> artefacts) {
 		for(ArtefactInstance a : artefacts){
 			stopArtefact(a);
 		}
@@ -326,30 +335,32 @@ public class CloudAppDeployer {
 	/**
 	 * Stop a specific artefact instance
 	 * @param a An Artefact Instance
+	 * @throws MalformedURLException 
 	 */
-	private void stopArtefact(ArtefactInstance a){
+	private void stopArtefact(ArtefactInstance a) {
 		NodeInstance ownerNode = a.getDestination();
 		Node n=ownerNode.getType();
-		JCloudsConnector jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+		Connector jc=ConnectorFactory.createConnector(n.getProvider());
+		//JCloudsConnector jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 		String stopCommand=a.getType().getResource().getStopResourceCommand();
 		jc.execCommand(ownerNode.getId(), stopCommand,"ubuntu",n.getPrivateKey());
 		jc.closeConnection();
 	}
 
-	private void unconfigureBindings(List<BindingInstance> bindings){
+	private void unconfigureBindings(List<BindingInstance> bindings) {
 		for(BindingInstance b:bindings){
 			unconfigureBinding(b);
 		}
 	}
 
-	private void unconfigureBinding(BindingInstance b){
+	private void unconfigureBinding(BindingInstance b) {
 		if(b.getClient().getType().getIsRemote()){
 			ClientPortInstance client=b.getClient();
 			ServerPortInstance server=b.getServer();
 
 			Resource clientResource=b.getType().getClientResource();
 			Resource serverResource=b.getType().getServerResource();
-			
+
 			//client resources
 			unconfigureWithIP(clientResource,client);
 
@@ -357,13 +368,14 @@ public class CloudAppDeployer {
 			unconfigureWithIP(serverResource,server);
 		}
 	}
-	
-	private void unconfigureWithIP(Resource r, ArtefactPortInstance i){
-		JCloudsConnector jc;
+
+	private void unconfigureWithIP(Resource r, ArtefactPortInstance i) {
+		Connector jc;
 		if(r != null){
 			NodeInstance ownerNode = i.getOwner().getDestination();
 			Node n=ownerNode.getType();
-			jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+			jc=ConnectorFactory.createConnector(n.getProvider());
+			//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 			jc.execCommand(ownerNode.getId(), r.getStopResourceCommand(),"ubuntu",n.getPrivateKey());;
 			jc.closeConnection();
 		}
