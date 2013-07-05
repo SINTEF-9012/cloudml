@@ -193,12 +193,12 @@ public class FlexiantConnector implements Connector{
 				
 				Job startJob=service.changeServerStatus(a.getId(), ServerStatus.RUNNING, true, null, null);
 				service.waitForJob(startJob.getResourceUUID(), false);
+				Thread.sleep(120000);
 			}
 			a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
 			Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
 			a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
 			journal.log(Level.INFO, ">> Running node: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
-			wait(600); //bad hack let start the OS ...
 		} catch (ExtilityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

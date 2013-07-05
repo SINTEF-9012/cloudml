@@ -43,6 +43,11 @@ public class SSHConnector {
 		this.host=host;
 	}
 
+	
+	/**
+	 * Execute a command through SSH on the host specified in the object instance
+	 * @param command
+	 */
 	public void execCommandSsh(String command){
 		journal.log(Level.INFO, ">> executing command...");
 		journal.log(Level.INFO, ">> "+ command);

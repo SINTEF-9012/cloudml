@@ -27,18 +27,24 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
+import java.util.Collection;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -49,13 +55,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 
 import org.apache.commons.collections15.Transformer;
-import org.cloudml.core.Artefact;
-import org.cloudml.core.ArtefactInstance;
-import org.cloudml.core.ArtefactPortInstance;
-import org.cloudml.core.BindingInstance;
-import org.cloudml.core.DeploymentModel;
-import org.cloudml.core.Node;
-import org.cloudml.core.NodeInstance;
+import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.*;
+import org.cloudml.deployer.CloudAppDeployer;
+
 
 
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
@@ -65,6 +68,7 @@ import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.EditingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingControl;
 import edu.uci.ics.jung.visualization.decorators.PickableEdgePaintTransformer;
@@ -74,6 +78,12 @@ import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 
@@ -82,26 +92,28 @@ public class DrawnIconVertexDemo implements Serializable {
 	/**
 	 * the graph
 	 */
-	Graph<Vertex,String> graph;
+	Graph<Vertex,Edge> graph;
 
 	/**
 	 * the visual component and renderer for the graph
 	 */
-	VisualizationViewer<Vertex,String> vv;
+	VisualizationViewer<Vertex,Edge> vv;
 	
 	private CPIMTable cpimTable=null;
 	private CPSMTable cpsmTable=null;
 	private JTable properties;
 	private JTable runtimeProperties;
+	private JList nodeTypes;
 	
-	private transient DeploymentModel dm;
+	private transient DeploymentModel dmodel;
+	private CloudAppDeployer cad;
 
-	public DrawnIconVertexDemo(DeploymentModel dm) {
-
-		this.dm=dm;
+	public DrawnIconVertexDemo(final DeploymentModel dm) {
+		cad=new CloudAppDeployer();
+		this.dmodel=dm;
 		// create a simple graph for the demo
-		graph = new DirectedSparseGraph<Vertex,String>();
-		vv =  new VisualizationViewer<Vertex,String>(new SpringLayout2<Vertex,String>(graph));
+		graph = new DirectedSparseGraph<Vertex,Edge>();
+		vv =  new VisualizationViewer<Vertex,Edge>(new SpringLayout2<Vertex,Edge>(graph));
 
 		vv.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.cyan));
 		vv.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.cyan));
@@ -151,9 +163,19 @@ public class DrawnIconVertexDemo implements Serializable {
 					}};
 			}});
 
+        Transformer<Edge,Paint> edgeColor = new Transformer<Edge,Paint>() {
+			public Paint transform(Edge e) {
+				if(e.getType().equals("mandatory")) 
+					return Color.RED;
+				if(vv.getPickedEdgeState().isPicked(e))
+					return Color.lightGray;
+				return Color.BLACK;
+			}
+        };
+		
 		vv.getRenderContext().setVertexFillPaintTransformer(new PickableVertexPaintTransformer<Vertex>(vv.getPickedVertexState(), Color.white,  Color.yellow));
-		vv.getRenderContext().setEdgeDrawPaintTransformer(new PickableEdgePaintTransformer<String>(vv.getPickedEdgeState(), Color.black, Color.lightGray));
-
+		vv.getRenderContext().setEdgeDrawPaintTransformer(edgeColor);
+		
 		vv.setBackground(Color.white);
 
 		// add my listener for ToolTips
@@ -181,13 +203,47 @@ public class DrawnIconVertexDemo implements Serializable {
 		JButton save = new JButton("save");
 		save.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showDialog(frame, "save");
+				File result = fc.getSelectedFile();
+				JsonCodec codec=new JsonCodec();
+				OutputStream streamResult;
+				try {
+					streamResult = new FileOutputStream(result);
+					codec.save(dm, streamResult);
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		JButton saveImage = new JButton("save as image");
+		saveImage.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showDialog(frame, "save");
+				File result = fc.getSelectedFile();
+				JsonCodec codec=new JsonCodec();
+				writeJPEGImage(result);
 			}
 		});
 		JButton load = new JButton("load");
 		load.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//TODO
+				JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showDialog(frame, "load");
+				File result = fc.getSelectedFile();
+				JsonCodec codec=new JsonCodec();
+				try {
+					InputStream stream = new FileInputStream(result);
+					DeploymentModel model = (DeploymentModel)codec.load(stream);
+					dmodel=model;
+					drawFromDeploymentModel();
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
 			}
 		});
 		JButton minus = new JButton("-");
@@ -196,13 +252,12 @@ public class DrawnIconVertexDemo implements Serializable {
 				scaler.scale(vv, 1/1.1f, vv.getCenter());
 			}
 		});
-
-		JPanel controls = new JPanel();
-		controls.add(plus);
-		controls.add(minus);
-		controls.add(save);
-		controls.add(((DefaultModalGraphMouse<Integer,Number>) gm).getModeComboBox());
-		content.add(controls, BorderLayout.SOUTH);
+		JButton deploy=new JButton("Deploy!");
+		deploy.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cad.deploy(dmodel);
+			}
+		});
 		
 		
 		//right panel
@@ -244,15 +299,9 @@ public class DrawnIconVertexDemo implements Serializable {
 		//Left panel
 		JPanel selection=new JPanel();
 		JLabel nodes=new JLabel();
-		nodes.setText("Types of nodes");
-		JLabel artefacts=new JLabel();
-		artefacts.setText("Types of artefacts");
-		selection.setLayout(new BoxLayout(selection, BoxLayout.PAGE_AXIS));
-		DefaultListModel lm=new DefaultListModel();
-		for(Node n:dm.getNodeTypes().values()){
-			lm.addElement(n.getName());
-		}
-		JList nodeTypes=new JList(lm);
+		nodes.setText("Types");
+		selection.setLayout(new BoxLayout(selection, BoxLayout.PAGE_AXIS));		
+		nodeTypes=new JList(fillList());
 		nodeTypes.setLayoutOrientation(JList.VERTICAL);
 		nodeTypes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		nodeTypes.setVisibleRowCount(10);
@@ -260,27 +309,55 @@ public class DrawnIconVertexDemo implements Serializable {
 		types.setPreferredSize(new Dimension(150, 80));
 		selection.add(nodes);
 		selection.add(types);
-		
-		DefaultListModel lmArtefacts=new DefaultListModel();
-		for(Artefact n:dm.getArtefactTypes().values()){
-			lmArtefacts.addElement(n.getName());
-		}
-		JList artefactsTypes=new JList(lmArtefacts);
-		nodeTypes.setLayoutOrientation(JList.VERTICAL);
-		nodeTypes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		nodeTypes.setVisibleRowCount(10);
-		JScrollPane  arteTypes = new JScrollPane (artefactsTypes);
-		types.setPreferredSize(new Dimension(150, 80));
-		selection.add(artefacts);
-		selection.add(arteTypes);
-		
+
+
 		content.add(selection,BorderLayout.WEST);
+
+		((DefaultModalGraphMouse<Integer,Number>) gm).add(new MyEditingGraphMousePlugin(0, vv, graph, nodeTypes,dm));
+		JPanel controls = new JPanel();
+		controls.add(plus);
+		controls.add(minus);
+		controls.add(save);
+		controls.add(saveImage);
+		controls.add(load);
+		controls.add(deploy);
+		controls.add(((DefaultModalGraphMouse<Integer,Number>) gm).getModeComboBox());
+		content.add(controls, BorderLayout.SOUTH);
 		
 		frame.pack();
 		frame.setVisible(true);
 	}
 
 
+	public DefaultListModel fillList(){
+		DefaultListModel lm=new DefaultListModel();
+		for(Node n:dmodel.getNodeTypes().values()){
+			lm.addElement(n.getName());
+		}
+		for(Artefact n:dmodel.getArtefactTypes().values()){
+			lm.addElement(n.getName());
+		}
+		for(Binding b:dmodel.getBindingTypes().values()){
+			lm.addElement(b.getName());
+		}
+		return lm;
+	}
+
+	public void drawFromDeploymentModel(){
+		Collection<Edge> c = new ArrayList<Edge>(graph.getEdges());
+		for(Edge e : c)
+			graph.removeEdge(e);
+		Collection<Vertex> vs =new ArrayList<Vertex>(graph.getVertices());
+		for(Vertex ve : vs)
+			graph.removeVertex(ve);
+		
+		ArrayList<Vertex> v = drawVerticesFromDeploymentModel(dmodel);
+		drawEdgesFromDeploymentModel(dmodel, v);
+		nodeTypes.removeAll();
+		nodeTypes.setModel(fillList());
+	}
+	
+	
 	public ArrayList<Vertex> drawVerticesFromDeploymentModel(DeploymentModel dm){
 		ArrayList<Vertex> V=new ArrayList<Vertex>();
 		for(NodeInstance n : dm.getNodeInstances()){
@@ -309,20 +386,18 @@ public class DrawnIconVertexDemo implements Serializable {
 			if(x.getDestination() != null){
 				Vertex v1=findVertex(x.getName(), v);
 				Vertex v2=findVertex(x.getDestination().getName(), v);
-				createEdge(v1.getName()+" on "+v2.getName(), v1, v2);
-			}
-			if(x.getRequired().size() > 0){
-				for(ArtefactPortInstance p : x.getRequired()){
-					Vertex v1=findVertex(x.getName(), v);
-					Vertex v2=findVertex(p.getOwner().getName(), v);
-					createEdge(v1.getName()+" requires "+v2.getName(), v1, v2);
-				}
+				Edge e=new Edge("dest"+x.getName(), "destination");
+				createEdge(e, v1, v2);
 			}
 		}
 		for(BindingInstance bi: dm.getBindingInstances()){
 			Vertex v1=findVertex(bi.getClient().getOwner().getName(), v);
 			Vertex v2=findVertex(bi.getServer().getOwner().getName(), v);
-			createEdge(v1.getName()+" requires "+v2.getName(), v1, v2);
+			Edge e;
+			if(bi.getClient().getType().getIsOptional())
+				e=new Edge(bi.getName(), "optional",bi);
+			else e=new Edge(bi.getName(), "mandatory",bi);
+			createEdge(e, v1, v2);
 		}
 	}
 
@@ -335,12 +410,28 @@ public class DrawnIconVertexDemo implements Serializable {
 		return null;
 	}
 
-	private void createEdge(String annotation, Vertex v1, Vertex v2){
-		graph.addEdge(annotation, v1, v2);
+	private void createEdge(Edge e, Vertex v1, Vertex v2){
+		graph.addEdge(e, v1, v2);
 	}
 
 	private void createVertice(Vertex v) {
 		graph.addVertex(v);
+	}
+	
+	public void writeJPEGImage(File file) {
+		int width = vv.getWidth();
+		int height = vv.getHeight();
+
+		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D graphics = bi.createGraphics();
+		vv.paint(graphics);
+		graphics.dispose();
+
+		try {
+			ImageIO.write(bi, "jpeg", file);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
