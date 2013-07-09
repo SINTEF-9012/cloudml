@@ -122,6 +122,7 @@ MouseListener, MouseMotionListener {
 					for(Artefact a:dm.getArtefactTypes().values()){
 						if(a.getName().equals(nodeType)){
 							ArtefactInstance ai= a.instanciates(nodeType+cnt);
+							ai.setDestination(selectDestination());
 							dm.getArtefactInstances().add(ai);
 							for(ClientPort c:a.getRequired())
 								ai.getRequired().add(new ClientPortInstance(c.getName()+cnt, c, ai));
@@ -130,6 +131,14 @@ MouseListener, MouseMotionListener {
 							Vertex v=new Vertex(nodeType+cnt, "soft", ai);
 							graph.addVertex(v);
 							vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
+							Edge newEdge=new Edge(ai.getDestination().getName()+cnt, "destination");
+							Vertex dest=null;
+							for(Vertex vDest : graph.getVertices()){
+								if(vDest.getName().equals(ai.getDestination().getName())){
+									graph.addEdge(newEdge, v, vDest);
+									break;
+								}
+							}
 						}
 					}
 					for(Node a:dm.getNodeTypes().values()){
@@ -226,6 +235,24 @@ MouseListener, MouseMotionListener {
 			return ((ClientPortInstance)comboBox.getSelectedItem()).getOwner().getName();
 		}
 		return "";
+	}
+	
+	public NodeInstance selectDestination(){
+		JPanel panel = new JPanel();
+		panel.add(new JLabel("Please make a selection:"));
+		DefaultComboBoxModel model = new DefaultComboBoxModel();
+		for(NodeInstance n:dm.getNodeInstances()){
+			model.addElement(n);
+		}
+		JComboBox comboBox = new JComboBox(model);
+		panel.add(comboBox);
+		
+		int result = JOptionPane.showConfirmDialog(null, panel, "Destination", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		switch (result) {
+		case JOptionPane.OK_OPTION:
+			return ((NodeInstance)comboBox.getSelectedItem());
+		}
+		return null;
 	}
 	
 	public String selectServerPortInstance(BindingInstance bi){
