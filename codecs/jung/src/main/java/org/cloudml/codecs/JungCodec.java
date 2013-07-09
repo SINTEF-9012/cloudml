@@ -32,8 +32,8 @@ import java.util.logging.Logger;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.CloudMLElement;
 import org.cloudml.core.DeploymentModel;
-import org.clouml.ui.graph.DrawnIconVertexDemo;
-import org.clouml.ui.graph.Vertex;
+import org.cloudml.ui.graph.DrawnIconVertexDemo;
+import org.cloudml.ui.graph.Vertex;
 
 /*
  * An coder to visualize CloudML models

@@ -7,7 +7,7 @@
 		<groupId>org.cloudml</groupId>
 		<version>1.3-SNAPSHOT</version>
 	</parent>
-	
+
 	<artifactId>ui.graph</artifactId>
 	<name>CloudML :: UI :: GraphVisu</name>
 	<description>A GUI to visualize CloudML deployment model</description>
@@ -33,8 +33,6 @@
 			<artifactId>deployer</artifactId>
 			<version>1.3-SNAPSHOT</version>
 			<exclusions>
-				<!-- bouncy castle is a provider, so it must be signed and used as-is. 
-					we are doing this to prevent its classes from getting into the jar-with-dependencies -->
 				<exclusion>
 					<groupId>org.jclouds.provider</groupId>
 					<artifactId>aws-ec2</artifactId>
@@ -86,13 +84,7 @@
 			<artifactId>jung-algorithms</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-		
-		<!-- <dependency>
-			<groupId>org.jclouds.provider</groupId>
-			<artifactId>aws-ec2</artifactId>
-			<version>1.5.4</version>
-		</dependency> -->
-		
+
 	</dependencies>
 
 	<build>
@@ -103,7 +95,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.clouml.ui.graph.GraphVisu</mainClass>
+							<mainClass>org.cloudml.ui.graph.GraphVisu</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Class-Path>aws-ec2-1.5.4.jar</Class-Path>

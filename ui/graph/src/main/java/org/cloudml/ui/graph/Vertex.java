@@ -20,27 +20,25 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.clouml.ui.graph;
+package org.cloudml.ui.graph;
 
 import java.io.Serializable;
 
-import org.cloudml.core.BindingInstance;
 import org.cloudml.core.WithProperties;
 
-public class Edge implements Serializable {
-	
+public class Vertex implements Serializable {
 	private String name;
 	private String type;
-	private BindingInstance instance;
-	
-	private Edge(){}
-    
-	public Edge(String name,String type){
+	private WithProperties instance;
+
+    private Vertex(){}
+        
+	public Vertex(String name,String type){
 		this.name=name;
 		this.type=type;
 	}
 	
-	public Edge(String name,String type, BindingInstance instance){
+	public Vertex(String name,String type, WithProperties instance){
 		this.name=name;
 		this.type=type;
 		this.instance=instance;
@@ -54,12 +52,11 @@ public class Edge implements Serializable {
 		return type;
 	}
 	
-	public void setInstance(BindingInstance instance){
+	public void setInstance(WithProperties instance){
 		this.instance=instance;
 	}
 	
 	public WithProperties getInstance(){
 		return instance;
 	}
-
 }

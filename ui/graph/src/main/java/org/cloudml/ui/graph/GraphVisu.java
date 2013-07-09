@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.clouml.ui.graph;
+package org.cloudml.ui.graph;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,6 +42,9 @@ public class GraphVisu {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		InputStream is= GraphVisu.class.getClassLoader().getResourceAsStream("logging.properties");
+		
+		
 		// TODO Auto-generated method stub
 		try {
 			stream = new FileInputStream(new File(args[0]));

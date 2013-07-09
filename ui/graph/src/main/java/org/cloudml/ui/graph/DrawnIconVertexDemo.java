@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.clouml.ui.graph;
+package org.cloudml.ui.graph;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;

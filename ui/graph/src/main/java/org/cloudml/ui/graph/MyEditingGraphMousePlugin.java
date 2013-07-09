@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.clouml.ui.graph;
+package org.cloudml.ui.graph;
 
 
 import java.awt.Cursor;
@@ -44,10 +44,12 @@ import org.cloudml.core.Artefact;
 import org.cloudml.core.ArtefactInstance;
 import org.cloudml.core.Binding;
 import org.cloudml.core.BindingInstance;
+import org.cloudml.core.ClientPort;
 import org.cloudml.core.ClientPortInstance;
 import org.cloudml.core.DeploymentModel;
 import org.cloudml.core.Node;
 import org.cloudml.core.NodeInstance;
+import org.cloudml.core.ServerPort;
 import org.cloudml.core.ServerPortInstance;
 
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
@@ -119,8 +121,12 @@ MouseListener, MouseMotionListener {
 				if(vertex == null){
 					for(Artefact a:dm.getArtefactTypes().values()){
 						if(a.getName().equals(nodeType)){
-							ArtefactInstance ai= new ArtefactInstance(nodeType+cnt, a);
+							ArtefactInstance ai= a.instanciates(nodeType+cnt);
 							dm.getArtefactInstances().add(ai);
+							for(ClientPort c:a.getRequired())
+								ai.getRequired().add(new ClientPortInstance(c.getName()+cnt, c, ai));
+							for(ServerPort s:a.getProvided())
+								ai.getProvided().add(new ServerPortInstance(s.getName()+cnt, s, ai));
 							Vertex v=new Vertex(nodeType+cnt, "soft", ai);
 							graph.addVertex(v);
 							vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
@@ -128,7 +134,7 @@ MouseListener, MouseMotionListener {
 					}
 					for(Node a:dm.getNodeTypes().values()){
 						if(a.getName().equals(nodeType)){
-							NodeInstance ai= new NodeInstance(nodeType+cnt, a);
+							NodeInstance ai= a.instanciates(nodeType+cnt);
 							dm.getNodeInstances().add(ai);
 							Vertex v=new Vertex(nodeType+cnt, "node", ai);
 							graph.addVertex(v);
@@ -144,10 +150,22 @@ MouseListener, MouseMotionListener {
 								edge=new Edge(nodeType+cnt, "optional");
 							else edge=new Edge(nodeType+cnt, "mandatory");
 
-							selectClientPortInstance(bi);
-							selectServerPortInstance(bi);
-							//set the ports
-							//graph.addEdge(edge, v1, v2);
+							String client=selectClientPortInstance(bi);
+							String server=selectServerPortInstance(bi);
+
+							Vertex v1=null,v2=null;
+							if(!client.equals("")){
+								for(Vertex v:graph.getVertices())
+									if(v.getName().equals(client))
+										v1=v;
+							}
+							if(!server.equals("")){
+								for(Vertex v:graph.getVertices())
+									if(v.getName().equals(server))
+										v2=v;
+							}
+							if(v1 != null && v2 != null)
+								graph.addEdge(edge, v1, v2);
 						}
 					}
 				}
@@ -185,12 +203,14 @@ MouseListener, MouseMotionListener {
 
 	}    
 	
-	public void selectClientPortInstance(BindingInstance bi){
+	public String selectClientPortInstance(BindingInstance bi){
 		JPanel panel = new JPanel();
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		for(ArtefactInstance ai:dm.getArtefactInstances()){
+			System.out.println(ai.getRequired());
 			for(ClientPortInstance ci:ai.getRequired()){
+				System.out.println(bi.getType().getClient() + " #### "+ ci.getType());
 				if(ci.getType().equals(bi.getType().getClient())){
 					model.addElement(ci);
 				}
@@ -203,11 +223,12 @@ MouseListener, MouseMotionListener {
 		switch (result) {
 		case JOptionPane.OK_OPTION:
 			bi.setClient((ClientPortInstance)comboBox.getSelectedItem());
-			break;
+			return ((ClientPortInstance)comboBox.getSelectedItem()).getOwner().getName();
 		}
+		return "";
 	}
 	
-	public void selectServerPortInstance(BindingInstance bi){
+	public String selectServerPortInstance(BindingInstance bi){
 		JPanel panel = new JPanel();
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
@@ -225,8 +246,9 @@ MouseListener, MouseMotionListener {
 		switch (result) {
 		case JOptionPane.OK_OPTION:
 			bi.setServer((ServerPortInstance)comboBox.getSelectedItem());
-			break;
+			return ((ServerPortInstance)comboBox.getSelectedItem()).getOwner().getName();
 		}
+		return "";
 	}
 
 }
