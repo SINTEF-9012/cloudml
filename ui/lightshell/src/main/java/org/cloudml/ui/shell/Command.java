@@ -24,9 +24,6 @@ package org.cloudml.ui.shell;
 
 import java.util.Map;
 import java.util.Set;
-import org.cloudml.facade.CloudML;
-import org.cloudml.facade.Factory;
-import org.cloudml.facade.commands.CommandFactory;
 
 /**
  * An abstract class that shell-commands must extend.
@@ -53,14 +50,8 @@ import org.cloudml.facade.commands.CommandFactory;
  * @see     lightshell.Shell
  */
 public abstract class Command {
-    protected final CommandFactory factory;
-    protected final CloudML cloudML;
+    
     private String arg;
-
-    public Command(CloudML cloudML) {
-        this.cloudML = cloudML;
-        factory = new CommandFactory(cloudML);
-    }
     
     /**
      * Return a {@code String} containing results from executing code. The code

@@ -26,10 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +41,6 @@ import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
 import org.jclouds.compute.domain.ComputeMetadata;
-import org.jclouds.compute.domain.NodeMetadata;
 
 /**
  * This class implements an easier access to typical CloudML features, such as
@@ -61,17 +57,16 @@ import org.jclouds.compute.domain.NodeMetadata;
  */
 class Facade implements CloudML, CommandHandler {
 
-    private final ArrayList<EventHandler> handlers;
+    private final List<EventHandler> handlers = Collections.synchronizedList(new ArrayList<EventHandler>());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private DeploymentModel deploy;
     private boolean stopOnTimeout = false;
-    private CloudAppDeployer deployer;
-    
+    private final CloudAppDeployer deployer;
+
     /**
      * Default constructor
      */
     public Facade() {
-        this.handlers = new ArrayList<EventHandler>();
         XmiCodec.init();
         JsonCodec.init();
         this.deployer = new CloudAppDeployer();
@@ -142,9 +137,7 @@ class Facade implements CloudML, CommandHandler {
     }
 
     public void register(EventHandler handler) {
-        synchronized (handlers) {
-            this.handlers.add(handler);
-        }
+        this.handlers.add(handler);
     }
 
     /**
@@ -154,10 +147,8 @@ class Facade implements CloudML, CommandHandler {
      * @param event the event to dispatch
      */
     private void dispatch(Event event) {
-        synchronized (handlers) {
-            for (EventHandler handler : handlers) {
-                event.accept(handler);
-            }
+        for (EventHandler handler : handlers) {
+            event.accept(handler);
         }
     }
 
@@ -463,12 +454,14 @@ class Facade implements CloudML, CommandHandler {
             return null;
         }
     }
-    
+
     /**
-     * Formats and emits a proper error message if the model located at 'pathName' 
-     * cannot be handled by 'command' (i.e. if canHandle(pathName) == null)
+     * Formats and emits a proper error message if the model located at
+     * 'pathName' cannot be handled by 'command' (i.e. if canHandle(pathName) ==
+     * null)
+     *
      * @param pathName
-     * @param command 
+     * @param command
      */
     private void wrongFileFormat(String pathName, CloudMlCommand command) {
         final StringBuilder ext = new StringBuilder();

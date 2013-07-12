@@ -66,11 +66,7 @@ public abstract class Event {
      * @return true if the command triggered this event
      */
     public boolean wasTriggeredBy(CloudMlCommand command) {
-        boolean result = false;
-        if (this.trigger != null) {
-            result = this.trigger == command;
-        }
-        return result;
+        return (this.trigger != null) ? (this.trigger == command) : false;
     }
     
     /**
