@@ -23,12 +23,18 @@
 
 package org.cloudml.ui.shell;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import org.cloudml.facade.CloudML;
 import org.cloudml.facade.Factory;
+import org.cloudml.facade.commands.CommandFactory;
 import org.cloudml.facade.events.*;
+import org.cloudml.ui.shell.commands.Deploy;
 import org.cloudml.ui.shell.commands.Exit;
 import org.cloudml.ui.shell.commands.Load;
 
@@ -39,14 +45,19 @@ import org.cloudml.ui.shell.commands.Load;
  * @version 0.1.0
  * @see     lightshell.Command
  */
-public class Shell implements EventHandler{
+public class Shell extends AbstractEventHandler {
     private String welcome;
     private String prompt = "CHANGEPROMPT";
     private Set<Command> cmds = new HashSet<Command>();
 
 
-    private CloudML cloudML = Factory.getInstance().getCloudML();
+    public static final CloudML cloudML = Factory.getInstance().getCloudML();
+    public static final CommandFactory factory = new CommandFactory(cloudML);
 
+    public Shell() {
+        cloudML.register(this);
+    }
+    
     /**
      * Cut a {@code String} into several strings. Each of the new strings will
      * all be shorter than {@code maxlen} characters. Newlines in the output
@@ -198,6 +209,7 @@ public class Shell implements EventHandler{
     public void run() {
         Scanner s = new Scanner(System.in);
         System.out.println(welcome);
+        
         for (;;) {
             System.out.format("%s> ", prompt);
             String strcmd = s.nextLine();
@@ -326,45 +338,71 @@ public class Shell implements EventHandler{
     }
     
     public static void main(String[] args) {
-        Shell shell = new Shell();
-        shell.cloudML.register(shell);
+        final Shell shell = new Shell();
+
+        try {
+            LogManager.getLogManager().readConfiguration(shell.getClass().getResourceAsStream("/logging.properties"));
+        } catch (IOException ex) {
+            System.out.println(ex.getLocalizedMessage());
+            Logger.getLogger(Shell.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            System.out.println(ex.getLocalizedMessage());
+            Logger.getLogger(Shell.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
         
-        Command exit = new Exit(shell.cloudML);
-        Command load = new Load(shell.cloudML);
+        //Shell.cloudML.register(shell);
+        
+        final Command exit = new Exit();
+        final Command load = new Load();
+        final Command deploy = new Deploy();
         
         shell.addCommand(exit);
         shell.addCommand(load);
+        shell.addCommand(deploy);
         
-        shell.setWelcomeMsg("CloudML shell.");
+        shell.setWelcomeMsg(
+                "e88~-_  888                         888      e    e      888\n" +     
+                "d888   \\ 888  e88~-_  888  888  e88~\\888     d8b  d8b     888\n" +    
+                "d888     888 d888   i 888  888 d888  888    d888bdY88b    888\n" +    
+                "8888     888 8888   | 888  888 8888  888   / Y88Y Y888b   888\n" +    
+                "Y888   / 888 Y888   ' 888  888 Y888  888  /   YY   Y888b  888\n" +    
+                " \"88_-~  888  \"88_-~  \"88_-888  \"88_/888 /          Y888b 888____\n"
+        );
         shell.setPrompt("CloudML");
         shell.run();
     }
 
     public void handle(Event event) {
-        System.out.println("Event> " + event);
+        printMessage("Event>", event.toString());
     }
 
     public void handle(Message message) {
-        System.out.println("Message> " + message);
+        printMessage("Message>", message.toString());
     }
 
     public void handle(Data data) {
-        System.out.println("Data> " + data);
+        printMessage("Data>", data.toString());
     }
 
     public void handle(ArtefactTypeList types) {
-        System.out.println("List> " + types);
+        printMessage("List>", types.toString());
     }
 
     public void handle(ArtefactTypeData type) {
-        System.out.println("Data> " + type);
+        printMessage("Data>", type.toString());
     }
 
     public void handle(ArtefactInstanceList artefacts) {
-        System.out.println("List> " + artefacts);
+        printMessage("List>", artefacts.toString());
     }
 
     public void handle(ArtefactInstanceData artefact) {
-        System.out.println("Data> " + artefact);
+        printMessage("Data>", artefact.toString());
+    }
+    
+    private void printMessage(String prompt, String message) {
+        System.out.println(prompt + " " + message);
+        System.out.format("%s> ", getPrompt());
     }
 }

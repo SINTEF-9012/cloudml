@@ -1,139 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>ui</artifactId>
-		<groupId>org.cloudml</groupId>
-		<version>1.4-SNAPSHOT</version>
-	</parent>
-	<artifactId>ui.lightshell</artifactId>
-	<name>CloudML :: UI :: LightShell</name>
-	<description>A lighter shell (without any Scala) to ease the use of CloudML</description>
-	<inceptionYear>2012</inceptionYear>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>ui</artifactId>
+        <groupId>org.cloudml</groupId>
+        <version>1.4-SNAPSHOT</version>
+    </parent>
+    <artifactId>ui.lightshell</artifactId>
+    <name>CloudML :: UI :: LightShell</name>
+    <description>A lighter shell (without any Scala) to ease the use of CloudML</description>
+    <inceptionYear>2012</inceptionYear>
 
-	<properties>
-		<maven.compiler.source>1.5</maven.compiler.source>
-		<maven.compiler.target>1.5</maven.compiler.target>
-		<encoding>UTF-8</encoding>
-	</properties>
+    <properties>
+        <maven.compiler.source>1.5</maven.compiler.source>
+        <maven.compiler.target>1.5</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+    </properties>
 
 
-	<dependencies>
+    <dependencies>
 		<!-- Dependencies towards other CloudML modules -->
-		<dependency>
-			<groupId>org.cloudml</groupId>
-			<artifactId>facade</artifactId>
-			<version>1.4-SNAPSHOT</version>
-			<exclusions>
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>facade</artifactId>
+            <version>1.4-SNAPSHOT</version>
+            <exclusions>
 				<!-- bouncy castle is a provider, so it must be signed and used as-is. 
 					we are doing this to prevent its classes from getting into the jar-with-dependencies -->
-				<exclusion>
-					<groupId>org.jclouds.provider</groupId>
-					<artifactId>aws-ec2</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+                <exclusion>
+                    <groupId>org.jclouds.provider</groupId>
+                    <artifactId>aws-ec2</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-		<dependency>
-			<groupId>org.cloudml</groupId>
-			<artifactId>codecs.json</artifactId>
-			<version>1.4-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>codecs.json</artifactId>
+            <version>1.4-SNAPSHOT</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.cloudml</groupId>
-			<artifactId>codecs.xmi</artifactId>
-			<version>1.4-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>codecs.xmi</artifactId>
+            <version>1.4-SNAPSHOT</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.jclouds.provider</groupId>
-			<artifactId>aws-ec2</artifactId>
-			<version>1.5.4</version>
-		</dependency>
+        <dependency>
+            <groupId>org.jclouds.provider</groupId>
+            <artifactId>aws-ec2</artifactId>
+            <version>1.5.4</version>
+        </dependency>
+        <!--<dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.0.1</version>
+        </dependency>-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-		<!-- Use to load the configuration file of the CloudML Shell -->
-		<!--<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.12</version>
-		</dependency>-->
-
-
-		<!-- Library used to handle pseudo terminal based features (history and 
-			completion) -->
-		<!--<dependency>
-			<groupId>jline</groupId>
-			<artifactId>jline</artifactId>
-			<version>2.9</version>
-		</dependency>-->
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>org.cloudml.ui.shell.Runner</mainClass>
-						</manifest>
-						<manifestEntries>
-							<Class-Path>aws-ec2-1.5.4.jar</Class-Path>
-						</manifestEntries>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<finalName>cloudml-lightshell</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.3</version>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.jclouds.provider</groupId>
-									<artifactId>aws-ec2</artifactId>
-									<version>1.5.4</version>
-									<overWrite>false</overWrite>
-									<destFileName>aws-ec2-1.5.4.jar</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}</outputDirectory>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.cloudml.ui.shell.Runner</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>aws-ec2-1.5.4.jar</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <finalName>cloudml-lightshell</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jclouds.provider</groupId>
+                                    <artifactId>aws-ec2</artifactId>
+                                    <version>1.5.4</version>
+                                    <overWrite>false</overWrite>
+                                    <destFileName>aws-ec2-1.5.4.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 			<!-- <plugin> <groupId>com.pyx4me</groupId> <artifactId>proguard-maven-plugin</artifactId> 
 				<executions> <execution> <phase>package</phase> <goals> <goal>proguard</goal> 
 				</goals> </execution> </executions> <configuration> <injar>${project.build.finalName}-jar-with-dependencies.jar</injar> 
@@ -145,6 +133,6 @@
 				*Annotation*</option> <option>-keepattributes **</option> </options> <libs> 
 				<lib>${java.lib.location}</lib> </libs> </configuration> </plugin> -->
 
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 </project>

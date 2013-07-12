@@ -25,17 +25,12 @@ package org.cloudml.ui.shell.commands;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.cloudml.facade.CloudML;
 import org.cloudml.facade.commands.CloudMlCommand;
-import org.cloudml.facade.commands.CommandHandler;
 import org.cloudml.ui.shell.Command;
+import org.cloudml.ui.shell.Shell;
 
 public class Load extends Command {
 
-    public Load(CloudML cloudml) {
-        super(cloudml);
-    }
-    
     protected String getName() {
         return "load";
     }
@@ -49,42 +44,47 @@ public class Load extends Command {
     }
 
     public String execute() {
-        final StringTokenizer tokenizer = new StringTokenizer(getArg(), " ");
-        boolean deploy = false;
+        if (getArg() != null) {
+            System.out.println("args = " + getArg());
+            final StringTokenizer tokenizer = new StringTokenizer(getArg(), " ");
+            boolean deploy = false;
 
-        int i = 0;
-        String token = tokenizer.nextToken();
-        while (tokenizer.hasMoreElements() && i < 3) {
-            if (i == 0) {
-                if ("credentials".equals(token)) {
-                    deploy = false;
-                } else if ("deployment".equals(token)) {
-                    deploy = true;
-                } else {
-                    Logger.getLogger(Load.class.getName()).log(Level.WARNING, "\"credentials\" or \"deployment\" expected but \"" + token + "\" was found");
-                    break;
+            int i = 0;   
+            //String token = tokenizer.nextToken();
+            while (tokenizer.hasMoreElements() && i < 3) {
+                String token = tokenizer.nextToken();
+                if (i == 0) {
+                    if ("credentials".equals(token)) {
+                        deploy = false;
+                    } else if ("deployment".equals(token)) {
+                        deploy = true;
+                    } else {
+                        Logger.getLogger(Load.class.getName()).log(Level.WARNING, "\"credentials\" or \"deployment\" expected but \"" + token + "\" was found");
+                        return getUsage();
+                    }
                 }
-            }
 
-            if (i == 1) {
-                if ("from".equals(token)) {
-                } else {
-                    Logger.getLogger(Load.class.getName()).log(Level.WARNING, "\"from\" expected but \"" + token + "\" was found");
-                    break;
+                if (i == 1) {
+                    if (! "from".equals(token)) {
+                        Logger.getLogger(Load.class.getName()).log(Level.WARNING, "\"from\" expected but \"" + token + "\" was found");
+                        return getUsage();
+                    }
                 }
-            }
 
-            if (i == 2) {
-                CloudMlCommand cmd;
-                if (deploy)
-                    cmd = factory.createLoadDeployment(token);
-                else
-                    cmd = factory.createLoadCredentials(token);
-                    cmd.execute((CommandHandler)cloudML);
+                if (i == 2) {
+                    CloudMlCommand cmd;
+                    if (deploy) {
+                        cmd = Shell.factory.createLoadDeployment(token);
+                    } else {
+                        cmd = Shell.factory.createLoadCredentials(token);
+                    }
+                    Shell.cloudML.fireAndForget(cmd);
+                    return null;
+                }
+                i++;
             }
-            token = tokenizer.nextToken();
-            i++;
-        }
-        return null;
+            return null;
+        } 
+        return getUsage();
     }
 }

@@ -24,29 +24,27 @@ package org.cloudml.ui.shell.commands;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.ui.shell.Command;
+import org.cloudml.ui.shell.Shell;
 
-public class Exit extends Command {
+public class Deploy extends Command {
     
     @SuppressWarnings("serial")
     protected Set<String> getAliases() {
-        return new HashSet<String>() {
-            { 
-                add("q");
-                add("quit");
-            }
-        };
+        return new HashSet<String>();
     }
-    protected String getName() { return "exit"; }
+    protected String getName() { return "deploy"; }
     
     protected String getShortHelp() {
-        return "exit the program (q and quit do the same)";
+        return "deploy the current model";
     }
     
-    protected String getUsage() { return "exit"; }
+    protected String getUsage() { return "deploy"; }
     
     public String execute() {
-        System.exit(0);
-        return null;
+         CloudMlCommand cmd = Shell.factory.createDeploy();
+         Shell.cloudML.fireAndForget(cmd);
+         return null;
     }
 }
