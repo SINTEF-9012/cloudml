@@ -77,7 +77,6 @@ public class FlexiantConnector implements Connector{
 				login);
 		portBP.getRequestContext().put(BindingProvider.PASSWORD_PROPERTY,
 				secretKey);
-		
 	}
 
 	public List<Object> getListServer(){

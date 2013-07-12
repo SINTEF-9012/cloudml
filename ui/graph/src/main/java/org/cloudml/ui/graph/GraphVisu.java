@@ -42,18 +42,7 @@ public class GraphVisu {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		InputStream is= GraphVisu.class.getClassLoader().getResourceAsStream("logging.properties");
-		
-		
-		// TODO Auto-generated method stub
-		try {
-			stream = new FileInputStream(new File(args[0]));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		JsonCodec codec=new JsonCodec();
-		DeploymentModel model = (DeploymentModel) codec.load(stream);
+		DeploymentModel model=new DeploymentModel();
 		DrawnIconVertexDemo g = new DrawnIconVertexDemo(model);
 		ArrayList<Vertex> v = g.drawVerticesFromDeploymentModel(model);
 		g.drawEdgesFromDeploymentModel(model, v);
