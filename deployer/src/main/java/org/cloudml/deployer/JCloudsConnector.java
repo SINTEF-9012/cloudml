@@ -227,6 +227,16 @@ public class JCloudsConnector implements Connector{
 	}
 
 	/**
+	 * Update the runtime metadata of a node if already deployed
+	 * @param a description of a node
+	 */
+	public void updateNodeMetadata(NodeInstance a){
+		ComputeMetadata cm= getNodeByName(a.getName());
+		a.setPublicAddress(getNodeById(cm.getId()).getPublicAddresses().iterator().next());
+		a.setId(cm.getId());
+	}
+	
+	/**
 	 * Provision a node
 	 * @param a description of the node to be created
 	 * @return
@@ -236,8 +246,7 @@ public class JCloudsConnector implements Connector{
 		ComputeMetadata cm= getNodeByName(a.getName());
 		/* UPDATE THE MODEL */
 		if(cm != null){
-			a.setPublicAddress(getNodeById(cm.getId()).getPublicAddresses().iterator().next());
-			a.setId(cm.getId());
+			updateNodeMetadata(a);
 		}else{
 			Template template=null;
 			NodeMetadata nodeInstance = null;

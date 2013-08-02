@@ -35,4 +35,6 @@ public interface Connector {
 	
 	public void closeConnection();
 
+	public void updateNodeMetadata(NodeInstance a);
+	
 }

@@ -380,9 +380,16 @@ public class CloudAppDeployer {
 			jc.closeConnection();
 		}
 	}
-	
+
 	public void setCurrentModel(DeploymentModel current){
 		this.currentModel=current;
+		Connector jc;
+		for(NodeInstance n: currentModel.getNodeInstances()){
+			if(n.getPublicAddress().equals("")){
+				jc=ConnectorFactory.createConnector(n.getType().getProvider());
+				jc.updateNodeMetadata(n);
+			}
+		}
 	}
 
 }

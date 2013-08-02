@@ -383,4 +383,10 @@ public class FlexiantConnector implements Connector{
 
 	public void closeConnection() {}
 
+	public void updateNodeMetadata(NodeInstance a) { 
+		a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
+		Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
+		a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
+	}
+
 }
