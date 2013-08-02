@@ -380,5 +380,9 @@ public class CloudAppDeployer {
 			jc.closeConnection();
 		}
 	}
+	
+	public void setCurrentModel(DeploymentModel current){
+		this.currentModel=current;
+	}
 
 }
