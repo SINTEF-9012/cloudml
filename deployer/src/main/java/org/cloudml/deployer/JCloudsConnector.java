@@ -232,10 +232,12 @@ public class JCloudsConnector implements Connector{
 	 */
 	public void updateNodeMetadata(NodeInstance a){
 		ComputeMetadata cm= getNodeByName(a.getName());
-		a.setPublicAddress(getNodeById(cm.getId()).getPublicAddresses().iterator().next());
-		a.setId(cm.getId());
+		if(cm != null){
+			a.setPublicAddress(getNodeById(cm.getId()).getPublicAddresses().iterator().next());
+			a.setId(cm.getId());
+		}
 	}
-	
+
 	/**
 	 * Provision a node
 	 * @param a description of the node to be created
