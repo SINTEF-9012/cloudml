@@ -85,7 +85,7 @@ public class CloudAppDeployer {
 			configureWithBindings(diff.getAddedBindings());
 			configureSaas(diff.getAddedArtefacts());
 
-			//remove stuff
+			//removed stuff
 			unconfigureBindings(diff.getRemovedBindings());
 			stopArtefacts(diff.getRemovedArtefacts());
 			teminateNodes(diff.getRemovedNodes());
@@ -132,7 +132,6 @@ public class CloudAppDeployer {
 
 			jc=ConnectorFactory.createConnector(n.getProvider());
 
-			//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 			jc.execCommand(ownerNode.getId(), x.getType().getResource().getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
 			alreadyDeployed.add(x);
 
@@ -239,7 +238,6 @@ public class CloudAppDeployer {
 	private void provisionANode(NodeInstance n){
 		Provider p=n.getType().getProvider();
 		Connector jc=ConnectorFactory.createConnector(p);
-		//JCloudsConnector jc=new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
 		jc.createInstance(n);
 		jc.closeConnection();
 	}
@@ -316,7 +314,6 @@ public class CloudAppDeployer {
 	private void terminateNode(NodeInstance n){
 		Provider p=n.getType().getProvider();
 		Connector jc=ConnectorFactory.createConnector(p);
-		//JCloudsConnector jc=new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
 		jc.destroyNode(n.getId());
 		jc.closeConnection();
 	}
@@ -338,15 +335,21 @@ public class CloudAppDeployer {
 	 * @throws MalformedURLException 
 	 */
 	private void stopArtefact(ArtefactInstance a) {
-		NodeInstance ownerNode = a.getDestination();
-		Node n=ownerNode.getType();
-		Connector jc=ConnectorFactory.createConnector(n.getProvider());
-		//JCloudsConnector jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-		String stopCommand=a.getType().getResource().getStopResourceCommand();
-		jc.execCommand(ownerNode.getId(), stopCommand,"ubuntu",n.getPrivateKey());
-		jc.closeConnection();
+		NodeInstance ownerNode = findDestination(a);
+		if(ownerNode != null){
+			Node n=ownerNode.getType();
+			Connector jc=ConnectorFactory.createConnector(n.getProvider());
+			//JCloudsConnector jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+			String stopCommand=a.getType().getResource().getStopResourceCommand();
+			jc.execCommand(ownerNode.getId(), stopCommand,"ubuntu",n.getPrivateKey());
+			jc.closeConnection();
+		}
 	}
 
+	/**
+	 * After the deletion of a bindings the configuration parameters specific to this bindings are removed  
+	 * @param bindings list of bindings removed
+	 */
 	private void unconfigureBindings(List<BindingInstance> bindings) {
 		for(BindingInstance b:bindings){
 			unconfigureBinding(b);
@@ -381,6 +384,10 @@ public class CloudAppDeployer {
 		}
 	}
 
+	/**
+	 * To initialize a deployment Model as the model of the current system if the system is already running
+	 * @param current the current Deployment model
+	 */
 	public void setCurrentModel(DeploymentModel current){
 		this.currentModel=current;
 		Connector jc;
@@ -389,6 +396,25 @@ public class CloudAppDeployer {
 				jc=ConnectorFactory.createConnector(n.getType().getProvider());
 				jc.updateNodeMetadata(n);
 			}
+		}
+	}
+
+	/**
+	 * Find the destination of an artefactInstance
+	 * @param a an instance of artefact
+	 * @return a nodeInstance
+	 */
+	private NodeInstance findDestination(ArtefactInstance a){
+		if(a.getDestination() != null){
+			return a.getDestination();
+		}else{
+			for(BindingInstance b: currentModel.getBindingInstances()){
+				if(a.getRequired().contains(b.getClient()) && !b.getClient().getType().getIsRemote())
+					return b.getServer().getOwner().getDestination();
+				if(a.getProvided().contains(b.getServer()) && !b.getServer().getType().getIsRemote())
+					return b.getClient().getOwner().getDestination();
+			}
+			return null;
 		}
 	}
 
