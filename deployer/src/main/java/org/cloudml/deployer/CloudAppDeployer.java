@@ -339,7 +339,6 @@ public class CloudAppDeployer {
 		if(ownerNode != null){
 			Node n=ownerNode.getType();
 			Connector jc=ConnectorFactory.createConnector(n.getProvider());
-			//JCloudsConnector jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 			String stopCommand=a.getType().getResource().getStopResourceCommand();
 			jc.execCommand(ownerNode.getId(), stopCommand,"ubuntu",n.getPrivateKey());
 			jc.closeConnection();

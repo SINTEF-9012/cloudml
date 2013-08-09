@@ -192,7 +192,7 @@ public class FlexiantConnector implements Connector{
 				
 				Job startJob=service.changeServerStatus(a.getId(), ServerStatus.RUNNING, true, null, null);
 				service.waitForJob(startJob.getResourceUUID(), false);
-				Thread.sleep(120000);
+				Thread.sleep(90000);
 			}
 			a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
 			Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);

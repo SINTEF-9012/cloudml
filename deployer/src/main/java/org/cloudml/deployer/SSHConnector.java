@@ -21,6 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.deployer;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -30,9 +31,9 @@ import java.util.logging.Logger;
 import com.jcraft.jsch.*;
 
 public class SSHConnector {
-	
-	private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
-	
+
+	private static final Logger journal = Logger.getLogger(SSHConnector.class.getName());
+
 	String keyPath="";
 	String user="";
 	String host="";
@@ -40,10 +41,10 @@ public class SSHConnector {
 	public SSHConnector(String keyPath, String user, String host){
 		this.keyPath=keyPath;
 		this.user=user;
-		this.host=host;
+		this.host=host;		
 	}
 
-	
+
 	/**
 	 * Execute a command through SSH on the host specified in the object instance
 	 * @param command
@@ -65,23 +66,36 @@ public class SSHConnector {
 			ChannelExec channelExec=((ChannelExec)channel);
 			channelExec.setCommand(command);
 			channelExec.setErrStream(System.err);
+			channel.setInputStream(null);
+			channel.setExtOutputStream(null);
 
 			InputStream in;
 			in = channel.getInputStream();
+			InputStream extIn=channel.getExtInputStream();
 			channel.connect();
-			byte[] tmp=new byte[1024];
+			byte[] tmp=new byte[2048];
+			byte[] tmp2=new byte[2048];
 			while(true){
-				while(in.available()>0){
-					int i=in.read(tmp, 0, 1024);
-					if(i<0)break;
-					journal.log(Level.INFO, ">> "+ new String(tmp, 0, i));
+				while(in.available()>0 || extIn.available()>0){
+					if(in.available()>0){
+						int i=in.read(tmp, 0, 2048);
+						if(i<0)break;
+						journal.log(Level.INFO, ">> "+ new String(tmp, 0, i));
+					}
+					if(extIn.available()>0){
+						int i=extIn.read(tmp2, 0, 2048);
+						if(i<0)break;
+						journal.log(Level.INFO, ">> "+ new String(tmp2, 0, i));
+					}
 				}
 				if(channel.isClosed()){
 					journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
 					break;
 				}
-				try{Thread.sleep(1000);}catch(Exception ee){}
+				try{Thread.sleep(1000);}catch(Exception ee){ee.printStackTrace();}
 			}
+
+
 
 			channel.disconnect();
 			session.disconnect();
