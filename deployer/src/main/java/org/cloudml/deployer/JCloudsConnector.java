@@ -161,14 +161,22 @@ public class JCloudsConnector implements Connector{
 	 * @param key key to connect
 	 */
 	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key){
-		SshClient ssh = compute.getContext().getUtils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(new LoginCredentials(login, null, key, true)).build());
 		try {
-			ssh.connect();
-			ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
-		} finally {
-			if (ssh != null)
-				ssh.disconnect();
+			String contentKey=FileUtils.readFileToString(new File(key));
+			SshClient ssh = compute.getContext().getUtils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(new LoginCredentials(login, null, contentKey, true)).build());
+			try {
+				ssh.connect();
+				ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
+			} finally {
+				if (ssh != null)
+					ssh.disconnect();
+				journal.log(Level.INFO, ">> File uploaded!");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 	}
 
 

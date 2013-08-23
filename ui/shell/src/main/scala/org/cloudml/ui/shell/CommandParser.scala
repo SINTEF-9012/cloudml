@@ -48,7 +48,7 @@ object CommandParser extends RegexParsers {
     """\d+""".r ^^ { case text => Integer.parseInt(text) }
 
   def identifier: Parser[String] =
-    """[a-zA-Z0-9_$\.:]+""".r ^^ { case text => text }
+    """[a-zA-Z0-9_$\.\-:]+""".r ^^ { case text => text }
 
   // Does not permit white spaces in path 
   def file: Parser[String] =
