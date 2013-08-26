@@ -24,6 +24,7 @@ package org.cloudml.codecs;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.cloudml.core.*;
 
 /*
@@ -108,6 +109,12 @@ public class KMFBridge {
 
             Resource r = new Resource(ka.getResource().getName(), ka.getResource().getDeployingCommand(), ka.getResource().getRetrievingCommand(), ka.getResource().getConfigurationCommand(), ka.getResource().getStartCommand(), ka.getResource().getStopCommand());
 
+            Map<String, String> up = new HashMap<String, String>();
+            for (net.cloudml.core.UploadCommand kup : ka.getResource().getUploadCommand()) {
+                up.put(kup.getSource(), kup.getTarget());
+            }
+            r.setUploadCommand(up);    
+            
             a.setResource(r);
 
 
@@ -343,6 +350,14 @@ public class KMFBridge {
             kr.setConfigurationCommand(a.getResource().getConfigurationResourceCommand());
             kr.setStartCommand(a.getResource().getStartResourceCommand());
             kr.setStopCommand(a.getResource().getStopResourceCommand());
+            
+            for(Entry<String, String> up : a.getResource().getUploadCommand().entrySet()){
+                net.cloudml.core.UploadCommand kup = factory.createUploadCommand();
+                kup.setSource(up.getKey());
+                kup.setTarget(up.getValue());
+                kr.addUploadCommand(kup);
+            }
+            
             ka.setResource(kr);
 
             kDeploy.addArtefactTypes(ka);
