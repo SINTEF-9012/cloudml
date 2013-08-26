@@ -22,6 +22,7 @@
  */
 package org.cloudml.core;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class Resource extends WithProperties{
 	private String configurationResourceCommand="";
 	private String startResourceCommand="";
 	private String stopResourceCommand="";
-	private Map<String,String> uploadCommand=null;
+	private Map<String,String> uploadCommand=new HashMap<String, String>();
 	
 	
 	public Resource(){}
