@@ -37,4 +37,6 @@ public interface Connector {
 
 	public void updateNodeMetadata(NodeInstance a);
 	
+	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key);
+	
 }

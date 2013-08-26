@@ -389,4 +389,10 @@ public class FlexiantConnector implements Connector{
 		a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
 	}
 
+	public void uploadFile(String sourcePath, String destinationPath,
+			String nodeId, String login, String key) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

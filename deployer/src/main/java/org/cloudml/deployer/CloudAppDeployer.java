@@ -101,6 +101,8 @@ public class CloudAppDeployer {
 		currentModel.getArtefactInstances().removeAll(diff.getRemovedArtefacts());
 		currentModel.getBindingInstances().removeAll(diff.getRemovedBindings());
 		currentModel.getNodeInstances().removeAll(diff.getRemovedNodes());
+		alreadyDeployed.removeAll(diff.getRemovedArtefacts());
+		alreadyStarted.removeAll(diff.getRemovedArtefacts());
 
 		currentModel.getArtefactInstances().addAll(diff.getAddedArtefacts());
 		currentModel.getBindingInstances().addAll(diff.getAddedBindings());
@@ -131,6 +133,10 @@ public class CloudAppDeployer {
 			Node n=ownerNode.getType();
 
 			jc=ConnectorFactory.createConnector(n.getProvider());
+
+			for(String path : x.getType().getResource().getUploadCommand().keySet()){
+				jc.uploadFile(path, x.getType().getResource().getUploadCommand().get(path), ownerNode.getId(), "ubuntu", n.getPrivateKey());
+			}
 
 			jc.execCommand(ownerNode.getId(), x.getType().getResource().getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
 			alreadyDeployed.add(x);
