@@ -22,12 +22,16 @@
  */
 package org.cloudml.core;
 
+import java.util.List;
+import java.util.Map;
+
 public class Resource extends WithProperties{
 	private String deployingResourceCommand="";
 	private String retrievingResourceCommand="";
 	private String configurationResourceCommand="";
 	private String startResourceCommand="";
 	private String stopResourceCommand="";
+	private Map<String,String> uploadCommand=null;
 	
 	
 	public Resource(){}
@@ -70,6 +74,10 @@ public class Resource extends WithProperties{
 	public String getStopResourceCommand(){
 		return stopResourceCommand;
 	}
+	
+	public Map<String,String> getUploadCommand(){
+		return uploadCommand;
+	}
 
 	public void setDeployingCommand(String deployingCommand){
 		this.deployingResourceCommand=deployingCommand;
@@ -90,6 +98,11 @@ public class Resource extends WithProperties{
 	public void setStopCommand(String stopCommand){
 		this.stopResourceCommand=stopCommand;
 	}
+	
+	public void setUploadCommand(Map<String,String> paths){
+		this.uploadCommand=paths;
+	}
+	
 	
 	@Override
 	public String toString(){

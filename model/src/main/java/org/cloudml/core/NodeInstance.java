@@ -73,6 +73,7 @@ public class NodeInstance extends WithProperties {
         		"minDisk" + type.getMinDisk()+"\n"+
         		"OS" + type.getOS()+"\n"+
         		"location" + type.getLocation()+"\n"+
+        		"publicAdress" + getPublicAddress()+"\n"+
         		"groupName" + type.getGroupName();
     }
 
