@@ -40,6 +40,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.commons.collections15.Factory;
+import org.cloudml.codecs.Edge;
+import org.cloudml.codecs.Vertex;
 import org.cloudml.core.Artefact;
 import org.cloudml.core.ArtefactInstance;
 import org.cloudml.core.Binding;
@@ -61,17 +63,7 @@ import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
 
-/**
- * A plugin that can create vertices, undirected edges, and directed edges
- * using mouse gestures.
- * 
- * vertexSupport and edgeSupport member classes are responsible for actually
- * creating the new graph elements, and for repainting the view when changes
- * were made.
- * 
- * @author Tom Nelson
- *
- */
+
 public class MyEditingGraphMousePlugin extends AbstractGraphMousePlugin implements
 MouseListener, MouseMotionListener {
 

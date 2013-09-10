@@ -243,4 +243,15 @@ public class CommandFactory {
     public CloudMlCommand createLoadCredentials(final String pathToCredentials) {
         return new LoadCredentials(handler, pathToCredentials);
     }
+    
+    /**
+     * Load an existing local deployment model
+     *
+     * @param pathToModel the local path to the deployment model to load
+     *
+     * @see {@link org.cloudml.facade.commands.LoadDeployment}
+     */
+    public CloudMlCommand createSnapshot(final String pathToSnapshot) {
+        return new Snapshot(handler, pathToSnapshot);
+    }
 }

@@ -67,5 +67,6 @@ public interface CommandHandler {
     
     public void handle(StoreCredentials command);
     
+    public void handle(Snapshot command);
     
 }

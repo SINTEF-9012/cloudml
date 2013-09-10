@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.cloudml.codecs.Vertex;
 import org.cloudml.core.ArtefactInstance;
 import org.cloudml.core.NodeInstance;
 import org.cloudml.core.WithProperties;

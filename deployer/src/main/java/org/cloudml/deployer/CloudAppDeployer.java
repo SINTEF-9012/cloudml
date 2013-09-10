@@ -55,8 +55,8 @@ public class CloudAppDeployer {
 	 * @param dm a deployment model
 	 */
 	public void deploy(DeploymentModel targetModel){
-		alreadyDeployed=new ArrayList<ArtefactInstance>();
-		alreadyStarted=new ArrayList<ArtefactInstance>();
+		//alreadyDeployed=new ArrayList<ArtefactInstance>();
+		//alreadyStarted=new ArrayList<ArtefactInstance>();
 		if(currentModel == null){
 			journal.log(Level.INFO, ">> First deployment...");
 			this.currentModel=targetModel;

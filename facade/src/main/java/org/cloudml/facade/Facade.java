@@ -31,7 +31,9 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
+import org.cloudml.codecs.DrawnIconVertexDemo;
 import org.cloudml.codecs.JsonCodec;
+import org.cloudml.codecs.Vertex;
 import org.cloudml.codecs.XmiCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.*;
@@ -441,6 +443,15 @@ class Facade implements CloudML, CommandHandler {
 		//command.markAsCompleted();
 	}
 
+	
+	public void handle(Snapshot command) {
+		dispatch(new Message(command, Category.INFORMATION, "Generating snapshot ..."));
+		DrawnIconVertexDemo g = new DrawnIconVertexDemo(deploy);
+		ArrayList<Vertex> v =g.drawFromDeploymentModel();
+		File f=new File(command.getPathToSnapshot());
+		g.writeServerJPEGImage(f);
+	}
+	
 	/**
 	 *
 	 * @param pathName

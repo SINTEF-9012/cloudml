@@ -100,6 +100,7 @@ object CommandParser extends RegexParsers {
   "uninstall" ~> identifier ~ ("from" ~> identifier) ^^ { case s ~ p => factory.createUninstall(p, s) } |
   "instantiate" ~> identifier ~ ("as" ~> identifier) ^^ { case tn ~ an => factory.createInstantiate(tn, an) } |
   "destroy" ~> identifier  ^^ { case an => factory.createDestroy(an) } |
+  "snapshot" ~> file ^^ {case f => factory.createSnapshot(f)} |
   "load" ~> modelType ~ ("from" ~> file) ^^ { 
     case Deployment ~ p => factory.createLoadDeployment(p)
     case Credentials ~ p => factory.createLoadCredentials(p)

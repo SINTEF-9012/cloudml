@@ -46,7 +46,6 @@ import org.apache.commons.io.FileUtils;
 import org.cloudml.core.*;
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
-import org.jclouds.byon.suppliers.NodesParsedFromSupplier;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
@@ -64,11 +63,7 @@ import org.jclouds.domain.Location;
 import org.jclouds.domain.LocationBuilder;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ec2.compute.options.EC2TemplateOptions;
-import org.jclouds.gogrid.domain.LoadBalancer;
-import org.jclouds.gogrid.domain.LoadBalancer.Builder;
 import org.jclouds.io.Payloads;
-import org.jclouds.loadbalancer.LoadBalancerServiceContext;
-import org.jclouds.loadbalancer.domain.LoadBalancerMetadata;
 import org.jclouds.logging.config.NullLoggingModule;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
@@ -88,7 +83,6 @@ public class JCloudsConnector implements Connector{
 	private ComputeService compute;
 	private String provider;
 	private ComputeServiceContext computeContext;
-	private LoadBalancerServiceContext loadBalancerCtx;
 
 	public JCloudsConnector(String provider,String login,String secretKey){
 		journal.log(Level.INFO, ">> Connecting to "+provider+" ...");
@@ -153,6 +147,27 @@ public class JCloudsConnector implements Connector{
 	}
 
 	/**
+	 * Prepare the credential builder
+	 * @param login
+	 * @param key
+	 * @return
+	 */
+	private org.jclouds.domain.LoginCredentials.Builder initCredentials(String login, String key){
+		String contentKey;
+		org.jclouds.domain.LoginCredentials.Builder b= LoginCredentials.builder();
+		try {
+			contentKey = FileUtils.readFileToString(new File(key));
+			b.user(login);
+			b.noPassword();
+			b.privateKey(contentKey);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return b;
+	}
+	
+	/**
 	 * Upload a file on a selected node
 	 * @param sourcePath path to the file to be uploaded
 	 * @param destinationPath path to the file to be created
@@ -161,20 +176,15 @@ public class JCloudsConnector implements Connector{
 	 * @param key key to connect
 	 */
 	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key){
+		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+		SshClient ssh = compute.getContext().getUtils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(b.build()).build());
 		try {
-			String contentKey=FileUtils.readFileToString(new File(key));
-			SshClient ssh = compute.getContext().getUtils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(new LoginCredentials(login, null, contentKey, true)).build());
-			try {
-				ssh.connect();
-				ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
-			} finally {
-				if (ssh != null)
-					ssh.disconnect();
-				journal.log(Level.INFO, ">> File uploaded!");
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ssh.connect();
+			ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
+		} finally {
+			if (ssh != null)
+				ssh.disconnect();
+			journal.log(Level.INFO, ">> File uploaded!");
 		}
 
 	}
@@ -192,20 +202,16 @@ public class JCloudsConnector implements Connector{
 		journal.log(Level.INFO, ">> executing command...");
 		journal.log(Level.INFO, ">> "+ command);
 
-		try {
-			String contentKey=FileUtils.readFileToString(new File(key));
-			Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
-					runningInGroup(group), 
-					exec(command),
-					overrideLoginCredentials(new LoginCredentials(login, null, contentKey, false)) 
-					.runAsRoot(false) 
-					.wrapInInitScript(false));// run command directly
+		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+		Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
+				runningInGroup(group), 
+				exec(command),
+				overrideLoginCredentials(b.build()) 
+				.runAsRoot(false) 
+				.wrapInInitScript(false));// run command directly
 
-			for(Entry<? extends NodeMetadata, ExecResponse> r : responses.entrySet())
-				journal.log(Level.INFO, ">> "+r.getValue());
-		} catch (IOException e) {
-			journal.log(Level.SEVERE, ">> Unable to find key file - check your path!");
-		}
+		for(Entry<? extends NodeMetadata, ExecResponse> r : responses.entrySet())
+			journal.log(Level.INFO, ">> "+r.getValue());
 	}
 
 	/**
@@ -219,19 +225,15 @@ public class JCloudsConnector implements Connector{
 		journal.log(Level.INFO, ">> executing command...");
 		journal.log(Level.INFO, ">> "+ command);
 
-		try {
-			String contentKey=FileUtils.readFileToString(new File(key));
-			ExecResponse response = compute.runScriptOnNode(
-					id, 
-					exec(command),
-					overrideLoginCredentials(new LoginCredentials(login, null, contentKey, false)) 
-					.runAsRoot(false) 
-					.wrapInInitScript(false));// run command directly
+		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+		ExecResponse response = compute.runScriptOnNode(
+				id, 
+				exec(command),
+				overrideLoginCredentials(b.build()) 
+				.runAsRoot(false) 
+				.wrapInInitScript(false));// run command directly
 
-			journal.log(Level.INFO, ">> "+response.getOutput());
-		} catch (IOException e) {
-			journal.log(Level.SEVERE, ">> Unable to find key file - check your path!");
-		}
+		journal.log(Level.INFO, ">> "+response.getOutput());
 	}
 
 	/**

@@ -1,5 +1,6 @@
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>deployer</artifactId>
@@ -43,6 +44,7 @@
 
 	<dependencies>
 
+
 		<!-- CloudML module dependencies -->
 		<dependency>
 			<groupId>org.cloudml</groupId>
@@ -65,27 +67,29 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jclouds</groupId>
-			<artifactId>jclouds-all</artifactId>
-			<version>1.5.4</version>
+			<groupId>org.cloudml</groupId>
+			<artifactId>misc.autoscalar</artifactId>
+			<version>1.4-SNAPSHOT</version>
 		</dependency>
+		
+
 
 		<dependency>
 			<groupId>org.jclouds</groupId>
 			<artifactId>jclouds-allcompute</artifactId>
-			<version>1.5.4</version>
+			<version>1.6.0</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.jclouds.provider</groupId>
 			<artifactId>aws-ec2</artifactId>
-			<version>1.5.4</version>
+			<version>1.6.0</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.jclouds.driver</groupId>
 			<artifactId>jclouds-sshj</artifactId>
-			<version>1.5.4</version>
+			<version>1.6.0</version>
 		</dependency>
 
 		<dependency>

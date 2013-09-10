@@ -1,5 +1,6 @@
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>ui</artifactId>
@@ -13,8 +14,13 @@
 	<inceptionYear>2013</inceptionYear>
 
 	<dependencies>
-
 		<!-- CloudML module dependencies -->
+		<dependency>
+			<groupId>org.cloudml</groupId>
+			<artifactId>facade</artifactId>
+			<version>1.4-SNAPSHOT</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.cloudml</groupId>
 			<artifactId>model</artifactId>
@@ -29,14 +35,8 @@
 
 		<dependency>
 			<groupId>org.cloudml</groupId>
-			<artifactId>deployer</artifactId>
+			<artifactId>codecs.jung</artifactId>
 			<version>1.4-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jclouds.provider</groupId>
-					<artifactId>aws-ec2</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -60,89 +60,52 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>net.sf.jung</groupId>
-			<artifactId>jung-api</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.jung</groupId>
-			<artifactId>jung-graph-impl</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.jung</groupId>
-			<artifactId>jung-visualization</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.jung</groupId>
-			<artifactId>jung-algorithms</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>org.cloudml.ui.graph.GraphVisu</mainClass>
-						</manifest>
-						<manifestEntries>
-							<Class-Path>aws-ec2-1.5.4.jar</Class-Path>
-						</manifestEntries>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<finalName>cloudml-visu</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <version>2.4</version> 
+				<configuration> <archive> <manifest> <mainClass>org.cloudml.ui.graph.GraphVisu</mainClass> 
+				</manifest> <manifestEntries> <Class-Path>aws-ec2-1.6.0.jar</Class-Path> 
+				</manifestEntries> </archive> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
+				</descriptorRefs> <finalName>cloudml-visu</finalName> <appendAssemblyId>false</appendAssemblyId> 
+				</configuration> <executions> <execution> <id>make-assembly</id> <phase>package</phase> 
+				<goals> <goal>single</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>2.3</version>
 				<executions>
 					<execution>
-						<id>copy</id>
-						<phase>package</phase>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
 						<goals>
-							<goal>copy</goal>
+							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.jclouds.provider</groupId>
-									<artifactId>aws-ec2</artifactId>
-									<version>1.5.4</version>
-									<overWrite>false</overWrite>
-									<destFileName>aws-ec2-1.5.4.jar</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}</outputDirectory>
+							<!-- <artifactItems> <artifactItem> <groupId>org.jclouds.provider</groupId> 
+								<artifactId>aws-ec2</artifactId> <version>1.6.0</version> <overWrite>false</overWrite> 
+								<destFileName>aws-ec2-1.6.0.jar</destFileName> </artifactItem> </artifactItems> -->
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>org.cloudml.ui.graph.GraphVisu</mainClass>
+						</manifest>
+					</archive>
+					<finalName>cloudml-visu</finalName>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
