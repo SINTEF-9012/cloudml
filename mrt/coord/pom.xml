@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.cloudml</groupId>
+    <artifactId>mrt</artifactId>
+    <version>1.4-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+  
+  <groupId>org.cloudml</groupId>
+  <artifactId>mrt.coord</artifactId>
+  <version>1.4-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  
+  <name>CloudML :: MRT :: Coord</name>
+  
+  <url>http://maven.apache.org</url>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <dependencies>
+      
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.java-websocket</groupId>
+      <artifactId>Java-WebSocket</artifactId>
+      <version>1.3.0</version>
+    </dependency> 
+    
+    <dependency>
+      <groupId>org.cloudml</groupId>
+      <artifactId>model</artifactId>
+      <version>1.4-SNAPSHOT</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.cloudml</groupId>
+      <artifactId>codecs.json</artifactId>
+      <version>1.4-SNAPSHOT</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>commons-io</groupId>
+	  <artifactId>commons-io</artifactId>
+	  <version>2.4</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.eclipse.xtend</groupId>
+	  <artifactId>org.eclipse.xtend.lib</artifactId>
+	  <version>2.4.2</version>
+    </dependency>
+                    
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.13</version>
+    </dependency>   
+    
+    <dependency>
+	  <groupId>commons-jxpath</groupId>
+	  <artifactId>commons-jxpath</artifactId>
+	  <version>1.3</version>
+    </dependency>
+             
+  </dependencies>
+</project>

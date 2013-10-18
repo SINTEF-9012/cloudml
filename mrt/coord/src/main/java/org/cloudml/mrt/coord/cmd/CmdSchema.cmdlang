@@ -1,0 +1,40 @@
+package org.cloudml.mrt.coord.cmd.gen
+
+import org.cloudml.mrt.coord.cmd.abstracts.Modification
+import org.cloudml.mrt.coord.cmd.abstracts.XPath
+import org.cloudml.mrt.coord.cmd.abstracts.PropertyName
+import java.util.Map
+
+global-name CloudMLCmds
+
+instruction !getSnapshot{
+	full : boolean
+}
+
+instruction !commit{
+	enforce : boolean
+	modifications* : Modification
+}
+
+modification !add{
+	parent : XPath
+	property : PropertyName
+	value : String
+	object : XPath
+}
+
+modification !set{
+	parent : XPath
+	keyValues : Map<PropertyName, String>
+}
+
+modification !create{
+	parent : XPath
+	containing : PropertyName
+	keyValues : Map<PropertyName, String>
+}
+
+
+
+
+
