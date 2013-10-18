@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.cloudml.mrt.coord.cmd.abstracts.Listener;
 
@@ -27,11 +29,12 @@ public class NodificationCentre {
     
     public void addListener(Listener listener, PeerStub peer){
         listeners.put(listener, peer);
+        System.out.printf("----------Listener added: %s", listener);
     }
     
     public void checkAndNotify(){
-        int start = Collections.binarySearch(coordinator.changeList, Change.fakeChangeForSearch(lastCheck));
-        for(int i = start; i < coordinator.changeList.size();i ++){
+        int start = Math.abs(Collections.binarySearch(coordinator.changeList, Change.fakeChangeForSearch(lastCheck))+1);
+        for(int i = start; i < coordinator.changeList.size(); i ++){
             Change chng = coordinator.changeList.get(i);
             for(Map.Entry<Listener,PeerStub> entry : listeners.entrySet()){
                 if(entry.getKey().careFor(chng))
@@ -39,6 +42,7 @@ public class NodificationCentre {
             }
             
         }
+        lastCheck = System.currentTimeMillis();
     }
 
     void removeListener(Listener listener) {
@@ -59,5 +63,21 @@ public class NodificationCentre {
             this.property = property;
             
         }
+    }
+    
+    public void startListening(){
+        new Thread(){
+            @Override
+            public void run(){
+                while(true){
+                    try {
+                        sleep(500);
+                        checkAndNotify();
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(NodificationCentre.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }.start();
     }
 }

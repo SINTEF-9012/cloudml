@@ -1,6 +1,7 @@
 package org.cloudml.mrt.coord.cmd.gen;
 
 import java.util.List;
+import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.cloudml.mrt.coord.cmd.abstracts.Instruction;
 import org.cloudml.mrt.coord.cmd.abstracts.Modification;
 
@@ -11,9 +12,9 @@ public class Commit extends Instruction {
   public List<Modification> modifications;
   
   @Override
-  protected Object _execute(final Object context) {
+  protected Object _execute(final Object context, final List<Change> changes) {
     for (final Modification modi : this.modifications) {
-      modi.execute(context);
+      modi.execute(context, changes);
     }
     return null;
   }

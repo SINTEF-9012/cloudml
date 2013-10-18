@@ -42,7 +42,7 @@ public class App
             port = Integer.parseInt(args[0]);
         
         Coordinator coord = new Coordinator();
-        coord.startWsReception(port);
+        coord.start(port);
         
 //        TestClient client = new TestClient("c1", "ws://127.0.0.1:9000");
 //        client.connect();

@@ -14,6 +14,7 @@ public class Listener {
     
     public String id;
     public boolean cancel = false;
+    public Object root = null;
     
     public String getID(){
         return id;
@@ -25,6 +26,10 @@ public class Listener {
     
     protected boolean _careFor(Change change){
         return false;
+    }
+    
+    protected Object queryXPathFromRoot(XPath xpath){
+        return xpath.query(root);
     }
     
         @Override

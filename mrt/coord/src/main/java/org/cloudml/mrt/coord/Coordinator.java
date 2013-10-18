@@ -53,6 +53,11 @@ public class Coordinator {
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
     
+    public void start(int port){
+        startWsReception(port);
+        notificationCentre.coordinator = this;
+        notificationCentre.startListening();
+    }
     
     public void startWsReception(int port){
         wsReception = new CoordWsReception(port, this);
@@ -70,8 +75,10 @@ public class Coordinator {
         if(listener.cancel){
             notificationCentre.removeListener(listener);
         }
-        else
+        else{
+            listener.root = executor.repo.getRoot();
             notificationCentre.addListener(listener, from);
+        }
         return null;
     }
     

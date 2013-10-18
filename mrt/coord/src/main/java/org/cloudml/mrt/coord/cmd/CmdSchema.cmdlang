@@ -2,36 +2,145 @@ package org.cloudml.mrt.coord.cmd.gen
 
 import org.cloudml.mrt.coord.cmd.abstracts.Modification
 import org.cloudml.mrt.coord.cmd.abstracts.XPath
-import org.cloudml.mrt.coord.cmd.abstracts.PropertyName
 import java.util.Map
+import org.cloudml.mrt.coord.cmd.abstracts.Property
+import org.cloudml.mrt.coord.cmd.abstracts.Type
+import java.util.Collection
+import java.util.List
+import org.cloudml.mrt.coord.cmd.abstracts.Change
 
 global-name CloudMLCmds
 
 instruction !getSnapshot{
-	full : boolean
+	path : XPath
+	execute{
+		path.query(context)
+	}
 }
 
 instruction !commit{
 	enforce : boolean
 	modifications* : Modification
-}
-
-modification !add{
-	parent : XPath
-	property : PropertyName
-	value : String
-	object : XPath
+	execute{
+		for(modi : modifications)
+			modi.^execute(context,changes)
+		return null
+	}
 }
 
 modification !set{
 	parent : XPath
-	keyValues : Map<PropertyName, String>
+	keyValues : Map<Property, String>
+	execute{
+		val par = parent.query(context)
+		
+		keyValues.filter[property, value | 
+			CloudMLCmds::setProperty(par, property, value)
+		].forEach[ p,v |
+			changes += new Updated()[
+				parent = par
+				property = p.name
+				newValue = v
+			]
+		]
+		null
+	}
 }
 
 modification !create{
 	parent : XPath
-	containing : PropertyName
-	keyValues : Map<PropertyName, String>
+	containing : Property
+	type : Type
+	initializer : Map<Property, String>
+	keyValues : Map<Property, String>
+	execute{
+		val clz = type.obtainClass
+		val obj = clz.newInstance
+		
+		keyValues.forEach[property, value | property.updateValue(obj,value)]
+		val newPath = new XPath(parent.literal + "/" + containing.name)
+		val col = newPath.query(context)
+		val succeeded = switch(col){
+			Map : {
+				val name = keyValues.filter[p,v| p.name == 'name'].values.get(0)
+				col.put(name, obj) == null
+				//we suppose adding something into a map will always succeed
+			}
+			Collection :{
+				col.add(obj)  // whether the Collection is changed, see {@link Collection.add}
+			}
+		}
+		// if successfully added, need to record the change
+		if(succeeded){
+			changes.add(new Added()[
+				parent = this.parent.query(context)
+				property = this.containing.name
+				addedValue = obj
+			])
+		}
+		null
+	}
+}
+
+change !updated{
+	parent : Object
+	property : String
+	newValue : Object
+}
+
+change !added{
+	parent : Object
+	property : String
+	addedValue : Object
+}
+
+listener !listenToAdded{
+	parent : XPath
+	property : Property
+	carefor{
+		switch(^change){
+			Added: {
+				^change.parent == this.queryXPathFromRoot(this.parent)
+					 && ^change.property == this.property.name
+			}
+			default: false
+		}
+	}
+}
+
+
+
+helper setProperty(Object obj, Property p, String value): boolean{
+	val convert = [String type, String v| 
+			switch(type){
+				case "int": Integer.parseInt(v)
+				case "double": Double.parseDouble(v)
+				case "boolean": Boolean.parseBoolean(v)
+				default: null
+			}
+		]
+	val clazz = obj.class
+	val pubField = clazz.fields.findFirst[name == p.name]
+	if(pubField != null){
+		val original = pubField.get(obj);
+		val newValue = convert.apply(pubField.type.simpleName, value);
+		if(original != newValue){
+			pubField.set(obj, newValue);
+			return true
+		}
+		
+	}
+	else{
+		val setter = clazz.methods.findFirst[name == "set" + p.name.toFirstUpper]
+		val getter = clazz.methods.findFirst[name == "get" + p.name.toFirstUpper]
+		val newValue = convert.apply(setter?.parameterTypes.get(0).simpleName,value)
+		val original = getter.invoke(obj)
+		if(original != newValue){
+			setter?.invoke(obj, newValue);
+			return true
+		}
+	}
+	false
 }
 
 
