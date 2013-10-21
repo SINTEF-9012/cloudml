@@ -1,18 +1,15 @@
 package org.cloudml.mrt.coord.cmd.gen;
 
 import com.google.common.base.Objects;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.cloudml.mrt.coord.cmd.abstracts.Modification;
 import org.cloudml.mrt.coord.cmd.abstracts.Property;
 import org.cloudml.mrt.coord.cmd.abstracts.Type;
-import org.cloudml.mrt.coord.cmd.abstracts.XPath;
-import org.cloudml.mrt.coord.cmd.gen.Added;
-import org.eclipse.xtext.xbase.lib.Conversions;
+import org.cloudml.mrt.coord.cmd.gen.CloudMLCmds;
+import org.cloudml.mrt.coord.cmd.gen.Created;
 import org.eclipse.xtext.xbase.lib.Exceptions;
-import org.eclipse.xtext.xbase.lib.Functions.Function2;
 import org.eclipse.xtext.xbase.lib.MapExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
@@ -26,15 +23,11 @@ public class Create extends Modification {
     initializer.apply(this);
   }
   
-  public XPath parent;
-  
-  public Property containing;
-  
   public Type type;
   
-  public Map<Property,String> initializer;
+  public Map<Property,Object> initializer;
   
-  public Map<Property,String> keyValues;
+  public Map<Property,Object> keyValues;
   
   @Override
   protected Object _execute(final Object context, final List<Change> changes) {
@@ -42,64 +35,39 @@ public class Create extends Modification {
       Object _xblockexpression = null;
       {
         final Class<? extends Object> clz = this.type.obtainClass();
-        final Object obj = clz.newInstance();
-        final Procedure2<Property,String> _function = new Procedure2<Property,String>() {
-            public void apply(final Property property, final String value) {
-              property.updateValue(obj, value);
+        Object _xifexpression = null;
+        boolean _or = false;
+        boolean _equals = Objects.equal(this.initializer, null);
+        if (_equals) {
+          _or = true;
+        } else {
+          boolean _isEmpty = this.initializer.isEmpty();
+          _or = (_equals || _isEmpty);
+        }
+        if (_or) {
+          Object _newInstance = clz.newInstance();
+          _xifexpression = _newInstance;
+        } else {
+          _xifexpression = null;
+        }
+        final Object newObject = _xifexpression;
+        final Procedure2<Property,Object> _function = new Procedure2<Property,Object>() {
+            public void apply(final Property p, final Object v) {
+              CloudMLCmds.setProperty(newObject, p, v);
             }
           };
-        MapExtensions.<Property, String>forEach(this.keyValues, _function);
-        String _plus = (this.parent.literal + "/");
-        String _plus_1 = (_plus + this.containing.name);
-        XPath _xPath = new XPath(_plus_1);
-        final XPath newPath = _xPath;
-        final Object col = newPath.query(context);
-        Boolean _switchResult = null;
-        boolean _matched = false;
-        if (!_matched) {
-          if (col instanceof Map) {
-            final Map _map = (Map)col;
-            _matched=true;
-            boolean _xblockexpression_1 = false;
-            {
-              final Function2<Property,String,Boolean> _function_1 = new Function2<Property,String,Boolean>() {
-                  public Boolean apply(final Property p, final String v) {
-                    boolean _equals = Objects.equal(p.name, "name");
-                    return Boolean.valueOf(_equals);
-                  }
-                };
-              Map<Property,String> _filter = MapExtensions.<Property, String>filter(this.keyValues, _function_1);
-              Collection<String> _values = _filter.values();
-              final String name = ((String[])Conversions.unwrapArray(_values, String.class))[0];
-              Object _put = _map.put(name, obj);
-              boolean _equals = Objects.equal(_put, null);
-              _xblockexpression_1 = (_equals);
-            }
-            _switchResult = Boolean.valueOf(_xblockexpression_1);
-          }
-        }
-        if (!_matched) {
-          if (col instanceof Collection) {
-            final Collection _collection = (Collection)col;
-            _matched=true;
-            boolean _add = _collection.add(obj);
-            _switchResult = Boolean.valueOf(_add);
-          }
-        }
-        final Boolean succeeded = _switchResult;
-        if ((succeeded).booleanValue()) {
-          final Procedure1<Added> _function_1 = new Procedure1<Added>() {
-              public void apply(final Added it) {
-                Object _query = Create.this.parent.query(context);
-                it.parent = _query;
-                it.property = Create.this.containing.name;
-                it.addedValue = obj;
+        MapExtensions.<Property, Object>forEach(this.keyValues, _function);
+        boolean _notEquals = (!Objects.equal(newObject, null));
+        if (_notEquals) {
+          final Procedure1<Created> _function_1 = new Procedure1<Created>() {
+              public void apply(final Created it) {
+                it.object = newObject;
               }
             };
-          Added _added = new Added(_function_1);
-          changes.add(_added);
+          Created _created = new Created(_function_1);
+          changes.add(_created);
         }
-        _xblockexpression = (null);
+        _xblockexpression = (newObject);
       }
       return _xblockexpression;
     } catch (Throwable _e) {

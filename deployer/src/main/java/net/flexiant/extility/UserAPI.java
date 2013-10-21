@@ -17,7 +17,7 @@ import javax.xml.ws.WebServiceFeature;
  * Generated source version: 2.2
  * 
  */
-@WebServiceClient(name = "UserAPI", targetNamespace = "http://extility.flexiant.net", wsdlLocation = "file:/C:/Users/bmori/dev/cloudml/deployer/src/main/resources/UserAdmin.wsdl")
+@WebServiceClient(name = "UserAPI", targetNamespace = "http://extility.flexiant.net", wsdlLocation = "file:/C:/Users/huis/github/dcloudml/deployer/src/main/resources/UserAdmin.wsdl")
 public class UserAPI
     extends Service
 {
@@ -30,7 +30,7 @@ public class UserAPI
         URL url = null;
         WebServiceException e = null;
         try {
-            url = new URL("file:/C:/Users/bmori/dev/cloudml/deployer/src/main/resources/UserAdmin.wsdl");
+            url = new URL("file:/C:/Users/huis/github/dcloudml/deployer/src/main/resources/UserAdmin.wsdl");
         } catch (MalformedURLException ex) {
             e = new WebServiceException(ex);
         }
