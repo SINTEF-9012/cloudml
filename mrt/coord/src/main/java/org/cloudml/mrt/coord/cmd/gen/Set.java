@@ -24,22 +24,22 @@ public class Set extends Modification {
   
   public XPath parent;
   
-  public Map<Property,String> keyValues;
+  public Map<Property,Object> keyValues;
   
   @Override
   protected Object _execute(final Object context, final List<Change> changes) {
     Object _xblockexpression = null;
     {
       final Object par = this.parent.query(context);
-      final Function2<Property,String,Boolean> _function = new Function2<Property,String,Boolean>() {
-          public Boolean apply(final Property property, final String value) {
+      final Function2<Property,Object,Boolean> _function = new Function2<Property,Object,Boolean>() {
+          public Boolean apply(final Property property, final Object value) {
             boolean _setProperty = CloudMLCmds.setProperty(par, property, value);
             return Boolean.valueOf(_setProperty);
           }
         };
-      Map<Property,String> _filter = MapExtensions.<Property, String>filter(this.keyValues, _function);
-      final Procedure2<Property,String> _function_1 = new Procedure2<Property,String>() {
-          public void apply(final Property p, final String v) {
+      Map<Property,Object> _filter = MapExtensions.<Property, Object>filter(this.keyValues, _function);
+      final Procedure2<Property,Object> _function_1 = new Procedure2<Property,Object>() {
+          public void apply(final Property p, final Object v) {
             final Procedure1<Updated> _function = new Procedure1<Updated>() {
                 public void apply(final Updated it) {
                   it.parent = par;
@@ -51,7 +51,7 @@ public class Set extends Modification {
             changes.add(_updated);
           }
         };
-      MapExtensions.<Property, String>forEach(_filter, _function_1);
+      MapExtensions.<Property, Object>forEach(_filter, _function_1);
       _xblockexpression = (null);
     }
     return _xblockexpression;
