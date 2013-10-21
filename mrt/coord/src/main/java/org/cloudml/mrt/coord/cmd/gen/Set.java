@@ -18,6 +18,9 @@ public class Set extends Modification {
   public Set() {
   }
   
+  public Set(final String nouse) {
+  }
+  
   public Set(final Procedure1<Set> initializer) {
     initializer.apply(this);
   }

@@ -8,6 +8,9 @@ public class Added extends Change {
   public Added() {
   }
   
+  public Added(final String nouse) {
+  }
+  
   public Added(final Procedure1<Added> initializer) {
     initializer.apply(this);
   }

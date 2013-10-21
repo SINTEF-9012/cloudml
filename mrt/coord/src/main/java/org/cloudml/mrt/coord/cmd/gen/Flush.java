@@ -8,6 +8,9 @@ public class Flush extends Change {
   public Flush() {
   }
   
+  public Flush(final String nouse) {
+  }
+  
   public Flush(final Procedure1<Flush> initializer) {
     initializer.apply(this);
   }

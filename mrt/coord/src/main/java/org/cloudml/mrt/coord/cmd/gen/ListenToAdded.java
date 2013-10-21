@@ -13,6 +13,9 @@ public class ListenToAdded extends Listener {
   public ListenToAdded() {
   }
   
+  public ListenToAdded(final String nouse) {
+  }
+  
   public ListenToAdded(final Procedure1<ListenToAdded> initializer) {
     initializer.apply(this);
   }

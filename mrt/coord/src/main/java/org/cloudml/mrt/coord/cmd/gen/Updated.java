@@ -8,6 +8,9 @@ public class Updated extends Change {
   public Updated() {
   }
   
+  public Updated(final String nouse) {
+  }
+  
   public Updated(final Procedure1<Updated> initializer) {
     initializer.apply(this);
   }
