@@ -26,7 +26,8 @@
 		<module>deployer</module>
 		<module>facade</module>
 		<module>ui</module>
-	 <module>mrt</module>
+		<module>mrt</module>
+
 	</modules>
 
 	<build>
