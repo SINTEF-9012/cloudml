@@ -28,17 +28,29 @@ instruction !commit{
 	}
 }
 
+instruction !requestFlush{
+	code : String
+	execute{
+		changes += new Flush[
+			it.code = this.code
+			it.object = context
+		]
+	}
+}
+
 modification !set{
 	parent : XPath
-	keyValues : Map<Property, String>
+	keyValues : Map<Property, Object>
 	execute{
 		val par = parent.query(context)
 		
+		// Update each of the declared properties first
 		keyValues.filter[property, value | 
 			CloudMLCmds::setProperty(par, property, value)
-		].forEach[ p,v |
+		].forEach[ p,v |     //For each successfully updated property, make a Change record
 			changes += new Updated()[
 				parent = par
+				parent_repr = this.parent.literal
 				property = p.name
 				newValue = v
 			]
@@ -48,36 +60,125 @@ modification !set{
 }
 
 modification !create{
+	type : Type
+	initializer : Map<Property, Object>
+	keyValues : Map<Property, Object>
+	execute{
+		val clz = type.obtainClass
+		val newObject = 
+			if(initializer == null || initializer.empty)
+				clz.newInstance
+			else{
+				null  //TODO: Support non-empty constructors
+			}
+		keyValues.forEach[p, v | CloudMLCmds::setProperty(newObject, p, v)]	
+		if(newObject!=null)
+			changes += new Created[object = newObject]	
+		newObject
+	}
+}
+
+modification !add{
+	parent : XPath
+	containing : Property
+	crossRef : XPath    //This is used to add existing objects as a cross-reference
+	newValue : Object   //simple value
+	index : Object      //optional for list, but mandatory for maps
+	execute{
+		val resolvedCrossRef = crossRef?.query(context)
+		val toAddPath = new XPath(parent.literal + "/" + containing.name)
+		val toAddColl = toAddPath.query(context)
+		val toAddValue = resolvedCrossRef ?: newValue
+		val success = switch(toAddColl){
+			Map : {
+				toAddColl.put(index, toAddValue) == null
+				//we suppose adding something into a map will always succeed
+				true
+			}
+			List case index != null:{
+				try{
+					toAddColl.add(CloudMLCmds::convert("int", index) as Integer, toAddValue)
+					true
+				}catch(Exception e){
+					false
+				}  
+			}
+			Collection : {
+				toAddColl.add(toAddValue) // whether the Collection is changed, see {@link Collection.add}
+			}
+			default: false
+		}
+		if(success){
+			changes.add(new Added()[
+				parent = this.parent.query(context)
+				parent_repr = this.parent.literal
+				property = this.containing.name
+				addedValue = toAddValue
+			])
+		}
+		null
+	}
+}
+
+modification !remove{
+	parent : XPath
+	containing : Property
+	index : Object       //-- choose one from index, value, or crossRef
+	value : Object       //-- But for map, we always need an index
+	crossRef : XPath     //--
+	execute{
+		val resolvedCrossRef = crossRef?.query(context)
+		val toRemovePath = new XPath(parent.literal + "/" + containing.name)
+		val toRemoveColl = toRemovePath.query(context)
+		val toRemoveValue = resolvedCrossRef ?: value
+		val success = switch(toRemoveColl){
+			Map : {
+				toRemoveColl.remove(index) != null				
+			}
+			List case index != null: {
+				toRemoveColl.remove(CloudMLCmds::convert("int", index) as Integer)
+			}
+			Collection :{
+				toRemoveColl.remove(toRemoveValue)
+			}
+			default: false
+		}
+		if(success){
+			changes += new Removed()[
+				parent = this.parent.query(context)
+				parent_repr = this.parent.literal
+				index = this.index
+				removedValue = toRemoveValue
+				removedValue_repr = this.crossRef.literal
+			]
+		}
+		null
+	}
+}
+
+/**
+ * Composite modification
+ */
+modification !createAndAdd{
 	parent : XPath
 	containing : Property
 	type : Type
-	initializer : Map<Property, String>
-	keyValues : Map<Property, String>
+	initializer : Map<Property, Object>
+	keyValues : Map<Property, Object>
+	index : Object
 	execute{
-		val clz = type.obtainClass
-		val obj = clz.newInstance
+		val newObject = new Create[
+			it.type = this.type
+			it.keyValues = this.keyValues
+			it.initializer = this.initializer
+		].^execute(context, changes)
 		
-		keyValues.forEach[property, value | property.updateValue(obj,value)]
-		val newPath = new XPath(parent.literal + "/" + containing.name)
-		val col = newPath.query(context)
-		val succeeded = switch(col){
-			Map : {
-				val name = keyValues.filter[p,v| p.name == 'name'].values.get(0)
-				col.put(name, obj) == null
-				//we suppose adding something into a map will always succeed
-			}
-			Collection :{
-				col.add(obj)  // whether the Collection is changed, see {@link Collection.add}
-			}
-		}
-		// if successfully added, need to record the change
-		if(succeeded){
-			changes.add(new Added()[
-				parent = this.parent.query(context)
-				property = this.containing.name
-				addedValue = obj
-			])
-		}
+		val add = new Add[
+			it.parent = this.parent
+			it.containing = this.containing
+			it.newValue = newObject
+			it.index = this.index
+		].^execute(context,changes)
 		null
 	}
 }
@@ -94,6 +195,34 @@ change !added{
 	addedValue : Object
 }
 
+change !created{
+	object : Object
+}
+
+change !removed{
+	parent : Object
+	property : String
+	index : Object
+	removedValue : Object
+}
+
+change !flush{
+	code : String
+	object : Object
+}
+
+
+
+listener !listenToFlush{
+	code : String
+	carefor{
+		switch(^change){
+			Flush: ^change.code == this.code
+			default: false
+		}
+	}
+}
+
 listener !listenToAdded{
 	parent : XPath
 	property : Property
@@ -108,32 +237,43 @@ listener !listenToAdded{
 	}
 }
 
+listener !listenToAny{
+	carefor{
+		true
+	}
+}
 
 
-helper setProperty(Object obj, Property p, String value): boolean{
-	val convert = [String type, String v| 
+helper convert(String type, Object v): Object{
+	switch(v){
+		String:
 			switch(type){
 				case "int": Integer.parseInt(v)
 				case "double": Double.parseDouble(v)
 				case "boolean": Boolean.parseBoolean(v)
+				case "String": v
 				default: null
 			}
-		]
+		Object:
+			v
+	}
+}
+
+helper setProperty(Object obj, Property p, Object value): boolean{
 	val clazz = obj.class
 	val pubField = clazz.fields.findFirst[name == p.name]
 	if(pubField != null){
 		val original = pubField.get(obj);
-		val newValue = convert.apply(pubField.type.simpleName, value);
+		val newValue = convert(pubField.type.simpleName, value);
 		if(original != newValue){
 			pubField.set(obj, newValue);
 			return true
-		}
-		
+		}		
 	}
 	else{
 		val setter = clazz.methods.findFirst[name == "set" + p.name.toFirstUpper]
 		val getter = clazz.methods.findFirst[name == "get" + p.name.toFirstUpper]
-		val newValue = convert.apply(setter?.parameterTypes.get(0).simpleName,value)
+		val newValue = convert(setter?.parameterTypes.get(0).simpleName,value)
 		val original = getter.invoke(obj)
 		if(original != newValue){
 			setter?.invoke(obj, newValue);
@@ -141,9 +281,8 @@ helper setProperty(Object obj, Property p, String value): boolean{
 		}
 	}
 	false
+	
 }
-
-
 
 
 

@@ -12,6 +12,10 @@ public class Change implements Comparable<Change>{
        return Long.compare(timeStamp, ((Change)o).timeStamp);
     }
     
+    public Change obtainRepr(){
+    	return this;
+    }
+    
     static final Change fakeChange = new Change();
     public static Change fakeChangeForSearch(long timeStamp){
         fakeChange.timeStamp = timeStamp;

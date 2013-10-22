@@ -38,7 +38,7 @@ public class Add extends Modification {
   
   @Override
   protected Object _execute(final Object context, final List<Change> changes) {
-    Boolean _xblockexpression = null;
+    Object _xblockexpression = null;
     {
       Object _query = null;
       if (this.crossRef!=null) {
@@ -110,22 +110,21 @@ public class Add extends Modification {
       if (!_matched) {
         _switchResult = false;
       }
-      final boolean succeeded = _switchResult;
-      Boolean _xifexpression = null;
-      if (succeeded) {
+      final boolean success = _switchResult;
+      if (success) {
         final Procedure1<Added> _function = new Procedure1<Added>() {
             public void apply(final Added it) {
               Object _query = Add.this.parent.query(context);
               it.parent = _query;
+              it.parent_repr = Add.this.parent.literal;
               it.property = Add.this.containing.name;
               it.addedValue = toAddValue;
             }
           };
         Added _added = new Added(_function);
-        boolean _add = changes.add(_added);
-        _xifexpression = Boolean.valueOf(_add);
+        changes.add(_added);
       }
-      _xblockexpression = (_xifexpression);
+      _xblockexpression = (null);
     }
     return _xblockexpression;
   }

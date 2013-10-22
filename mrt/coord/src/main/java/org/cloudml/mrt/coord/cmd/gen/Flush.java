@@ -18,4 +18,23 @@ public class Flush extends Change {
   public String code;
   
   public Object object;
+  
+  String code_repr = null;
+  
+  Object object_repr = null;
+  
+  @Override
+  public Change obtainRepr() {
+    Flush toRepr = new Flush();
+    if(this.code_repr!=null)
+    	toRepr.code = this.code_repr;
+    else
+    	toRepr.code = this.code;
+    if(this.object_repr!=null)
+    	toRepr.object = this.object_repr;
+    else
+    	toRepr.object = this.object;
+    return toRepr;
+    
+  }
 }

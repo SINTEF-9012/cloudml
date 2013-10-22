@@ -46,6 +46,7 @@ public class Set extends Modification {
             final Procedure1<Updated> _function = new Procedure1<Updated>() {
                 public void apply(final Updated it) {
                   it.parent = par;
+                  it.parent_repr = Set.this.parent.literal;
                   it.property = p.name;
                   it.newValue = v;
                 }
