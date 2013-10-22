@@ -19,6 +19,9 @@ public class Create extends Modification {
   public Create() {
   }
   
+  public Create(final String nouse) {
+  }
+  
   public Create(final Procedure1<Create> initializer) {
     initializer.apply(this);
   }

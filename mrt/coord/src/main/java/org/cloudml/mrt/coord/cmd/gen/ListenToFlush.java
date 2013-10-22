@@ -11,6 +11,9 @@ public class ListenToFlush extends Listener {
   public ListenToFlush() {
   }
   
+  public ListenToFlush(final String nouse) {
+  }
+  
   public ListenToFlush(final Procedure1<ListenToFlush> initializer) {
     initializer.apply(this);
   }

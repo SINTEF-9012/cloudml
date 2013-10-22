@@ -19,6 +19,9 @@ public class CreateAndAdd extends Modification {
   public CreateAndAdd() {
   }
   
+  public CreateAndAdd(final String nouse) {
+  }
+  
   public CreateAndAdd(final Procedure1<CreateAndAdd> initializer) {
     initializer.apply(this);
   }

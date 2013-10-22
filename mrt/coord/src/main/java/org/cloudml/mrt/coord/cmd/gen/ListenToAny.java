@@ -9,6 +9,9 @@ public class ListenToAny extends Listener {
   public ListenToAny() {
   }
   
+  public ListenToAny(final String nouse) {
+  }
+  
   public ListenToAny(final Procedure1<ListenToAny> initializer) {
     initializer.apply(this);
   }

@@ -30,6 +30,7 @@ public class CloudMLCmds {
     yamlConstructor.addTypeDescription(new TypeDescription(Updated.class, "!updated"));
     yamlConstructor.addTypeDescription(new TypeDescription(Commit.class, "!commit"));
     yamlConstructor.addTypeDescription(new TypeDescription(RequestFlush.class, "!requestFlush"));
+    yamlConstructor.addTypeDescription(new TypeDescription(ListenToAny.class, "!listenToAny"));
     yaml = new Yaml(yamlConstructor);
     
   }

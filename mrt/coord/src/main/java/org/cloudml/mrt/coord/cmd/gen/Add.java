@@ -19,6 +19,9 @@ public class Add extends Modification {
   public Add() {
   }
   
+  public Add(final String nouse) {
+  }
+  
   public Add(final Procedure1<Add> initializer) {
     initializer.apply(this);
   }

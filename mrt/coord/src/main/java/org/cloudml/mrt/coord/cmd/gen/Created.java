@@ -8,6 +8,9 @@ public class Created extends Change {
   public Created() {
   }
   
+  public Created(final String nouse) {
+  }
+  
   public Created(final Procedure1<Created> initializer) {
     initializer.apply(this);
   }
