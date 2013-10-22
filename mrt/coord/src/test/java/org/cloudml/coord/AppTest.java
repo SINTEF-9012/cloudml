@@ -23,43 +23,53 @@
 package org.cloudml.coord;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.cloudml.mrt.coord.Coordinator;
+import org.cloudml.mrt.coord.cmd.gen.CloudMLCmds;
 import org.cloudml.mrt.coord.ws.CoordWsReception;
+import org.cloudml.ui.ws.CoordWsClient;
+import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Unit test for simple App.
  */
 public class AppTest 
-    extends TestCase
+extends TestCase
 {
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+	/**
+	 * Create the test case
+	 *
+	 * @param testName name of the test case
+	 */
+	public AppTest( String testName )
+	{
+		super( testName );
+	}
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
+	/**
+	 * @return the suite of tests being tested
+	 */
+	public static Test suite()
+	{
+		return new TestSuite( AppTest.class );
+	}
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testCoordReception() throws InterruptedException
-    {
-        
-    }
-    
+	/**
+	 * Rigourous Test :-)
+	 */
+	public void testCoordReception() throws InterruptedException
+	{
+		
+		
+	}
+
 }
