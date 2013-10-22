@@ -32,8 +32,8 @@ import junit.framework.TestSuite;
 
 import org.cloudml.mrt.coord.Coordinator;
 import org.cloudml.mrt.coord.cmd.gen.CloudMLCmds;
-import org.cloudml.mrt.coord.ws.CoordWsClient;
 import org.cloudml.mrt.coord.ws.CoordWsReception;
+import org.cloudml.ui.ws.CoordWsClient;
 import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -68,22 +68,8 @@ extends TestCase
 	 */
 	public void testCoordReception() throws InterruptedException
 	{
-		int port=9000;
-		Coordinator c=new Coordinator();
-		c.start(port);
-		CoordWsClient client=new CoordWsClient("c1", "ws://127.0.0.1:9000");
-		client.connectBlocking();
-		assertTrue(client.getReadyState().equals(READYSTATE.OPEN));
 		
-		client.send("!getSnapshot\n  path : /");
 		
-		Thread.sleep(2000);
-		
-		client.send("!listenToAny");
-		
-		Thread.sleep(2000);
-		
-		client.close();
 	}
 
 }

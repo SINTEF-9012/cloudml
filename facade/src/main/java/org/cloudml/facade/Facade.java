@@ -42,7 +42,6 @@ import org.cloudml.deployer.JCloudsConnector;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
-import org.cloudml.mrt.coord.ws.CoordWsClient;
 import org.jclouds.compute.domain.ComputeMetadata;
 
 /**
@@ -65,7 +64,7 @@ class Facade implements CloudML, CommandHandler {
 	private DeploymentModel deploy;
 	private boolean stopOnTimeout = false;
 	private final CloudAppDeployer deployer;
-	private CoordWsClient client;
+	//private CoordWsClient client;
 
 	/**
 	 * Default constructor
@@ -76,17 +75,28 @@ class Facade implements CloudML, CommandHandler {
 		this.deployer = new CloudAppDeployer();
 	}
 
-	
-	public void startWSClient(String name, String endPoint){
-		client=new CoordWsClient(name, endPoint);
-		client.connect();
-	}
-	
-	public void stopWSClient(){
-		client.close();
+	public Facade(String name, String endPoint){
+		this();
+		//startWSClient(name, endPoint);
 	}
 
-	
+	/*public void startWSClient(String name, String endPoint){
+		client=new CoordWsClient(name, endPoint);
+		try {
+			client.connectBlocking();
+			client.send("!listenToAny");
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public void stopWSClient(){
+		client.close();
+	}*/
+
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -456,7 +466,7 @@ class Facade implements CloudML, CommandHandler {
 		//command.markAsCompleted();
 	}
 
-	
+
 	public void handle(Snapshot command) {
 		dispatch(new Message(command, Category.INFORMATION, "Generating snapshot ..."));
 		DrawnIconVertexDemo g = new DrawnIconVertexDemo(deploy);
@@ -464,7 +474,7 @@ class Facade implements CloudML, CommandHandler {
 		File f=new File(command.getPathToSnapshot());
 		g.writeServerJPEGImage(f);
 	}
-	
+
 	/**
 	 *
 	 * @param pathName
