@@ -4,14 +4,14 @@ import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 @SuppressWarnings("all")
-public class Added extends Change {
-  public Added() {
+public class Removed extends Change {
+  public Removed() {
   }
   
-  public Added(final String nouse) {
+  public Removed(final String nouse) {
   }
   
-  public Added(final Procedure1<Added> initializer) {
+  public Removed(final Procedure1<Removed> initializer) {
     initializer.apply(this);
   }
   
@@ -19,17 +19,21 @@ public class Added extends Change {
   
   public String property;
   
-  public Object addedValue;
+  public Object index;
+  
+  public Object removedValue;
   
   Object parent_repr = null;
   
   String property_repr = null;
   
-  Object addedValue_repr = null;
+  Object index_repr = null;
+  
+  Object removedValue_repr = null;
   
   @Override
   public Change obtainRepr() {
-    Added toRepr = new Added();
+    Removed toRepr = new Removed();
     if(this.parent_repr!=null)
     	toRepr.parent = this.parent_repr;
     else
@@ -38,10 +42,14 @@ public class Added extends Change {
     	toRepr.property = this.property_repr;
     else
     	toRepr.property = this.property;
-    if(this.addedValue_repr!=null)
-    	toRepr.addedValue = this.addedValue_repr;
+    if(this.index_repr!=null)
+    	toRepr.index = this.index_repr;
     else
-    	toRepr.addedValue = this.addedValue;
+    	toRepr.index = this.index;
+    if(this.removedValue_repr!=null)
+    	toRepr.removedValue = this.removedValue_repr;
+    else
+    	toRepr.removedValue = this.removedValue;
     return toRepr;
     
   }

@@ -20,4 +20,29 @@ public class Updated extends Change {
   public String property;
   
   public Object newValue;
+  
+  Object parent_repr = null;
+  
+  String property_repr = null;
+  
+  Object newValue_repr = null;
+  
+  @Override
+  public Change obtainRepr() {
+    Updated toRepr = new Updated();
+    if(this.parent_repr!=null)
+    	toRepr.parent = this.parent_repr;
+    else
+    	toRepr.parent = this.parent;
+    if(this.property_repr!=null)
+    	toRepr.property = this.property_repr;
+    else
+    	toRepr.property = this.property;
+    if(this.newValue_repr!=null)
+    	toRepr.newValue = this.newValue_repr;
+    else
+    	toRepr.newValue = this.newValue;
+    return toRepr;
+    
+  }
 }

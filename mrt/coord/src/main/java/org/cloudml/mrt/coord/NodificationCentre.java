@@ -38,7 +38,7 @@ public class NodificationCentre {
             Change chng = coordinator.changeList.get(i);
             for(Map.Entry<Listener,PeerStub> entry : listeners.entrySet()){
                 if(entry.getKey().careFor(chng))
-                    entry.getValue().sendMessage(chng);
+                    entry.getValue().sendMessage(chng.obtainRepr());
             }
             
         }

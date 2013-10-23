@@ -12,32 +12,54 @@ import org.eclipse.xtext.xbase.lib.StringExtensions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 @SuppressWarnings("all")
 public class CloudMLCmds {
   public CloudMLCmds() {
     yamlConstructor = new Constructor();
+    yamlRepresenter = new Representer();
     yamlConstructor.addTypeDescription(new TypeDescription(GetSnapshot.class, "!getSnapshot"));
+    yamlRepresenter.addClassTag(GetSnapshot.class, new org.yaml.snakeyaml.nodes.Tag("!getSnapshot"));
     yamlConstructor.addTypeDescription(new TypeDescription(ListenToAdded.class, "!listenToAdded"));
+    yamlRepresenter.addClassTag(ListenToAdded.class, new org.yaml.snakeyaml.nodes.Tag("!listenToAdded"));
     yamlConstructor.addTypeDescription(new TypeDescription(Added.class, "!added"));
+    yamlRepresenter.addClassTag(Added.class, new org.yaml.snakeyaml.nodes.Tag("!added"));
+    yamlConstructor.addTypeDescription(new TypeDescription(Remove.class, "!remove"));
+    yamlRepresenter.addClassTag(Remove.class, new org.yaml.snakeyaml.nodes.Tag("!remove"));
     yamlConstructor.addTypeDescription(new TypeDescription(Set.class, "!set"));
+    yamlRepresenter.addClassTag(Set.class, new org.yaml.snakeyaml.nodes.Tag("!set"));
     yamlConstructor.addTypeDescription(new TypeDescription(CreateAndAdd.class, "!createAndAdd"));
+    yamlRepresenter.addClassTag(CreateAndAdd.class, new org.yaml.snakeyaml.nodes.Tag("!createAndAdd"));
     yamlConstructor.addTypeDescription(new TypeDescription(Add.class, "!add"));
+    yamlRepresenter.addClassTag(Add.class, new org.yaml.snakeyaml.nodes.Tag("!add"));
     yamlConstructor.addTypeDescription(new TypeDescription(Create.class, "!create"));
+    yamlRepresenter.addClassTag(Create.class, new org.yaml.snakeyaml.nodes.Tag("!create"));
     yamlConstructor.addTypeDescription(new TypeDescription(ListenToFlush.class, "!listenToFlush"));
+    yamlRepresenter.addClassTag(ListenToFlush.class, new org.yaml.snakeyaml.nodes.Tag("!listenToFlush"));
     yamlConstructor.addTypeDescription(new TypeDescription(Flush.class, "!flush"));
+    yamlRepresenter.addClassTag(Flush.class, new org.yaml.snakeyaml.nodes.Tag("!flush"));
     yamlConstructor.addTypeDescription(new TypeDescription(Created.class, "!created"));
+    yamlRepresenter.addClassTag(Created.class, new org.yaml.snakeyaml.nodes.Tag("!created"));
     yamlConstructor.addTypeDescription(new TypeDescription(Updated.class, "!updated"));
+    yamlRepresenter.addClassTag(Updated.class, new org.yaml.snakeyaml.nodes.Tag("!updated"));
     yamlConstructor.addTypeDescription(new TypeDescription(Commit.class, "!commit"));
+    yamlRepresenter.addClassTag(Commit.class, new org.yaml.snakeyaml.nodes.Tag("!commit"));
     yamlConstructor.addTypeDescription(new TypeDescription(RequestFlush.class, "!requestFlush"));
+    yamlRepresenter.addClassTag(RequestFlush.class, new org.yaml.snakeyaml.nodes.Tag("!requestFlush"));
+    yamlConstructor.addTypeDescription(new TypeDescription(Removed.class, "!removed"));
+    yamlRepresenter.addClassTag(Removed.class, new org.yaml.snakeyaml.nodes.Tag("!removed"));
     yamlConstructor.addTypeDescription(new TypeDescription(ListenToAny.class, "!listenToAny"));
-    yaml = new Yaml(yamlConstructor);
+    yamlRepresenter.addClassTag(ListenToAny.class, new org.yaml.snakeyaml.nodes.Tag("!listenToAny"));
+    yaml = new Yaml(yamlConstructor, yamlRepresenter);
     
   }
   
   public final static CloudMLCmds INSTANCE = new CloudMLCmds();
   
   private Constructor yamlConstructor;
+  
+  private Representer yamlRepresenter;
   
   private Yaml yaml;
   

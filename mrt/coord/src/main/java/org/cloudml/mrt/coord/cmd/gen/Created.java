@@ -16,4 +16,17 @@ public class Created extends Change {
   }
   
   public Object object;
+  
+  Object object_repr = null;
+  
+  @Override
+  public Change obtainRepr() {
+    Created toRepr = new Created();
+    if(this.object_repr!=null)
+    	toRepr.object = this.object_repr;
+    else
+    	toRepr.object = this.object;
+    return toRepr;
+    
+  }
 }
