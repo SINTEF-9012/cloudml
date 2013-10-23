@@ -22,21 +22,22 @@
  */
 package org.cloudml.mrt.coord;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.Artefact;
+import org.cloudml.core.ArtefactInstance;
+import org.cloudml.core.CloudMLElement;
 
-import org.cloudml.mrt.coord.Coordinator;
-import org.cloudml.mrt.coord.ws.CoordWsClient;
-import org.cloudml.mrt.coord.ws.CoordWsReception;
-import org.java_websocket.WebSocket.READYSTATE;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.yaml.snakeyaml.Yaml;
+import org.cloudml.core.DeploymentModel;
+import org.cloudml.core.Node;
+import org.cloudml.core.NodeInstance;
+import org.cloudml.core.Property;
+import org.cloudml.core.Provider;
 
 /**
  * Unit test for simple 
@@ -65,23 +66,52 @@ extends TestCase
 	/**
 	 * Rigourous Test :-)
 	 */
-	public static void main(String[] args) throws InterruptedException
+	public static void main(String[] args) throws InterruptedException, FileNotFoundException
 	{
-		int port=9001;
-		Coordinator c=new Coordinator();
-		c.start(port);
+//		int port=9001;
+//		Coordinator c=new Coordinator();
+//		c.start(port);
+//		
+//		CoordWsClient client=new CoordWsClient("c1", "ws://127.0.0.1:9001");
+//		client.connectBlocking();
+//		System.out.println(client.getReadyState()+"");
+//		assertTrue(client.getReadyState().equals(READYSTATE.OPEN));
+//
+//		
+//		client.send("!getSnapshot\n  path : /");
+//		
+//		client.send("!listenToAny");
+//		Thread.sleep(500);
+//		client.close();
+        
+        JsonCodec codec = new JsonCodec();   
+        
+        
+        DeploymentModel dm = new DeploymentModel("root");
+        Provider provider = new Provider("provider");
+        provider.setCredentials("");
+        dm.getProviders().add(provider);
+        //dm.getProviders()
+		Node node1 = new Node("node1");
+        node1.setProvider(provider);
+		dm.getNodeTypes().put("node1", node1);
+		NodeInstance ni = new NodeInstance("ni",node1);
 		
-		CoordWsClient client=new CoordWsClient("c1", "ws://127.0.0.1:9001");
-		client.connectBlocking();
-		System.out.println(client.getReadyState()+"");
-		assertTrue(client.getReadyState().equals(READYSTATE.OPEN));
-
+        //NodeInstance ni = node1.instanciates("ni");
+        dm.getNodeInstances().add(ni);
+		//Artefact arte = new Artefact("at1");
 		
-		client.send("!getSnapshot\n  path : /");
-		
-		client.send("!listenToAny");
-		Thread.sleep(500);
-		client.close();
+		//dm.getArtefactTypes().put("at1", arte);
+		//dm.getArtefactInstances().add(new ArtefactInstance("atr1", arte, ni));
+		//System.out.println(dm);
+        System.out.println("-------------");
+        codec.save(dm, System.out);
+        System.out.println("-------------");
+        
+        
+        //CloudMLElement elem = codec.load(new FileInputStream("C:\\temp\\sensappAdmin.json"));
+        //System.out.println(elem);
+       // codec.save(elem, System.out);
 	}
 
 }

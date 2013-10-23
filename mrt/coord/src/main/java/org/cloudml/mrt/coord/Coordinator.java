@@ -29,9 +29,14 @@
 package org.cloudml.mrt.coord;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.DeploymentModel;
 import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.cloudml.mrt.coord.cmd.abstracts.Instruction;
@@ -52,6 +57,7 @@ public class Coordinator {
     CommandExecutor executor = new CommandExecutor();    
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
+    JsonCodec jsonCodec = new JsonCodec();
     
     public void start(int port){
         startWsReception(port);
@@ -93,11 +99,24 @@ public class Coordinator {
             else if(cmd instanceof Listener)
                 obj = process((Listener) cmd, from);
             if(obj!=null)
-                ret += obj.toString();
+                ret += String.format("---return of %s---\n%s\n", cmd.getClass().getSimpleName(), codec(obj));
         }
         return ret;
     }
     
-    
+    public String codec(Object object){
+        if(object instanceof DeploymentModel){
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                jsonCodec.save((DeploymentModel)object, baos);
+                return baos.toString("UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(Coordinator.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
+        else
+            return object.toString();
+    }
     
 }

@@ -8,13 +8,26 @@ import org.cloudml.mrt.coord.cmd.abstracts.Type
 import java.util.Collection
 import java.util.List
 import org.cloudml.mrt.coord.cmd.abstracts.Change
+import java.lang.reflect.Constructor
+import org.cloudml.mrt.coord.cmd.abstracts.Parameter
 
 global-name CloudMLCmds
 
+/**
+ * ---
+ * !getSnapshot
+ *   path : /
+ *   codec : plain-text   #This is optional
+ */
 instruction !getSnapshot{
 	path : XPath
+	codec : String
 	execute{
-		path.query(context)
+		if(codec == "plain-text")
+			path.query(context).toString
+		else
+			path.query(context)
+		
 	}
 }
 
@@ -38,6 +51,21 @@ instruction !requestFlush{
 	}
 }
 
+/**
+ * Give new values to the fields
+ *     - !set
+ *     parent : nodeTypes/node1
+ *     keyValues : 
+ *        minCore : 4
+ *        minDisk : 1
+ * 
+ * Not that if you need to set a cross reference, you need to add a tag !xpath
+ * (TODO: need to get rid of this later) * 
+ * e.g.,
+ *     keyValues:
+ *       minRam : 1024
+ *       provider : xpath /providers[name='provider1']
+ */
 modification !set{
 	parent : XPath
 	keyValues : Map<Property, Object>
@@ -46,7 +74,7 @@ modification !set{
 		
 		// Update each of the declared properties first
 		keyValues.filter[property, value | 
-			CloudMLCmds::setProperty(par, property, value)
+			CloudMLCmds::setProperty(par, property, value, context)
 		].forEach[ p,v |     //For each successfully updated property, make a Change record
 			changes += new Updated()[
 				parent = par
@@ -59,9 +87,29 @@ modification !set{
 	}
 }
 
+/**
+ * Initialize an object
+ */
 modification !create{
+	/**
+	 * simple class name
+	 */
 	type : Type
-	initializer : Map<Property, Object>
+	/**
+	 * These are the parameters of a constructor.
+	 * For each parameter, please provide the type and the value
+	 * Node that the grammer of initiliazer is not the same as keyValues
+	 * 
+	 * So for only support constructors with upto 3 parameters.
+	 * initializer:
+	 *   - {type: String, name: nodeinst1}
+	 *   - {type: Node, name: !xpath /nodeTypes/node1}
+	 */
+	initializer : List<Parameter>
+	/**
+	 * Give initial values to some fields. These are not the parameters to
+	 * the constructor
+	 */
 	keyValues : Map<Property, Object>
 	execute{
 		val clz = type.obtainClass
@@ -69,24 +117,54 @@ modification !create{
 			if(initializer == null || initializer.empty)
 				clz.newInstance
 			else{
-				null  //TODO: Support non-empty constructors
+				val constructors = clz.constructors
+				switch(initializer.size){
+					case 1 : {
+						constructors.findFirst[it.parameterTypes.size==1 &&
+							it.parameterTypes.get(0).name == initializer.get(0).type
+						]?.newInstance(CloudMLCmds::convert(initializer.get(0).type, initializer.get(0).value,context))
+					}
+					case 2 : {
+						constructors.findFirst[it.parameterTypes.size==2 &&
+							it.parameterTypes.get(0).simpleName == initializer.get(0).type &&
+							it.parameterTypes.get(1).simpleName == initializer.get(1).type 
+						]?.newInstance(
+							CloudMLCmds::convert(initializer.get(0).type, initializer.get(0).value,context),
+							CloudMLCmds::convert(initializer.get(1).type, initializer.get(1).value,context)
+						)
+					}
+					case 3 : {
+						constructors.findFirst[it.parameterTypes.size==3 &&
+							it.parameterTypes.get(0).simpleName == initializer.get(0).type &&
+							it.parameterTypes.get(1).simpleName == initializer.get(1).type &&
+							it.parameterTypes.get(2).simpleName == initializer.get(2).type
+						]?.newInstance(
+							CloudMLCmds::convert(initializer.get(0).type, initializer.get(0).value,context),
+							CloudMLCmds::convert(initializer.get(1).type, initializer.get(1).value,context),
+							CloudMLCmds::convert(initializer.get(2).type, initializer.get(2).value,context)
+						)
+					}
+				}
 			}
-		keyValues.forEach[p, v | CloudMLCmds::setProperty(newObject, p, v)]	
+		keyValues?.forEach[p, v | CloudMLCmds::setProperty(newObject, p, v, context)]	
 		if(newObject!=null)
 			changes += new Created[object = newObject]	
 		newObject
 	}
 }
 
+/**
+ * add a new element/value to a multi-valued property
+ */
 modification !add{
 	parent : XPath
-	containing : Property
+	property : Property
 	crossRef : XPath    //This is used to add existing objects as a cross-reference
 	newValue : Object   //simple value
 	index : Object      //optional for list, but mandatory for maps
 	execute{
 		val resolvedCrossRef = crossRef?.query(context)
-		val toAddPath = new XPath(parent.literal + "/" + containing.name)
+		val toAddPath = new XPath(parent.literal + "/" + property.name)
 		val toAddColl = toAddPath.query(context)
 		val toAddValue = resolvedCrossRef ?: newValue
 		val success = switch(toAddColl){
@@ -97,7 +175,7 @@ modification !add{
 			}
 			List case index != null:{
 				try{
-					toAddColl.add(CloudMLCmds::convert("int", index) as Integer, toAddValue)
+					toAddColl.add(CloudMLCmds::convert("int", index, context) as Integer, toAddValue)
 					true
 				}catch(Exception e){
 					false
@@ -112,7 +190,7 @@ modification !add{
 			changes.add(new Added()[
 				parent = this.parent.query(context)
 				parent_repr = this.parent.literal
-				property = this.containing.name
+				property = this.property.name
 				addedValue = toAddValue
 			])
 		}
@@ -120,15 +198,21 @@ modification !add{
 	}
 }
 
+/**
+ * Remove an element from a multi-valued property
+ * 
+ * For lists, you can remove by giving directly the object, or an index (int)
+ * For maps, only remove by index (key) is supported so far
+ */
 modification !remove{
 	parent : XPath
-	containing : Property
+	property : Property
 	index : Object       //-- choose one from index, value, or crossRef
 	value : Object       //-- But for map, we always need an index
 	crossRef : XPath     //--
 	execute{
 		val resolvedCrossRef = crossRef?.query(context)
-		val toRemovePath = new XPath(parent.literal + "/" + containing.name)
+		val toRemovePath = new XPath(parent.literal + "/" + property.name)
 		val toRemoveColl = toRemovePath.query(context)
 		val toRemoveValue = resolvedCrossRef ?: value
 		val success = switch(toRemoveColl){
@@ -136,7 +220,7 @@ modification !remove{
 				toRemoveColl.remove(index) != null				
 			}
 			List case index != null: {
-				toRemoveColl.remove(CloudMLCmds::convert("int", index) as Integer)
+				toRemoveColl.remove((CloudMLCmds::convert("int", index, context) as Integer).intValue) != null
 			}
 			Collection :{
 				toRemoveColl.remove(toRemoveValue)
@@ -148,8 +232,9 @@ modification !remove{
 				parent = this.parent.query(context)
 				parent_repr = this.parent.literal
 				index = this.index
+				property = this.property.name
 				removedValue = toRemoveValue
-				removedValue_repr = this.crossRef.literal
+				removedValue_repr = if(this.crossRef!=null) this.crossRef.literal else null 
 			]
 		}
 		null
@@ -157,13 +242,22 @@ modification !remove{
 }
 
 /**
- * Composite modification
+ * Composite modification from Create and Add. This is probably the most 
+ * frequently used modification.
+ * 
+ *     - !createAndAdd
+ *     parent : /
+ *     property : nodeInstances
+ *     type : NodeInstance
+ *     initializer : 
+ *       - {type: String, value: ni1}
+ *       - {type: Node, value: !xpath /nodeTypes/node1}
  */
 modification !createAndAdd{
 	parent : XPath
-	containing : Property
+	property : Property
 	type : Type
-	initializer : Map<Property, Object>
+	initializer : List<Parameter>
 	keyValues : Map<Property, Object>
 	index : Object
 	execute{
@@ -175,7 +269,7 @@ modification !createAndAdd{
 		
 		val add = new Add[
 			it.parent = this.parent
-			it.containing = this.containing
+			it.property = this.property
 			it.newValue = newObject
 			it.index = this.index
 		].^execute(context,changes)
@@ -244,8 +338,9 @@ listener !listenToAny{
 }
 
 
-helper convert(String type, Object v): Object{
+helper convert(String type, Object v, Object context): Object{
 	switch(v){
+		XPath: v.query(context)
 		String:
 			switch(type){
 				case "int": Integer.parseInt(v)
@@ -259,12 +354,12 @@ helper convert(String type, Object v): Object{
 	}
 }
 
-helper setProperty(Object obj, Property p, Object value): boolean{
+helper setProperty(Object obj, Property p, Object value, Object context): boolean{
 	val clazz = obj.class
 	val pubField = clazz.fields.findFirst[name == p.name]
 	if(pubField != null){
 		val original = pubField.get(obj);
-		val newValue = convert(pubField.type.simpleName, value);
+		val newValue = convert(pubField.type.simpleName, value, context);
 		if(original != newValue){
 			pubField.set(obj, newValue);
 			return true
@@ -273,7 +368,7 @@ helper setProperty(Object obj, Property p, Object value): boolean{
 	else{
 		val setter = clazz.methods.findFirst[name == "set" + p.name.toFirstUpper]
 		val getter = clazz.methods.findFirst[name == "get" + p.name.toFirstUpper]
-		val newValue = convert(setter?.parameterTypes.get(0).simpleName,value)
+		val newValue = convert(setter?.parameterTypes.get(0).simpleName,value,context)
 		val original = getter.invoke(obj)
 		if(original != newValue){
 			setter?.invoke(obj, newValue);
@@ -283,6 +378,5 @@ helper setProperty(Object obj, Property p, Object value): boolean{
 	false
 	
 }
-
 
 

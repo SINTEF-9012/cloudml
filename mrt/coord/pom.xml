@@ -48,7 +48,7 @@
       <artifactId>codecs.json</artifactId>
       <version>1.4-SNAPSHOT</version>
     </dependency>
-    
+
     <dependency>
       <groupId>commons-io</groupId>
 	  <artifactId>commons-io</artifactId>
@@ -74,4 +74,51 @@
     </dependency>
              
   </dependencies>
+  	<build>
+		<plugins>
+			<!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <version>2.4</version> 
+				<configuration> <archive> <manifest> <mainClass>org.cloudml.ui.graph.GraphVisu</mainClass> 
+				</manifest> <manifestEntries> <Class-Path>aws-ec2-1.6.0.jar</Class-Path> 
+				</manifestEntries> </archive> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
+				</descriptorRefs> <finalName>cloudml-visu</finalName> <appendAssemblyId>false</appendAssemblyId> 
+				</configuration> <executions> <execution> <id>make-assembly</id> <phase>package</phase> 
+				<goals> <goal>single</goal> </goals> </execution> </executions> </plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<!-- <artifactItems> <artifactItem> <groupId>org.jclouds.provider</groupId> 
+								<artifactId>aws-ec2</artifactId> <version>1.6.0</version> <overWrite>false</overWrite> 
+								<destFileName>aws-ec2-1.6.0.jar</destFileName> </artifactItem> </artifactItems> -->
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>org.cloudml.mrt.coord.App</mainClass>
+						</manifest>
+					</archive>
+					<finalName>cloudml-mrt-coord</finalName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

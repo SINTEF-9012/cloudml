@@ -33,7 +33,6 @@ import junit.framework.TestSuite;
 import org.cloudml.mrt.coord.Coordinator;
 import org.cloudml.mrt.coord.cmd.gen.CloudMLCmds;
 import org.cloudml.mrt.coord.ws.CoordWsReception;
-import org.cloudml.ui.ws.CoordWsClient;
 import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;

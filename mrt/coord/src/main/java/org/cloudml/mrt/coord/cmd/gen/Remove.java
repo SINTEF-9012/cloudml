@@ -13,6 +13,12 @@ import org.cloudml.mrt.coord.cmd.gen.Removed;
 import org.eclipse.xtext.xbase.lib.ObjectExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
+/**
+ * Remove an element from a multi-valued property
+ * 
+ * For lists, you can remove by giving directly the object, or an index (int)
+ * For maps, only remove by index (key) is supported so far
+ */
 @SuppressWarnings("all")
 public class Remove extends Modification {
   public Remove() {
@@ -27,7 +33,7 @@ public class Remove extends Modification {
   
   public XPath parent;
   
-  public Property containing;
+  public Property property;
   
   public Object index;
   
@@ -45,7 +51,7 @@ public class Remove extends Modification {
       }
       final Object resolvedCrossRef = _query;
       String _plus = (this.parent.literal + "/");
-      String _plus_1 = (_plus + this.containing.name);
+      String _plus_1 = (_plus + this.property.name);
       XPath _xPath = new XPath(_plus_1);
       final XPath toRemovePath = _xPath;
       final Object toRemoveColl = toRemovePath.query(context);
@@ -73,7 +79,7 @@ public class Remove extends Modification {
           boolean _notEquals = (!Objects.equal(this.index, null));
           if (_notEquals) {
             _matched=true;
-            Object _convert = CloudMLCmds.convert("int", this.index);
+            Object _convert = CloudMLCmds.convert("int", this.index, context);
             int _intValue = ((Integer) _convert).intValue();
             Object _remove = _list.remove(_intValue);
             boolean _notEquals_1 = (!Objects.equal(_remove, null));
@@ -100,7 +106,7 @@ public class Remove extends Modification {
               it.parent = _query;
               it.parent_repr = Remove.this.parent.literal;
               it.index = Remove.this.index;
-              it.property = Remove.this.containing.name;
+              it.property = Remove.this.property.name;
               it.removedValue = toRemoveValue;
               String _xifexpression = null;
               boolean _notEquals = (!Objects.equal(Remove.this.crossRef, null));

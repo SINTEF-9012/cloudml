@@ -14,6 +14,9 @@ import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.ObjectExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
+/**
+ * add a new element/value to a multi-valued property
+ */
 @SuppressWarnings("all")
 public class Add extends Modification {
   public Add() {
@@ -28,7 +31,7 @@ public class Add extends Modification {
   
   public XPath parent;
   
-  public Property containing;
+  public Property property;
   
   public XPath crossRef;
   
@@ -46,7 +49,7 @@ public class Add extends Modification {
       }
       final Object resolvedCrossRef = _query;
       String _plus = (this.parent.literal + "/");
-      String _plus_1 = (_plus + this.containing.name);
+      String _plus_1 = (_plus + this.property.name);
       XPath _xPath = new XPath(_plus_1);
       final XPath toAddPath = _xPath;
       final Object toAddColl = toAddPath.query(context);
@@ -82,7 +85,7 @@ public class Add extends Modification {
             try {
               boolean _xblockexpression_1 = false;
               {
-                Object _convert = CloudMLCmds.convert("int", this.index);
+                Object _convert = CloudMLCmds.convert("int", this.index, context);
                 _list.add((((Integer) _convert)).intValue(), toAddValue);
                 _xblockexpression_1 = (true);
               }
@@ -117,7 +120,7 @@ public class Add extends Modification {
               Object _query = Add.this.parent.query(context);
               it.parent = _query;
               it.parent_repr = Add.this.parent.literal;
-              it.property = Add.this.containing.name;
+              it.property = Add.this.property.name;
               it.addedValue = toAddValue;
             }
           };

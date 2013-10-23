@@ -13,6 +13,21 @@ import org.eclipse.xtext.xbase.lib.MapExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 
+/**
+ * Give new values to the fields
+ *     - !set
+ *     parent : nodeTypes/node1
+ *     keyValues :
+ *        minCore : 4
+ *        minDisk : 1
+ * 
+ * Not that if you need to set a cross reference, you need to add a tag !xpath
+ * (TODO: need to get rid of this later)
+ * e.g.,
+ *     keyValues:
+ *       minRam : 1024
+ *       provider : xpath /providers[name='provider1']
+ */
 @SuppressWarnings("all")
 public class Set extends Modification {
   public Set() {
@@ -36,7 +51,7 @@ public class Set extends Modification {
       final Object par = this.parent.query(context);
       final Function2<Property,Object,Boolean> _function = new Function2<Property,Object,Boolean>() {
           public Boolean apply(final Property property, final Object value) {
-            boolean _setProperty = CloudMLCmds.setProperty(par, property, value);
+            boolean _setProperty = CloudMLCmds.setProperty(par, property, value, context);
             return Boolean.valueOf(_setProperty);
           }
         };

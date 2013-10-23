@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.cloudml.mrt.coord.cmd.abstracts.Modification;
+import org.cloudml.mrt.coord.cmd.abstracts.Parameter;
 import org.cloudml.mrt.coord.cmd.abstracts.Property;
 import org.cloudml.mrt.coord.cmd.abstracts.Type;
 import org.cloudml.mrt.coord.cmd.abstracts.XPath;
@@ -12,7 +13,16 @@ import org.cloudml.mrt.coord.cmd.gen.Create;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 /**
- * Composite modification
+ * Composite modification from Create and Add. This is probably the most
+ * frequently used modification.
+ * 
+ *     - !createAndAdd
+ *     parent : /
+ *     property : nodeInstances
+ *     type : NodeInstance
+ *     initializer :
+ *       - {type: String, value: ni1}
+ *       - {type: Node, value: !xpath /nodeTypes/node1}
  */
 @SuppressWarnings("all")
 public class CreateAndAdd extends Modification {
@@ -28,11 +38,11 @@ public class CreateAndAdd extends Modification {
   
   public XPath parent;
   
-  public Property containing;
+  public Property property;
   
   public Type type;
   
-  public Map<Property,Object> initializer;
+  public List<Parameter> initializer;
   
   public Map<Property,Object> keyValues;
   
@@ -54,7 +64,7 @@ public class CreateAndAdd extends Modification {
       final Procedure1<Add> _function_1 = new Procedure1<Add>() {
           public void apply(final Add it) {
             it.parent = CreateAndAdd.this.parent;
-            it.containing = CreateAndAdd.this.containing;
+            it.property = CreateAndAdd.this.property;
             it.newValue = newObject;
             it.index = CreateAndAdd.this.index;
           }

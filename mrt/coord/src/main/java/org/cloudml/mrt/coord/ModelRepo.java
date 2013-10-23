@@ -38,7 +38,7 @@ public class ModelRepo {
     public ModelRepo(){
         root = new DeploymentModel();
         root.setName("root");
-        root.getNodeTypes().put("a", new Node("a"));
+        //root.getNodeTypes().put("a", new Node("a"));
     }
     
     public DeploymentModel getRoot(){

@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import org.cloudml.mrt.coord.cmd.abstracts.Property;
+import org.cloudml.mrt.coord.cmd.abstracts.XPath;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
@@ -51,6 +52,9 @@ public class CloudMLCmds {
     yamlRepresenter.addClassTag(Removed.class, new org.yaml.snakeyaml.nodes.Tag("!removed"));
     yamlConstructor.addTypeDescription(new TypeDescription(ListenToAny.class, "!listenToAny"));
     yamlRepresenter.addClassTag(ListenToAny.class, new org.yaml.snakeyaml.nodes.Tag("!listenToAny"));
+    yamlConstructor.addTypeDescription(new TypeDescription(org.cloudml.mrt.coord.cmd.abstracts.XPath.class, "!xpath"));
+    yamlRepresenter.addClassTag(org.cloudml.mrt.coord.cmd.abstracts.XPath.class, new org.yaml.snakeyaml.nodes.Tag("!xpath"));
+    
     yaml = new Yaml(yamlConstructor, yamlRepresenter);
     
   }
@@ -69,9 +73,17 @@ public class CloudMLCmds {
     return this.yaml;
   }
   
-  public static Object convert(final String type, final Object v) {
+  public static Object convert(final String type, final Object v, final Object context) {
     Object _switchResult = null;
     boolean _matched = false;
+    if (!_matched) {
+      if (v instanceof XPath) {
+        final XPath _xPath = (XPath)v;
+        _matched=true;
+        Object _query = _xPath.query(context);
+        _switchResult = _query;
+      }
+    }
     if (!_matched) {
       if (v instanceof String) {
         final String _string = (String)v;
@@ -121,7 +133,7 @@ public class CloudMLCmds {
     return _switchResult;
   }
   
-  public static boolean setProperty(final Object obj, final Property p, final Object value) {
+  public static boolean setProperty(final Object obj, final Property p, final Object value, final Object context) {
     try {
       boolean _xblockexpression = false;
       {
@@ -140,7 +152,7 @@ public class CloudMLCmds {
           final Object original = pubField.get(obj);
           Class<? extends Object> _type = pubField.getType();
           String _simpleName = _type.getSimpleName();
-          final Object newValue = CloudMLCmds.convert(_simpleName, value);
+          final Object newValue = CloudMLCmds.convert(_simpleName, value, context);
           boolean _notEquals_1 = (!Objects.equal(original, newValue));
           if (_notEquals_1) {
             pubField.set(obj, newValue);
@@ -175,7 +187,7 @@ public class CloudMLCmds {
           }
           Class<? extends Object> _get = _parameterTypes[0];
           String _simpleName_1 = _get.getSimpleName();
-          final Object newValue_1 = CloudMLCmds.convert(_simpleName_1, value);
+          final Object newValue_1 = CloudMLCmds.convert(_simpleName_1, value, context);
           final Object original_1 = getter.invoke(obj);
           boolean _notEquals_2 = (!Objects.equal(original_1, newValue_1));
           if (_notEquals_2) {
