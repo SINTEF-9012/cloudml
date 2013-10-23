@@ -22,10 +22,12 @@
  */
 package org.cloudml.facade;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -77,24 +79,7 @@ class Facade implements CloudML, CommandHandler {
 
 	public Facade(String name, String endPoint){
 		this();
-		//startWSClient(name, endPoint);
 	}
-
-	/*public void startWSClient(String name, String endPoint){
-		client=new CoordWsClient(name, endPoint);
-		try {
-			client.connectBlocking();
-			client.send("!listenToAny");
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void stopWSClient(){
-		client.close();
-	}*/
 
 
 	/*
@@ -340,8 +325,20 @@ class Facade implements CloudML, CommandHandler {
 				final Message message = new Message(command, Category.ERROR, "Error while loading model: " + e.getLocalizedMessage());
 				dispatch(message);
 			}
-		} else {
-			wrongFileFormat(command.getPathToModel(), command);
+		} else {// load directly a JSON
+			if(!command.getPathToModel().equals("")){
+				InputStream content= new ByteArrayInputStream(command.getPathToModel().getBytes());
+				try{
+					deploy = (DeploymentModel) getCodec("json").load(content);
+					final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
+					dispatch(message);
+				}catch(Exception e){
+					final Message message = new Message(command, Category.ERROR, "Error while loading model: " + e.getLocalizedMessage());
+					dispatch(message);
+				}
+			}else{
+				wrongFileFormat(command.getPathToModel(), command);
+			}
 		}
 		//command.markAsCompleted();
 	}

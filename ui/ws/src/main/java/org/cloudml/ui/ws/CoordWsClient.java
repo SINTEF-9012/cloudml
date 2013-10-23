@@ -24,6 +24,10 @@ package org.cloudml.ui.ws;
 
 import java.net.URI;
 
+import org.cloudml.facade.CloudML;
+import org.cloudml.facade.Factory;
+import org.cloudml.facade.commands.CloudMlCommand;
+import org.cloudml.facade.commands.CommandFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ServerHandshake;
@@ -35,10 +39,12 @@ import org.java_websocket.handshake.ServerHandshake;
 public class CoordWsClient extends WebSocketClient {
 
 	private String name;
+	private CloudML cml;
 
 	public CoordWsClient(String name,String endPoint){
 		super(URI.create(endPoint), new Draft_17());
 		this.name=name;
+		cml=Factory.getInstance().getCloudML();
 	}
 
 	@Override
@@ -55,6 +61,10 @@ public class CoordWsClient extends WebSocketClient {
 	public void onMessage(String msg) {
 		if(msg.equals("push")){
 			this.send("!getSnapshot\n  path : /");
+		}else if(msg.contains("net.cloudml.core:DeploymentModel")){
+			CommandFactory fcommand=new CommandFactory(cml);
+			CloudMlCommand load=fcommand.createLoadDeployment(msg);
+			cml.fireAndWait(load);
 		}else{
 			System.out.println("I got this:"+msg);
 		}

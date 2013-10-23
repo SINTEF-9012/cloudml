@@ -33,6 +33,7 @@ public class LoadDeployment extends ManageableCommand {
 
 	private final String pathToModel;
 
+
 	/**
 	 * Create a new request for loading a deployment model
 	 * 
@@ -43,6 +44,7 @@ public class LoadDeployment extends ManageableCommand {
 		super(handler);
 		this.pathToModel = pathToModel;
 	}
+	
 
 	/*
 	 * (non-Javadoc)
