@@ -22,9 +22,19 @@
  */
 package org.cloudml.mrt.coord;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import org.cloudml.mrt.coord.ws.CoordWsReception;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.ArtefactInstance;
+import org.cloudml.core.DeploymentModel;
+import org.cloudml.core.Node;
+import org.cloudml.core.NodeInstance;
+import org.cloudml.core.Provider;
+import org.cloudml.core.Property;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ServerHandshake;
@@ -42,6 +52,7 @@ public class App
             port = Integer.parseInt(args[0]);
         
         Coordinator coord = new Coordinator();
+        initModel(coord.executor.repo.root);
         coord.start(port);
         
 //        TestClient client = new TestClient("c1", "ws://127.0.0.1:9000");
@@ -59,6 +70,87 @@ public class App
         //reception.stop();
     }
     
+    public static void initModel(DeploymentModel dm){
+        Provider hugeProvider = new Provider("huge", "./credentials");
+        Provider bigsmallProvider = new Provider("bigsmall","./credentials");
+        dm.getProviders().add(hugeProvider);
+        dm.getProviders().add(bigsmallProvider);
+        
+        Node huge = new Node("huge");
+        huge.setProvider(hugeProvider);
+        Node big = new Node("big");
+        big.setProvider(bigsmallProvider);
+        Node small = new Node("small");
+        small.setProvider(bigsmallProvider);
+        
+        dm.getNodeTypes().put("huge", huge);
+        dm.getNodeTypes().put("big", big);
+        dm.getNodeTypes().put("small", small);
+        
+        for(int i = 0; i < 5; i++)
+            dm.getNodeInstances().add(huge.instanciates("huge"+i));
+        
+        for(int i = 0; i < 10; i++)
+            dm.getNodeInstances().add(big.instanciates("big"+i));
+        
+        for(int i = 0; i< 10; i++)
+            dm.getNodeInstances().add(small.instanciates("small"+i));
+        
+        for(NodeInstance ni : dm.getNodeInstances()){
+            ni.getProperties().add(new Property("state","on"));
+        }
+        
+    }
+    
+    
+      public static void initWithFaked(DeploymentModel root){
+        Provider provider = new Provider("provider","");
+        root.getProviders().add(provider);
+        Node node1 = new Node("node1");
+        node1.setProvider(provider);
+        root.getNodeTypes().put("node1",node1);
+        root.getNodeInstances().add(node1.instanciates("ni11"));
+        root.getNodeInstances().add(node1.instanciates("ni12"));
+        
+        Node node2 = new Node("node2");
+        node2.setProvider(provider);
+        root.getNodeTypes().put("node2", node2);
+        
+        root.getNodeInstances().add(node2.instanciates("ni21"));
+        
+        
+//        Artefact artefact1 = new Artefact("artefact1");
+//        root.getArtefactTypes().put("artefact1",artefact1);
+//        
+//        root.getArtefactInstances().add(artefact1.instanciates("ai11"));
+//        root.getArtefactInstances().add(artefact1.instanciates("ai12"));
+        
+       
+        for(NodeInstance ni : root.getNodeInstances()){
+            ni.getProperties().add(new Property("state","onn"));
+        }
+        for(ArtefactInstance ai : root.getArtefactInstances()){
+            ai.getProperties().add(new Property("state","onn"));
+        }
+    }
+    
+    public static void initWithSenseApp(DeploymentModel root){
+        JsonCodec jsonCodec = new JsonCodec();
+        try {
+            root = (DeploymentModel) jsonCodec.load(new FileInputStream("sensappAdmin.json"));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ModelRepo.class.getName()).log(Level.SEVERE, null, ex);
+            initWithFaked(root);
+        }
+        
+        for(NodeInstance ni : root.getNodeInstances()){
+            ni.getProperties().add(new Property("state","onn"));
+        }
+        for(ArtefactInstance ai : root.getArtefactInstances()){
+            ai.getProperties().add(new Property("state","onn"));
+        }
+    }
+
 
 
 }

@@ -74,8 +74,12 @@ public class CommandExecutor {
      * @return 
      */
     public synchronized Object execute(Instruction inst, List<Change> changes){
-        return inst.execute(repo.root, changes);
-        
+        int curr = changes.size();
+        Object obj = inst.execute(repo.root, changes);
+        for(;curr<changes.size();curr++){
+            changes.get(curr).fromPeer = inst.fromPeer;
+        }
+        return obj;
     }
     
     

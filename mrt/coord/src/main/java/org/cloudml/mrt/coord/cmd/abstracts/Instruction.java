@@ -3,6 +3,9 @@ package org.cloudml.mrt.coord.cmd.abstracts;
 import java.util.List;
 
 public class Instruction {
+    
+    public String fromPeer = "";
+    
     public Object execute(Object context, List<Change> changes){
         return _execute(context, changes);
     }

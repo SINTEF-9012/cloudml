@@ -4,28 +4,28 @@ import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 @SuppressWarnings("all")
-public class Created extends Change {
-  public Created() {
+public class Snapshot extends Change {
+  public Snapshot() {
   }
   
-  public Created(final String nouse) {
+  public Snapshot(final String nouse) {
   }
   
-  public Created(final Procedure1<Created> initializer) {
+  public Snapshot(final Procedure1<Snapshot> initializer) {
     initializer.apply(this);
   }
   
-  public Object object;
+  public Object content;
   
-  Object object_repr = null;
+  Object content_repr = null;
   
   @Override
   public Change obtainRepr() {
-    Created toRepr = new Created();
-    if(this.object_repr!=null)
-    	toRepr.object = this.object_repr;
+    Snapshot toRepr = new Snapshot();
+    if(this.content_repr!=null)
+    	toRepr.content = this.content_repr;
     else
-    	toRepr.object = this.object;
+    	toRepr.content = this.content;
     toRepr.fromPeer = this.fromPeer;
     return toRepr;
     

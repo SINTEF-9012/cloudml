@@ -34,6 +34,7 @@ public class Flush extends Change {
     	toRepr.object = this.object_repr;
     else
     	toRepr.object = this.object;
+    toRepr.fromPeer = this.fromPeer;
     return toRepr;
     
   }

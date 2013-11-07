@@ -2,6 +2,8 @@ package org.cloudml.mrt.coord.cmd.abstracts;
 
 public class Change implements Comparable<Change>{
     
+    public String fromPeer = "";
+    
     long timeStamp;
     public Change(){
         timeStamp = System.currentTimeMillis();

@@ -42,6 +42,8 @@ import org.cloudml.mrt.coord.cmd.abstracts.Change;
 import org.cloudml.mrt.coord.cmd.abstracts.Instruction;
 import org.cloudml.mrt.coord.cmd.abstracts.Listener;
 import org.cloudml.mrt.coord.cmd.gen.CloudMLCmds;
+import org.cloudml.mrt.coord.cmd.gen.GetSnapshot;
+import org.cloudml.mrt.coord.cmd.gen.Snapshot;
 import org.cloudml.mrt.coord.ws.CoordWsReception;
 import org.yaml.snakeyaml.Yaml;
 
@@ -72,6 +74,7 @@ public class Coordinator {
     
     public Object process(Instruction inst, PeerStub from){
         //Do something before, such as record every instruction
+        inst.fromPeer = from.getID();
         return executor.execute(inst, changeList);
         //Do something after, such as...
     }
@@ -98,8 +101,9 @@ public class Coordinator {
                 obj = process((Instruction) cmd, from);
             else if(cmd instanceof Listener)
                 obj = process((Listener) cmd, from);
-            if(obj!=null)
-                ret += String.format("---return of %s---\n%s\n", cmd.getClass().getSimpleName(), codec(obj));
+            if(obj!=null){
+                ret += String.format("###return of %s###\n%s\n", cmd.getClass().getSimpleName(), codec(obj));
+            }
         }
         return ret;
     }
@@ -115,8 +119,12 @@ public class Coordinator {
                 return null;
             }
         }
-        else
-            return object.toString();
+        else{
+             Snapshot snapshot = new Snapshot();
+             snapshot.content = object;
+             return CloudMLCmds.INSTANCE.getYaml().dump(snapshot);
+        }
+            
     }
     
 }

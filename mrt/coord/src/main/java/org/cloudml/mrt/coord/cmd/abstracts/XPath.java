@@ -1,5 +1,7 @@
 package org.cloudml.mrt.coord.cmd.abstracts;
 
+import java.util.Iterator;
+
 import org.apache.commons.jxpath.JXPathContext;
 
 public class XPath {
@@ -11,6 +13,11 @@ public class XPath {
     public Object query(Object context){
         JXPathContext jpathcontext = JXPathContext.newContext(context);
         return jpathcontext.getValue(literal);
+    }
+    
+    public Iterator iterate(Object context){
+    	JXPathContext jpathcontext = JXPathContext.newContext(context);
+    	return jpathcontext.iterate(literal);
     }
     
 }

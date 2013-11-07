@@ -50,6 +50,7 @@ public class Removed extends Change {
     	toRepr.removedValue = this.removedValue_repr;
     else
     	toRepr.removedValue = this.removedValue;
+    toRepr.fromPeer = this.fromPeer;
     return toRepr;
     
   }

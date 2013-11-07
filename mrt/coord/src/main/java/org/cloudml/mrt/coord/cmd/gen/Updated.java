@@ -42,6 +42,7 @@ public class Updated extends Change {
     	toRepr.newValue = this.newValue_repr;
     else
     	toRepr.newValue = this.newValue;
+    toRepr.fromPeer = this.fromPeer;
     return toRepr;
     
   }

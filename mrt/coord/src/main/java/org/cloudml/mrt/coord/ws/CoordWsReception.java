@@ -67,6 +67,7 @@ public class CoordWsReception extends WebSocketServer{
     public void onOpen(WebSocket ws, ClientHandshake ch) {
         System.out.printf("A component is connected from: %s\n", ws.getRemoteSocketAddress());
         activeComponents.add(ws);
+        ws.send(String.format("!connected\n  yourID : %s", ws.getRemoteSocketAddress()));
     }
 
     @Override
