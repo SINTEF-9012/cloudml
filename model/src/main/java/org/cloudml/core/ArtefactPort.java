@@ -78,7 +78,7 @@ public abstract class ArtefactPort extends WithProperties {
     public boolean equals(Object other) {
         if (other instanceof ArtefactPort) {
         	ArtefactPort otherArt = (ArtefactPort) other;
-            return name.equals(otherArt.getName());
+            return name.equals(otherArt.getName()) && owner.equals(otherArt.getOwner());
         } else {
             return false;
         }
