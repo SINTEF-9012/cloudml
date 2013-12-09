@@ -30,6 +30,13 @@ public class NodeInstance extends WithProperties {
     private Node type;
     private String publicAddress="";
     private String id="";
+    private State status;
+    
+    public enum State{
+    	stopped,
+    	running,
+    	error,
+    }
     
     public NodeInstance() {
     }
@@ -37,13 +44,14 @@ public class NodeInstance extends WithProperties {
     public NodeInstance(String name, Node type) {
         super(name);
         this.type = type;
+        this.status=State.stopped;
     }
 
     public NodeInstance(String name, Node type, List<Property> properties) {
         super(name, properties);
         this.type = type;
     }
-
+    
     public Node getType() {
         return this.type;
     }
@@ -64,6 +72,21 @@ public class NodeInstance extends WithProperties {
     	return this.id;
     }
     
+    public State getStatus(){
+    	return this.status;
+    }
+    
+    public void setStatusAsStopped(){
+    	this.status=State.stopped;
+    }
+    
+    public void setStatusAsError(){
+    	this.status=State.error;
+    }
+    
+    public void setStatusAsRunning(){
+    	this.status=State.running;
+    }
     
     @Override
     public String toString() {

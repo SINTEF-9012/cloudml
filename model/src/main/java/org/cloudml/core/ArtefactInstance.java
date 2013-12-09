@@ -25,6 +25,8 @@ package org.cloudml.core;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudml.core.NodeInstance.State;
+
 /*
  * An instance of artefact is an elementary unit to be deployed on a single
  * node. It contains properties, communications channels and dependencies.
@@ -34,6 +36,16 @@ public class ArtefactInstance extends WithProperties {
 
 	private Artefact type;
 	private NodeInstance destination = null;
+	private State status;
+
+	public enum State{
+		uninstalled,
+		installed,
+		configured,
+		running,
+		error,
+	}
+
 
 	/*
 	 * Dependencies <PortName,PortInstance Reference>
@@ -47,6 +59,7 @@ public class ArtefactInstance extends WithProperties {
 	public ArtefactInstance(String name, Artefact type) {
 		super(name);
 		this.type = type;
+		this.status=State.uninstalled;
 	}
 
 	public ArtefactInstance(String name, Artefact type, NodeInstance destination) {
@@ -125,4 +138,12 @@ public class ArtefactInstance extends WithProperties {
 	public NodeInstance getDestination() {
 		return destination;
 	}
+	
+	public State getStatus(){
+    	return this.status;
+    }
+    
+    public void setStatus(State s){
+    	this.status=s;
+    }
 }
