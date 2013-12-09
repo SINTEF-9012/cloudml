@@ -24,4 +24,23 @@ package org.cloudml.deployer;
 
 public interface PaaSConnector {
 
+	//public void createApplication();
+	
+	//public void deployApplication();
+	
+	//public void undeployApplication();
+	
+	//public void terminateApplication();
+	
+	//public void startApplication();
+	
+	//public void stopApplication();
+	
+	//public void updateApplication();
+	
+	//public void createEnvironment();
+	
+	//public void terminateEnvironment();
+
+	
 }

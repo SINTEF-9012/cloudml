@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cloudml.core.*;
+import org.cloudml.core.ArtefactInstance.State;
 
 /*
  * The deployment Engine
@@ -144,6 +145,7 @@ public class CloudAppDeployer {
 			buildPaas(x,bindings);
 
 			jc.execCommand(ownerNode.getId(), x.getType().getResource().getDeployingResourceCommand(),"ubuntu",n.getPrivateKey());
+			x.setStatus(State.installed);
 			jc.closeConnection();
 		}
 	}
@@ -172,10 +174,16 @@ public class CloudAppDeployer {
 				if(!alreadyDeployed.contains(p.getOwner())){
 					jc.execCommand(owner.getId(), p.getOwner().getType().getResource().getRetrievingResourceCommand() ,"ubuntu",n.getPrivateKey());
 					jc.execCommand(owner.getId(), p.getOwner().getType().getResource().getDeployingResourceCommand(),"ubuntu",n.getPrivateKey());
-
+					p.getOwner().setStatus(State.installed);
+					
 					String configurationCommand=p.getOwner().getType().getResource().getConfigurationResourceCommand();
 					String startCommand=p.getOwner().getType().getResource().getStartResourceCommand();
-					configureAndStart(jc, n, owner, configurationCommand, startCommand);
+					configure(jc, n, owner, configurationCommand);
+					p.getOwner().setStatus(State.configured);
+					start(jc, n, owner, startCommand);
+					p.getOwner().setStatus(State.running);
+					
+					
 					alreadyDeployed.add(p.getOwner());
 					alreadyStarted.add(p.getOwner());
 				}
@@ -203,7 +211,10 @@ public class CloudAppDeployer {
 
 				String configurationCommand=x.getType().getResource().getConfigurationResourceCommand();
 				String startCommand= x.getType().getResource().getStartResourceCommand();
-				configureAndStart(jc, n, ownerNode, configurationCommand, startCommand);
+				configure(jc, n, ownerNode, configurationCommand);
+				x.setStatus(State.configured);
+				start(jc, n, ownerNode, startCommand);
+				x.setStatus(State.running);
 				alreadyStarted.add(x);
 				jc.closeConnection();
 			}
@@ -212,19 +223,32 @@ public class CloudAppDeployer {
 
 
 	/**
-	 * Configure and start an artefact
+	 * Configure an artefact
 	 * @param jc a connector
 	 * @param n A node type
 	 * @param ni a node instance
 	 * @param configurationCommand the command to configure the artefact, parameters are: IP IPDest portDest
 	 * @param startCommand the command to start the artefact
 	 */
-	private void configureAndStart(Connector jc, Node n, NodeInstance ni, String configurationCommand, String startCommand){
+	private void configure(Connector jc, Node n, NodeInstance ni, String configurationCommand){
 		if(!configurationCommand.equals(""))
 			jc.execCommand(ni.getId(), configurationCommand,"ubuntu",n.getPrivateKey());
+	}
+	
+	
+	/**
+	 * start an artefact
+	 * @param jc a connector
+	 * @param n A node type
+	 * @param ni a node instance
+	 * @param configurationCommand the command to configure the artefact, parameters are: IP IPDest portDest
+	 * @param startCommand the command to start the artefact
+	 */
+	private void start(Connector jc, Node n, NodeInstance ni, String startCommand){
 		if(!startCommand.equals(""))
 			jc.execCommand(ni.getId(), startCommand,"ubuntu",n.getPrivateKey());
 	}
+	
 
 	/**
 	 * Provision the nodes and upload the model with informations about the node
@@ -296,7 +320,7 @@ public class CloudAppDeployer {
 			//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 			jc.execCommand(ownerNode.getId(), r.getRetrievingResourceCommand(),"ubuntu",n.getPrivateKey());
 			String configurationCommand=r.getConfigurationResourceCommand()+" \""+ipAddress+"\" \""+destinationIpAddress+"\" "+destinationPortNumber;
-			configureAndStart(jc, n, ownerNode, configurationCommand, "");
+			configure(jc, n, ownerNode, configurationCommand);
 			jc.closeConnection();
 		}
 	}
@@ -322,6 +346,7 @@ public class CloudAppDeployer {
 		Connector jc=ConnectorFactory.createConnector(p);
 		jc.destroyNode(n.getId());
 		jc.closeConnection();
+		n.setStatusAsStopped();
 	}
 
 	/**
@@ -348,6 +373,7 @@ public class CloudAppDeployer {
 			String stopCommand=a.getType().getResource().getStopResourceCommand();
 			jc.execCommand(ownerNode.getId(), stopCommand,"ubuntu",n.getPrivateKey());
 			jc.closeConnection();
+			a.setStatus(State.configured);
 		}
 	}
 

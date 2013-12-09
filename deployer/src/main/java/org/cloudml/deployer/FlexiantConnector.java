@@ -198,12 +198,15 @@ public class FlexiantConnector implements Connector{
 			Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
 			a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
 			journal.log(Level.INFO, ">> Running node: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
+			a.setStatusAsRunning();
 		} catch (ExtilityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			a.setStatusAsError();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			a.setStatusAsError();
 		}
 	}
 

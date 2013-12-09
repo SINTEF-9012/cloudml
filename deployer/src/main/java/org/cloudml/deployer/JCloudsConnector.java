@@ -314,11 +314,12 @@ public class JCloudsConnector implements Connector{
 
 			} catch (RunNodesException e) {
 				e.printStackTrace();
+				a.setStatusAsError();
 			}	
 
 			a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
 			a.setId(nodeInstance.getId());
-
+			a.setStatusAsRunning();
 		}
 	}
 
