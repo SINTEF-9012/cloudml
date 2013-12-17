@@ -26,6 +26,7 @@
 		<module>deployer</module>
 		<module>facade</module>
 		<module>ui</module>
+		<module>misc</module>
 	</modules>
 
 	<build>

@@ -4,7 +4,8 @@
     <parent>
         <artifactId>misc</artifactId>
         <groupId>org.cloudml</groupId>
-        <version>1.3-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
+		<relativePath>..</relativePath>
     </parent>
     
     <artifactId>misc.autoscalar</artifactId>
@@ -24,13 +25,13 @@
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>model</artifactId>
-            <version>1.3-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
         </dependency>
         
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>codecs.json</artifactId>
-            <version>1.3-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
         </dependency>
                 
         <dependency>
