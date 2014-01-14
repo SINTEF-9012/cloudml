@@ -1,0 +1,44 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+        <parent>
+                <artifactId>ui</artifactId>
+                <groupId>org.cloudml</groupId>
+                <version>1.4-SNAPSHOT</version>
+        </parent>
+		
+		<artifactId>ui.webeditor</artifactId>
+		<packaging>war</packaging>
+        <name>CloudML :: UI :: WebEditor</name>
+        <description>A CloudML Web-based Editor</description>
+        <inceptionYear>2014</inceptionYear>
+
+		 <repositories>
+			<repository>
+				<id>jetty</id>
+				<name>Jetty Repository</name>
+				<url>http://oss.sonatype.org/content/groups/jetty/</url>
+			</repository>
+		</repositories>
+		
+		<build>
+  
+		<plugins>
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>8.1.5.v20120716</version>
+				<configuration>
+					<stopPort>9999</stopPort>
+					<stopKey>${project.artifactId}</stopKey>
+					<connectors>
+						<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+							<port>9090</port>
+						</connector>
+					</connectors>
+				</configuration>
+			</plugin>
+  
+		</plugins>
+	</build>	
+</project>

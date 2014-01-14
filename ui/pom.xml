@@ -19,5 +19,6 @@
     <module>shell</module>
 	<module>lightshell</module>
     <module>graph</module>
+	<module>webeditor</module>
   </modules>
 </project>

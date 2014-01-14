@@ -1,0 +1,84 @@
+/**
+ * This file is part of CloudML [ http://cloudml.org ]
+ *
+ * Copyright (C) 2012 - SINTEF ICT
+ * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ *
+ * Module: root
+ *
+ * CloudML is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * CloudML is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with CloudML. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+.flowchart-demo .window { 
+box-shadow: 2px 2px 19px #aaa;
+   -o-box-shadow: 2px 2px 19px #aaa;
+   -webkit-box-shadow: 2px 2px 19px #aaa;
+   -moz-box-shadow: 2px 2px 19px #aaa;
+	-moz-border-radius:0.5em;
+	border-radius:0.5em;	
+	opacity:0.8;
+	filter:alpha(opacity=80);
+
+	text-align:center;
+	z-index:20; position:absolute;
+
+	font-family:helvetica;padding:0.5em;
+	font-size:0.9em;
+}
+
+.flowchart-demo .window:hover {
+	box-shadow: 2px 2px 19px #444;
+   -o-box-shadow: 2px 2px 19px #444;
+   -webkit-box-shadow: 2px 2px 19px #444;
+   -moz-box-shadow: 2px 2px 19px #444;
+    opacity:0.6;
+	filter:alpha(opacity=60);
+}
+
+._vm{
+	background-color:#eeeeef;
+	color:black;
+}
+
+._art {
+	background-color:#22aa22;
+	color:black;
+}
+
+.flowchart-demo .active {
+	border:1px dotted green;
+}
+.flowchart-demo .hover {
+	border:1px dotted red;
+}
+
+.flowchart-demo ._jsPlumb_connector { z-index:4; }
+.flowchart-demo ._jsPlumb_endpoint, .endpointTargetLabel, .endpointSourceLabel{ z-index:21;cursor:pointer; }
+
+.flowchart-demo .aLabel {
+ 	background-color:white; 
+	padding:0.4em; 
+	font:12px sans-serif; 
+	color:#444;
+	z-index:21;
+	border:1px dotted gray;
+	opacity:0.8;
+	filter:alpha(opacity=80);
+	cursor: pointer;
+}
+.flowchart-demo .aLabel._jsPlumb_hover {
+	background-color:#5C96BC;
+	color:white;	
+	border:1px solid white;
+}

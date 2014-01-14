@@ -1,0 +1,200 @@
+<!--
+
+    This file is part of CloudML [ http://cloudml.org ]
+
+    Copyright (C) 2012 - SINTEF ICT
+    Contact: Franck Chauvel <franck.chauvel@sintef.no>
+
+    Module: root
+
+    CloudML is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
+
+    CloudML is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General
+    Public License along with CloudML. If not, see
+    <http://www.gnu.org/licenses/>.
+
+-->
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>CloudML Web Editor</title>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+	<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+	<link rel="stylesheet" href="css/demo.css">
+	<link rel="stylesheet" href="css/demo-all.css">
+	<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+	<style>
+	#feedback { font-size: 1.4em; }
+	.selectable .ui-selecting { background: #FECA40; }
+	.selectable .ui-selected { background: #F39814; color: white; }
+	.selectable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+	.selectable li { margin: 3px; padding: 0.4em; font-size: 1.4em; height: 18px; }
+		  body {
+			padding-top: 60px;
+			padding-bottom: 40px;
+		  }
+		  .sidebar-nav {
+			padding: 9px 0;
+		  }
+
+		  @media (max-width: 980px) {
+			/* Enable use of floated navbar text */
+			.navbar-text.pull-right {
+			  float: none;
+			  padding-left: 5px;
+			  padding-right: 5px;
+			}
+		  }
+	</style>
+</head>
+
+<body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="index.html">CloudML Web Editor</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+				<li id="file" class="active dropdown">
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#file">File<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li class="active"><a href="#" data-toggle="modal" data-target="#myModal">Load a deployment model</a></li>
+						<li><a href="#">Save a deployment model</a></li>
+						<li class="divider"></li>
+						<li><a href="reset.html">Reset</a></li>
+					</ul>
+				</li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+			<ul class="nav pull-right">
+				<li class="divider-vertical"></li>
+				<li><a href="index.html">Refresh page</a></li>
+			</ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+	<div class="span4 offset4" id="alert-div" style="position:fixed;width:40%;margin-top:10px;"></div>
+	
+	<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h4 class="modal-title" id="myModalLabel">Offline Upload</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="row-fluid">
+			<h3>Select your deployment model</h3><br/>
+			<div class="span4">
+				<input type="file" class="input-file" style="width:360px">
+			</div>
+			<div class="span4 offset4">
+				<div class=" progress progress-striped active" hidden>
+					<div id="progressBar" class="bar" style="width: 0%;"></div>
+				</div>
+			</div>
+			</div>
+			<div class="span4">
+				<a class="btn" onclick="loadFile('myModal');">Load</a>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		  </div>
+		</div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	
+	
+	<div class="container-fluid">
+	  <div class="row-fluid">
+        <div class="span3">
+          <div class="well sidebar-nav">
+			<div>Artefact Types</div>
+            <ol id="selectableArtefacts" class="selectable">
+			</ol>
+			<div>Nodes Types</div>
+			<ol id="selectableNodes" class="selectable">
+			</ol>
+			<div>Bindings Types</div>
+			<ol id="selectableBindings" class="selectable">
+			</ol>
+          </div><!--/.well -->
+        </div><!--/span-->
+
+		<div id="main">         
+            <div class="demo flowchart-demo" id="flowchart-demo">
+                <!--<div class="window _vm" id="flowchartWindow1"><strong>1</strong><br/><br/></div>
+                <div class="window _vm" id="flowchartWindow2"><strong>2</strong><br/><br/></div>
+                <div class="window _vm" id="flowchartWindow3"><strong>3</strong><br/><br/></div>
+                <div class="window _vm" id="flowchartWindow4"><strong>4</strong><br/><br/></div>
+				<div class="window _art" id="flowchartWindow5"><strong>5</strong><br/><br/></div>-->
+            </div>          
+        </div>
+		
+
+		
+	</div>	
+	</div>
+		<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
+		<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js'></script>
+		<script type='text/javascript' src='http://jsplumbtoolkit.com/lib/jquery.ui.touch-punch.min.js'></script>
+	<script>
+		var deploymentModel;
+		/*$.getJSON("sensappAdmin.json", function(json) {
+			deploymentModel=json;
+		});*/
+		
+		$(document).ready(function () {
+			$('#myModal').modal('show');
+		});
+		
+		var a;
+		function addArtefactType(){
+			for(a=0;a<deploymentModel.artefactTypes.length;a++){
+				$( "#selectableArtefacts" ).append( "<li class='ui-widget-content'>"+ deploymentModel.artefactTypes[a].name +"</li>" );
+			}
+		}
+		
+		function addBindingType(){
+			for(a=0;a<deploymentModel.bindingTypes.length;a++){
+				$( "#selectableBindings" ).append( "<li class='ui-widget-content'>"+ deploymentModel.bindingTypes[a].name +"</li>" );
+			}
+		}
+		
+		function addNodeTypes(){
+			for(a=0;a<deploymentModel.nodeTypes.length;a++){
+				$( "#selectableNodes" ).append( "<li class='ui-widget-content'>"+ deploymentModel.nodeTypes[a].name +"</li>" );
+			}
+		}
+		
+		
+		
+	</script>
+	
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+	<script type='text/javascript' src='./js/jquery.jsPlumb-1.5.5-min.js'></script>
+	<script src="./js/demo.js"></script>
+	
+</body>
+</html>

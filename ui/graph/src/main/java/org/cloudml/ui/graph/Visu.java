@@ -61,6 +61,7 @@ import org.cloudml.codecs.DrawnIconVertexDemo;
 import org.cloudml.codecs.Edge;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.Vertex;
+import org.cloudml.codecs.XmiCodec;
 import org.cloudml.core.Artefact;
 import org.cloudml.core.Binding;
 import org.cloudml.core.DeploymentModel;
