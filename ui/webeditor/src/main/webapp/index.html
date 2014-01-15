@@ -66,10 +66,10 @@
 				<li id="file" class="active dropdown">
 					<a class="dropdown-toggle" data-toggle="dropdown" href="#file">File<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li class="active"><a href="#" data-toggle="modal" data-target="#myModal">Load a deployment model</a></li>
+						<li><a href="#" data-toggle="modal" data-target="#myModal">Load a deployment model</a></li>
 						<li><a href="#">Save a deployment model</a></li>
 						<li class="divider"></li>
-						<li><a href="reset.html">Reset</a></li>
+						<li><a href="#" data-toggle="modal" data-target="#resetModal">Reset</a></li>
 					</ul>
 				</li>
               <li><a href="#about">About</a></li>
@@ -95,7 +95,7 @@
 
 	<div class="span4 offset4" id="alert-div" style="position:fixed;width:40%;margin-top:10px;"></div>
 	
-	<!-- Modal -->
+	<!-- LOAD DEPLOYMENT MODEL Modal -->
 	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	  <div class="modal-dialog">
 		<div class="modal-content">
@@ -116,11 +116,27 @@
 			</div>
 			</div>
 			<div class="span4">
-				<a class="btn" onclick="loadFile('myModal');">Load</a>
+				<a class="btn" data-dismiss="modal" onclick="loadFile('myModal');">Load</a>
 			</div>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		  </div>
+		</div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	
+	<!-- RESET Modal -->
+	<div class="modal fade" id="resetModal" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h4 class="modal-title" id="resetModalLabel">Reset and restart with a new deployment model?</h4>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-danger" data-dismiss="modal" onclick="reset();">Reset</button>
+			<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 		  </div>
 		</div><!-- /.modal-content -->
 	  </div><!-- /.modal-dialog -->

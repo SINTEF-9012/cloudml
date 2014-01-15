@@ -384,9 +384,9 @@ function updateProgress (evt) {
 	instance.reset();
 	instance.repaintEverything();
 	$( "#flowchart-demo").empty();
-	$( "#selectableBindings" ).empty();
-	$( "#selectableNodes" ).empty();
-	$( "#selectableArtefacts" ).empty();
+	$( "#bindingTable>tbody" ).empty();
+	$( "#nodeTable>tbody" ).empty();
+	$( "#artefactTable>tbody" ).empty();
  }
   
  //Load the deployment model
