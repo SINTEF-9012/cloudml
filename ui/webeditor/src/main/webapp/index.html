@@ -27,6 +27,7 @@
 
 <head>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>CloudML Web Editor</title>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
 	<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
@@ -45,15 +46,6 @@
 		  }
 		  .sidebar-nav {
 			padding: 9px 0;
-		  }
-
-		  @media (max-width: 980px) {
-			/* Enable use of floated navbar text */
-			.navbar-text.pull-right {
-			  float: none;
-			  padding-left: 5px;
-			  padding-right: 5px;
-			}
 		  }
 	</style>
 </head>
@@ -127,69 +119,66 @@
 	
 	
 	<div class="container-fluid">
-	  <div class="row-fluid">
-        <div class="span3">
-          <div class="well sidebar-nav">
-			<div>Artefact Types</div>
-            <ol id="selectableArtefacts" class="selectable">
-			</ol>
-			<div>Nodes Types</div>
-			<ol id="selectableNodes" class="selectable">
-			</ol>
-			<div>Bindings Types</div>
-			<ol id="selectableBindings" class="selectable">
-			</ol>
-          </div><!--/.well -->
-        </div><!--/span-->
+        <div id="editor" class="span">
+          <div>
+			<div>
+				<h2>Artefact types</h2>
+				<table id="artefactTable" class="table table-striped table-bordered" cellpadding="0" cellspacing="0" border="0">
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			<div>
+				<h2>Node types</h2>
+				<table id="nodeTable" class="table table-striped table-bordered" cellpadding="0" cellspacing="0" border="0">
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			<div>
+				<h2>Binding types</h2>
+				<table id="bindingTable" class="table table-striped table-bordered" cellpadding="0" cellspacing="0" border="0">
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+          </div>
+        </div>
 
 		<div id="main">         
             <div class="demo flowchart-demo" id="flowchart-demo">
-                <!--<div class="window _vm" id="flowchartWindow1"><strong>1</strong><br/><br/></div>
-                <div class="window _vm" id="flowchartWindow2"><strong>2</strong><br/><br/></div>
-                <div class="window _vm" id="flowchartWindow3"><strong>3</strong><br/><br/></div>
-                <div class="window _vm" id="flowchartWindow4"><strong>4</strong><br/><br/></div>
-				<div class="window _art" id="flowchartWindow5"><strong>5</strong><br/><br/></div>-->
             </div>          
         </div>
 		
 
-		
-	</div>	
 	</div>
 		<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
 		<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js'></script>
 		<script type='text/javascript' src='http://jsplumbtoolkit.com/lib/jquery.ui.touch-punch.min.js'></script>
 	<script>
 		var deploymentModel;
-		/*$.getJSON("sensappAdmin.json", function(json) {
-			deploymentModel=json;
-		});*/
-		
+	
 		$(document).ready(function () {
 			$('#myModal').modal('show');
 		});
 		
-		var a;
 		function addArtefactType(){
-			for(a=0;a<deploymentModel.artefactTypes.length;a++){
-				$( "#selectableArtefacts" ).append( "<li class='ui-widget-content'>"+ deploymentModel.artefactTypes[a].name +"</li>" );
+			for(var a=0;a<deploymentModel.artefactTypes.length;a++){
+				$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.artefactTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
 			}
 		}
 		
 		function addBindingType(){
-			for(a=0;a<deploymentModel.bindingTypes.length;a++){
-				$( "#selectableBindings" ).append( "<li class='ui-widget-content'>"+ deploymentModel.bindingTypes[a].name +"</li>" );
+			for(var a=0;a<deploymentModel.bindingTypes.length;a++){
+				$( "#bindingTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
 			}
 		}
 		
 		function addNodeTypes(){
-			for(a=0;a<deploymentModel.nodeTypes.length;a++){
-				$( "#selectableNodes" ).append( "<li class='ui-widget-content'>"+ deploymentModel.nodeTypes[a].name +"</li>" );
+			for(var a=0;a<deploymentModel.nodeTypes.length;a++){
+				$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
 			}
 		}
-		
-		
-		
 	</script>
 	
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
