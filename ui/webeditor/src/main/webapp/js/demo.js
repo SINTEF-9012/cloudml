@@ -194,6 +194,7 @@
 	
 	
 	function addNodeInstances(){
+		if(deploymentModel.nodeInstances != null){
 			for(a=0;a<deploymentModel.nodeInstances.length;a++){
 				var nodeType=findNodeTypeByName(deploymentModel.nodeInstances[a].type);
 				var nodeInfo="minRam:"+nodeType.minRam+
@@ -210,14 +211,16 @@
 				
 				$('#flowchartWindow_'+deploymentModel.nodeInstances[a].name).popover({html:true});
 			}
-
 		}
+	}
 		
 		function addArtefactsInstances(){
-			for(a=0;a<deploymentModel.artefactInstances.length;a++){
-				$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.artefactInstances[a].name+"'><strong>"+ deploymentModel.artefactInstances[a].name +"</strong><br/><br></div>" );
-				placeRandomly("flowchartWindow_"+deploymentModel.artefactInstances[a].name);
-				//$('#flowchartWindow_'+deploymentModel.artefactInstances[a].name).popover();
+			if(deploymentModel.artefactInstances != null){
+				for(a=0;a<deploymentModel.artefactInstances.length;a++){
+					$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.artefactInstances[a].name+"'><strong>"+ deploymentModel.artefactInstances[a].name +"</strong><br/><br></div>" );
+					placeRandomly("flowchartWindow_"+deploymentModel.artefactInstances[a].name);
+					//$('#flowchartWindow_'+deploymentModel.artefactInstances[a].name).popover();
+				}
 			}
 		}
 		
@@ -228,43 +231,48 @@
 		}
 		
 		function addPortInstances(){
-			for(a=0;a<deploymentModel.artefactInstances.length;a++){
-				var i=0;
-				instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceDestEndpoint, { anchor:"Continuous", uuid:deploymentModel.artefactInstances[a].name+"_destination"});
-				if(deploymentModel.artefactInstances[a].required != null){
-					for(i=0; i<deploymentModel.artefactInstances[a].required.length;i++){
-						sourceEndpoint.overlays[0][1].label = deploymentModel.artefactInstances[a].required[i].name;
-						var port=findPortType(deploymentModel.artefactInstances[a].type,deploymentModel.artefactInstances[a].required[i].type);
-						if(!port.isOptional){
-							instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/required["+deploymentModel.artefactInstances[a].required[i].name +"]"});
-						}else{
-							instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceOptionalEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/required["+deploymentModel.artefactInstances[a].required[i].name +"]"});
+			if(deploymentModel.artefactInstances != null){
+				for(a=0;a<deploymentModel.artefactInstances.length;a++){
+					var i=0;
+					instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceDestEndpoint, { anchor:"Continuous", uuid:deploymentModel.artefactInstances[a].name+"_destination"});
+					if(deploymentModel.artefactInstances[a].required != null){
+						for(i=0; i<deploymentModel.artefactInstances[a].required.length;i++){
+							sourceEndpoint.overlays[0][1].label = deploymentModel.artefactInstances[a].required[i].name;
+							var port=findPortType(deploymentModel.artefactInstances[a].type,deploymentModel.artefactInstances[a].required[i].type);
+							if(!port.isOptional){
+								instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/required["+deploymentModel.artefactInstances[a].required[i].name +"]"});
+							}else{
+								instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceOptionalEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/required["+deploymentModel.artefactInstances[a].required[i].name +"]"});
+							}
+							
 						}
-						
 					}
-				}
-				if(deploymentModel.artefactInstances[a].provided != null){
-					for(i=0; i<deploymentModel.artefactInstances[a].provided.length;i++){
-						targetEndpoint.overlays[0][1].label = deploymentModel.artefactInstances[a].provided[i].name;
-						instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/provided["+deploymentModel.artefactInstances[a].provided[i].name +"]"});
+					if(deploymentModel.artefactInstances[a].provided != null){
+						for(i=0; i<deploymentModel.artefactInstances[a].provided.length;i++){
+							targetEndpoint.overlays[0][1].label = deploymentModel.artefactInstances[a].provided[i].name;
+							instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/provided["+deploymentModel.artefactInstances[a].provided[i].name +"]"});
+						}
 					}
 				}
 			}
 		}
 		
 		function findPortType(artefactTypeName,portTypeName){
-			for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-				//very crappy but I am lazy
-				var aname="artefactTypes["+deploymentModel.artefactTypes[a].name+"]";
-				if(aname == artefactTypeName){
-					for(var i=0; i<deploymentModel.artefactTypes[a].required.length;i++){
-						//very crappy but I am lazy
-						if(aname+"/required["+deploymentModel.artefactTypes[a].required[i].name+"]" == portTypeName){
-							return deploymentModel.artefactTypes[a].required[i];
+			if(deploymentModel.artefactTypes != null){
+				for(var a=0;a<deploymentModel.artefactTypes.length;a++){
+					//very crappy but I am lazy
+					var aname="artefactTypes["+deploymentModel.artefactTypes[a].name+"]";
+					if(aname == artefactTypeName){
+						for(var i=0; i<deploymentModel.artefactTypes[a].required.length;i++){
+							//very crappy but I am lazy
+							if(aname+"/required["+deploymentModel.artefactTypes[a].required[i].name+"]" == portTypeName){
+								return deploymentModel.artefactTypes[a].required[i];
+							}
 						}
 					}
 				}
 			}
+			alertMessage("error","Unknown port type!",5000);
 			return null;
 		}
 		
@@ -278,20 +286,26 @@
 		}
 		
 		function findArtefactTypeByName(name){
-			for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-				if(name.indexOf(deploymentModel.artefactTypes[a].name) >= 0){
-					return deploymentModel.artefactTypes[a];
+			if(deploymentModel.artefactTypes != null){
+				for(var a=0;a<deploymentModel.artefactTypes.length;a++){
+					if(name.indexOf(deploymentModel.artefactTypes[a].name) >= 0){
+						return deploymentModel.artefactTypes[a];
+					}
 				}
 			}
+			alertMessage("error","Unknown artefact type!",5000);
 			return null;
 		}
 		
 		function findNodeTypeByName(name){
-			for(var a=0;a<deploymentModel.nodeTypes.length;a++){
-				if(name.indexOf(deploymentModel.nodeTypes[a].name) >= 0){
-					return deploymentModel.nodeTypes[a];
+			if(deploymentModel.nodeTypes != null){
+				for(var a=0;a<deploymentModel.nodeTypes.length;a++){
+					if(name.indexOf(deploymentModel.nodeTypes[a].name) >= 0){
+						return deploymentModel.nodeTypes[a];
+					}
 				}
 			}
+			alertMessage("error","Unknown node type!",5000);
 			return null;
 		}
 		
@@ -306,12 +320,16 @@
 					return artefactInstance.provided[a];
 				}
 			}
+			alertMessage("error","Unknown port type!",5000);
 			return null;
 		}
 		
 		function addBindinInstances(){
 			for(a=0; a< deploymentModel.bindingInstances.length;a++){
 				var connection=instance.connect({uuids:[deploymentModel.bindingInstances[a].server, deploymentModel.bindingInstances[a].client], editable:true});
+				if(!connection){
+					alertMessage("error","Binding:"+deploymentModel.bindingInstances[a].name+" not well defined!",5000);
+				}
 				connection.getOverlay("label").setLabel(deploymentModel.bindingInstances[a].name);
 				
 				var artefactinstance=findArtefactInstanceByName(deploymentModel.bindingInstances[a].client);
@@ -325,7 +343,7 @@
 			}
 			for(a=0;a<deploymentModel.artefactInstances.length;a++){
 				if(deploymentModel.artefactInstances[a].destination != null){
-					instance.connect({uuids:[ deploymentModel.artefactInstances[a].name+"_destination", deploymentModel.artefactInstances[a].destination ], editable:true});
+					var connection=instance.connect({uuids:[ deploymentModel.artefactInstances[a].name+"_destination", deploymentModel.artefactInstances[a].destination ], editable:true});
 				}
 			}
 		}

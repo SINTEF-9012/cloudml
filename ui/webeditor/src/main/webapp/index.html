@@ -93,7 +93,7 @@
       </div>
     </div>
 
-	<div class="span4 offset4" id="alert-div" style="position:fixed;width:40%;margin-top:10px;"></div>
+	<div class="span4 offset4" id="alert-div" style="position:fixed;width:40%;margin-top:10px;z-index:100000"></div>
 	
 	<!-- LOAD DEPLOYMENT MODEL Modal -->
 	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -101,30 +101,41 @@
 		<div class="modal-content">
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-			<h4 class="modal-title" id="myModalLabel">Offline Upload</h4>
+			<h4 class="modal-title" id="myModalLabel">Select your deployment model</h4>
 		  </div>
 		  <div class="modal-body">
-			<div class="row-fluid">
-			<h3>Select your deployment model</h3><br/>
-			<div class="span4">
-				<input type="file" class="input-file" style="width:360px">
-			</div>
-			<div class="span4 offset4">
-				<div class=" progress progress-striped active" hidden>
-					<div id="progressBar" class="bar" style="width: 0%;"></div>
+			<div>
+				<h3>From a file</h3><br/>
+				<div class="span4">
+					<input type="file" class="input-file" style="width:360px">
 				</div>
-			</div>
-			</div>
-			<div class="span4">
-				<a class="btn" data-dismiss="modal" onclick="loadFile('myModal');">Load</a>
+				<div class="span4 offset4">
+					<div class=" progress progress-striped active" hidden>
+						<div id="progressBar" class="bar" style="width: 0%;"></div>
+					</div>
+				</div>
+				<div>
+					<a class="btn" data-dismiss="modal" onclick="loadFile('myModal');">Load</a>
+				</div><br/>
+				<h3>Initiate from a CloudML Server</h3><br/>
+				<div class="span4">
+					<div class="col-lg-6">
+						<div class="input-group">
+							<input type="text" id="url" class="form-control" placeholder="URL">
+							<span class="input-group-btn">
+								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());send("!getSnapshot {path : /}");' type="button">Go!</button>
+							</span>
+						</div>
+					</div>
+				</div>
 			</div>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 		  </div>
-		</div><!-- /.modal-content -->
-	  </div><!-- /.modal-dialog -->
-	</div><!-- /.modal -->
+		</div>
+	  </div>
+	</div>
 	
 	<!-- RESET Modal -->
 	<div class="modal fade" id="resetModal" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel" aria-hidden="true">
@@ -185,29 +196,39 @@
 	
 		$(document).ready(function () {
 			$('#myModal').modal('show');
+			if(!("WebSocket" in window)){  
+				alertMessage("error","Your browser does not support WebSockets!",8000);
+			}
 		});
 		
 		function addArtefactType(){
-			for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-				$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.artefactTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			if(deploymentModel.artefactTypes != null){
+				for(var a=0;a<deploymentModel.artefactTypes.length;a++){
+					$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.artefactTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+				}
 			}
 		}
 		
 		function addBindingType(){
-			for(var a=0;a<deploymentModel.bindingTypes.length;a++){
-				$( "#bindingTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			if(deploymentModel.bindingTypes != null){
+				for(var a=0;a<deploymentModel.bindingTypes.length;a++){
+					$( "#bindingTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+				}
 			}
 		}
 		
 		function addNodeTypes(){
-			for(var a=0;a<deploymentModel.nodeTypes.length;a++){
-				$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			if(deploymentModel.nodeTypes != null){
+				for(var a=0;a<deploymentModel.nodeTypes.length;a++){
+					$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.nodeTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+				}
 			}
 		}
 	</script>
 	
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 	<script type='text/javascript' src='./js/jquery.jsPlumb-1.5.5-min.js'></script>
+	<script src="./js/websocket.js"></script>
 	<script src="./js/demo.js"></script>
 	
 </body>
