@@ -1,6 +1,5 @@
 var socket;
 var ready;
-var notifications=new array();
 
 function connect(host){  
 	try{  
@@ -52,13 +51,3 @@ function send(text){
 	}  
 }
 
-function increaseNotificationNumber(){
-	var span=$("#notificationCounter");
-	var counter=parseInt(span.text());
-	$("#notificationCounter").html(counter+"");
-}
-
-function addNotification(data){
-	notifications.push(data);
-	$("#notificationMenu").append("<li>"+data+"</li>");
-}
