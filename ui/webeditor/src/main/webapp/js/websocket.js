@@ -1,5 +1,7 @@
 var socket;
 var ready;
+var notifications=new array();
+
 function connect(host){  
 	try{  
 		socket = new WebSocket(host);  
@@ -17,6 +19,11 @@ function connect(host){
 				loadDeploymentModel(array[2]);
 				alertMessage("success","Deployment Model loaded",5000); 
 			}
+			if(msg.data.indexOf("!update") >= 0){
+				increaseNotificationNumber();
+				addNotification();
+			}
+			
 		}  
   
 		socket.onclose = function(){  
@@ -24,11 +31,11 @@ function connect(host){
 		}
 		
 		socket.onerror = function(error){
-			alertMessage("error",'Error message: '+socket.readyState,10000);  
+			alertMessage("error",'Error message: '+socket.readyState,20000);  
 		}
   
 	} catch(exception){  
-		alertMessage("error",'Socket Status: '+exception,10000);  
+		alertMessage("error",'Socket Status: '+exception,20000);  
 	}  
 }
 
@@ -45,4 +52,13 @@ function send(text){
 	}  
 }
 
+function increaseNotificationNumber(){
+	var span=$("#notificationCounter");
+	var counter=parseInt(span.text());
+	$("#notificationCounter").html(counter+"");
+}
 
+function addNotification(data){
+	notifications.push(data);
+	$("#notificationMenu").append("<li>"+data+"</li>");
+}

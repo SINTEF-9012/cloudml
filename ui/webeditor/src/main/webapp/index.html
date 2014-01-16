@@ -78,11 +78,11 @@
 			<ul class="nav pull-right">
 				<li class="divider-vertical"></li>
 				<li class="dropdown">
-					<a class="dropdown-toggle" data-toggle="dropdown" href="#">Notifications <b class="caret"></b> <span class="badge">0</span></a>
-					<ul class="dropdown-menu">
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#">Notifications <span id="notificationCounter" class="badge">0</span><b class="caret"></b></a>
+					<ul id="notificationMenu" class="dropdown-menu">
 						<li><a href="#">See Notifications</a></li>
 						<li class="divider"></li>
-						<li><a href="reset.html">Reset</a></li>
+						<li><a onclick='' href="reset.html">Reset</a></li>
 					</ul>
 				</li>
 				<li class="divider-vertical"></li>
@@ -117,13 +117,13 @@
 				<div>
 					<a class="btn" data-dismiss="modal" onclick="loadFile('myModal');">Load</a>
 				</div><br/>
-				<h3>Initiate from a CloudML Server</h3><br/>
+				<h3>Connect to a CloudML Server</h3><br/>
 				<div class="span4">
 					<div class="col-lg-6">
 						<div class="input-group">
 							<input type="text" id="url" class="form-control" placeholder="URL">
 							<span class="input-group-btn">
-								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());send("!getSnapshot {path : /}");' type="button">Go!</button>
+								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());send("!getSnapshot {path : /}");send("!listenToAny");' type="button">Go!</button>
 							</span>
 						</div>
 					</div>
@@ -228,6 +228,7 @@
 	
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 	<script type='text/javascript' src='./js/jquery.jsPlumb-1.5.5-min.js'></script>
+	<script src="./js/toolkit.js"></script>
 	<script src="./js/websocket.js"></script>
 	<script src="./js/demo.js"></script>
 	
