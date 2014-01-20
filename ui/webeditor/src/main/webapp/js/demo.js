@@ -412,3 +412,27 @@ function loadDeploymentModel(jsonString) {
 	});
 
 }
+
+function addArtefactType(){
+	if(deploymentModel.artefactTypes != null){
+		for(var a=0;a<deploymentModel.artefactTypes.length;a++){
+			$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.artefactTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+		}
+	}
+}
+
+function addBindingType(){
+	if(deploymentModel.bindingTypes != null){
+		for(var a=0;a<deploymentModel.bindingTypes.length;a++){
+			$( "#bindingTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+		}
+	}
+}
+
+function addNodeTypes(){
+	if(deploymentModel.nodeTypes != null){
+		for(var a=0;a<deploymentModel.nodeTypes.length;a++){
+			$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.nodeTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+		}
+	}
+}

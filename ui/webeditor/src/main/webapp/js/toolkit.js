@@ -1,14 +1,14 @@
-var notifications=new array();
+var notifications = [];
+var counter=0;
 
 function increaseNotificationNumber(){
-	var span=$("#notificationCounter");
-	var counter=parseInt(span.text());
-	$("#notificationCounter").html(counter+"");
+	counter++;
+	$(".badge").text(counter+"");
 }
 
 function addNotification(data){
-	notifications.push(data);
-	$("#notificationMenu").append("<li>"+data+"</li>");
+	notifications.push(data+"");
+	$("#notificationMenu").prepend("<li>"+data+"</li>");
 }
 
 function updateProgress (evt) {

@@ -78,9 +78,9 @@
 			<ul class="nav pull-right">
 				<li class="divider-vertical"></li>
 				<li class="dropdown">
-					<a class="dropdown-toggle" data-toggle="dropdown" href="#">Notifications <span id="notificationCounter" class="badge">0</span><b class="caret"></b></a>
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#">Notifications <span class="badge">0</span><b class="caret"></b></a>
 					<ul id="notificationMenu" class="dropdown-menu">
-						<li><a href="#">See Notifications</a></li>
+						<!--<li><a href="#">See Notifications</a></li>-->
 						<li class="divider"></li>
 						<li><a onclick='' href="reset.html">Reset</a></li>
 					</ul>
@@ -200,30 +200,6 @@
 				alertMessage("error","Your browser does not support WebSockets!",8000);
 			}
 		});
-		
-		function addArtefactType(){
-			if(deploymentModel.artefactTypes != null){
-				for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-					$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.artefactTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
-				}
-			}
-		}
-		
-		function addBindingType(){
-			if(deploymentModel.bindingTypes != null){
-				for(var a=0;a<deploymentModel.bindingTypes.length;a++){
-					$( "#bindingTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
-				}
-			}
-		}
-		
-		function addNodeTypes(){
-			if(deploymentModel.nodeTypes != null){
-				for(var a=0;a<deploymentModel.nodeTypes.length;a++){
-					$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.nodeTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
-				}
-			}
-		}
 	</script>
 	
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
