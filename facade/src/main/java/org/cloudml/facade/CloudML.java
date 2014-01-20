@@ -22,6 +22,7 @@
  */
 package org.cloudml.facade;
 
+import org.cloudml.core.DeploymentModel;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.CommandHandler;
 import org.cloudml.facade.events.EventHandler;
@@ -61,5 +62,11 @@ public interface CloudML extends CommandHandler{
      * Properly free the resource allocated by the facade
      */
     public void terminate();
+    
+    /**
+     * In order to monitor the changes from outside
+     * @return 
+     */
+    public DeploymentModel getDeploymentModel();
     
 }
