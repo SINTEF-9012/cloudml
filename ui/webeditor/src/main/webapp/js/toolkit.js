@@ -8,7 +8,7 @@ function increaseNotificationNumber(){
 
 function addNotification(data){
 	notifications.push(data+"");
-	$("#notificationMenu").prepend("<li>"+data+"</li>");
+	$("#listNotifications").prepend("<li>"+data+"</li>");
 }
 
 function updateProgress (evt) {

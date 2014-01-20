@@ -21,7 +21,7 @@ function connect(host){
 			if(msg.data.indexOf("!update") >= 0){
 				alertMessage("success","New update!",5000); 
 				increaseNotificationNumber();
-				addNotification();
+				addNotification(msg.data);
 			}
 			
 		}  
