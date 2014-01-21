@@ -41,8 +41,9 @@ function connect(host){
 				alertMessage("success","Deployment Model loaded",5000); 
 			}
 			if(msg.data.indexOf("!update") >= 0){
+				alertMessage("success","New update!",5000); 
 				increaseNotificationNumber();
-				addNotification();
+				addNotification(msg.data);
 			}
 			
 		}  
