@@ -143,7 +143,12 @@ public class ArtefactInstance extends WithProperties {
     	return this.status;
     }
     
-    public void setStatus(State s){
-    	this.status=s;
+    public void setStatus(State s) {
+        this.status = s;
     }
+    
+    public void setStatus(String s) {
+        this.status = State.valueOf(s);
+    }
+    
 }
