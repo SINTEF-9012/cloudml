@@ -1,0 +1,306 @@
+package org.cloudml.mrt.cmd.jvmmodel
+
+import com.google.inject.Inject
+import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
+import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
+import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
+import org.cloudml.mrt.cmd.cmdLang.CmdModel
+import org.cloudml.mrt.cmd.cmdLang.Command
+import org.eclipse.xtext.common.types.util.TypeReferences
+import org.cloudml.mrt.cmd.cmdLang.Instruction
+import org.cloudml.mrt.cmd.cmdLang.Modification
+import org.eclipse.xtext.common.types.JvmGenericType
+import org.cloudml.mrt.cmd.cmdLang.Parameter
+import org.eclipse.xtext.common.types.JvmVisibility
+import java.io.ObjectOutputStream.PutField
+import java.util.Map
+import org.eclipse.xtext.xbase.XBlockExpression
+import org.eclipse.xtext.xbase.XExpression
+import org.cloudml.mrt.cmd.cmdLang.Change
+import org.eclipse.xtext.xbase.lib.Procedures$Procedure1
+import org.cloudml.mrt.cmd.cmdLang.Listener
+
+/**
+ * <p>Infers a JVM model from the source model.</p> 
+ *
+ * <p>The JVM model should contain all elements that would appear in the Java code 
+ * which is generated from the source model. Other models link against the JVM model rather than the source model.</p>     
+ */
+class CmdLangJvmModelInferrer extends AbstractModelInferrer {
+
+    /**
+     * convenience API to build and initialize JVM types and their members.
+     */
+	@Inject extension JvmTypesBuilder
+	@Inject extension TypeReferences
+	String packageName;
+	
+	Map<String, JvmGenericType> allCmdClasses = <String, JvmGenericType>newHashMap()
+	
+	/**
+	 * The dispatch method {@code infer} is called for each instance of the
+	 * given element's type that is contained in a resource.
+	 * 
+	 * @param element
+	 *            the model to create one or more
+	 *            {@link org.eclipse.xtext.common.types.JvmDeclaredType declared
+	 *            types} from.
+	 * @param acceptor
+	 *            each created
+	 *            {@link org.eclipse.xtext.common.types.JvmDeclaredType type}
+	 *            without a container should be passed to the acceptor in order
+	 *            get attached to the current resource. The acceptor's
+	 *            {@link IJvmDeclaredTypeAcceptor#accept(org.eclipse.xtext.common.types.JvmDeclaredType)
+	 *            accept(..)} method takes the constructed empty type for the
+	 *            pre-indexing phase. This one is further initialized in the
+	 *            indexing phase using the closure you pass to the returned
+	 *            {@link org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor.IPostIndexingInitializing#initializeLater(org.eclipse.xtext.xbase.lib.Procedures.Procedure1)
+	 *            initializeLater(..)}.
+	 * @param isPreIndexingPhase
+	 *            whether the method is called in a pre-indexing phase, i.e.
+	 *            when the global index is not yet fully updated. You must not
+	 *            rely on linking using the index if isPreIndexingPhase is
+	 *            <code>true</code>.
+	 */
+   	def dispatch void infer(CmdModel element, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+		packageName = element.packageName
+		val className = if(element.name.nullOrEmpty) "CmdPackage" else element.name
+		val cls = element.toClass(element.packageName + "." + className)[]		
+		
+		acceptor.accept(
+			cls
+		).initializeLater[
+			documentation = element.documentation
+			abstract = false
+			members += element.toField("INSTANCE", it.createTypeRef())[
+				static = true
+				initializer = [append('''new «className»()''')]
+				final = true
+   				visibility = JvmVisibility.PUBLIC
+			]
+			members += element.toField(
+				"yamlConstructor", 
+				getTypeForName("org.yaml.snakeyaml.constructor.Constructor",element)
+			)
+			members += element.toField(
+				"yamlRepresenter", 
+				getTypeForName("org.yaml.snakeyaml.representer.Representer",element)
+			)
+			members += element.toField(
+				"yaml",
+				"org.yaml.snakeyaml.Yaml".getTypeForName(element)
+			)
+			members +=element.toField(
+				"nouse",
+				"org.yaml.snakeyaml.TypeDescription".getTypeForName(element)
+			)
+			
+			members += element.toGetter("yaml","org.yaml.snakeyaml.Yaml".getTypeForName(element))
+			
+			for(h : element.helper){
+				members += h.toMethod(h.name, h.type)[
+					static = true
+					for(p : h.params){
+						parameters += p.toParameter(p.name, p.parameterType)
+					}
+					body = h.body
+				]
+			}
+			
+		]
+		
+		allCmdClasses.clear()
+		element.cmds.forEach[infer(acceptor, isPreIndexingPhase)];
+
+		
+		cls.members += element.toConstructor[
+			body =[
+			it.append('''
+				yamlConstructor = new Constructor();
+				yamlRepresenter = new Representer();
+				«FOR key : allCmdClasses.keySet»
+				«IF ! key.nullOrEmpty»
+				yamlConstructor.addTypeDescription(new TypeDescription(«allCmdClasses.get(key).simpleName».class, "!«key»"));
+				yamlRepresenter.addClassTag(«allCmdClasses.get(key).simpleName».class, new org.yaml.snakeyaml.nodes.Tag("!«key»"));
+				«ENDIF»
+				«ENDFOR»
+				yamlConstructor.addTypeDescription(new TypeDescription(org.cloudml.facade.mrt.cmd.abstracts.XPath.class, "!xpath"));
+				yamlRepresenter.addClassTag(org.cloudml.facade.mrt.cmd.abstracts.XPath.class, new org.yaml.snakeyaml.nodes.Tag("!xpath"));
+				
+				yaml = new Yaml(yamlConstructor, yamlRepresenter);
+			''')]
+		]
+		
+   	}
+   	  	
+   	
+   	def dispatch void infer(Instruction instruction, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+   		acceptor.accept(
+   			instruction.toClass(packageName + "." + instruction.name.toFirstUpper)
+   		).initializeLater[
+   			val refCls = it
+   			documentation = instruction.documentation
+   			abstract = false
+   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Instruction",instruction)
+   			members += instruction.parameters.map[generateFields(instruction, refCls)]
+   			
+   			
+   			members += instruction.toConstructor() []
+   			members += instruction.toConstructor() [
+   				parameters += instruction.toParameter("nouse", instruction.newTypeRef(typeof(String)))
+   			]
+			members += instruction.toConstructor() [
+				parameters += instruction.toParameter("initializer", instruction.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
+				body = [it.append("initializer.apply(this);")]
+			]
+   			
+   			if(instruction.execute != null)
+   				members += instruction.generateExecute(instruction.execute);
+   			
+   			allCmdClasses.put(instruction.name, refCls)
+   		]
+   	}
+   	
+   	def dispatch void infer(Modification modification, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+   		acceptor.accept(
+   			modification.toClass(packageName + "." + modification.name.toFirstUpper)
+   		).initializeLater[
+   			val refCls = it
+   			documentation = modification.documentation
+   			abstract = false
+   			members += modification.toConstructor() []
+   			members += modification.toConstructor() [
+   				parameters += modification.toParameter("nouse", modification.newTypeRef(typeof(String)))
+   			]
+			members += modification.toConstructor() [
+				parameters += modification.toParameter("initializer", modification.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
+				body = [it.append("initializer.apply(this);")]
+			]
+			
+   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Modification",modification)
+   			members += modification.parameters.map[generateFields(modification,refCls)]
+   			
+   			if(modification.execute != null)
+   				members += modification.generateExecute(modification.execute)
+   			
+   			allCmdClasses.put(modification.name,refCls)
+   		]
+   	}
+   	
+   	def dispatch void infer(Change change, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+   	    acceptor.accept(
+   			change.toClass(packageName + "." + change.name.toFirstUpper)
+   		).initializeLater[
+   			val refCls = it
+   			documentation = change.documentation
+   			abstract = false
+   			members += change.toConstructor() []
+   			members += change.toConstructor() [
+   				parameters += change.toParameter("nouse", change.newTypeRef(typeof(String)))
+   			]
+			members += change.toConstructor() [
+				parameters += change.toParameter("initializer", change.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
+				body = [it.append("initializer.apply(this);")]
+			]
+			
+   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Change",change)
+   			members += change.parameters.map[generateFields(change,refCls)]
+   			members += change.parameters.map[generateReprForChange(change,refCls)]
+   			
+   			members += change.toMethod("obtainRepr", "org.cloudml.facade.mrt.cmd.abstracts.Change".getTypeForName(change))[
+   				visibility = JvmVisibility.PUBLIC
+   				annotations += change.toAnnotation(typeof(Override))
+   				body=[it.append('''
+   					«refCls.simpleName» toRepr = new «refCls.simpleName»();
+   					«FOR para : change.parameters»
+   					if(this.«para.name.toFirstLower+"_repr"»!=null)
+   						toRepr.«para.name.toFirstLower» = this.«para.name.toFirstLower+"_repr"»;
+   					else
+   						toRepr.«para.name.toFirstLower» = this.«para.name.toFirstLower()»;
+   					«ENDFOR»
+   					toRepr.fromPeer = this.fromPeer;
+   					return toRepr;
+   				''')]
+   			]
+   			
+   			   			
+   			allCmdClasses.put(change.name,refCls)
+   		]
+   	}
+   	
+   	def dispatch void infer(Listener listener, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+   		acceptor.accept(
+   			listener.toClass(packageName + "." + listener.name.toFirstUpper)
+   		).initializeLater[
+   			val refCls = it
+   			documentation = listener.documentation
+   			abstract = false
+   			members += listener.toConstructor() []
+   			members += listener.toConstructor() [
+   				parameters += listener.toParameter("nouse", listener.newTypeRef(typeof(String)))
+   			]
+			members += listener.toConstructor() [
+				parameters += listener.toParameter("initializer", listener.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
+				body = [it.append("initializer.apply(this);")]
+			]
+			
+   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Listener",listener)
+   			members += listener.parameters.map[generateFields(listener,refCls)]
+   			
+   			if(listener.carefor != null)
+   				members += listener.carefor.toMethod("_careFor", listener.newTypeRef(typeof(boolean)))[
+   					documentation = listener.carefor.documentation
+   					annotations += listener.toAnnotation(typeof(Override))
+   					parameters += listener.toParameter(
+   						"change", 
+   						"org.cloudml.facade.mrt.cmd.abstracts.Change".getTypeForName(listener)
+   					)
+   					visibility = JvmVisibility.PROTECTED
+   					body = listener.carefor
+   				]
+   			
+   			allCmdClasses.put(listener.name,refCls)
+   		]
+   	}
+   	
+   	def generateFields(Parameter parameter, Command parent, JvmGenericType clazz){
+   		val typeRef = 
+			if(parameter.multiple)
+				getTypeForName("java.util.List", parameter, parameter.type)
+			else
+				parameter.type
+   		val field = parameter.toField(parameter.name.toFirstLower, typeRef)
+   		field.setVisibility(JvmVisibility.PUBLIC)
+  		field
+   	}
+   	
+   	def generateReprForChange(Parameter parameter, Command parent, JvmGenericType clazz){
+   		val typeRef = 
+			if(parameter.multiple)
+				getTypeForName("java.util.List", parameter, parameter.type)
+			else
+				parameter.type
+   		val field = parameter.toField(parameter.name.toFirstLower+"_repr", typeRef)[
+   			initializer = [it.append('''null''')]
+   		]
+   		field.setVisibility(JvmVisibility.DEFAULT)
+  		field
+   	}
+   	
+   	
+   	def generateExecute(Command context, XExpression expression){
+   		expression.toMethod("_execute", "java.lang.Object".getTypeForName(context))[
+			documentation = expression.documentation
+			annotations += context.toAnnotation(typeof(Override))
+			parameters += context.toParameter("context", "java.lang.Object".getTypeForName(context))
+			parameters += context.toParameter(
+					"changes", 
+					"java.util.List".getTypeForName(context, "org.cloudml.facade.mrt.cmd.abstracts.Change".getTypeForName(context))
+				)
+			visibility = JvmVisibility.PROTECTED
+			//allCmdClasses.f
+			body = expression
+   		]
+   	}
+}
+

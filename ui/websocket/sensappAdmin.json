@@ -1,0 +1,266 @@
+{
+    "eClass" : "net.cloudml.core:DeploymentModel",
+    "name" : "test",
+    "providers" : [{
+        "eClass" : "net.cloudml.core:Provider",
+        "name" : "aws-ec2",
+        "credentials" : "./credentials"
+    }
+    ],
+    "artefactTypes" : [{
+        "eClass" : "net.cloudml.core:Artefact",
+        "name" : "SensAppGUIWar",
+        "required" : [{
+			"eClass" : "net.cloudml.core:ClientPort",
+            "name" : "wcRequired",
+            "portNumber" : "0",
+			"isRemote" : false,
+			"isOptional" : false
+		},{
+			"eClass" : "net.cloudml.core:ClientPort",
+            "name" : "rest",
+            "portNumber" : "8080",
+			"isRemote" : true,
+			"isOptional" : true
+		}
+        ],
+        "resource" : {
+            "eClass" : "net.cloudml.core:Resource",
+            "name" : "sensappGUIWar",
+            "retrievingCommand" : "wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sensappAdmin/SensAppGUI.tar; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/startsensappgui.sh ; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/sensappgui.sh ; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sensappAdmin/localTopology.json ; chmod a+x ~/*sensappgui.sh ",
+            "deployingCommand" : "cd ~; sudo bash sensappgui.sh",
+            "startCommand" : "cd ~; sudo bash startsensappgui.sh",
+			"stopCommand" : "sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart"
+        }
+    }, {
+        "eClass" : "net.cloudml.core:Artefact",
+        "name" : "MongoDB",
+        "resource" : {
+            "eClass" : "net.cloudml.core:Resource",
+            "name" : "mongoDB",
+            "retrievingCommand" : "wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/mongoDB/mongoDB.sh",
+            "deployingCommand" : "cd ~; sudo bash mongoDB.sh"
+        },
+        "provided" : [{
+			"eClass" : "net.cloudml.core:ServerPort",
+            "name" : "mongoProvided",
+			"isRemote" : false,
+            "portNumber" : "0"
+        }
+        ]
+    }, {
+        "eClass" : "net.cloudml.core:Artefact",
+        "name" : "jettyWarContainer",
+        "resource" : {
+            "eClass" : "net.cloudml.core:Resource",
+            "name" : "jetty",
+            "retrievingCommand" : "wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/jetty/jetty.sh",
+            "deployingCommand" : "cd ~; sudo bash jetty.sh",
+			"stopCommand" : "sudo service jetty stop"
+        },
+        "provided" : [{
+            "eClass" : "net.cloudml.core:ServerPort",
+            "name" : "wcProvided",
+            "portNumber" : "0"
+        }
+        ]
+    }, {
+        "eClass" : "net.cloudml.core:Artefact",
+        "name" : "SensAppWar",
+		"required" : [{
+			"eClass" : "net.cloudml.core:ClientPort",
+            "name" : "wcRequired",
+            "portNumber" : "0",
+			"isRemote" : false,
+			"isOptional" : false
+			},
+			{
+			"eClass" : "net.cloudml.core:ClientPort",
+            "name" : "mongoRequired",
+            "portNumber" : "0",
+			"isRemote" : false,
+			"isOptional" : false
+			}
+        ],
+		"provided" : [{
+			"eClass" : "net.cloudml.core:ServerPort",
+            "name" : "restPort",
+            "portNumber" : "8080",
+			"isRemote" : true
+		}
+		],
+        "resource" : {
+            "eClass" : "net.cloudml.core:Resource",
+            "name" : "sensappWar",
+            "retrievingCommand" : "wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensapp/sensapp.sh ; chmod a+x ~/sensapp.sh",
+            "deployingCommand" : "cd ~; sudo bash sensapp.sh"
+        }
+    }
+    ],
+    "nodeTypes" : [{
+        "eClass" : "net.cloudml.core:Node",
+        "name" : "cloudmlsensappgui",
+        "minRam" : "500",
+        "minCore" : "1",
+        "minDisk" : "20",
+        "location" : "eu-west-1b",
+        "OS" : "ubuntu",
+        "sshKey" : "cloudml",
+        "securityGroup" : "SensApp",
+        "groupName" : "cloudmlsensappgui",
+        "privateKey" : "C:\\Users\\nicolasf\\Desktop\\cmltestNew\\cloudml.pem",
+        "is64os" : false,
+        "cloudProvider" : "providers[aws-ec2]",
+        "properties" : [{
+            "eClass" : "net.cloudml.core:Property",
+            "name" : "KeyPath",
+            "value" : "path-to-cloudml.pem"
+        }
+        ]
+    }, {
+        "eClass" : "net.cloudml.core:Node",
+        "name" : "cloudmlsensapp",
+        "minRam" : "500",
+        "minCore" : "1",
+        "minDisk" : "20",
+        "location" : "eu-west-1b",
+        "OS" : "ubuntu",
+        "sshKey" : "cloudml",
+        "securityGroup" : "SensApp",
+        "groupName" : "cloudmlsensapp",
+        "privateKey" : "C:\\Users\\nicolasf\\Desktop\\cmltestNew\\cloudml.pem",
+        "is64os" : true,
+        "cloudProvider" : "providers[aws-ec2]",
+        "properties" : [{
+            "eClass" : "net.cloudml.core:Property",
+            "name" : "KeyPath",
+            "value" : "path-to-cloudml.pem"
+        }
+        ]
+    }
+    ],"bindingTypes" : [{
+        "name" : "restBinding",
+        "client" : "artefactTypes[SensAppGUIWar]/required[rest]",
+        "server" : "artefactTypes[SensAppWar]/provided[restPort]",
+        "clientResource" : {
+            "eClass" : "net.cloudml.core:Resource",
+            "name" : "client",
+            "retrievingCommand" : "wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/configuresensappgui.sh",
+            "configurationCommand" : "cd ~; sudo bash configuresensappgui.sh"
+        }
+    },{
+        "name" : "sensappWcRequired",
+        "client" : "artefactTypes[SensAppWar]/required[wcRequired]",
+        "server" : "artefactTypes[jettyWarContainer]/provided[wcProvided]"
+    },{
+        "name" : "sensappMongoRequired",
+        "client" : "artefactTypes[SensAppWar]/required[mongoRequired]",
+        "server" : "artefactTypes[MongoDB]/provided[mongoProvided]"
+    },{
+        "name" : "adminWcRequired",
+        "client" : "artefactTypes[SensAppGUIWar]/required[wcRequired]",
+        "server" : "artefactTypes[jettyWarContainer]/provided[wcProvided]"
+    }
+    ],
+    "artefactInstances" : [{
+        "eClass" : "net.cloudml.core:ArtefactInstance",
+        "name" : "sensappGUI1",
+        "type" : "artefactTypes[SensAppGUIWar]",
+        "destination" : "nodeInstances[cloudmlsensappGUI-55b481y]",
+        "required" : [{
+			"eClass" : "net.cloudml.core:ClientPortInstance",
+			"name" : "wcRequired",
+			"type" : "artefactTypes[SensAppGUIWar]/required[wcRequired]"
+        },{
+			"eClass" : "net.cloudml.core:ClientPortInstance",
+			"name" : "restInputs",
+			"type" : "artefactTypes[SensAppGUIWar]/required[rest]"
+        }
+		]
+    }, {
+        "eClass" : "net.cloudml.core:ArtefactInstance",
+        "name" : "mongoDB1",
+        "type" : "artefactTypes[MongoDB]",
+        "provided" : [{
+            "eClass" : "net.cloudml.core:ServerPortInstance",
+            "name" : "db1",
+            "type" : "artefactTypes[MongoDB]/provided[mongoProvided]"
+        }
+        ]
+    }, {
+        "eClass" : "net.cloudml.core:ArtefactInstance",
+        "name" : "sensapp1",
+        "type" : "artefactTypes[SensAppWar]",
+        "destination" : "nodeInstances[cloudmlsensapp-55b481y]",
+		"required" : [{
+			"eClass" : "net.cloudml.core:ClientPortInstance",
+			"name" : "wcRequired2",
+            "type" : "artefactTypes[SensAppWar]/required[wcRequired]"
+			},
+			{
+			"eClass" : "net.cloudml.core:ClientPortInstance",
+			"name" : "mongoRequired",
+			"type" : "artefactTypes[SensAppWar]/required[mongoRequired]"
+			}
+		],
+		"provided" : [{
+            "eClass" : "net.cloudml.core:ServerPortInstance",
+            "name" : "restOutputs",
+            "type" : "artefactTypes[SensAppWar]/provided[restPort]"
+        }
+		]
+    }, {
+        "eClass" : "net.cloudml.core:ArtefactInstance",
+        "name" : "jetty1",
+        "type" : "artefactTypes[jettyWarContainer]",
+        "provided" : [{
+            "eClass" : "net.cloudml.core:ServerPortInstance",
+            "name" : "wc1",
+            "type" : "artefactTypes[jettyWarContainer]/provided[wcProvided]"
+        }
+        ]
+    }, {
+        "eClass" : "net.cloudml.core:ArtefactInstance",
+        "name" : "jetty2",
+        "type" : "artefactTypes[jettyWarContainer]",
+        "provided" : [{
+            "eClass" : "net.cloudml.core:ServerPortInstance",
+            "name" : "wc2",
+            "type" : "artefactTypes[jettyWarContainer]/provided[wcProvided]"
+        }
+        ]
+    }
+    ],
+    "nodeInstances" : [{
+        "eClass" : "net.cloudml.core:NodeInstance",
+        "name" : "cloudmlsensapp-55b481y",
+        "type" : "nodeTypes[cloudmlsensapp]"
+    }, {
+        "eClass" : "net.cloudml.core:NodeInstance",
+        "name" : "cloudmlsensappGUI-55b481y",
+        "type" : "nodeTypes[cloudmlsensappgui]"
+    }
+    ],
+    "bindingInstances" : [{
+        "name" : "restBinding",
+        "type" : "bindingTypes[restBinding]",
+        "client" : "artefactInstances[sensappGUI1]/required[restInputs]",
+        "server" : "artefactInstances[sensapp1]/provided[restOutputs]"
+    },{
+        "name" : "wcContainment1",
+        "type" : "bindingTypes[sensappWcRequired]",
+        "client" : "artefactInstances[sensapp1]/required[wcRequired2]",
+        "server" : "artefactInstances[jetty1]/provided[wc1]"
+    },{
+        "name" : "mongobinding1",
+        "type" : "bindingTypes[sensappMongoRequired]",
+        "client" : "artefactInstances[sensapp1]/required[mongoRequired]",
+        "server" : "artefactInstances[mongoDB1]/provided[db1]"
+    },{
+        "name" : "wcContainment2",
+        "type" : "bindingTypes[adminWcRequired]",
+        "client" : "artefactInstances[sensappGUI1]/required[wcRequired]",
+        "server" : "artefactInstances[jetty2]/provided[wc2]"
+    }
+    ]
+}

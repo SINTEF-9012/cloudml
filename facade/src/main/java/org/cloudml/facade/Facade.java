@@ -202,7 +202,11 @@ class Facade implements CloudML, CommandHandler {
 		return list;
 	}
 	////////END OF LEGACY CODE TO BE MIGRATED INTO NEW COMMANDS/////////////////////
-
+        
+        public DeploymentModel getDeploymentModel(){
+            return deploy;
+        }
+        
 	/*
 	 * COMMAND HANDLERS
 	 */
