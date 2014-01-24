@@ -22,6 +22,8 @@ function connect(host){
 				alertMessage("success","New update!",5000); 
 				increaseNotificationNumber();
 				addNotification(msg.data);
+				var json=jsyaml.load(msg.data);
+				updateProperty(json.parent,json.property,json.newValue);
 			}
 			
 		}  

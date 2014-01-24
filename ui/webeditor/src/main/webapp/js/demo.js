@@ -196,13 +196,8 @@
 	function addNodeInstances(){
 		if(deploymentModel.nodeInstances != null){
 			for(a=0;a<deploymentModel.nodeInstances.length;a++){
-				var nodeType=findNodeTypeByName(deploymentModel.nodeInstances[a].type);
-				var nodeInfo="minRam:"+nodeType.minRam+
-							"&lt;br&gt; minCore:"+nodeType.minCore+
-							"&lt;br&gt; minDisk:"+nodeType.minDisk+
-							"&lt;br&gt; sshKey:"+nodeType.sshKey+
-							"&lt;br&gt; OS:"+nodeType.OS+
-							"&lt;br&gt; location:"+nodeType.location;
+				var nodeInfo="name:"+deploymentModel.nodeInstances[a].name+
+							"&lt;br&gt; type:"+deploymentModel.nodeInstances[a].type;
 				
 				$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='Type Info:' id='flowchartWindow_"+deploymentModel.nodeInstances[a].name+"'><strong>"+ deploymentModel.nodeInstances[a].name +"</strong><br/><br></div>" );
 				placeRandomly("flowchartWindow_"+deploymentModel.nodeInstances[a].name);
@@ -257,72 +252,6 @@
 			}
 		}
 		
-		function findPortType(artefactTypeName,portTypeName){
-			if(deploymentModel.artefactTypes != null){
-				for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-					//very crappy but I am lazy
-					var aname="artefactTypes["+deploymentModel.artefactTypes[a].name+"]";
-					if(aname == artefactTypeName){
-						for(var i=0; i<deploymentModel.artefactTypes[a].required.length;i++){
-							//very crappy but I am lazy
-							if(aname+"/required["+deploymentModel.artefactTypes[a].required[i].name+"]" == portTypeName){
-								return deploymentModel.artefactTypes[a].required[i];
-							}
-						}
-					}
-				}
-			}
-			alertMessage("error","Unknown port type!",5000);
-			return null;
-		}
-		
-		function findArtefactInstanceByName(name){
-			for(var a=0;a<deploymentModel.artefactInstances.length;a++){
-				if(name.indexOf(deploymentModel.artefactInstances[a].name) >= 0){
-					return deploymentModel.artefactInstances[a];
-				}
-			}
-			return null;
-		}
-		
-		function findArtefactTypeByName(name){
-			if(deploymentModel.artefactTypes != null){
-				for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-					if(name.indexOf(deploymentModel.artefactTypes[a].name) >= 0){
-						return deploymentModel.artefactTypes[a];
-					}
-				}
-			}
-			alertMessage("error","Unknown artefact type!",5000);
-			return null;
-		}
-		
-		function findNodeTypeByName(name){
-			if(deploymentModel.nodeTypes != null){
-				for(var a=0;a<deploymentModel.nodeTypes.length;a++){
-					if(name.indexOf(deploymentModel.nodeTypes[a].name) >= 0){
-						return deploymentModel.nodeTypes[a];
-					}
-				}
-			}
-			alertMessage("error","Unknown node type!",5000);
-			return null;
-		}
-		
-		function findPortInstanceByName(artefactInstance, name){
-			for(var a=0; a < artefactInstance.required.length; a++){
-				if(name.indexOf(artefactInstance.required[a].name) >= 0){
-					return artefactInstance.required[a];
-				}
-			}
-			for(var a=0; a < artefactInstance.provided.length; a++){
-				if(name.indexOf(artefactInstance.provided[a].name) >= 0){
-					return artefactInstance.provided[a];
-				}
-			}
-			alertMessage("error","Unknown port type!",5000);
-			return null;
-		}
 		
 		function addBindinInstances(){
 			for(a=0; a< deploymentModel.bindingInstances.length;a++){
@@ -394,6 +323,7 @@ function loadFile(inputDiv) {
 	$( "#bindingTable>tbody" ).empty();
 	$( "#nodeTable>tbody" ).empty();
 	$( "#artefactTable>tbody" ).empty();
+	$( "#providerTable>tbody" ).empty();
  }
   
  //Load the deployment model
@@ -403,6 +333,7 @@ function loadDeploymentModel(jsonString) {
 	addArtefactType();
 	addNodeTypes();
 	addBindingType();
+	addProviders();
 	instance.doWhileSuspended(function() {
 		addNodeInstances();
 		addArtefactsInstances();
@@ -433,6 +364,14 @@ function addNodeTypes(){
 	if(deploymentModel.nodeTypes != null){
 		for(var a=0;a<deploymentModel.nodeTypes.length;a++){
 			$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.nodeTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+		}
+	}
+}
+
+function addProviders(){
+	if(deploymentModel.providers != null){
+		for(var a=0;a<deploymentModel.providers.length;a++){
+			$( "#providerTable>tbody" ).append("<tr><td>"+deploymentModel.providers[a].name+" </td><td><button type='button' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
 		}
 	}
 }
