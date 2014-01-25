@@ -144,6 +144,15 @@ public class Add extends Modification {
               it.parent_repr = Add.this.parent.literal;
               it.property = Add.this.property.name;
               it.addedValue = toAddValue;
+              Object _xifexpression = null;
+              boolean _notEquals = (!Objects.equal(Add.this.crossRef, null));
+              if (_notEquals) {
+                _xifexpression = Add.this.crossRef;
+              } else {
+                String _get = CloudMLCmds.tempObjects.get(toAddValue);
+                _xifexpression = _get;
+              }
+              it.addedValue_repr = _xifexpression;
             }
           };
         Added _added = new Added(_function);

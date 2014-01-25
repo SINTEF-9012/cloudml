@@ -25,6 +25,7 @@ package org.cloudml.facade.mrt.cmd.gen;
 import com.google.common.base.Objects;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
 import org.cloudml.facade.mrt.cmd.abstracts.Property;
 import org.cloudml.facade.mrt.cmd.abstracts.XPath;
 import org.eclipse.xtext.xbase.lib.Conversions;
@@ -98,6 +99,8 @@ public class CloudMLCmds {
   private Yaml yaml;
   
   private TypeDescription nouse;
+  
+  public static Map<Object,String> tempObjects = new java.util.HashMap<Object,String>();
   
   public Yaml getYaml() {
     return this.yaml;
