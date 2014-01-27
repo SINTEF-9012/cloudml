@@ -20,6 +20,6 @@
 	<module>lightshell</module>
     <module>graph</module>
 	<module>webeditor</module>
-    <module>WebSocket</module>
+    <module>websocket</module>
   </modules>
 </project>
