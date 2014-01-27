@@ -124,13 +124,13 @@ public class KMFBridge {
         for (net.cloudml.core.Artefact ka : kDeploy.getArtefactTypes()) {//second pass on the referenced elements
             Artefact a = artefacts.get(ka.getName());
             if (ka.getDestination() != null) {
-                a.setDestination(serverPorts.get(ka.getDestination().getName()));
+                a.setDestination(serverPorts.get(((net.cloudml.core.Artefact)ka.getDestination().eContainer()).getName() + "_" + ka.getDestination().getName()));
             }
 
         }
 
         for (net.cloudml.core.Binding kb : kDeploy.getBindingTypes()) {
-            Binding b = new Binding(clientPorts.get(kb.getClient().getName()), serverPorts.get(kb.getServer().getName()));
+            Binding b = new Binding(clientPorts.get(((net.cloudml.core.Artefact)kb.getClient().eContainer()).getName() + "_" + kb.getClient().getName()), serverPorts.get(((net.cloudml.core.Artefact)kb.getServer().eContainer()).getName() + "_" + kb.getServer().getName()));
             b.setName(kb.getName());
             if (kb.getClientResource() != null) {
                 Resource cr = new Resource(kb.getClientResource().getName());
@@ -366,15 +366,15 @@ public class KMFBridge {
         for (Artefact a : deploy.getArtefactTypes().values()) {//second pass on the referenced elements
             net.cloudml.core.Artefact ka = artefacts.get(a.getName());
             if (a.getDestination() != null) {
-                ka.setDestination(serverPorts.get(a.getDestination().getName()));
+                ka.setDestination(serverPorts.get(a.getDestination().getOwner() + "_" + a.getDestination().getName()));
             }
         }
 
         for (Binding b : deploy.getBindingTypes().values()) {
             net.cloudml.core.Binding kb = factory.createBinding();
             kb.setName(b.getName());
-            kb.setClient(clientPorts.get(b.getClient().getName()));
-            kb.setServer(serverPorts.get(b.getServer().getName()));
+            kb.setClient(clientPorts.get(b.getClient().getOwner() + "_" + b.getClient().getName()));
+            kb.setServer(serverPorts.get(b.getServer().getOwner() + "_" + b.getServer().getName()));
 
             if (b.getClientResource() != null) {
                 net.cloudml.core.Resource cr = factory.createResource();
