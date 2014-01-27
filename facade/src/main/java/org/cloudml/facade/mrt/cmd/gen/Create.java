@@ -1,25 +1,3 @@
-/**
- * This file is part of CloudML [ http://cloudml.org ]
- *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
- *
- * Module: root
- *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
- * <http://www.gnu.org/licenses/>.
- */
 package org.cloudml.facade.mrt.cmd.gen;
 
 import com.google.common.base.Objects;
@@ -31,11 +9,14 @@ import org.cloudml.facade.mrt.cmd.abstracts.Modification;
 import org.cloudml.facade.mrt.cmd.abstracts.Parameter;
 import org.cloudml.facade.mrt.cmd.abstracts.Property;
 import org.cloudml.facade.mrt.cmd.abstracts.Type;
+import org.cloudml.facade.mrt.cmd.abstracts.XPath;
 import org.cloudml.facade.mrt.cmd.gen.CloudMLCmds;
 import org.cloudml.facade.mrt.cmd.gen.Created;
+import org.cloudml.facade.mrt.cmd.gen.Updated;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
+import org.eclipse.xtext.xbase.lib.Functions.Function2;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.MapExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
@@ -234,24 +215,54 @@ public class Create extends Modification {
           _xifexpression = _xblockexpression_1;
         }
         final Object newObject = _xifexpression;
-        if (this.keyValues!=null) {
-          final Procedure2<Property,Object> _function = new Procedure2<Property,Object>() {
-              public void apply(final Property p, final Object v) {
-                CloudMLCmds.setProperty(newObject, p, v, context);
-              }
-            };
-          MapExtensions.<Property, Object>forEach(this.keyValues, _function);
-        }
         boolean _notEquals = (!Objects.equal(newObject, null));
         if (_notEquals) {
-          final Procedure1<Created> _function_1 = new Procedure1<Created>() {
-              public void apply(final Created it) {
-                it.object = newObject;
+          long _currentTimeMillis = System.currentTimeMillis();
+          String _valueOf = String.valueOf(_currentTimeMillis);
+          CloudMLCmds.tempObjects.put(newObject, _valueOf);
+        }
+        final Procedure1<Created> _function = new Procedure1<Created>() {
+            public void apply(final Created it) {
+              it.object = newObject;
+              String _get = CloudMLCmds.tempObjects.get(newObject);
+              it.object_repr = _get;
+              it.initializer = Create.this.initializer;
+            }
+          };
+        Created _created = new Created(_function);
+        changes.add(_created);
+        Map<Property,Object> _filter = null;
+        if (this.keyValues!=null) {
+          final Function2<Property,Object,Boolean> _function_1 = new Function2<Property,Object,Boolean>() {
+              public Boolean apply(final Property p, final Object v) {
+                boolean _setProperty = CloudMLCmds.setProperty(newObject, p, v, context);
+                return Boolean.valueOf(_setProperty);
               }
             };
-          Created _created = new Created(_function_1);
-          changes.add(_created);
+          _filter=MapExtensions.<Property, Object>filter(this.keyValues, _function_1);
         }
+        final Procedure2<Property,Object> _function_2 = new Procedure2<Property,Object>() {
+            public void apply(final Property p, final Object v) {
+              final Procedure1<Updated> _function = new Procedure1<Updated>() {
+                  public void apply(final Updated it) {
+                    it.parent = newObject;
+                    String _get = CloudMLCmds.tempObjects.get(newObject);
+                    it.parent_repr = _get;
+                    it.property = p.name;
+                    Object _xifexpression = null;
+                    if ((v instanceof XPath)) {
+                      _xifexpression = ((XPath) v).literal;
+                    } else {
+                      _xifexpression = v;
+                    }
+                    it.newValue = _xifexpression;
+                  }
+                };
+              Updated _updated = new Updated(_function);
+              changes.add(_updated);
+            }
+          };
+        MapExtensions.<Property, Object>forEach(_filter, _function_2);
         _xblockexpression = (newObject);
       }
       return _xblockexpression;

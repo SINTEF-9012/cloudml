@@ -1,306 +1,479 @@
-package org.cloudml.mrt.cmd.jvmmodel
+package org.cloudml.facade.mrt.cmd.gen
 
-import com.google.inject.Inject
-import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
-import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
-import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
-import org.cloudml.mrt.cmd.cmdLang.CmdModel
-import org.cloudml.mrt.cmd.cmdLang.Command
-import org.eclipse.xtext.common.types.util.TypeReferences
-import org.cloudml.mrt.cmd.cmdLang.Instruction
-import org.cloudml.mrt.cmd.cmdLang.Modification
-import org.eclipse.xtext.common.types.JvmGenericType
-import org.cloudml.mrt.cmd.cmdLang.Parameter
-import org.eclipse.xtext.common.types.JvmVisibility
-import java.io.ObjectOutputStream.PutField
+
+import org.cloudml.facade.mrt.cmd.abstracts.Modification
+import org.cloudml.facade.mrt.cmd.abstracts.XPath
 import java.util.Map
-import org.eclipse.xtext.xbase.XBlockExpression
-import org.eclipse.xtext.xbase.XExpression
-import org.cloudml.mrt.cmd.cmdLang.Change
-import org.eclipse.xtext.xbase.lib.Procedures$Procedure1
-import org.cloudml.mrt.cmd.cmdLang.Listener
+import org.cloudml.facade.mrt.cmd.abstracts.Property
+import org.cloudml.facade.mrt.cmd.abstracts.Type
+import java.util.Collection
+import java.util.List
+import org.cloudml.facade.mrt.cmd.abstracts.Change
+import java.lang.reflect.Constructor
+import org.cloudml.facade.mrt.cmd.abstracts.Parameter
+import org.cloudml.facade.mrt.ModelRepo
+
+global-name CloudMLCmds
 
 /**
- * <p>Infers a JVM model from the source model.</p> 
- *
- * <p>The JVM model should contain all elements that would appear in the Java code 
- * which is generated from the source model. Other models link against the JVM model rather than the source model.</p>     
+ * ---
+ * !getSnapshot
+ *   path : /nodeInstances
+ *   codec : plain-text   #This is optional
+ *   map: name            #optional
  */
-class CmdLangJvmModelInferrer extends AbstractModelInferrer {
-
-    /**
-     * convenience API to build and initialize JVM types and their members.
-     */
-	@Inject extension JvmTypesBuilder
-	@Inject extension TypeReferences
-	String packageName;
-	
-	Map<String, JvmGenericType> allCmdClasses = <String, JvmGenericType>newHashMap()
-	
-	/**
-	 * The dispatch method {@code infer} is called for each instance of the
-	 * given element's type that is contained in a resource.
-	 * 
-	 * @param element
-	 *            the model to create one or more
-	 *            {@link org.eclipse.xtext.common.types.JvmDeclaredType declared
-	 *            types} from.
-	 * @param acceptor
-	 *            each created
-	 *            {@link org.eclipse.xtext.common.types.JvmDeclaredType type}
-	 *            without a container should be passed to the acceptor in order
-	 *            get attached to the current resource. The acceptor's
-	 *            {@link IJvmDeclaredTypeAcceptor#accept(org.eclipse.xtext.common.types.JvmDeclaredType)
-	 *            accept(..)} method takes the constructed empty type for the
-	 *            pre-indexing phase. This one is further initialized in the
-	 *            indexing phase using the closure you pass to the returned
-	 *            {@link org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor.IPostIndexingInitializing#initializeLater(org.eclipse.xtext.xbase.lib.Procedures.Procedure1)
-	 *            initializeLater(..)}.
-	 * @param isPreIndexingPhase
-	 *            whether the method is called in a pre-indexing phase, i.e.
-	 *            when the global index is not yet fully updated. You must not
-	 *            rely on linking using the index if isPreIndexingPhase is
-	 *            <code>true</code>.
-	 */
-   	def dispatch void infer(CmdModel element, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-		packageName = element.packageName
-		val className = if(element.name.nullOrEmpty) "CmdPackage" else element.name
-		val cls = element.toClass(element.packageName + "." + className)[]		
-		
-		acceptor.accept(
-			cls
-		).initializeLater[
-			documentation = element.documentation
-			abstract = false
-			members += element.toField("INSTANCE", it.createTypeRef())[
-				static = true
-				initializer = [append('''new «className»()''')]
-				final = true
-   				visibility = JvmVisibility.PUBLIC
-			]
-			members += element.toField(
-				"yamlConstructor", 
-				getTypeForName("org.yaml.snakeyaml.constructor.Constructor",element)
-			)
-			members += element.toField(
-				"yamlRepresenter", 
-				getTypeForName("org.yaml.snakeyaml.representer.Representer",element)
-			)
-			members += element.toField(
-				"yaml",
-				"org.yaml.snakeyaml.Yaml".getTypeForName(element)
-			)
-			members +=element.toField(
-				"nouse",
-				"org.yaml.snakeyaml.TypeDescription".getTypeForName(element)
-			)
-			
-			members += element.toGetter("yaml","org.yaml.snakeyaml.Yaml".getTypeForName(element))
-			
-			for(h : element.helper){
-				members += h.toMethod(h.name, h.type)[
-					static = true
-					for(p : h.params){
-						parameters += p.toParameter(p.name, p.parameterType)
-					}
-					body = h.body
-				]
+instruction !getSnapshot{
+	path : XPath
+	codec : String
+	map : XPath
+	multimaps : Map<String, XPath>
+	execute{
+		if(map == null && (multimaps == null || multimaps.empty)){
+			if(codec == "plain-text")
+				path.query(context).toString
+			else
+				path.query(context)
+		}
+		else if(map != null && map.literal == 'key'){
+			val lst = newArrayList()
+			lst.addAll((path.query(context) as Map).keySet);
+			lst
+		}
+		else{
+			val oriColl = 
+				if(path.query(context) instanceof Map)
+					(path.query(context) as Map).values
+				else{
+					val x = newArrayList()
+					val iterator = path.iterate(context)
+					while(iterator.hasNext())
+						x.add(iterator.next)
+					x
+				}
+			if(multimaps != null && !multimaps.empty){
+				val lstmap = <Map>newArrayList()
+				for(ori : oriColl){
+					val m = <String,Object> newHashMap()
+					lstmap.add(m)
+					multimaps.forEach[k,v| m.put(k, v.query(ori))]
+				}
+				lstmap
 			}
-			
-		]
-		
-		allCmdClasses.clear()
-		element.cmds.forEach[infer(acceptor, isPreIndexingPhase)];
-
-		
-		cls.members += element.toConstructor[
-			body =[
-			it.append('''
-				yamlConstructor = new Constructor();
-				yamlRepresenter = new Representer();
-				«FOR key : allCmdClasses.keySet»
-				«IF ! key.nullOrEmpty»
-				yamlConstructor.addTypeDescription(new TypeDescription(«allCmdClasses.get(key).simpleName».class, "!«key»"));
-				yamlRepresenter.addClassTag(«allCmdClasses.get(key).simpleName».class, new org.yaml.snakeyaml.nodes.Tag("!«key»"));
-				«ENDIF»
-				«ENDFOR»
-				yamlConstructor.addTypeDescription(new TypeDescription(org.cloudml.facade.mrt.cmd.abstracts.XPath.class, "!xpath"));
-				yamlRepresenter.addClassTag(org.cloudml.facade.mrt.cmd.abstracts.XPath.class, new org.yaml.snakeyaml.nodes.Tag("!xpath"));
-				
-				yaml = new Yaml(yamlConstructor, yamlRepresenter);
-			''')]
-		]
-		
-   	}
-   	  	
-   	
-   	def dispatch void infer(Instruction instruction, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-   		acceptor.accept(
-   			instruction.toClass(packageName + "." + instruction.name.toFirstUpper)
-   		).initializeLater[
-   			val refCls = it
-   			documentation = instruction.documentation
-   			abstract = false
-   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Instruction",instruction)
-   			members += instruction.parameters.map[generateFields(instruction, refCls)]
-   			
-   			
-   			members += instruction.toConstructor() []
-   			members += instruction.toConstructor() [
-   				parameters += instruction.toParameter("nouse", instruction.newTypeRef(typeof(String)))
-   			]
-			members += instruction.toConstructor() [
-				parameters += instruction.toParameter("initializer", instruction.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
-				body = [it.append("initializer.apply(this);")]
-			]
-   			
-   			if(instruction.execute != null)
-   				members += instruction.generateExecute(instruction.execute);
-   			
-   			allCmdClasses.put(instruction.name, refCls)
-   		]
-   	}
-   	
-   	def dispatch void infer(Modification modification, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-   		acceptor.accept(
-   			modification.toClass(packageName + "." + modification.name.toFirstUpper)
-   		).initializeLater[
-   			val refCls = it
-   			documentation = modification.documentation
-   			abstract = false
-   			members += modification.toConstructor() []
-   			members += modification.toConstructor() [
-   				parameters += modification.toParameter("nouse", modification.newTypeRef(typeof(String)))
-   			]
-			members += modification.toConstructor() [
-				parameters += modification.toParameter("initializer", modification.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
-				body = [it.append("initializer.apply(this);")]
-			]
-			
-   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Modification",modification)
-   			members += modification.parameters.map[generateFields(modification,refCls)]
-   			
-   			if(modification.execute != null)
-   				members += modification.generateExecute(modification.execute)
-   			
-   			allCmdClasses.put(modification.name,refCls)
-   		]
-   	}
-   	
-   	def dispatch void infer(Change change, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-   	    acceptor.accept(
-   			change.toClass(packageName + "." + change.name.toFirstUpper)
-   		).initializeLater[
-   			val refCls = it
-   			documentation = change.documentation
-   			abstract = false
-   			members += change.toConstructor() []
-   			members += change.toConstructor() [
-   				parameters += change.toParameter("nouse", change.newTypeRef(typeof(String)))
-   			]
-			members += change.toConstructor() [
-				parameters += change.toParameter("initializer", change.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
-				body = [it.append("initializer.apply(this);")]
-			]
-			
-   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Change",change)
-   			members += change.parameters.map[generateFields(change,refCls)]
-   			members += change.parameters.map[generateReprForChange(change,refCls)]
-   			
-   			members += change.toMethod("obtainRepr", "org.cloudml.facade.mrt.cmd.abstracts.Change".getTypeForName(change))[
-   				visibility = JvmVisibility.PUBLIC
-   				annotations += change.toAnnotation(typeof(Override))
-   				body=[it.append('''
-   					«refCls.simpleName» toRepr = new «refCls.simpleName»();
-   					«FOR para : change.parameters»
-   					if(this.«para.name.toFirstLower+"_repr"»!=null)
-   						toRepr.«para.name.toFirstLower» = this.«para.name.toFirstLower+"_repr"»;
-   					else
-   						toRepr.«para.name.toFirstLower» = this.«para.name.toFirstLower()»;
-   					«ENDFOR»
-   					toRepr.fromPeer = this.fromPeer;
-   					return toRepr;
-   				''')]
-   			]
-   			
-   			   			
-   			allCmdClasses.put(change.name,refCls)
-   		]
-   	}
-   	
-   	def dispatch void infer(Listener listener, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-   		acceptor.accept(
-   			listener.toClass(packageName + "." + listener.name.toFirstUpper)
-   		).initializeLater[
-   			val refCls = it
-   			documentation = listener.documentation
-   			abstract = false
-   			members += listener.toConstructor() []
-   			members += listener.toConstructor() [
-   				parameters += listener.toParameter("nouse", listener.newTypeRef(typeof(String)))
-   			]
-			members += listener.toConstructor() [
-				parameters += listener.toParameter("initializer", listener.newTypeRef(typeof(Procedure1), refCls.newTypeRef()))
-				body = [it.append("initializer.apply(this);")]
-			]
-			
-   			superTypes += getTypeForName("org.cloudml.facade.mrt.cmd.abstracts.Listener",listener)
-   			members += listener.parameters.map[generateFields(listener,refCls)]
-   			
-   			if(listener.carefor != null)
-   				members += listener.carefor.toMethod("_careFor", listener.newTypeRef(typeof(boolean)))[
-   					documentation = listener.carefor.documentation
-   					annotations += listener.toAnnotation(typeof(Override))
-   					parameters += listener.toParameter(
-   						"change", 
-   						"org.cloudml.facade.mrt.cmd.abstracts.Change".getTypeForName(listener)
-   					)
-   					visibility = JvmVisibility.PROTECTED
-   					body = listener.carefor
-   				]
-   			
-   			allCmdClasses.put(listener.name,refCls)
-   		]
-   	}
-   	
-   	def generateFields(Parameter parameter, Command parent, JvmGenericType clazz){
-   		val typeRef = 
-			if(parameter.multiple)
-				getTypeForName("java.util.List", parameter, parameter.type)
-			else
-				parameter.type
-   		val field = parameter.toField(parameter.name.toFirstLower, typeRef)
-   		field.setVisibility(JvmVisibility.PUBLIC)
-  		field
-   	}
-   	
-   	def generateReprForChange(Parameter parameter, Command parent, JvmGenericType clazz){
-   		val typeRef = 
-			if(parameter.multiple)
-				getTypeForName("java.util.List", parameter, parameter.type)
-			else
-				parameter.type
-   		val field = parameter.toField(parameter.name.toFirstLower+"_repr", typeRef)[
-   			initializer = [it.append('''null''')]
-   		]
-   		field.setVisibility(JvmVisibility.DEFAULT)
-  		field
-   	}
-   	
-   	
-   	def generateExecute(Command context, XExpression expression){
-   		expression.toMethod("_execute", "java.lang.Object".getTypeForName(context))[
-			documentation = expression.documentation
-			annotations += context.toAnnotation(typeof(Override))
-			parameters += context.toParameter("context", "java.lang.Object".getTypeForName(context))
-			parameters += context.toParameter(
-					"changes", 
-					"java.util.List".getTypeForName(context, "org.cloudml.facade.mrt.cmd.abstracts.Change".getTypeForName(context))
-				)
-			visibility = JvmVisibility.PROTECTED
-			//allCmdClasses.f
-			body = expression
-   		]
-   	}
+			else if(map!=null){
+				oriColl.map(ori | map.query(ori)).toList				
+			}
+		}
+	}
 }
+
+instruction !commit{
+	enforce : boolean
+	modifications* : Modification
+	execute{
+		for(modi : modifications)
+			modi.^execute(context,changes)
+		return null
+	}
+}
+
+instruction !requestFlush{
+	code : String
+	execute{
+		changes += new Flush[
+			it.code = this.code
+			it.object = context
+		]
+	}
+}
+
+instruction !extended{
+	name : String
+	params* : String
+	execute{
+		(context as ModelRepo).handle(name, params)
+		null
+	}
+}
+
+
+/* ===============Here comes the instructions for DIVERSIFY========= */
+
+instruction !terminate{
+	nodeName : String
+	execute{
+		val remove = new Remove =>[
+			parent = new XPath("/")
+			property = new Property("nodeInstances")
+			val lst = newArrayList()
+			var i = 0
+			var foundid = -1
+			for(x : (new XPath("nodeInstances")).query(context) as Collection){
+				if(new XPath("name").query(x) == nodeName)
+					foundid = i
+				i = i + 1
+			}
+			index = foundid
+		]
+		remove.^execute(context, changes);
+	}
+}
+instruction !provision{
+	type: String
+	name: String
+	execute{
+		val create = new CreateAndAdd =>[
+			parent = new XPath("/")
+			property = new Property("nodeInstances")
+			it.type = new Type("NodeInstance");
+			initializer = <Parameter>newArrayList(
+				new Parameter("String",name),
+				new Parameter("Node", new XPath("/nodeTypes/"+this.type))
+			)
+		]
+		create.^execute(context,changes)
+		val create2 = new CreateAndAdd =>[
+			parent = new XPath("/nodeInstances[name='" + this.name + "']")
+			property = new Property("properties")
+			it.type = new Type("Property")
+			initializer = <Parameter>newArrayList(
+				new Parameter("String", "state"),
+				new Parameter("String", "on")
+			)
+		]
+		create2.^execute(context,changes)
+	}
+}
+
+/**
+ * Give new values to the fields
+ *     - !set
+ *     parent : nodeTypes/node1
+ *     keyValues : 
+ *        minCore : 4
+ *        minDisk : 1
+ * 
+ * Not that if you need to set a cross reference, you need to add a tag !xpath
+ * (TODO: need to get rid of this later) * 
+ * e.g.,
+ *     keyValues:
+ *       minRam : 1024
+ *       provider : xpath /providers[name='provider1']
+ */
+modification !set{
+	parent : XPath
+	keyValues : Map<Property, Object>
+	execute{
+		val par = parent.query(context)
+		
+		// Update each of the declared properties first
+		keyValues.filter[property, value | 
+			CloudMLCmds::setProperty(par, property, value, context)
+		].forEach[ p,v |     //For each successfully updated property, make a Change record
+			changes += new Updated()[
+				parent = par
+				parent_repr = this.parent.literal
+				property = p.name
+				newValue = v
+			]
+		]
+		null
+	}
+}
+
+/**
+ * Initialize an object
+ */
+modification !create{
+	/**
+	 * simple class name
+	 */
+	type : Type
+	/**
+	 * These are the parameters of a constructor.
+	 * For each parameter, please provide the type and the value
+	 * Node that the grammer of initiliazer is not the same as keyValues
+	 * 
+	 * So for only support constructors with upto 3 parameters.
+	 * initializer:
+	 *   - {type: String, name: nodeinst1}
+	 *   - {type: Node, name: !xpath /nodeTypes/node1}
+	 */
+	initializer : List<Parameter>
+	/**
+	 * Give initial values to some fields. These are not the parameters to
+	 * the constructor
+	 */
+	keyValues : Map<Property, Object>
+	execute{
+		val clz = type.obtainClass
+		val newObject = 
+			if(initializer == null || initializer.empty)
+				clz.newInstance
+			else{
+				val constructors = clz.constructors
+				switch(initializer.size){
+					case 1 : {
+						constructors.findFirst[it.parameterTypes.size==1 &&
+							it.parameterTypes.get(0).name == initializer.get(0).type
+						]?.newInstance(CloudMLCmds::convert(initializer.get(0).type, initializer.get(0).value,context))
+					}
+					case 2 : {
+						constructors.findFirst[it.parameterTypes.size==2 &&
+							it.parameterTypes.get(0).simpleName == initializer.get(0).type &&
+							it.parameterTypes.get(1).simpleName == initializer.get(1).type 
+						]?.newInstance(
+							CloudMLCmds::convert(initializer.get(0).type, initializer.get(0).value,context),
+							CloudMLCmds::convert(initializer.get(1).type, initializer.get(1).value,context)
+						)
+					}
+					case 3 : {
+						constructors.findFirst[it.parameterTypes.size==3 &&
+							it.parameterTypes.get(0).simpleName == initializer.get(0).type &&
+							it.parameterTypes.get(1).simpleName == initializer.get(1).type &&
+							it.parameterTypes.get(2).simpleName == initializer.get(2).type
+						]?.newInstance(
+							CloudMLCmds::convert(initializer.get(0).type, initializer.get(0).value,context),
+							CloudMLCmds::convert(initializer.get(1).type, initializer.get(1).value,context),
+							CloudMLCmds::convert(initializer.get(2).type, initializer.get(2).value,context)
+						)
+					}
+				}
+			}
+		keyValues?.forEach[p, v | CloudMLCmds::setProperty(newObject, p, v, context)]	
+		if(newObject!=null)
+			changes += new Created[object = newObject]	
+		newObject
+	}
+}
+
+/**
+ * add a new element/value to a multi-valued property
+ */
+modification !add{
+	parent : XPath
+	property : Property
+	crossRef : XPath    //This is used to add existing objects as a cross-reference
+	newValue : Object   //simple value
+	index : Object      //optional for list, but mandatory for maps
+	execute{
+		val resolvedCrossRef = crossRef?.query(context)
+		val toAddPath = new XPath(parent.literal + "/" + property.name)
+		val toAddColl = toAddPath.query(context)
+		val toAddValue = resolvedCrossRef ?: newValue
+		val success = switch(toAddColl){
+			Map : {
+				toAddColl.put(index, toAddValue) == null
+				//we suppose adding something into a map will always succeed
+				true
+			}
+			List case index != null:{
+				try{
+					toAddColl.add(CloudMLCmds::convert("int", index, context) as Integer, toAddValue)
+					true
+				}catch(Exception e){
+					false
+				}  
+			}
+			Collection : {
+				toAddColl.add(toAddValue) // whether the Collection is changed, see {@link Collection.add}
+			}
+			default: false
+		}
+		if(success){
+			changes.add(new Added()[
+				parent = this.parent.query(context)
+				parent_repr = this.parent.literal
+				property = this.property.name
+				addedValue = toAddValue
+			])
+		}
+		null
+	}
+}
+
+/**
+ * Remove an element from a multi-valued property
+ * 
+ * For lists, you can remove by giving directly the object, or an index (int)
+ * For maps, only remove by index (key) is supported so far
+ */
+modification !remove{
+	parent : XPath
+	property : Property
+	index : Object       //-- choose one from index, value, or crossRef
+	value : Object       //-- But for map, we always need an index
+	crossRef : XPath     //--
+	execute{
+		val resolvedCrossRef = crossRef?.query(context)
+		val toRemovePath = new XPath(parent.literal + "/" + property.name)
+		val toRemoveColl = toRemovePath.query(context)
+		val toRemoveValue = resolvedCrossRef ?: value
+		val success = switch(toRemoveColl){
+			Map : {
+				toRemoveColl.remove(index) != null				
+			}
+			List case index != null: {
+				toRemoveColl.remove((CloudMLCmds::convert("int", index, context) as Integer).intValue) != null
+			}
+			Collection :{
+				toRemoveColl.remove(toRemoveValue)
+			}
+			default: false
+		}
+		if(success){
+			changes += new Removed()[
+				parent = this.parent.query(context)
+				parent_repr = this.parent.literal
+				index = this.index
+				property = this.property.name
+				removedValue = toRemoveValue
+				removedValue_repr = if(this.crossRef!=null) this.crossRef.literal else null 
+			]
+		}
+		null
+	}
+}
+
+/**
+ * Composite modification from Create and Add. This is probably the most 
+ * frequently used modification.
+ * 
+ *     - !createAndAdd
+ *     parent : /
+ *     property : nodeInstances
+ *     type : NodeInstance
+ *     initializer : 
+ *       - {type: String, value: ni1}
+ *       - {type: Node, value: !xpath /nodeTypes/node1}
+ */
+modification !createAndAdd{
+	parent : XPath
+	property : Property
+	type : Type
+	initializer : List<Parameter>
+	keyValues : Map<Property, Object>
+	index : Object
+	execute{
+		val newObject = new Create[
+			it.type = this.type
+			it.keyValues = this.keyValues
+			it.initializer = this.initializer
+		].^execute(context, changes)
+		
+		val add = new Add[
+			it.parent = this.parent
+			it.property = this.property
+			it.newValue = newObject
+			it.index = this.index
+		].^execute(context,changes)
+		null
+	}
+}
+ 
+change !updated{
+	parent : Object
+	property : String
+	newValue : Object
+}
+
+change !added{
+	parent : Object
+	property : String
+	addedValue : Object
+}
+
+change !created{
+	object : Object
+}
+
+change !removed{
+	parent : Object
+	property : String
+	index : Object
+	removedValue : Object
+}
+
+change !flush{
+	code : String
+	object : Object
+}
+
+change !snapshot{
+	content : Object
+}
+
+
+
+listener !listenToFlush{
+	code : String
+	carefor{
+		switch(^change){
+			Flush: ^change.code == this.code
+			default: false
+		}
+	}
+}
+
+listener !listenToAdded{
+	parent : XPath
+	property : Property
+	carefor{
+		switch(^change){
+			Added: {
+				^change.parent == this.queryXPathFromRoot(this.parent)
+					 && ^change.property == this.property.name
+			}
+			default: false
+		}
+	}
+}
+
+listener !listenToAny{
+	carefor{
+		true
+	}
+}
+
+
+helper convert(String type, Object v, Object context): Object{
+	switch(v){
+		XPath: v.query(context)
+		String:
+			switch(type){
+				case "int": Integer.parseInt(v)
+				case "double": Double.parseDouble(v)
+				case "boolean": Boolean.parseBoolean(v)
+				case "String": v
+				default: null
+			}
+		Object:
+			v
+	}
+}
+
+helper setProperty(Object obj, Property p, Object value, Object context): boolean{
+	val clazz = obj.class
+	val pubField = clazz.fields.findFirst[name == p.name]
+	if(pubField != null){
+		val original = pubField.get(obj);
+		val newValue = convert(pubField.type.simpleName, value, context);
+		if(original != newValue){
+			pubField.set(obj, newValue);
+			return true
+		}		
+	}
+	else{
+		val setter = clazz.methods.findFirst[name == "set" + p.name.toFirstUpper]
+		val getter = clazz.methods.findFirst[name == "get" + p.name.toFirstUpper]
+		val newValue = convert(setter?.parameterTypes.get(0).simpleName,value,context)
+		val original = getter.invoke(obj)
+		if(original != newValue){
+			setter?.invoke(obj, newValue);
+			return true
+		}
+	}
+	false
+	
+}
+
 

@@ -22,6 +22,7 @@
  */
 package org.cloudml.facade.mrt.cmd.gen;
 
+import java.util.List;
 import org.cloudml.facade.mrt.cmd.abstracts.Change;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
@@ -39,7 +40,11 @@ public class Created extends Change {
   
   public Object object;
   
+  public List initializer;
+  
   Object object_repr = null;
+  
+  List initializer_repr = null;
   
   @Override
   public Change obtainRepr() {
@@ -48,6 +53,10 @@ public class Created extends Change {
     	toRepr.object = this.object_repr;
     else
     	toRepr.object = this.object;
+    if(this.initializer_repr!=null)
+    	toRepr.initializer = this.initializer_repr;
+    else
+    	toRepr.initializer = this.initializer;
     toRepr.fromPeer = this.fromPeer;
     return toRepr;
     

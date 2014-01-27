@@ -56,6 +56,10 @@ public class NodeInstance extends WithProperties {
         return this.type;
     }
     
+    public void setType(Node type){
+        this.type = type;
+    }
+    
     public void setPublicAddress(String publicAddress){
     	this.publicAddress=publicAddress;
     }
