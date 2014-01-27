@@ -36,22 +36,34 @@ function updateProperty(id,propertyId,value){
 		if(propertyId != "type"){
 			tempObject[propertyId]=value;
 		}else{
-			var array=propertyId.split("/");
-			tempObject.type="/"+array[0]+"["+array[1]+"]";
+			var array=value.split("/");
+			tempObject.type="/"+array[1]+"["+array[2]+"]";
 		}
 	}	
-	loadDeploymentModel(JSON.stringify(deploymentModel));
 }
 
 function addInModel(object){
 	if(object.type.indexOf("nodeTypes") >=0){
-	
+		deploymentModel.nodeInstances.push(object);
 	}
 	if(object.type.indexOf("artefactTypes") >=0){
-	
+		deploymentModel.artefactInstances.push(object);
 	}
 	if(object.type.indexOf("bindingTypes") >=0){
-	
+		deploymentModel.bindingInstances.push(object);
+	}
+}
+
+function removeInModel(path){
+	var array=path.split("'"); //To be updated
+	if(path.indexOf("nodeInstances") >=0){
+		removeNode(array[1]);
+	}
+	if(path.indexOf("artefactInstances") >=0){
+		removeArtefact(array[1]);
+	}
+	if(path.indexOf("bindingInstances") >=0){
+		removeBinding(array[1]);
 	}
 }
 
@@ -84,7 +96,7 @@ function instanciateBinding(){
 function removeNode(name){
 	for(var a=0; a<deploymentModel.nodeInstances.length;a++){
 		var instance=deploymentModel.nodeInstances[a];
-		if(instance.name.indexOf("name") >= 0){
+		if(instance.name.indexOf(name) >= 0){
 			deploymentModel.nodeInstances.splice(a,1);
 			return instance;
 		}

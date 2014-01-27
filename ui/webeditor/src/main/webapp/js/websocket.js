@@ -39,29 +39,35 @@ function connect(host){
 				var array=msg.data.split("###");
 				console.log(array[2]);
 				loadDeploymentModel(array[2]);
-				alertMessage("success","Deployment Model loaded",5000); 
+				alertMessage("success","Deployment Model loaded",3000); 
 			}
 			if(msg.data.indexOf("!update") >= 0){
-				alertMessage("success","New update!",5000); 
+				alertMessage("success","New update!",3000); 
 				increaseNotificationNumber();
 				addNotification(msg.data);
 				var json=jsyaml.load(msg.data);
 				updateProperty(json.parent,json.property,json.newValue);
-				
 			}
 			if(msg.data.indexOf("!created") >= 0){
-				alertMessage("success","New update! "+msg.data,5000); 
+				alertMessage("success","New update! "+msg.data,3000); 
 				increaseNotificationNumber();
 				addNotification(msg.data);
 				tempObject=new Object();
 			}
 			if(msg.data.indexOf("!added") >= 0){
-				alertMessage("success","New update! "+msg.data,5000); 
+				alertMessage("success","New update! "+msg.data,3000); 
 				increaseNotificationNumber();
 				addNotification(msg.data);
 				addInModel(tempObject);
 			}
-			
+			if(msg.data.indexOf("!removed") >= 0){
+				alertMessage("success","New update! "+msg.data,3000); 
+				increaseNotificationNumber();
+				addNotification(msg.data);
+				var json=jsyaml.load(msg.data);
+				removeInModel(json.removedValue);
+			}
+			loadDeploymentModel(JSON.stringify(deploymentModel));
 		}  
   
 		socket.onclose = function(){  
