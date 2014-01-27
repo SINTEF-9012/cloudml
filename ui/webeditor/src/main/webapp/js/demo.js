@@ -199,7 +199,7 @@
 				var nodeInfo="name:"+deploymentModel.nodeInstances[a].name+
 							"&lt;br&gt; type:"+deploymentModel.nodeInstances[a].type;
 				
-				$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='Type Info:' id='flowchartWindow_"+deploymentModel.nodeInstances[a].name+"'><strong>"+ deploymentModel.nodeInstances[a].name +"</strong><br/><br></div>" );
+				$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='Node Info:' id='flowchartWindow_"+deploymentModel.nodeInstances[a].name+"'><strong>"+ deploymentModel.nodeInstances[a].name +"</strong><br/><br></div>" );
 				placeRandomly("flowchartWindow_"+deploymentModel.nodeInstances[a].name);
 				targetEndpoint.overlays[0][1].label = "destination";
 				instance.addEndpoint("flowchartWindow_"+deploymentModel.nodeInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"nodeInstances["+deploymentModel.nodeInstances[a].name+"]" });

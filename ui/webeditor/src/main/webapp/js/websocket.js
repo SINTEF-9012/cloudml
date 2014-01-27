@@ -22,6 +22,7 @@
  */
 var socket;
 var ready;
+var tempObject;
 
 function connect(host){  
 	try{  
@@ -46,6 +47,19 @@ function connect(host){
 				addNotification(msg.data);
 				var json=jsyaml.load(msg.data);
 				updateProperty(json.parent,json.property,json.newValue);
+				
+			}
+			if(msg.data.indexOf("!created") >= 0){
+				alertMessage("success","New update! "+msg.data,5000); 
+				increaseNotificationNumber();
+				addNotification(msg.data);
+				tempObject=new Object();
+			}
+			if(msg.data.indexOf("!added") >= 0){
+				alertMessage("success","New update! "+msg.data,5000); 
+				increaseNotificationNumber();
+				addNotification(msg.data);
+				addInModel(tempObject);
 			}
 			
 		}  

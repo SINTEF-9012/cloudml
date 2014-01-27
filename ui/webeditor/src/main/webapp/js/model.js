@@ -1,41 +1,95 @@
 var deploymentModel;
 
 function updateProperty(id,propertyId,value){
-	var xpath="";
-	if(id.length <= 1){
-		xpath=id+propertyId;
+	if(id.indexOf("/") >= 0){
+		var xpath="";
+		if(id.length <= 1){
+			xpath=id+propertyId;
+		}else{
+			xpath=id+"/"+propertyId;
+		}
+		setJSON(deploymentModel,xpath, value);
+
 	}else{
-		xpath=id+"/"+propertyId;
-	}
-	setJSON(deploymentModel,xpath, value);
+		if(propertyId != "type"){
+			tempObject[propertyId]=value;
+		}else{
+			var array=propertyId.split("/");
+			tempObject.type="/"+array[0]+"["+array[1]+"]";
+		}
+	}	
+	loadDeploymentModel(JSON.stringify(deploymentModel));
+}
 
-	if(propertyId.indexOf('name') >= 0){
-		loadDeploymentModel(JSON.stringify(deploymentModel));
+function addInModel(object){
+	if(object.type.indexOf("nodeTypes") >=0){
+	
+	}
+	if(object.type.indexOf("artefactTypes") >=0){
+	
+	}
+	if(object.type.indexOf("bindingTypes") >=0){
+	
 	}
 }
 
-function instanciateNode(){
-
+function instanciateNode(id, typeOfNode, ip){
+	var node=new Object();
+	node.eClass="net.cloudml.core:NodeInstance";
+	node.name=id;
+	node.type=typeOfNode;
+	if(ip != ""){
+		node.publicAddress=ip;
+	}
+	deploymentModel.nodeInstances.push(node);
 }
 
-function instanciateArtefact(){
-
+function instanciateArtefact(id, typeOfArtefact, dest, required,provided){
+	var artefact=new Object();
+	artefact.eClass="net.cloudml.core:ArtefactInstance";
+	artefact.name=id;
+	artefact.type=typeOfArtefact;
+	artefact.destination=dest;
+	artefact.required=req;
+	artefact.provided=prov;
+	deploymentModel.artefactInstances.push(artefact);
 }
 
 function instanciateBinding(){
 
 }
 
-function removeNode(){
-
+function removeNode(name){
+	for(var a=0; a<deploymentModel.nodeInstances.length;a++){
+		var instance=deploymentModel.nodeInstances[a];
+		if(instance.name.indexOf("name") >= 0){
+			deploymentModel.nodeInstances.splice(a,1);
+			return instance;
+		}
+	}
+	return null;
 }
 
-function removeArtefact(){
-
+function removeArtefact(name){
+	for(var a=0; a<deploymentModel.artefactInstances.length;a++){
+		var instance=deploymentModel.artefactInstances[a];
+		if(instance.name.indexOf("name") >= 0){
+			deploymentModel.artefactInstances.splice(a,1);
+			return instance;
+		}
+	}
+	return null;
 }
 
-function removeBinding(){
-
+function removeBinding(name){
+	for(var a=0; a<deploymentModel.bindingInstances.length;a++){
+		var instance=deploymentModel.bindingInstances[a];
+		if(instance.name.indexOf("name") >= 0){
+			deploymentModel.bindingInstances.splice(a,1);
+			return instance;
+		}
+	}
+	return null;
 }
 
 function setDestination(artefactId, nodeId){
