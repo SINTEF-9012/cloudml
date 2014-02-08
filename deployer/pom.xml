@@ -72,8 +72,6 @@
 			<version>1.4-SNAPSHOT</version>
 		</dependency>-->
 
-
-
 		<dependency>
 			<groupId>org.jclouds</groupId>
 			<artifactId>jclouds-allcompute</artifactId>
@@ -116,35 +114,6 @@
 			<artifactId>aws-java-sdk</artifactId>
 			<version>1.6.4</version>
 		</dependency>
-
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-api-1.0-sdk</artifactId>
-			<version>1.8.6</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-tools-sdk</artifactId>
-			<version>1.8.7</version>
-		</dependency>
-
-		<!--<dependency>
-			<groupId>eu.cloud4soa</groupId>
-			<artifactId>adapter</artifactId>
-			<version>0.0.3-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${basedir}\src\main\resources\cloud4soa.adapter.jar</systemPath>
-		</dependency>
-
-		<dependency>
-			<groupId>eu.cloud4soa</groupId>
-			<artifactId>parent</artifactId>
-			<version>0.0.3-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${basedir}\src\main\resources\cloud4soa.api.jar</systemPath>
-		</dependency>-->
-
 
 	</dependencies>
 
