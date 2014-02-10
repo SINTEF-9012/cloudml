@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.cloudml.connectors.Connector;
+import org.cloudml.connectors.ConnectorFactory;
+import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.core.*;
 import org.cloudml.core.ArtefactInstance.State;
 

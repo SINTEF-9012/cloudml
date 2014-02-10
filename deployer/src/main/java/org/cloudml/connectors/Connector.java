@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.deployer;
+package org.cloudml.connectors;
 
 import org.cloudml.core.NodeInstance;
 import org.jclouds.compute.domain.NodeMetadata;

@@ -115,6 +115,57 @@
 			<version>1.6.4</version>
 		</dependency>
 
+
+		<!--  cloud4soa -->
+        <dependency>
+            <groupId>eu.modaclouds.cloud4soa</groupId>
+            <artifactId>api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.modaclouds.cloud4soa</groupId>
+            <artifactId>adapter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.modaclouds.cloud4soa</groupId>
+            <artifactId>adapter-REST</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.modaclouds.cloud4soa</groupId>
+            <artifactId>governance-ems</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
 	</dependencies>
+
+	<repositories>
+	        <repository>
+	            <id>MavenCentral</id>
+	            <name>Maven repository</name>
+	            <url>http://repo1.maven.org/maven2</url>
+	            <releases>
+	                <enabled>true</enabled>
+	            </releases>
+	            <snapshots>
+	                <enabled>false</enabled>
+	            </snapshots>
+	        </repository>
+	        <repository>
+	            <id>cloud4soa-release</id>
+	            <url>http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-release/</url>
+	            <releases>
+	                <enabled>true</enabled>
+	            </releases>
+	        </repository>
+	        <repository>
+	            <id>cloud4soa-snapshots</id>
+	            <url>http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/</url>
+	            <snapshots>
+	                <enabled>true</enabled>
+	            </snapshots>
+	        </repository>
+	    </repositories>
 
 </project>
