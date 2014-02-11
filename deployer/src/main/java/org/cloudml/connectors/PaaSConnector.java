@@ -23,7 +23,7 @@
 package org.cloudml.connectors;
 
 public interface PaaSConnector {
-
+	//Should be part of the interface at some point
 	//public void createApplication();
 	
 	//public void deployApplication();
@@ -41,6 +41,7 @@ public interface PaaSConnector {
 	//public void createEnvironment();
 	
 	//public void terminateEnvironment();
-
+	
+	//public void listApplication();
 	
 }

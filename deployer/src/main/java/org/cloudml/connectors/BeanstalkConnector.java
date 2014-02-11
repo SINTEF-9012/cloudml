@@ -50,7 +50,18 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.*;
 
 public class BeanstalkConnector implements PaaSConnector{
-
+	/*
+	 Classical process:
+	 1- create application (name, description) 
+	 2- create environment (tier=worker|webserver, platform=tomcat|nodejs..., type=autoscaling|single)
+	 3- create version (upload your app)
+	 4- check dns availability
+	 5- refine env info (name, url, description)
+	 6- select key and type of instance
+	 7- create
+	 */
+	
+	
 	private static final Logger journal = Logger.getLogger(BeanstalkConnector.class.getName());
 
 	//private String endpoint="elasticbeanstalk.eu-west-1.amazonaws.com";
