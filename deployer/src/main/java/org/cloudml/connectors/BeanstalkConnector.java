@@ -53,11 +53,11 @@ public class BeanstalkConnector implements PaaSConnector{
 
 	private static final Logger journal = Logger.getLogger(BeanstalkConnector.class.getName());
 
-	private String endpoint="elasticbeanstalk.eu-west-1.amazonaws.com";
+	//private String endpoint="elasticbeanstalk.eu-west-1.amazonaws.com";
 	private AWSElasticBeanstalkClient client;
 	private AWSCredentials awsCredentials;
 
-	public BeanstalkConnector(String login, String pass){
+	public BeanstalkConnector(String login, String pass, String endpoint){
 		awsCredentials=new BasicAWSCredentials(login, pass);
 		client=new AWSElasticBeanstalkClient(awsCredentials);
 		client.setEndpoint(endpoint);

@@ -22,6 +22,8 @@
  */
 package org.cloudml.connectors;
 
+import java.io.File;
+
 import org.cloudml.core.Provider;
 
 import eu.cloud4soa.adapter.rest.response.model.Application;
@@ -49,30 +51,31 @@ public class Cloud4soaConnector {
     	ems = new ExecutionManagementServiceModule();
     	this.provider=provider;
     	this.credentials=new Credentials(provider.getLogin(),provider.getPasswd());
-    	// where to put this ?
-    	//pi = new PaasInstance();
-        //pi.setName(name);
-    	//ai = new ApplicationInstance();
-        //ai.setAdapterUrl(paasInfo.getAdapterUrl());
-        //ai.setAppName(appName);
+    	pi = new PaasInstance();
+        pi.setName(provider.getName());
     }
     
-    private Application[] listApplications(String paasName) throws Cloud4SoaException {
-    	pi = new PaasInstance();
-        pi.setName(paasName);
+    private Application[] listApplications() throws Cloud4SoaException {
+    	String adapterUrl=provider.getProperty("enPoint");
         return ems.listApplications("adapterUrl", credentials, pi);
     }
     
-    private void deploy() throws Cloud4SoaException {
+    private void deploy(String name, File warFile) throws Cloud4SoaException {
         DeployApplicationParameters parameters = new DeployApplicationParameters();
-        //TO BE defined
-        //File file = new File(this.getClass().getResource("/SampleApp2.war").getFile());
-        //parameters.setApplicationArchive(file);
-        ems.deployApplication("adapterUrl", credentials, pi, ai, parameters);
+        String adapterUrl=provider.getProperty("enPoint");
+        ai = new ApplicationInstance();
+        ai.setAppName(name);
+        ai.setAdapterUrl("adapterURL");
+        parameters.setApplicationArchive(warFile);
+        ems.deployApplication(adapterUrl, credentials, pi, ai, parameters);
     }
     
-    private void undeploy() throws Cloud4SoaException {        
-        ems.undeployApplication("adapterUrl", credentials, pi, ai);
+    private void undeploy(String name) throws Cloud4SoaException {
+    	String adapterUrl=provider.getProperty("enPoint");
+    	ai = new ApplicationInstance();
+        ai.setAppName(name);
+        ai.setAdapterUrl("adapterURL");
+        ems.undeployApplication(adapterUrl, credentials, pi, ai);
     }
 
 
