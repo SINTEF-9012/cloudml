@@ -25,7 +25,7 @@ package org.cloudml.connectors;
 import java.io.File;
 
 import org.cloudml.core.Provider;
-
+/*
 import eu.cloud4soa.adapter.rest.response.model.Application;
 import eu.cloud4soa.adapter.rest.response.model.Database;
 import eu.cloud4soa.api.datamodel.governance.ApplicationInstance;
@@ -37,11 +37,11 @@ import eu.cloud4soa.api.util.exception.adapter.Cloud4SoaException;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule.Paas;
 import eu.cloud4soa.governance.ems.IExecutionManagementService;
-
+*/
 
 public class Cloud4soaConnector {
 	
-	private ApplicationInstance ai;
+	/*private ApplicationInstance ai;
     private PaasInstance pi;
     private Provider provider;
     private Credentials credentials;
@@ -81,6 +81,6 @@ public class Cloud4soaConnector {
 
     private void startStop(StartStopCommand command) throws Cloud4SoaException {
         ems.startStopApplication("adapterUrl", credentials, pi, ai, command);
-    }
+    }*/
     
 }

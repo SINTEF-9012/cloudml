@@ -38,7 +38,7 @@ import org.cloudml.codecs.XmiCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.*;
 import org.cloudml.deployer.CloudAppDeployer;
-import org.cloudml.deployer.JCloudsConnector;
+import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;

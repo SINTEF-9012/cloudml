@@ -12,5 +12,7 @@
 **.iml
 **nbactions.xml
 **.cache
-**deployer/src/main/java/net
+**/src/main/java/net
 **credentials
+**.DS_Store
+
