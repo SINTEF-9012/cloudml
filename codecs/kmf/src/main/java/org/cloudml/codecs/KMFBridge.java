@@ -375,7 +375,11 @@ public class KMFBridge {
             kb.setName(b.getName());
             kb.setClient(clientPorts.get(b.getClient().getOwner() + "_" + b.getClient().getName()));
             kb.setServer(serverPorts.get(b.getServer().getOwner() + "_" + b.getServer().getName()));
-
+            
+            
+            kb.setClient(clientPorts.get(b.getClient().getName()));
+            kb.setServer(serverPorts.get(b.getServer().getName()));
+            
             if (b.getClientResource() != null) {
                 net.cloudml.core.Resource cr = factory.createResource();
                 cr.setName(b.getClientResource().getName());
