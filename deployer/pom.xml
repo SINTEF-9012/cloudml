@@ -73,21 +73,21 @@
 		</dependency>-->
 
 		<dependency>
-			<groupId>org.jclouds</groupId>
+			<groupId>org.apache.jclouds</groupId>
 			<artifactId>jclouds-allcompute</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.0</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.jclouds.provider</groupId>
+			<groupId>org.apache.jclouds.provider</groupId>
 			<artifactId>aws-ec2</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.0</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.jclouds.driver</groupId>
+			<groupId>org.apache.jclouds.driver</groupId>
 			<artifactId>jclouds-sshj</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.0</version>
 		</dependency>
 
 		<dependency>
@@ -116,64 +116,56 @@
 		</dependency>
 
 
-		<!--  cloud4soa 
+		<!--  cloud4soa -->
         <dependency>
             <groupId>eu.modaclouds.cloud4soa</groupId>
             <artifactId>api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/resources/modaclouds.cloud4soa.api.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>eu.modaclouds.cloud4soa</groupId>
             <artifactId>adapter</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/resources/cloud4soa.adapter.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>eu.modaclouds.cloud4soa</groupId>
             <artifactId>adapter-REST</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/resources/adapter-REST-0.0.1-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>eu.modaclouds.cloud4soa</groupId>
             <artifactId>governance-ems</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/resources/governance-ems-0.0.1-SNAPSHOT.jar</systemPath>
-        </dependency>-->
-
+        </dependency>
 	</dependencies>
 
-	<repositories>
-	        <repository>
-	            <id>MavenCentral</id>
-	            <name>Maven repository</name>
-	            <url>http://repo1.maven.org/maven2</url>
-	            <releases>
-	                <enabled>true</enabled>
-	            </releases>
-	            <snapshots>
-	                <enabled>false</enabled>
-	            </snapshots>
-	        </repository>
-	        <repository>
-	            <id>cloud4soa-release</id>
-	            <url>http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-release/</url>
-	            <releases>
-	                <enabled>true</enabled>
-	            </releases>
-	        </repository>
-	        <repository>
-	            <id>cloud4soa-snapshots</id>
-	            <url>http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/</url>
-	            <snapshots>
-	                <enabled>true</enabled>
-	            </snapshots>
-	        </repository>
-	    </repositories>
+    <repositories>
+        <repository>
+            <id>MavenCentral</id>
+            <name>Maven repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>cloud4soa-release</id>
+            <url>http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-release/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>cloud4soa-snapshots</id>
+            <url>http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
 
 </project>

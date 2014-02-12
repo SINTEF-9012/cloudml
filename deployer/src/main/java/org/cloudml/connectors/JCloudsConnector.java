@@ -177,7 +177,7 @@ public class JCloudsConnector implements Connector{
 	 */
 	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key){
 		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
-		SshClient ssh = compute.getContext().getUtils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(b.build()).build());
+		SshClient ssh = compute.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(b.build()).build());
 		try {
 			ssh.connect();
 			ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
