@@ -373,12 +373,8 @@ public class KMFBridge {
         for (Binding b : deploy.getBindingTypes().values()) {
             net.cloudml.core.Binding kb = factory.createBinding();
             kb.setName(b.getName());
-            kb.setClient(clientPorts.get(b.getClient().getOwner() + "_" + b.getClient().getName()));
-            kb.setServer(serverPorts.get(b.getServer().getOwner() + "_" + b.getServer().getName()));
-            
-            
-            kb.setClient(clientPorts.get(b.getClient().getName()));
-            kb.setServer(serverPorts.get(b.getServer().getName()));
+            kb.setClient(clientPorts.get(b.getClient().getOwner().getName() + "_" + b.getClient().getName()));
+            kb.setServer(serverPorts.get(b.getServer().getOwner().getName() + "_" + b.getServer().getName()));
             
             if (b.getClientResource() != null) {
                 net.cloudml.core.Resource cr = factory.createResource();
