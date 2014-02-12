@@ -135,8 +135,8 @@
             <groupId>eu.modaclouds.cloud4soa</groupId>
             <artifactId>governance-ems</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-	</dependencies> -->
+        </dependency> -->
+	</dependencies>
 
     <repositories>
         <repository>
