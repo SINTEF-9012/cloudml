@@ -20,7 +20,6 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.cloudml.ui.shell;
 
 import java.io.IOException;
@@ -385,19 +384,19 @@ public class Shell extends AbstractEventHandler {
         printMessage("Data>", data.toString());
     }
 
-    public void handle(ArtefactTypeList types) {
+    public void handle(ComponentList types) {
         printMessage("List>", types.toString());
     }
 
-    public void handle(ArtefactTypeData type) {
+    public void handle(ComponentData type) {
         printMessage("Data>", type.toString());
     }
 
-    public void handle(ArtefactInstanceList artefacts) {
+    public void handle(ComponentInstanceList artefacts) {
         printMessage("List>", artefacts.toString());
     }
 
-    public void handle(ArtefactInstanceData artefact) {
+    public void handle(ComponentInstanceData artefact) {
         printMessage("Data>", artefact.toString());
     }
     

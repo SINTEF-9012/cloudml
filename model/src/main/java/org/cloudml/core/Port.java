@@ -24,33 +24,33 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public abstract class ArtefactPort extends WithProperties {
+public abstract class Port extends CloudMLElementWithProperties {
 
-	protected boolean isRemote=false;
-    protected Artefact owner;
+	protected boolean isLocal =false;
+    protected InternalComponent component;
     protected int portNumber = 0;
 
-    public ArtefactPort() {
+    public Port() {
     }
 
-    public ArtefactPort(String name, Artefact owner, boolean isRemote) {
+    public Port(String name, InternalComponent component, boolean isLocal) {
         super(name);
-        this.owner = owner;
-        this.isRemote=isRemote;
+        this.component = component;
+        this.isLocal = isLocal;
     }
 
-    public ArtefactPort(String name, List<Property> properties, Artefact owner, boolean isRemote) {
+    public Port(String name, List<Property> properties, InternalComponent component, boolean isLocal) {
         super(name, properties);
-        this.owner = owner;
-        this.isRemote=isRemote;
+        this.component = component;
+        this.isLocal = isLocal;
     }
 
-    public Artefact getOwner() {
-        return owner;
+    public InternalComponent getComponent() {
+        return component;
     }
 
-    public void setOwner(Artefact owner) {
-        this.owner = owner;
+    public void setComponent(InternalComponent component) {
+        this.component = component;
     }
 
     public int getPortNumber() {
@@ -61,24 +61,24 @@ public abstract class ArtefactPort extends WithProperties {
         this.portNumber = n;
     }
     
-    public void setIsRemote(boolean isRemote){
-    	this.isRemote=isRemote;
+    public void setIsLocal(boolean isLocal){
+    	this.isLocal =isLocal;
     }
     
-    public boolean getIsRemote(){
-    	return this.isRemote;
+    public boolean getIsLocal(){
+    	return this.isLocal;
     }
 
     @Override
     public String toString() {
-        return "ArtefactPortType " + name + " ownerType" + owner.getName();
+        return "PortType " + name + " ownerType" + component.getName();
     }
     
     @Override
     public boolean equals(Object other) {
-        if (other instanceof ArtefactPort) {
-        	ArtefactPort otherArt = (ArtefactPort) other;
-            return name.equals(otherArt.getName()) && owner.equals(otherArt.getOwner());
+        if (other instanceof Port) {
+        	Port otherArt = (Port) other;
+            return name.equals(otherArt.getName()) && component.equals(otherArt.getComponent());
         } else {
             return false;
         }

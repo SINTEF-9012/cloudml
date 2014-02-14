@@ -22,24 +22,33 @@
  */
 package org.cloudml.core;
 
+import java.util.LinkedList;
 import java.util.List;
 
-public class ServerPort extends ArtefactPort {
+/**
+ * Created by Nicolas Ferry on 13.02.14.
+ */
+public class Cloud extends CloudMLElementWithProperties {
 
-	public ServerPort() {
+    private List<VMInstance> vmInstances = new LinkedList<VMInstance>();
+
+    public Cloud(){}
+
+    public Cloud(String name){
+        super(name);
     }
 
-    public ServerPort(String name, Artefact owner, boolean isRemote) {
-        super(name, owner, isRemote);
+    public Cloud(String name, List<VMInstance> vmInstances){
+        super(name);
+        this.vmInstances=vmInstances;
     }
 
-    public ServerPort(String name, List<Property> properties, Artefact owner, boolean isRemote) {
-        super(name, properties, owner, isRemote);
+    public List<VMInstance> getVmInstances(){
+        return vmInstances;
     }
-	
-	@Override
-	public String toString() {
-		return "ServerPortType " + name + " ownerType" + owner.getName();
-	}
+
+    public void setVmInstances(List<VMInstance> vmInstances){
+        this.vmInstances=vmInstances;
+    }
 
 }

@@ -22,13 +22,7 @@
  */
 package org.cloudml.ui.graph;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.ImageObserver;
@@ -61,15 +55,11 @@ import org.cloudml.codecs.DrawnIconVertexDemo;
 import org.cloudml.codecs.Edge;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.Vertex;
-import org.cloudml.codecs.XmiCodec;
-import org.cloudml.core.Artefact;
-import org.cloudml.core.Binding;
-import org.cloudml.core.DeploymentModel;
-import org.cloudml.core.Node;
+import org.cloudml.core.*;
+import org.cloudml.core.Component;
 import org.cloudml.facade.*;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.CommandFactory;
-import org.cloudml.facade.commands.CommandHandler;
 
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -83,11 +73,11 @@ public class Visu {
 	private JTable runtimeProperties;
 	private JList nodeTypes;
 
-	private DeploymentModel dmodel;
+	private CloudMLModel dmodel;
 	private DrawnIconVertexDemo v;
 	private CloudML cml;
 
-	public Visu(DeploymentModel model, DrawnIconVertexDemo v){
+	public Visu(CloudMLModel model, DrawnIconVertexDemo v){
 		this.dmodel=model;
 		this.v=v;
 		cml=Factory.getInstance().getCloudML();
@@ -104,11 +94,11 @@ public class Visu {
 						return 40;
 					}
 
-					public int getIconWidth() {
+                    public int getIconWidth() {
 						return 40;
 					}
 
-					public void paintIcon(Component c, Graphics g,
+					public void paintIcon(java.awt.Component c, Graphics g,
 							int x, int y) {
 						ImageIcon img;
 						if(v.getType() == "node"){
@@ -199,7 +189,7 @@ public class Visu {
 				JsonCodec codec=new JsonCodec();
 				try {
 					InputStream stream = new FileInputStream(result);
-					DeploymentModel model = (DeploymentModel)codec.load(stream);
+					CloudMLModel model = (CloudMLModel)codec.load(stream);
 					dmodel=model;
 					v.setDeploymentModel(dmodel);
 					ArrayList<Vertex> V=v.drawFromDeploymentModel();
@@ -308,13 +298,13 @@ public class Visu {
 
 	public DefaultListModel fillList(){
 		DefaultListModel lm=new DefaultListModel();
-		for(Node n:dmodel.getNodeTypes().values()){
+		for(VM n:dmodel.getVms().values()){
 			lm.addElement(n.getName());
 		}
-		for(Artefact n:dmodel.getArtefactTypes().values()){
+		for(Component n:dmodel.getComponents().values()){
 			lm.addElement(n.getName());
 		}
-		for(Binding b:dmodel.getBindingTypes().values()){
+		for(Relationship b:dmodel.getRelationships().values()){
 			lm.addElement(b.getName());
 		}
 		return lm;

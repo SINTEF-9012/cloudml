@@ -40,19 +40,19 @@ public abstract class AbstractEventHandler implements EventHandler {
         this.handle((Event) data);
     }
 
-    public void handle(ArtefactTypeList artefacts) {
+    public void handle(ComponentList artefacts) {
         this.handle((Event) artefacts);
     }
 
-    public void handle(ArtefactInstanceList artefacts) {
+    public void handle(ComponentInstanceList artefacts) {
         this.handle((Event) artefacts);
     }
 
-    public void handle(ArtefactInstanceData artefact) {
+    public void handle(ComponentInstanceData artefact) {
         this.handle((Event) artefact);
     }
 
-    public void handle(ArtefactTypeData type) {
+    public void handle(ComponentData type) {
         this.handle((Event) type);
     }
 }

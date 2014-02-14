@@ -32,7 +32,7 @@ import net.cloudml.serializer.JSONModelSerializer;
 import net.cloudml.serializer.ModelSerializer;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.DeploymentModel;
+import org.cloudml.core.CloudMLModel;
 
 
 /*
@@ -69,7 +69,7 @@ public class JsonCodec implements Codec {
     public void save(CloudMLElement model, OutputStream content) {
         ModelSerializer serializer = new JSONModelSerializer();
         try {
-            serializer.serialize(bridge.toKMF((DeploymentModel)model), content);
+            serializer.serialize(bridge.toKMF((CloudMLModel)model), content);
         } catch (Exception e) {
             System.err.println(e.getLocalizedMessage());
             journal.log(Level.SEVERE, e.getLocalizedMessage());

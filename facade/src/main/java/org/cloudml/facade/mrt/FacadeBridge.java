@@ -29,9 +29,8 @@
 package org.cloudml.facade.mrt;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.cloudml.core.DeploymentModel;
+
+import org.cloudml.core.CloudMLModel;
 import org.cloudml.facade.CloudML;
 import org.cloudml.facade.Factory;
 import org.cloudml.facade.commands.CloudMlCommand;
@@ -52,7 +51,7 @@ public class FacadeBridge implements ModelRepo{
     }
 
     @Override
-    public DeploymentModel getRoot() {
+    public CloudMLModel getRoot() {
         return facade.getDeploymentModel();
     }
     

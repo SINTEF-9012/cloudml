@@ -22,37 +22,43 @@
  */
 package org.cloudml.facade.events;
 
-import org.cloudml.core.Artefact;
-import org.cloudml.core.ArtefactInstance;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.cloudml.core.Component;
+import org.cloudml.core.InternalComponent;
 import org.cloudml.facade.commands.CloudMlCommand;
 
 /**
- * A Data that contains a artefact instance
+ * Convey a list of artefact types
  *
  * @author Franck Chauvel
  * @since 1.0
  */
-public class ArtefactInstanceData extends Data {
+public class ComponentList extends Data {
 
-    private final ArtefactInstance artefact;
+    private final ArrayList<Component> components;
 
     /**
-     * Create a new data which contains a given artefact
-     * 
-     * @param artefact the artefact to convey
+     * Create a new event containing list of components
+     *
+     * @param components the list of components
      */
-    public ArtefactInstanceData(final CloudMlCommand command, final ArtefactInstance artefact) {
+    public ComponentList(CloudMlCommand command, final Collection<Component> components) {
         super(command);
-        this.artefact = artefact;
+        this.components = new ArrayList<Component>(components.size());
+        this.components.addAll(components);
     }
 
     /**
-     * @return the artefact contained in this data
+     * @return the list of components
      */
-    public ArtefactInstance getArtefactInstance() {
-        return this.artefact;
+    public List<Component> getComponents() {
+        return Collections.unmodifiableList(this.components);
     }
-
+    
     @Override
     public void accept(EventHandler handler) {
         handler.handle(this);

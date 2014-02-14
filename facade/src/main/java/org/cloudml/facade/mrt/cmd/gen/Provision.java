@@ -62,12 +62,12 @@ public class Provision extends Instruction {
             it.parent = _xPath;
             Property _property = new Property("nodeInstances");
             it.property = _property;
-            Type _type = new Type("NodeInstance");
+            Type _type = new Type("VMInstance");
             it.type = _type;
             Parameter _parameter = new Parameter("String", Provision.this.name);
             String _plus = ("/nodeTypes/" + Provision.this.type);
             XPath _xPath_1 = new XPath(_plus);
-            Parameter _parameter_1 = new Parameter("Node", _xPath_1);
+            Parameter _parameter_1 = new Parameter("VM", _xPath_1);
             ArrayList<Parameter> _newArrayList = CollectionLiterals.<Parameter>newArrayList(_parameter, _parameter_1);
             it.initializer = _newArrayList;
           }

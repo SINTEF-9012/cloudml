@@ -20,7 +20,6 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.cloudml.ui.shell
 
 import scala.collection.JavaConversions._
@@ -45,20 +44,20 @@ object EventPrinter extends AbstractEventHandler with (Event => String) {
     result = message.getCategory().getLabel() + ": " + message.getBody()
   }
   
-  override def handle(artefacts: ArtefactTypeList): Unit = {
-    artefacts.getArtefactTypes().map{ a => a.getName() }.mkString(" - ", "", "\n")
+  override def handle(components: ComponentList): Unit = {
+    components.getComponents().map{ a => a.getName() }.mkString(" - ", "", "\n")
   }
   
-  override def handle(artefacts: ArtefactInstanceList): Unit = {
-    artefacts.getArtefactInstances().map{ a => a.getName() }.mkString(" - ", "", "\n")
+  override def handle(components: ComponentInstanceList): Unit = {
+    components.getComponentInstances.map{ a => a.getName() }.mkString(" - ", "", "\n")
   }
   
-  override def handle(data: ArtefactInstanceData): Unit = {
-    "Artefact instance (ID: " + data.getArtefactInstance().getName() + ")"
+  override def handle(data: ComponentInstanceData): Unit = {
+    "Component instance (ID: " + data.getComponentInstance().getName() + ")"
   }
   
-  override def handle(data: ArtefactTypeData): Unit = {
-    "Artefact type (ID: " + data.getArtefactType().getName() + ")"
+  override def handle(data: ComponentData): Unit = {
+    "Component type (ID: " + data.getComponent().getName() + ")"
   }
   
 }
@@ -82,20 +81,20 @@ object InlineEventPrinter extends AbstractEventHandler with (Event => String) {
     result = message.getCategory().getLabel() + ": " + message.getBody()
   }
   
-  override def handle(artefacts: ArtefactTypeList): Unit = {
-    "List of artefact types"
+  override def handle(components: ComponentList): Unit = {
+    "List of component types"
   }
   
-  override def handle(artefacts: ArtefactInstanceList): Unit = {
-    "List of artefact instances"
+  override def handle(components: ComponentInstanceList): Unit = {
+    "List of component instances"
   }
   
-  override def handle(data: ArtefactInstanceData): Unit = {
-    "Artefact instance (ID: " + data.getArtefactInstance().getName() + ")"
+  override def handle(data: ComponentInstanceData): Unit = {
+    "Component instance (ID: " + data.getComponentInstance.getName() + ")"
   }
   
-  override def handle(data: ArtefactTypeData): Unit = {
-    "Artefact type (ID: " + data.getArtefactType().getName() + ")"
+  override def handle(data: ComponentData): Unit = {
+    "Component type (ID: " + data.getComponent().getName() + ")"
   }
   
 }

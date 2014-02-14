@@ -22,12 +22,11 @@
  */
 package org.cloudml.core;
 
-import java.util.LinkedList;
 import java.util.List;
 
-public class NodeInstance extends WithProperties {
+public class VMInstance extends CloudMLElementWithProperties {
 
-    private Node type;
+    private VM type;
     private String publicAddress="";
     private String id="";
     private State status;
@@ -38,25 +37,25 @@ public class NodeInstance extends WithProperties {
     	error,
     }
     
-    public NodeInstance() {
+    public VMInstance() {
     }
 
-    public NodeInstance(String name, Node type) {
+    public VMInstance(String name, VM type) {
         super(name);
         this.type = type;
         this.status=State.stopped;
     }
 
-    public NodeInstance(String name, Node type, List<Property> properties) {
+    public VMInstance(String name, VM type, List<Property> properties) {
         super(name, properties);
         this.type = type;
     }
     
-    public Node getType() {
+    public VM getType() {
         return this.type;
     }
     
-    public void setType(Node type){
+    public void setType(VM type){
         this.type = type;
     }
     
@@ -94,11 +93,11 @@ public class NodeInstance extends WithProperties {
     
     @Override
     public String toString() {
-        return "NodeInstance: "+name+" Type:"+type.getName()+"{\n" +
+        return "VMInstance: "+name+" Type:"+type.getName()+"{\n" +
         		"minRam:" + type.getMinRam()+"\n"+
-        		"minCore" + type.getMinCore()+"\n"+
+        		"minCore" + type.getMinCores()+"\n"+
         		"minDisk" + type.getMinDisk()+"\n"+
-        		"OS" + type.getOS()+"\n"+
+        		"OS" + type.getOs()+"\n"+
         		"location" + type.getLocation()+"\n"+
         		"publicAdress" + getPublicAddress()+"\n"+
         		"groupName" + type.getGroupName();
@@ -106,8 +105,8 @@ public class NodeInstance extends WithProperties {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof NodeInstance) {
-            NodeInstance otherNode = (NodeInstance) other;
+        if (other instanceof VMInstance) {
+            VMInstance otherNode = (VMInstance) other;
             return name.equals(otherNode.getName()) && type.equals(otherNode.getType());
         } else {
             return false;

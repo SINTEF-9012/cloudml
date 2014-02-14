@@ -171,7 +171,7 @@ public class CommandFactory {
     }
 
     /**
-     * Deploy the current DeploymentModel
+     * Deploy the current CloudMLModel
      *
      * @see {@link org.cloudml.facade.commands.Deploy}
      */

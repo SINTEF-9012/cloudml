@@ -26,7 +26,8 @@
  */
 package org.cloudml.facade.events;
 
-import org.cloudml.core.Artefact;
+import org.cloudml.core.Component;
+import org.cloudml.core.InternalComponent;
 import org.cloudml.facade.commands.CloudMlCommand;
 
 /**
@@ -35,16 +36,16 @@ import org.cloudml.facade.commands.CloudMlCommand;
  * @author Franck Chauvel
  * @since 1.0
  */
-public class ArtefactTypeData extends Data {
+public class ComponentData extends Data {
     
-    private final Artefact type;
+    private final Component type;
     
     /**
      * Create a new data that can convey a artefact type.
      * @param command the command which ask for this data
      * @param type the related artefact type
      */
-    public ArtefactTypeData(final CloudMlCommand command, Artefact type) {
+    public ComponentData(final CloudMlCommand command, Component type) {
         super(command);
         this.type = type;
     }
@@ -52,7 +53,7 @@ public class ArtefactTypeData extends Data {
     /**
      * @return the associated artefact type
      */
-    public Artefact getArtefactType() {
+    public Component getComponent() {
         return this.type;
     }
     

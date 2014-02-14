@@ -22,10 +22,21 @@
  */
 package org.cloudml.core;
 
-/**
- * All elements in the model should implement this interface
- * 
- */
-public interface CloudMLElement {
+public abstract class CloudMLElement {
+
+    protected String name;
+
+    public CloudMLElement(){}
     
+    public CloudMLElement(String name) {
+        this.name = name;
+    }
+    
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -32,23 +32,23 @@ import org.apache.commons.io.FileUtils;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.DeploymentModel;
-import org.cloudml.core.Node;
-import org.cloudml.core.NodeInstance;
+import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.VM;
+import org.cloudml.core.VMInstance;
 
 class Bridge {
 
     private static final Bridge bridge = new Bridge();
 
-    public static void toXML(DeploymentModel model, String path) {
+    public static void toXML(CloudMLModel model, String path) {
         try {
             String config = FileUtils.readFileToString(new File(bridge.getClass().getResource("/config.xmlt").toURI()));
             final String component = FileUtils.readFileToString(new File(bridge.getClass().getResource("/component.xmlt").toURI()));
             final String group = FileUtils.readFileToString(new File(bridge.getClass().getResource("/group.xmlt").toURI()));
 
-            Map<String, Node> groups = new HashMap<String, Node>();
+            Map<String, VM> groups = new HashMap<String, VM>();
 
-            for (Node n : model.getNodeTypes().values()) {
+            for (VM n : model.getVms().values()) {
                 final String groupName = n.getProperty("groupName");
                 System.out.println(n.getName() + ": " + groupName);
                 if (groupName != null) {
@@ -77,7 +77,7 @@ class Bridge {
 
             config = config.replace("<!-- GROUP -->", "");
 
-            for (NodeInstance ni : model.getNodeInstances()) {
+            for (VMInstance ni : model.getVMInstances()) {
                 final String scalingGroup = (ni.getType().getProperty("groupName") != null) ? ni.getType().getProperty("groupName") : "fixed";;
 
                 String newComponent = new String(component);
@@ -108,7 +108,7 @@ class Bridge {
             //stream = new FileInputStream(new File(bridge.getClass().getResource("/ut_load_balancing_trial.json").toURI()));
             stream = new FileInputStream(new File(bridge.getClass().getResource("/sensapp.json").toURI()));
             CloudMLElement model = codec.load(stream);
-            toXML((DeploymentModel) model, "component_" + System.currentTimeMillis() + ".xml");
+            toXML((CloudMLModel) model, "component_" + System.currentTimeMillis() + ".xml");
         } catch (URISyntaxException ex) {
             Logger.getLogger(Bridge.class.getName()).log(Level.SEVERE, null, ex);
         } catch (FileNotFoundException ex) {

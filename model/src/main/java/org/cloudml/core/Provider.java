@@ -29,7 +29,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Provider extends WithProperties {
+public class Provider extends CloudMLElementWithProperties {
 
     private String login = "";
     private String passwd = "";

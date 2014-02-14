@@ -24,42 +24,42 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithProperties {
+public abstract class PortInstance<T extends Port> extends CloudMLElementWithProperties {
 
     protected T type;
-    protected ArtefactInstance owner;
+    protected InternalComponentInstance owner;
 
-    public ArtefactPortInstance() {
+    public PortInstance() {
     }
 
-    public ArtefactPortInstance(String name, T type, ArtefactInstance owner) {
+    public PortInstance(String name, T type, InternalComponentInstance owner) {
         super(name);
         this.type = type;
         this.owner = owner;
-        // If we define the owner of the port, then we can add it in the provided port list
-        /*owner.getProvided().add(this);
-        owner.getType().getProvided().add(type);*/
+        // If we define the component of the port, then we can add it in the provided port list
+        /*component.getProvidedPorts().add(this);
+        component.getType().getProvidedPorts().add(type);*/
     }
     
-    public ArtefactPortInstance(String name, T type, List<Property> properties, ArtefactInstance owner) {
+    public PortInstance(String name, T type, List<Property> properties, InternalComponentInstance owner) {
         super(name, properties);
         this.type = type;
         this.owner = owner;
-        //If we define the owner of the port, then we can add it in the provided port list
-        /*owner.getProvided().add(this);
-        owner.getType().getProvided().add(type);*/
+        //If we define the component of the port, then we can add it in the provided port list
+        /*component.getProvidedPorts().add(this);
+        component.getType().getProvidedPorts().add(type);*/
     }
     
-    public ArtefactPortInstance(String name, T type, List<Property> properties, ArtefactInstance owner, boolean isRemote) {
+    public PortInstance(String name, T type, List<Property> properties, InternalComponentInstance owner, boolean isRemote) {
         super(name, properties);
         this.type = type;
         this.owner = owner;
-        //If we define the owner of the port, then we can add it in the provided port list
-        /*owner.getProvided().add(this);
-        owner.getType().getProvided().add(type);*/
+        //If we define the component of the port, then we can add it in the provided port list
+        /*component.getProvidedPorts().add(this);
+        component.getType().getProvidedPorts().add(type);*/
     }
 
-    public ArtefactInstance getOwner() {
+    public InternalComponentInstance getOwner() {
         return this.owner;
     }
 
@@ -73,8 +73,8 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
     
     @Override
     public boolean equals(Object other) {
-        if (other instanceof ArtefactPortInstance) {
-        	ArtefactPortInstance otherNode = (ArtefactPortInstance) other;
+        if (other instanceof PortInstance) {
+        	PortInstance otherNode = (PortInstance) other;
             return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
         } else {
             return false;
@@ -83,6 +83,6 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
    
     @Override
     public String toString() {
-        return "ArtefactPortInstance " + name + " owner:" + owner.getName();
+        return "PortInstance " + name + " component:" + owner.getName();
     }
 }

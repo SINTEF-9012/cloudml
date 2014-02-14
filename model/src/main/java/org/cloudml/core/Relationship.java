@@ -24,47 +24,47 @@ package org.cloudml.core;
 
 
 /**
- * Binding between to Artefact
+ * Relationship between to InternalComponent
  * @author Nicolas Ferry
  *
  */
-public class Binding extends WithProperties{
+public class Relationship extends CloudMLElementWithProperties {
 	
-	private ClientPort client;
-	private ServerPort server;
+	private RequiredPort requiredPort;
+	private ProvidedPort providedPort;
 	
 	private Resource clientResource;
 	private Resource serverResource;
 	
-	public Binding(){}
+	public Relationship(){}
 	
-	public Binding(ClientPort client, ServerPort server){
-		this.client=client;
-		this.server=server;
+	public Relationship(RequiredPort requiredPort, ProvidedPort providedPort){
+		this.requiredPort = requiredPort;
+		this.providedPort = providedPort;
 	}
 	
-	public BindingInstance instanciates(String name) {
-        return new BindingInstance(name, this);
+	public RelationshipInstance instantiates(String name) {
+        return new RelationshipInstance(name, this);
     }
 
-    public BindingInstance instanciates(ClientPortInstance client, ServerPortInstance server) {
-        return new BindingInstance(client, server, this);
+    public RelationshipInstance instantiates(RequiredPortInstance client, ProvidedPortInstance server) {
+        return new RelationshipInstance(client, server, this);
     }
 	
-	public void setClient(ClientPort p){
-		this.client=p;
+	public void setRequiredPort(RequiredPort p){
+		this.requiredPort =p;
 	}
 	
-	public void setServer(ServerPort p){
-		this.server=p;
+	public void setProvidedPort(ProvidedPort p){
+		this.providedPort =p;
 	}
 	
-	public ClientPort getClient(){
-		return this.client;
+	public RequiredPort getRequiredPort(){
+		return this.requiredPort;
 	}
 	
-	public ServerPort getServer(){
-		return this.server;
+	public ProvidedPort getProvidedPort(){
+		return this.providedPort;
 	}
 	
 	public void setClientResource(Resource clientResource){
@@ -85,14 +85,14 @@ public class Binding extends WithProperties{
 	
 	@Override
     public String toString() {
-        return client+ "->"+server;
+        return requiredPort + "->"+ providedPort;
     }
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof Binding) {
-        	Binding otherBinding = (Binding) other;
-            return (client.getName().equals(otherBinding.getClient().getName()) && server.getName().equals(otherBinding.getServer().getName()));
+        if (other instanceof Relationship) {
+        	Relationship otherRelationship = (Relationship) other;
+            return (requiredPort.getName().equals(otherRelationship.getRequiredPort().getName()) && providedPort.getName().equals(otherRelationship.getProvidedPort().getName()));
         } else {
             return false;
         }

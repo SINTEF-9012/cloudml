@@ -23,15 +23,12 @@
 package org.cloudml.ui.graph;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
 import org.cloudml.codecs.Vertex;
-import org.cloudml.core.ArtefactInstance;
-import org.cloudml.core.NodeInstance;
-import org.cloudml.core.WithProperties;
+import org.cloudml.core.InternalComponentInstance;
+import org.cloudml.core.VMInstance;
 
 public class CPSMTable extends AbstractTableModel{
 	private Vertex v;
@@ -43,8 +40,8 @@ public class CPSMTable extends AbstractTableModel{
 		this.v=v;
 		Class c;
 		if(v.getType().equals("node"))
-			c=((NodeInstance)v.getInstance()).getClass();
-		else c=((ArtefactInstance)v.getInstance()).getClass();
+			c=((VMInstance)v.getInstance()).getClass();
+		else c=((InternalComponentInstance)v.getInstance()).getClass();
 		this.properties=c.getDeclaredFields();
 	}
 	
@@ -70,8 +67,8 @@ public class CPSMTable extends AbstractTableModel{
 			try {
 				properties[rowIndex].setAccessible(true);
 				if(v.getType().equals("node"))
-					o=properties[rowIndex].get(((NodeInstance)v.getInstance()));
-				else o=properties[rowIndex].get(((ArtefactInstance)v.getInstance()));
+					o=properties[rowIndex].get(((VMInstance)v.getInstance()));
+				else o=properties[rowIndex].get(((InternalComponentInstance)v.getInstance()));
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

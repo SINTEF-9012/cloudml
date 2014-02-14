@@ -20,7 +20,6 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.cloudml.facade.events;
 
 /**
@@ -37,13 +36,13 @@ public interface EventHandler {
     
     public void handle(Data data);
     
-    public void handle(ArtefactTypeList types);
+    public void handle(ComponentList types);
    
-    public void handle(ArtefactTypeData type);
+    public void handle(ComponentData type);
 
-    public void handle(ArtefactInstanceList artefacts);
+    public void handle(ComponentInstanceList artefacts);
     
-    public void handle(ArtefactInstanceData artefact);
+    public void handle(ComponentInstanceData artefact);
     
     
 }

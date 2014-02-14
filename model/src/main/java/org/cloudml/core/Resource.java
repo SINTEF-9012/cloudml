@@ -23,15 +23,14 @@
 package org.cloudml.core;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class Resource extends WithProperties{
-	private String deployingResourceCommand="";
-	private String retrievingResourceCommand="";
-	private String configurationResourceCommand="";
-	private String startResourceCommand="";
-	private String stopResourceCommand="";
+public class Resource extends CloudMLElementWithProperties {
+	private String installCommand ="";
+	private String retrieveCommand ="";
+	private String configureCommand ="";
+	private String startCommand ="";
+	private String stopCommand ="";
 	private Map<String,String> uploadCommand=new HashMap<String, String>();
 	
 	
@@ -43,37 +42,37 @@ public class Resource extends WithProperties{
 	
 	public Resource(String name, String deployingCommand,String retrievingCommand){
 		super(name);
-		this.deployingResourceCommand=deployingCommand;
-		this.retrievingResourceCommand=retrievingCommand;
+		this.installCommand =deployingCommand;
+		this.retrieveCommand =retrievingCommand;
 	}
 	
 	public Resource(String name, String deployingCommand,String retrievingCommand, String configurationCommand, String startCommand, String stopCommand){
 		super(name);
-		this.deployingResourceCommand=deployingCommand;
-		this.retrievingResourceCommand=retrievingCommand;
-		this.configurationResourceCommand=configurationCommand;
-		this.startResourceCommand=startCommand;
-		this.stopResourceCommand=stopCommand;
+		this.installCommand =deployingCommand;
+		this.retrieveCommand =retrievingCommand;
+		this.configureCommand =configurationCommand;
+		this.startCommand =startCommand;
+		this.stopCommand =stopCommand;
 	}
 	
-	public String getDeployingResourceCommand(){
-		return deployingResourceCommand;
+	public String getInstallCommand(){
+		return installCommand;
 	}
 	
-	public String getRetrievingResourceCommand(){
-		return retrievingResourceCommand;
+	public String getRetrieveCommand(){
+		return retrieveCommand;
 	}
 	
-	public String getConfigurationResourceCommand(){
-		return configurationResourceCommand;
+	public String getConfigureCommand(){
+		return configureCommand;
 	}
 	
-	public String getStartResourceCommand(){
-		return startResourceCommand;
+	public String getStartCommand(){
+		return startCommand;
 	}
 	
-	public String getStopResourceCommand(){
-		return stopResourceCommand;
+	public String getStopCommand(){
+		return stopCommand;
 	}
 	
 	public Map<String,String> getUploadCommand(){
@@ -81,23 +80,23 @@ public class Resource extends WithProperties{
 	}
 
 	public void setDeployingCommand(String deployingCommand){
-		this.deployingResourceCommand=deployingCommand;
+		this.installCommand =deployingCommand;
 	}
 	
 	public void setRetrievingCommand(String retrievingCommand){
-		this.retrievingResourceCommand=retrievingCommand;
+		this.retrieveCommand =retrievingCommand;
 	}
 	
 	public void setConfigurationCommand(String configurationCommand){
-		this.configurationResourceCommand=configurationCommand;
+		this.configureCommand =configurationCommand;
 	}
 	
 	public void setStartCommand(String startCommand){
-		this.startResourceCommand=startCommand;
+		this.startCommand =startCommand;
 	}
 	
 	public void setStopCommand(String stopCommand){
-		this.stopResourceCommand=stopCommand;
+		this.stopCommand =stopCommand;
 	}
 	
 	public void setUploadCommand(Map<String,String> paths){

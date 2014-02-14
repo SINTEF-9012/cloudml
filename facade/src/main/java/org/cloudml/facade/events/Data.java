@@ -20,7 +20,6 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.cloudml.facade.events;
 
 import org.cloudml.facade.commands.CloudMlCommand;

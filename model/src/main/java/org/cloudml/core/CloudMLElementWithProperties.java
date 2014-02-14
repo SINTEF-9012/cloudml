@@ -22,36 +22,36 @@
  */
 package org.cloudml.core;
 
+import java.util.LinkedList;
 import java.util.List;
 
-public class ClientPort extends ArtefactPort{
+public abstract class CloudMLElementWithProperties extends CloudMLElement {
 
-	private boolean isOptional=true;
-	
-	public ClientPort(String name, Artefact owner, boolean isRemote) {
-        super(name, owner, isRemote);
+    protected List<Property> properties = new LinkedList<Property>();
+
+    public CloudMLElementWithProperties(){}
+    
+    public CloudMLElementWithProperties(String name) {
+        super(name);
     }
-	
-	public ClientPort(String name, Artefact owner, boolean isRemote, boolean isOptional) {
-        super(name, owner, isRemote);
-        this.isOptional=isOptional;
+
+    public CloudMLElementWithProperties(String name, List<Property> properties) {
+        super(name);
+        this.properties = properties;
     }
-	
-	public ClientPort(String name, List<Property> properties, Artefact owner, boolean isRemote, boolean isOptional){
-		super(name,properties,owner,isRemote);
-		this.isOptional=isOptional;
-	}
 
-	public void setIsOptional(boolean isOptional){
-		this.isOptional=isOptional;
-	}
+    public List<Property> getProperties() {
+        return this.properties;
+    }
 
-	public boolean getIsOptional(){
-		return isOptional;
-	}
-
-	@Override
-	public String toString() {
-		return "ClientTypePort " + name + " ownerType" + owner.getName();
-	}
+    public void setProperties(List<Property> properties) {
+        this.properties = properties;
+    }
+    
+    public String getProperty(String key){
+    	for(Property x : properties)
+    		if(x.name.equals(key))
+    			return x.value;
+    	return null;
+    }
 }

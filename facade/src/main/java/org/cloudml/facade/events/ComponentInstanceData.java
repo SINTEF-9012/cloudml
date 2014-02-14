@@ -20,50 +20,41 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.cloudml.facade.events;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.cloudml.core.Artefact;
-import org.cloudml.core.ArtefactInstance;
+import org.cloudml.core.ComponentInstance;
 import org.cloudml.facade.commands.CloudMlCommand;
 
 /**
- * Data object to convey a list of artefact instances
- * 
+ * A Data that contains a component instance
+ *
  * @author Franck Chauvel
  * @since 1.0
  */
-public class ArtefactInstanceList extends Data {
+public class ComponentInstanceData extends Data {
 
-    private final ArrayList<ArtefactInstance> artefacts;
+    private final ComponentInstance component;
 
     /**
-     * Create a new event containing list of artefacts
-     *
-     * @param artefacts the list of artefacts
+     * Create a new data which contains a given component
+     * 
+     * @param component the component to convey
      */
-    public ArtefactInstanceList(CloudMlCommand command, final Collection<ArtefactInstance> artefacts) {
+    public ComponentInstanceData(final CloudMlCommand command, final ComponentInstance component) {
         super(command);
-        this.artefacts = new ArrayList<ArtefactInstance>(artefacts.size());
-        this.artefacts.addAll(artefacts);
+        this.component = component;
     }
 
     /**
-     * @return the list of artefact instances
+     * @return the component contained in this data
      */
-    public List<ArtefactInstance> getArtefactInstances() {
-        return Collections.unmodifiableList(this.artefacts);
+    public ComponentInstance getComponentInstance() {
+        return this.component;
     }
 
     @Override
     public void accept(EventHandler handler) {
         handler.handle(this);
     }
+    
 }

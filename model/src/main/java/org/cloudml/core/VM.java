@@ -22,52 +22,46 @@
  */
 package org.cloudml.core;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.io.FileUtils;
 
-public class Node extends WithProperties {
+public class VM extends CloudMLElementWithProperties {
 
-	private Provider cloudProvider;
+	private Provider provider;
 
-	public Node() {
+	public VM() {
 	}
 
-	public Node(String name) {
+	public VM(String name) {
 		super(name);
 	}
 
-	public Node(String name, Provider provider) {
+	public VM(String name, Provider provider) {
 		super(name);
-		this.cloudProvider = provider;
+		this.provider = provider;
 	}
 
-	public Node(String name, List<Property> properties) {
+	public VM(String name, List<Property> properties) {
 		super(name, properties);
 	}
 
-	public Node(String name, List<Property> properties, Provider provider) {
+	public VM(String name, List<Property> properties, Provider provider) {
 		super(name, properties);
-		this.cloudProvider = provider;
+		this.provider = provider;
 	}
 
 	public Provider getProvider() {
-		return cloudProvider;
+		return provider;
 	}
 
 	public void setProvider(Provider p) {
-		cloudProvider = p;
+		provider = p;
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof Node) {
-			Node otherNode = (Node) other;
-			return name.equals(otherNode.getName()) && cloudProvider.equals(otherNode.getProvider());
+		if (other instanceof VM) {
+			VM otherVM = (VM) other;
+			return name.equals(otherVM.getName()) && provider.equals(otherVM.getProvider());
 		} else {
 			return false;
 		}
@@ -75,16 +69,19 @@ public class Node extends WithProperties {
 
 	@Override
 	public String toString() {
-		return "Node " + name + "(minRam: " + minRam + ", minCore: " + minCore + ", minDisk: " + minDisk + ")";
+		return "VM " + name + "(minRam: " + minRam + ", minCores: " + minCores + ", minDisk: " + minDisk + ")";
 	}
 	/*
 	 * NODE Configuration
 	 */
 	private int minRam = 0;
-	private int minCore = 0;
+    private int maxRam = 0;
+	private int minCores = 0;
+    private int maxCores = 0;
 	private int minDisk = 0;
+    private int maxDisk = 0;
 	private String location = "";
-	private String OS = "";
+	private String os = "";
 	private String sshKey = "";
 	private String securityGroup = "";
 	private String groupName = "";
@@ -99,20 +96,32 @@ public class Node extends WithProperties {
 		return minRam;
 	}
 
-	public int getMinCore() {
-		return minCore;
+    public int getMaxRam() {
+        return maxRam;
+    }
+
+	public int getMinCores() {
+		return minCores;
 	}
+
+    public int getMaxCores() {
+        return maxCores;
+    }
 
 	public int getMinDisk() {
 		return minDisk;
 	}
 
+    public int getMaxDisk() {
+        return maxDisk;
+    }
+
 	public String getLocation() {
 		return location;
 	}
 
-	public String getOS() {
-		return OS;
+	public String getOs() {
+		return os;
 	}
 
 	public String getSshKey() {
@@ -142,24 +151,32 @@ public class Node extends WithProperties {
 	/*
 	 * Setters
 	 */
-	public void setMinRam(int minRam) {
-		this.minRam = minRam;
+	public void setMinRam(int minRam) { this.minRam = minRam;	}
+
+    public void setMaxRam(int maxRam) { this.minRam = maxRam;	}
+
+	public void setMinCores(int minCores) {
+		this.minCores = minCores;
 	}
 
-	public void setMinCore(int minCore) {
-		this.minCore = minCore;
-	}
+    public void setMaxCores(int maxCores) {
+        this.maxCores = maxCores;
+    }
 
 	public void setMinDisk(int minDisk) {
 		this.minDisk = minDisk;
 	}
 
+    public void setMaxDisk(int maxDisk) {
+        this.maxDisk = maxDisk;
+    }
+
 	public void setLocation(String location) {
 		this.location = location;
 	}
 
-	public void setOS(String OS) {
-		this.OS = OS;
+	public void setOs(String os) {
+		this.os = os;
 	}
 
 	public void setSshKey(String sshKey) {
@@ -186,11 +203,11 @@ public class Node extends WithProperties {
 		imageId = id;
 	}
 
-	public NodeInstance instanciates(String name) {
-		return new NodeInstance(name, this);
+	public VMInstance instantiates(String name) {
+		return new VMInstance(name, this);
 	}
 
-	public NodeInstance instanciates() {
-		return new NodeInstance("", this);
+	public VMInstance instantiates() {
+		return new VMInstance("", this);
 	}
 }

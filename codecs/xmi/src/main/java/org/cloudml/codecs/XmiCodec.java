@@ -28,7 +28,7 @@ import net.cloudml.loader.XMIModelLoader;
 import net.cloudml.serializer.XMIModelSerializer;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.DeploymentModel;
+import org.cloudml.core.CloudMLModel;
 
 /*
  * An XMI codec, as its name might suggest... @author Brice MORIN
@@ -58,7 +58,7 @@ public class XmiCodec implements Codec {
             System.out.println("Found! " + resource);
         }
 
-        net.cloudml.core.ArtefactPortInstance pi = (net.cloudml.core.ArtefactPortInstance) kDeploy.findByPath("artefactInstances[jboss1]/provided[wc1]");
+        net.cloudml.core.PortInstance pi = (net.cloudml.core.PortInstance) kDeploy.findByPath("artefactInstances[jboss1]/provided[wc1]");
         if (resource != null) {
             System.out.println("Found! " + pi);
         }*/
@@ -68,6 +68,6 @@ public class XmiCodec implements Codec {
 
     public void save(CloudMLElement model, OutputStream content) {
         XMIModelSerializer serializer = new XMIModelSerializer();
-        serializer.serialize(bridge.toKMF((DeploymentModel) model), content);
+        serializer.serialize(bridge.toKMF((CloudMLModel) model), content);
     }
 }

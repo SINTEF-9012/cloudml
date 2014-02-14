@@ -30,7 +30,7 @@ import org.cloudml.facade.commands.CloudMlCommand
 import org.cloudml.facade.commands.CloudMlCommand
 
 /**
- * The required behaviour of object able to handle/execute command sent by the
+ * The requiredPorts behaviour of object able to handle/execute command sent by the
  * shell.
  *
  * @author Franck Chauvel - SINTEF ICT

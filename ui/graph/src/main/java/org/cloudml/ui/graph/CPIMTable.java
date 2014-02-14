@@ -23,15 +23,12 @@
 package org.cloudml.ui.graph;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
 import org.cloudml.codecs.Vertex;
-import org.cloudml.core.ArtefactInstance;
-import org.cloudml.core.NodeInstance;
-import org.cloudml.core.WithProperties;
+import org.cloudml.core.InternalComponentInstance;
+import org.cloudml.core.VMInstance;
 
 public class CPIMTable extends AbstractTableModel{
 	private Vertex v;
@@ -43,8 +40,8 @@ public class CPIMTable extends AbstractTableModel{
 		this.v=v;
 		Class c;
 		if(v.getType().equals("node"))
-			c=((NodeInstance)v.getInstance()).getType().getClass();
-		else c=((ArtefactInstance)v.getInstance()).getType().getClass();
+			c=((VMInstance)v.getInstance()).getType().getClass();
+		else c=((InternalComponentInstance)v.getInstance()).getType().getClass();
 		this.properties=c.getDeclaredFields();
 	}
 
@@ -70,8 +67,8 @@ public class CPIMTable extends AbstractTableModel{
 			try {
 				properties[rowIndex].setAccessible(true);
 				if(v.getType().equals("node"))
-					o=properties[rowIndex].get(((NodeInstance)v.getInstance()).getType());
-				else o=properties[rowIndex].get(((ArtefactInstance)v.getInstance()).getType());
+					o=properties[rowIndex].get(((VMInstance)v.getInstance()).getType());
+				else o=properties[rowIndex].get(((InternalComponentInstance)v.getInstance()).getType());
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

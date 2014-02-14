@@ -61,7 +61,7 @@ class Facade implements CloudML, CommandHandler {
 
 	private final List<EventHandler> handlers = Collections.synchronizedList(new ArrayList<EventHandler>());
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
-	private DeploymentModel deploy;
+	private CloudMLModel deploy;
 	private boolean stopOnTimeout = false;
 	private final CloudAppDeployer deployer;
 
@@ -156,11 +156,11 @@ class Facade implements CloudML, CommandHandler {
 
 	////////LEGACY CODE TO BE MIGRATED INTO NEW COMMANDS/////////////////////    
 	/**
-	 * Create the node described by the given NodeInstance object
+	 * Create the VM described by the given VMInstance object
 	 *
 	 * @param a
 	 */
-	public void createNode(NodeInstance a) {
+	public void createVM(VMInstance a) {
 		Provider p = a.getType().getProvider();
 		JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
 				p.getPasswd());
@@ -169,41 +169,41 @@ class Facade implements CloudML, CommandHandler {
 	}
 
 	/**
-	 * Execute a given command on an artefact
+	 * Execute a given command on an component
 	 *
-	 * @param a the artefact on which the command will be executed
+	 * @param a the component on which the command will be executed
 	 * @param command the related shell command as a String
 	 * @param user the user associated
 	 */
-	public void executeOnNode(ArtefactInstance a, String command, String user) {
-		Node ownerNode = a.getDestination().getType();
-		Provider p = ownerNode.getProvider();
+	public void executeOnVM(ComponentInstance a, String command, String user) {//TODO: use the connector factory
+		VM ownerVM = a.getDestination().getType();
+		Provider p = ownerVM.getProvider();
 		JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
 				p.getPasswd());
-		jc.execCommand(ownerNode.getGroupName(), command, user,
-				ownerNode.getPrivateKey());
+		jc.execCommand(ownerVM.getGroupName(), command, user,
+				ownerVM.getPrivateKey());
 
 		jc.closeConnection();
 	}
 
-	public ComputeMetadata findNodeByName(String name, Provider p) {
+	public ComputeMetadata findVMByName(String name, Provider p) {//TODO: use the connector factory
 		JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
 				p.getPasswd());
-		ComputeMetadata cm = jc.getNodeByName(name);
+		ComputeMetadata cm = jc.getVMByName(name);
 		jc.closeConnection();
 		return cm;
 	}
 
-	public Set<? extends ComputeMetadata> listOfNodes(Provider p) {
+	public Set<? extends ComputeMetadata> listOfVMs(Provider p) {//TODO: use the connector factory
 		JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
 				p.getPasswd());
-		Set<? extends ComputeMetadata> list = jc.listOfNodes();
+		Set<? extends ComputeMetadata> list = jc.listOfVMs();
 		jc.closeConnection();
 		return list;
 	}
 	////////END OF LEGACY CODE TO BE MIGRATED INTO NEW COMMANDS/////////////////////
         
-        public DeploymentModel getDeploymentModel(){
+        public CloudMLModel getDeploymentModel(){
             return deploy;
         }
         
@@ -229,7 +229,7 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 		} else {
 			//TODO
-			dispatch(new Message(command, Category.INFORMATION, "Binding created!"));
+			dispatch(new Message(command, Category.INFORMATION, "Relationship created!"));
 		}
 		//command.markAsCompleted();
 	}
@@ -264,16 +264,16 @@ class Facade implements CloudML, CommandHandler {
 			final Message message = new Message(command, Category.ERROR, text);
 			dispatch(message);
 		} else {
-			final NodeInstance instance = findNodeInstanceById(command.getInstanceId());
+			final VMInstance instance = findVMInstanceById(command.getInstanceId());
 			if (instance == null) {
-				final String text = String.format("No node with ID=\"%s\"", command.getInstanceId());
+				final String text = String.format("No VM with ID=\"%s\"", command.getInstanceId());
 				final Message message = new Message(command, Category.ERROR, text);
 				dispatch(message);
 			} else {
 				Provider p = instance.getType().getProvider();
 				JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
-				jc.destroyNode(instance.getId());
-				dispatch(new Message(command, Category.INFORMATION, "Node instance terminated"));
+				jc.destroyVM(instance.getId());
+				dispatch(new Message(command, Category.INFORMATION, "VM instance terminated"));
 			}
 		}
 		//command.markAsCompleted();
@@ -286,19 +286,19 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			NodeInstance ownerNode=null;
-			for(NodeInstance ni : deploy.getNodeInstances()){
+			VMInstance ownerVM=null;
+			for(VMInstance ni : deploy.getVMInstances()){
 				if(ni.getName().equals(command.getArtifactId()))
-					ownerNode=ni;
+					ownerVM=ni;
 			}
-			if(ownerNode != null){
-				Provider p = ownerNode.getType().getProvider();
+			if(ownerVM != null){
+				Provider p = ownerVM.getType().getProvider();
 				JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
-				ComputeMetadata c = jc.getNodeByName(command.getArtifactId());
+				ComputeMetadata c = jc.getVMByName(command.getArtifactId());
 				jc.uploadFile(command.getLocalPath(), command.getRemotePath(), c.getId(), "ubuntu",
-						ownerNode.getType().getPrivateKey());
+						ownerVM.getType().getPrivateKey());
 			}else{
-				final String text = "There is no node with this ID!";
+				final String text = "There is no VM with this ID!";
 				final Message message = new Message(command, Category.ERROR, text);
 				dispatch(message);
 			}
@@ -311,7 +311,7 @@ class Facade implements CloudML, CommandHandler {
 		if (extension != null) {
 			final File f = new File(command.getPathToModel());
 			try {
-				deploy = (DeploymentModel) getCodec(extension).load(new FileInputStream(f));
+				deploy = (CloudMLModel) getCodec(extension).load(new FileInputStream(f));
 				final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
 				dispatch(message);
 			} catch (FileNotFoundException ex) {
@@ -369,7 +369,7 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			final ArtefactTypeList data = new ArtefactTypeList(command, deploy.getArtefactTypes().values());
+			final ComponentList data = new ComponentList(command, deploy.getComponents().values());
 			dispatch(data);
 
 		}
@@ -383,8 +383,8 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			final Collection<ArtefactInstance> instances = deploy.getArtefactInstances();
-			final ArtefactInstanceList data = new ArtefactInstanceList(command, instances);
+			final Collection<ComponentInstance> instances = deploy.getComponentInstances();
+			final ComponentInstanceList data = new ComponentInstanceList(command, instances);
 			dispatch(data);
 
 		}
@@ -398,14 +398,14 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			Artefact type = findArtefactTypeById(command.getArtefactTypeId());
+			Component type = findComponentById(command.getArtefactTypeId());
 			if (type == null) {
 				final String text = String.format("No artefact type with ID \"%s\"", command.getArtefactTypeId());
 				final Message message = new Message(command, Category.ERROR, text);
 				dispatch(message);
 
 			} else {
-				final ArtefactTypeData data = new ArtefactTypeData(command, type);
+				final ComponentData data = new ComponentData(command, type);
 				dispatch(data);
 
 			}
@@ -420,14 +420,14 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			ArtefactInstance instance = findArtefactInstanceById(command.getArtefactId());
+			ComponentInstance instance = findComponentInstanceById(command.getArtefactId());
 			if (instance == null) {
 				final String text = String.format("No artefact instance with ID \"%s\"", command.getArtefactId());
 				final Message message = new Message(command, Category.ERROR, text);
 				dispatch(message);
 
 			} else {
-				final ArtefactInstanceData data = new ArtefactInstanceData(command, instance);
+				final ComponentInstanceData data = new ComponentInstanceData(command, instance);
 				dispatch(data);
 
 			}
@@ -504,17 +504,17 @@ class Facade implements CloudML, CommandHandler {
 	}
 
 	/**
-	 * Search for an artefact instance whose name matches the given id. If no
+	 * Search for an component instance whose name matches the given id. If no
 	 * such instance matches, it returns null.
 	 *
 	 * @param id the id of the needed instance
 	 * @return the instance associated with the given id or null by default.
 	 */
-	private ArtefactInstance findArtefactInstanceById(final String id) {
-		ArtefactInstance result = null;
-		final Iterator<ArtefactInstance> instances = deploy.getArtefactInstances().iterator();
+	private ComponentInstance findComponentInstanceById(final String id) {
+		ComponentInstance result = null;
+		final Iterator<ComponentInstance> instances = deploy.getComponentInstances().iterator();
 		while (result == null && instances.hasNext()) {
-			final ArtefactInstance instance = instances.next();
+			final ComponentInstance instance = instances.next();
 			if (instance.getName().equals(id)) {
 				result = instance;
 			}
@@ -529,18 +529,18 @@ class Facade implements CloudML, CommandHandler {
 	 * @param id the id of the needed instance
 	 * @return the instance associated with the given id or null by default.
 	 */
-	private Artefact findArtefactTypeById(final String id) {
-		return deploy.getArtefactTypes().get(id);
+	private Component findComponentById(final String id) {
+		return deploy.getComponents().get(id);
 	}
 
 	/**
-	 * Search for a node instance whose name matches a given id
+	 * Search for a VM instance whose name matches a given id
 	 *
-	 * @param id of the Node instance
-	 * @return the node instance with the given id or null
+	 * @param id of the VM instance
+	 * @return the VM instance with the given id or null
 	 */
-	private NodeInstance findNodeInstanceById(final String id) {
-		for (NodeInstance ni : deploy.getNodeInstances()) {
+	private VMInstance findVMInstanceById(final String id) {
+		for (VMInstance ni : deploy.getVMInstances()) {
 			if (ni.getName().equals(id)) {
 				return ni;
 			}
@@ -554,8 +554,8 @@ class Facade implements CloudML, CommandHandler {
 	 * @param id of a binding type
 	 * @return the binding type with the given id or null
 	 */
-	private Binding findBindingTypeById(final String id) {
-		for (Binding t : deploy.getBindingTypes().values()) {
+	private Relationship findRelationshipById(final String id) {
+		for (Relationship t : deploy.getRelationships().values()) {
 			if (t.getName().equals(id)) {
 				return t;
 			}

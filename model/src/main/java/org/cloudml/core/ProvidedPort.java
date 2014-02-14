@@ -22,21 +22,24 @@
  */
 package org.cloudml.core;
 
-public abstract class NamedElement implements CloudMLElement {
+import java.util.List;
 
-    protected String name;
+public class ProvidedPort extends Port {
 
-    public NamedElement(){}
-    
-    public NamedElement(String name) {
-        this.name = name;
-    }
-    
-    public String getName() {
-        return this.name;
+	public ProvidedPort() {
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public ProvidedPort(String name, InternalComponent owner, boolean isRemote) {
+        super(name, owner, isRemote);
     }
+
+    public ProvidedPort(String name, List<Property> properties, InternalComponent owner, boolean isRemote) {
+        super(name, properties, owner, isRemote);
+    }
+	
+	@Override
+	public String toString() {
+		return "ProvidedPort " + name + " ownerType" + component.getName();
+	}
+
 }

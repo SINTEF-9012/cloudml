@@ -26,14 +26,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 /*
- * A composite contains a HashMap of instances of Artefact
+ * A composite contains a HashMap of instances of InternalComponent
  */
-public class Composite extends NamedElement {
+public class Composite extends CloudMLElement {
 
     /*
-     * <ArtefactName,Artefact reference>
+     * <ArtefactName,InternalComponent reference>
      */
-    private List<ArtefactInstance> containedArtefacts = new LinkedList<ArtefactInstance>();
+    private List<InternalComponentInstance> containedArtefacts = new LinkedList<InternalComponentInstance>();
 
     public Composite(){}
     
@@ -41,7 +41,7 @@ public class Composite extends NamedElement {
         super(name);
     }
 
-    public Composite(String name, List<ArtefactInstance> containedArtefacts) {
+    public Composite(String name, List<InternalComponentInstance> containedArtefacts) {
         super(name);
         this.containedArtefacts = containedArtefacts;
     }
@@ -49,11 +49,11 @@ public class Composite extends NamedElement {
     /*
      * Getters
      */
-    public List<ArtefactInstance> getContainedArtefacts() {
+    public List<InternalComponentInstance> getContainedArtefacts() {
         return containedArtefacts;
     }
 
-    public void setContainedArtefacts(List<ArtefactInstance> containedArtefacts) {
+    public void setContainedArtefacts(List<InternalComponentInstance> containedArtefacts) {
         this.containedArtefacts = containedArtefacts;
     }
 }

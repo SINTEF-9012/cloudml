@@ -32,18 +32,15 @@ package org.cloudml.facade.mrt;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
-import org.cloudml.core.DeploymentModel;
-import org.cloudml.facade.mrt.CommandReception;
+import org.cloudml.core.CloudMLModel;
 import org.cloudml.facade.mrt.cmd.abstracts.Change;
 import org.cloudml.facade.mrt.cmd.abstracts.Instruction;
 import org.cloudml.facade.mrt.cmd.abstracts.Listener;
 import org.cloudml.facade.mrt.cmd.gen.CloudMLCmds;
-import org.cloudml.facade.mrt.cmd.gen.GetSnapshot;
 import org.cloudml.facade.mrt.cmd.gen.Snapshot;
 import org.yaml.snakeyaml.Yaml;
 
@@ -113,10 +110,10 @@ public class Coordinator {
     }
     
     public String codec(Object object){
-        if(object instanceof DeploymentModel){
+        if(object instanceof CloudMLModel){
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                jsonCodec.save((DeploymentModel)object, baos);
+                jsonCodec.save((CloudMLModel)object, baos);
                 return baos.toString("UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(Coordinator.class.getName()).log(Level.SEVERE, null, ex);

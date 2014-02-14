@@ -23,8 +23,6 @@
 package org.cloudml.ui.graph;
 
 
-import java.awt.Cursor;
-import java.awt.MouseInfo;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -33,33 +31,18 @@ import java.util.Random;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.apache.commons.collections15.Factory;
 import org.cloudml.codecs.Edge;
 import org.cloudml.codecs.Vertex;
-import org.cloudml.core.Artefact;
-import org.cloudml.core.ArtefactInstance;
-import org.cloudml.core.Binding;
-import org.cloudml.core.BindingInstance;
-import org.cloudml.core.ClientPort;
-import org.cloudml.core.ClientPortInstance;
-import org.cloudml.core.DeploymentModel;
-import org.cloudml.core.Node;
-import org.cloudml.core.NodeInstance;
-import org.cloudml.core.ServerPort;
-import org.cloudml.core.ServerPortInstance;
+import org.cloudml.core.*;
+import org.cloudml.core.VM;
 
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
 
@@ -70,9 +53,9 @@ MouseListener, MouseMotionListener {
 	private VisualizationViewer<Vertex,Edge> vv;
 	private Graph<Vertex,Edge> graph;
 	private JList nodeTypes;
-	private DeploymentModel dm;
+	private CloudMLModel dm;
 
-	public MyEditingGraphMousePlugin(int modifiers, VisualizationViewer<Vertex,Edge> vv, Graph<Vertex,Edge> graph,JList nodeTypes, DeploymentModel dm) {
+	public MyEditingGraphMousePlugin(int modifiers, VisualizationViewer<Vertex,Edge> vv, Graph<Vertex,Edge> graph,JList nodeTypes, CloudMLModel dm) {
 		super(modifiers);
 		this.vv=vv;
 		this.graph=graph;
@@ -111,43 +94,46 @@ MouseListener, MouseMotionListener {
 				final Vertex vertex = pickSupport.getVertex(vv.getModel().getGraphLayout(), p.getX(), p.getY());
 				//Not on a vertex
 				if(vertex == null){
-					for(Artefact a:dm.getArtefactTypes().values()){
-						if(a.getName().equals(nodeType)){
-							ArtefactInstance ai= a.instanciates(nodeType+cnt);
-							ai.setDestination(selectDestination());
-							dm.getArtefactInstances().add(ai);
-							for(ClientPort c:a.getRequired())
-								ai.getRequired().add(new ClientPortInstance(c.getName()+cnt, c, ai));
-							for(ServerPort s:a.getProvided())
-								ai.getProvided().add(new ServerPortInstance(s.getName()+cnt, s, ai));
-							Vertex v=new Vertex(nodeType+cnt, "soft", ai);
-							graph.addVertex(v);
-							vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
-							Edge newEdge=new Edge(ai.getDestination().getName()+cnt, "destination");
-							Vertex dest=null;
-							for(Vertex vDest : graph.getVertices()){
-								if(vDest.getName().equals(ai.getDestination().getName())){
-									graph.addEdge(newEdge, v, vDest);
-									break;
-								}
-							}
-						}
+					for(Component a:dm.getComponents().values()){
+                        if(a instanceof InternalComponent){
+                            InternalComponent ic=(InternalComponent)a;
+                            if(a.getName().equals(nodeType)){
+                                InternalComponentInstance ai= ic.instantiates(nodeType + cnt);
+                                ai.setDestination(selectDestination());
+                                dm.getComponentInstances().add(ai);
+                                for(RequiredPort c:ic.getRequiredPorts())
+                                    ai.getRequiredPortInstances().add(new RequiredPortInstance(c.getName()+cnt, c, ai));
+                                for(ProvidedPort s:ic.getProvidedPorts())
+                                    ai.getProvidedPortInstances().add(new ProvidedPortInstance(s.getName()+cnt, s, ai));
+                                Vertex v=new Vertex(nodeType+cnt, "soft", ai);
+                                graph.addVertex(v);
+                                vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
+                                Edge newEdge=new Edge(ai.getDestination().getName()+cnt, "destination");
+                                Vertex dest=null;
+                                for(Vertex vDest : graph.getVertices()){
+                                    if(vDest.getName().equals(ai.getDestination().getName())){
+                                        graph.addEdge(newEdge, v, vDest);
+                                        break;
+                                    }
+                                }
+                            }
+                        }//TODO Else
 					}
-					for(Node a:dm.getNodeTypes().values()){
+					for(VM a:dm.getVms().values()){
 						if(a.getName().equals(nodeType)){
-							NodeInstance ai= a.instanciates(nodeType+cnt);
-							dm.getNodeInstances().add(ai);
+							VMInstance ai= a.instantiates(nodeType + cnt);
+							dm.getVMInstances().add(ai);
 							Vertex v=new Vertex(nodeType+cnt, "node", ai);
 							graph.addVertex(v);
 							vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
 						}
 					}
-					for(Binding b:dm.getBindingTypes().values()){
+					for(Relationship b:dm.getRelationships().values()){
 						if(b.getName().equals(nodeType)){
-							BindingInstance bi=b.instanciates(nodeType+cnt);
-							dm.getBindingInstances().add(bi);
+							RelationshipInstance bi=b.instantiates(nodeType + cnt);
+							dm.getRelationshipInstances().add(bi);
 							Edge edge;
-							if(b.getClient().getIsOptional())
+							if(!b.getRequiredPort().getIsMandatory())
 								edge=new Edge(nodeType+cnt, "optional");
 							else edge=new Edge(nodeType+cnt, "mandatory");
 
@@ -178,14 +164,14 @@ MouseListener, MouseMotionListener {
 				if(vertex != null){
 					if(vertex.getType().equals("node")){
 						//need to remove also the bindings and the requirements !!!
-						dm.getNodeInstances().remove(vertex);
+						dm.getVMInstances().remove(vertex);
 						graph.removeVertex(vertex);
 					}else{
-						dm.getArtefactInstances().remove(vertex);
+						dm.getComponentInstances().remove(vertex);
 						graph.removeVertex(vertex);
 					}
 				}else{
-					dm.getBindingInstances().remove(edge);
+					dm.getRelationshipInstances().remove(edge);
 					graph.removeEdge(edge);
 				}
 			}
@@ -204,36 +190,37 @@ MouseListener, MouseMotionListener {
 
 	}    
 	
-	public String selectClientPortInstance(BindingInstance bi){
+	public String selectClientPortInstance(RelationshipInstance bi){
 		JPanel panel = new JPanel();
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		for(ArtefactInstance ai:dm.getArtefactInstances()){
-			System.out.println(ai.getRequired());
-			for(ClientPortInstance ci:ai.getRequired()){
-				System.out.println(bi.getType().getClient() + " #### "+ ci.getType());
-				if(ci.getType().equals(bi.getType().getClient())){
-					model.addElement(ci);
-				}
-			}
+		for(ComponentInstance ai:dm.getComponentInstances()){
+            if(ai instanceof InternalComponentInstance){
+                for(RequiredPortInstance ci:((InternalComponentInstance)ai).getRequiredPortInstances()){
+                    System.out.println(bi.getType().getRequiredPort() + " #### "+ ci.getType());
+                    if(ci.getType().equals(bi.getType().getRequiredPort())){
+                        model.addElement(ci);
+                    }
+                }
+            }
 		}
 		JComboBox comboBox = new JComboBox(model);
 		panel.add(comboBox);
 
-		int result = JOptionPane.showConfirmDialog(null, panel, "ClientPort", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		int result = JOptionPane.showConfirmDialog(null, panel, "RequiredPort", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 		switch (result) {
 		case JOptionPane.OK_OPTION:
-			bi.setClient((ClientPortInstance)comboBox.getSelectedItem());
-			return ((ClientPortInstance)comboBox.getSelectedItem()).getOwner().getName();
+			bi.setRequiredPortInstance((RequiredPortInstance) comboBox.getSelectedItem());
+			return ((RequiredPortInstance)comboBox.getSelectedItem()).getOwner().getName();
 		}
 		return "";
 	}
 	
-	public NodeInstance selectDestination(){
+	public VMInstance selectDestination(){
 		JPanel panel = new JPanel();
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		for(NodeInstance n:dm.getNodeInstances()){
+		for(VMInstance n:dm.getVMInstances()){
 			model.addElement(n);
 		}
 		JComboBox comboBox = new JComboBox(model);
@@ -242,18 +229,18 @@ MouseListener, MouseMotionListener {
 		int result = JOptionPane.showConfirmDialog(null, panel, "Destination", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 		switch (result) {
 		case JOptionPane.OK_OPTION:
-			return ((NodeInstance)comboBox.getSelectedItem());
+			return ((VMInstance)comboBox.getSelectedItem());
 		}
 		return null;
 	}
 	
-	public String selectServerPortInstance(BindingInstance bi){
+	public String selectServerPortInstance(RelationshipInstance bi){
 		JPanel panel = new JPanel();
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		for(ArtefactInstance ai:dm.getArtefactInstances()){
-			for(ServerPortInstance ci:ai.getProvided()){
-				if(ci.getType().equals(bi.getType().getServer())){
+		for(ComponentInstance ai:dm.getComponentInstances()){
+			for(ProvidedPortInstance ci:ai.getProvidedPortInstances()){
+				if(ci.getType().equals(bi.getType().getProvidedPort())){
 					model.addElement(ci);
 				}
 			}
@@ -261,11 +248,11 @@ MouseListener, MouseMotionListener {
 		JComboBox comboBox = new JComboBox(model);
 		panel.add(comboBox);
 
-		int result = JOptionPane.showConfirmDialog(null, panel, "ServerPort", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		int result = JOptionPane.showConfirmDialog(null, panel, "ProvidedPort", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 		switch (result) {
 		case JOptionPane.OK_OPTION:
-			bi.setServer((ServerPortInstance)comboBox.getSelectedItem());
-			return ((ServerPortInstance)comboBox.getSelectedItem()).getOwner().getName();
+			bi.setProvidedPortInstance((ProvidedPortInstance) comboBox.getSelectedItem());
+			return ((ProvidedPortInstance)comboBox.getSelectedItem()).getOwner().getName();
 		}
 		return "";
 	}

@@ -20,12 +20,10 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
-
 package org.cloudml.facade.mrt;
 
 import java.util.Collection;
-import org.cloudml.core.DeploymentModel;
+import org.cloudml.core.CloudMLModel;
 
 /**
  *
@@ -33,7 +31,7 @@ import org.cloudml.core.DeploymentModel;
  */
 public interface ModelRepo {
      
-    public DeploymentModel getRoot();
+    public CloudMLModel getRoot();
     
     public void handle(String name, Collection<String> parameter);
  

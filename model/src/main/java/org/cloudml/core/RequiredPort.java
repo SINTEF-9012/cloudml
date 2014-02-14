@@ -24,28 +24,34 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public class ClientPortInstance extends ArtefactPortInstance<ClientPort> {
+public class RequiredPort extends Port {
 
-    public ClientPortInstance(String name, ClientPort type, ArtefactInstance owner) {
-        super(name, type, owner);
+	private boolean isMandatory =true;
+	
+	public RequiredPort(String name, InternalComponent owner, boolean isLocal) {
+        super(name, owner, isLocal);
     }
+	
+	public RequiredPort(String name, InternalComponent owner, boolean isLocal, boolean isMandatory) {
+        super(name, owner, isLocal);
+        this.isMandatory = isMandatory;
+    }
+	
+	public RequiredPort(String name, List<Property> properties, InternalComponent owner, boolean isLocal, boolean isMandatory){
+		super(name,properties,owner,isLocal);
+		this.isMandatory = isMandatory;
+	}
 
-    public ClientPortInstance(String name, ClientPort type, List<Property> properties, ArtefactInstance owner) {
-        super(name, type, properties, owner);
-    }
+	public void setIsMandatory(boolean isMandatory){
+		this.isMandatory =isMandatory;
+	}
 
-    @Override
-    public String toString() {
-        return "ClientPortInstance " + name + " owner:" + owner.getName();
-    }
+	public boolean getIsMandatory(){
+		return isMandatory;
+	}
 
-    @Override
-    public boolean equals(Object other) {
-        if (other instanceof ClientPortInstance) {
-            ClientPortInstance otherNode = (ClientPortInstance) other;
-            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
-        } else {
-            return false;
-        }
-    }
+	@Override
+	public String toString() {
+		return "RequiredPort " + name + " ownerType" + component.getName();
+	}
 }

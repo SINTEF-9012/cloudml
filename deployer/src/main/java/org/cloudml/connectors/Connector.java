@@ -22,20 +22,19 @@
  */
 package org.cloudml.connectors;
 
-import org.cloudml.core.NodeInstance;
-import org.jclouds.compute.domain.NodeMetadata;
+import org.cloudml.core.VMInstance;
 
 public interface Connector {
 	
 	public void execCommand(String id, String command, String login, String key);
 	
-	public void createInstance(NodeInstance a);
+	public void createInstance(VMInstance a);
 	
-	public void destroyNode(String id);
+	public void destroyVM(String id);
 	
 	public void closeConnection();
 
-	public void updateNodeMetadata(NodeInstance a);
+	public void updateVMMetadata(VMInstance a);
 	
 	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key);
 	

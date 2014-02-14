@@ -23,7 +23,7 @@
 package org.cloudml.facade.commands;
 
 /**
- * Deploy the current DeploymentModel
+ * Deploy the current CloudMLModel
  *
  * @author Brice Morin
  * @since 1.0

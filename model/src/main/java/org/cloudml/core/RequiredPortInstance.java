@@ -22,36 +22,30 @@
  */
 package org.cloudml.core;
 
-import java.util.LinkedList;
 import java.util.List;
 
-public abstract class WithProperties extends NamedElement {
+public class RequiredPortInstance extends PortInstance<RequiredPort> {
 
-    protected List<Property> properties = new LinkedList<Property>();
-
-    public WithProperties(){}
-    
-    public WithProperties(String name) {
-        super(name);
+    public RequiredPortInstance(String name, RequiredPort type, InternalComponentInstance owner) {
+        super(name, type, owner);
     }
 
-    public WithProperties(String name, List<Property> properties) {
-        super(name);
-        this.properties = properties;
+    public RequiredPortInstance(String name, RequiredPort type, List<Property> properties, InternalComponentInstance owner) {
+        super(name, type, properties, owner);
     }
 
-    public List<Property> getProperties() {
-        return this.properties;
+    @Override
+    public String toString() {
+        return "RequiredPortInstance " + name + " component:" + owner.getName();
     }
 
-    public void setProperties(List<Property> properties) {
-        this.properties = properties;
-    }
-    
-    public String getProperty(String key){
-    	for(Property x : properties)
-    		if(x.name.equals(key))
-    			return x.value;
-    	return null;
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof RequiredPortInstance) {
+            RequiredPortInstance otherNode = (RequiredPortInstance) other;
+            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
+        } else {
+            return false;
+        }
     }
 }

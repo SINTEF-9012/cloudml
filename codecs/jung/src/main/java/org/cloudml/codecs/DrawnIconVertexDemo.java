@@ -21,17 +21,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.codecs;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -39,21 +35,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.JTableHeader;
 
 import org.apache.commons.collections15.Transformer;
 import org.cloudml.core.*;
@@ -63,15 +46,8 @@ import org.cloudml.core.*;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.EditingGraphMousePlugin;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ScalingControl;
-import edu.uci.ics.jung.visualization.decorators.PickableEdgePaintTransformer;
 import edu.uci.ics.jung.visualization.decorators.PickableVertexPaintTransformer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
@@ -79,11 +55,6 @@ import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 
 
@@ -99,7 +70,7 @@ public class DrawnIconVertexDemo implements Serializable {
 	 */
 	VisualizationViewer<Vertex,Edge> vv;
 	
-	private transient DeploymentModel dmodel;
+	private transient CloudMLModel dmodel;
 
 	private Transformer<Edge,Paint> edgeColor = new Transformer<Edge,Paint>() {
 		public Paint transform(Edge e) {
@@ -153,7 +124,7 @@ public class DrawnIconVertexDemo implements Serializable {
 		}};
     
 	
-	public DrawnIconVertexDemo(final DeploymentModel dm) {
+	public DrawnIconVertexDemo(final CloudMLModel dm) {
 		this.dmodel=dm;
 		// create a simple graph for the demo
 		graph = new DirectedSparseGraph<Vertex,Edge>();
@@ -191,41 +162,47 @@ public class DrawnIconVertexDemo implements Serializable {
 	}
 	
 	
-	public ArrayList<Vertex> drawVerticesFromDeploymentModel(DeploymentModel dm){
+	public ArrayList<Vertex> drawVerticesFromDeploymentModel(CloudMLModel dm){
 		ArrayList<Vertex> V=new ArrayList<Vertex>();
-		for(NodeInstance n : dm.getNodeInstances()){
+		for(VMInstance n : dm.getVMInstances()){
 			Vertex v= new Vertex(n.getName(), "node",n);
 			V.add(v);
 			createVertice(v);
 		}
-		for(ArtefactInstance x : dm.getArtefactInstances()){
-			if(x.getDestination() == null){
-				Vertex v= new Vertex(x.getName(), "platform",x);
-				V.add(v);
-				createVertice(v);
-			}else{
-				Vertex v= new Vertex(x.getName(), "soft",x);
-				V.add(v);
-				createVertice(v);	
-			}
+		for(ComponentInstance x : dm.getComponentInstances()){
+            if(x instanceof InternalComponentInstance){
+                InternalComponentInstance ix=(InternalComponentInstance)x;
+                if(ix.getDestination() == null){
+                    Vertex v= new Vertex(x.getName(), "platform",ix);
+                    V.add(v);
+                    createVertice(v);
+                }else{
+                    Vertex v= new Vertex(x.getName(), "soft",ix);
+                    V.add(v);
+                    createVertice(v);
+                }
+            }//TODO else
 		}
 		return V;
 	}
 
-	public void drawEdgesFromDeploymentModel(DeploymentModel dm, ArrayList<Vertex> v){
-		for(ArtefactInstance x : dm.getArtefactInstances()){
-			if(x.getDestination() != null){
-				Vertex v1=findVertex(x.getName(), v);
-				Vertex v2=findVertex(x.getDestination().getName(), v);
-				Edge e=new Edge("dest"+x.getName(), "destination");
-				createEdge(e, v1, v2);
-			}
+	public void drawEdgesFromDeploymentModel(CloudMLModel dm, ArrayList<Vertex> v){
+		for(ComponentInstance x : dm.getComponentInstances()){
+            if(x instanceof InternalComponentInstance){
+                InternalComponentInstance ix=(InternalComponentInstance)x;
+                if(ix.getDestination() != null){
+                    Vertex v1=findVertex(ix.getName(), v);
+                    Vertex v2=findVertex(ix.getDestination().getName(), v);
+                    Edge e=new Edge("dest"+ix.getName(), "destination");
+                    createEdge(e, v1, v2);
+                }
+            }//TODO else
 		}
-		for(BindingInstance bi: dm.getBindingInstances()){
-			Vertex v1=findVertex(bi.getClient().getOwner().getName(), v);
-			Vertex v2=findVertex(bi.getServer().getOwner().getName(), v);
+		for(RelationshipInstance bi: dm.getRelationshipInstances()){
+			Vertex v1=findVertex(bi.getRequiredPortInstance().getOwner().getName(), v);
+			Vertex v2=findVertex(bi.getProvidedPortInstance().getOwner().getName(), v);
 			Edge e;
-			if(bi.getClient().getType().getIsOptional())
+			if(!bi.getRequiredPortInstance().getType().getIsMandatory())
 				e=new Edge(bi.getName(), "optional",bi);
 			else e=new Edge(bi.getName(), "mandatory",bi);
 			createEdge(e, v1, v2);
@@ -290,7 +267,7 @@ public class DrawnIconVertexDemo implements Serializable {
 		return graph;
 	}
 	
-	public void setDeploymentModel(DeploymentModel dm){
+	public void setDeploymentModel(CloudMLModel dm){
 		this.dmodel=dm;
 	}
 	

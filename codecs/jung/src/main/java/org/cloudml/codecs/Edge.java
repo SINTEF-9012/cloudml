@@ -24,14 +24,14 @@ package org.cloudml.codecs;
 
 import java.io.Serializable;
 
-import org.cloudml.core.BindingInstance;
-import org.cloudml.core.WithProperties;
+import org.cloudml.core.CloudMLElementWithProperties;
+import org.cloudml.core.RelationshipInstance;
 
 public class Edge implements Serializable {
 	
 	private String name;
 	private String type;
-	private BindingInstance instance;
+	private RelationshipInstance instance;
 	
 	private Edge(){}
     
@@ -40,7 +40,7 @@ public class Edge implements Serializable {
 		this.type=type;
 	}
 	
-	public Edge(String name,String type, BindingInstance instance){
+	public Edge(String name,String type, RelationshipInstance instance){
 		this.name=name;
 		this.type=type;
 		this.instance=instance;
@@ -54,11 +54,11 @@ public class Edge implements Serializable {
 		return type;
 	}
 	
-	public void setInstance(BindingInstance instance){
+	public void setInstance(RelationshipInstance instance){
 		this.instance=instance;
 	}
 	
-	public WithProperties getInstance(){
+	public CloudMLElementWithProperties getInstance(){
 		return instance;
 	}
 

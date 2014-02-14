@@ -41,10 +41,10 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
  *     - !createAndAdd
  *     parent : /
  *     property : nodeInstances
- *     type : NodeInstance
+ *     type : VMInstance
  *     initializer :
  *       - {type: String, value: ni1}
- *       - {type: Node, value: !xpath /nodeTypes/node1}
+ *       - {type: VM, value: !xpath /nodeTypes/node1}
  */
 @SuppressWarnings("all")
 public class CreateAndAdd extends Modification {

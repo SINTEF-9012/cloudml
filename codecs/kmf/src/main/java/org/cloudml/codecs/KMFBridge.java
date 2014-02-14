@@ -34,23 +34,23 @@ import org.cloudml.core.*;
  */
 public class KMFBridge {
 
-    //TODO: BindingInstance
+    //TODO: RelationshipInstance
     public KMFBridge() {
     }
 
     public CloudMLElement toPOJO(net.cloudml.core.DeploymentModel kDeploy) {
-        Map<String, Node> nodes = new HashMap<String, Node>();
+        Map<String, VM> nodes = new HashMap<String, VM>();
         Map<String, Provider> providers = new HashMap<String, Provider>();
-        Map<String, Artefact> artefacts = new HashMap<String, Artefact>();
-        Map<String, ClientPort> clientPorts = new HashMap<String, ClientPort>();
-        Map<String, ServerPort> serverPorts = new HashMap<String, ServerPort>();
-        Map<String, ArtefactInstance> artefactInstances = new HashMap<String, ArtefactInstance>();
-        Map<String, ClientPortInstance> clientPortInstances = new HashMap<String, ClientPortInstance>();
-        Map<String, ServerPortInstance> serverPortInstances = new HashMap<String, ServerPortInstance>();
-        Map<String, NodeInstance> nodeInstances = new HashMap<String, NodeInstance>();
-        Map<String, Binding> bindings = new HashMap<String, Binding>();
+        Map<String, InternalComponent> artefacts = new HashMap<String, InternalComponent>();
+        Map<String, RequiredPort> clientPorts = new HashMap<String, RequiredPort>();
+        Map<String, ProvidedPort> serverPorts = new HashMap<String, ProvidedPort>();
+        Map<String, InternalComponentInstance> artefactInstances = new HashMap<String, InternalComponentInstance>();
+        Map<String, RequiredPortInstance> clientPortInstances = new HashMap<String, RequiredPortInstance>();
+        Map<String, ProvidedPortInstance> serverPortInstances = new HashMap<String, ProvidedPortInstance>();
+        Map<String, VMInstance> nodeInstances = new HashMap<String, VMInstance>();
+        Map<String, Relationship> bindings = new HashMap<String, Relationship>();
 
-        DeploymentModel model = new DeploymentModel(kDeploy.getName());
+        CloudMLModel model = new CloudMLModel(kDeploy.getName());
 
         for (net.cloudml.core.Provider kProvider : kDeploy.getProviders()) {
             Provider p = new Provider(kProvider.getName(), kProvider.getCredentials());
@@ -60,48 +60,48 @@ public class KMFBridge {
         }
 
         for (net.cloudml.core.Node kNode : kDeploy.getNodeTypes()) {
-            Node node = new Node(kNode.getName());
-            initProperties(kNode, node);
+            VM vm = new VM(kNode.getName());
+            initProperties(kNode, vm);
 
             Provider p = providers.get(kNode.getCloudProvider().getName());
 
-            node.setProvider(p);
-            node.setGroupName(kNode.getGroupName());
-            node.setImageId(kNode.getImageID());
-            node.setIs64os(kNode.getIs64os());
-            node.setLocation(kNode.getLocation());
-            node.setMinCore(kNode.getMinCore());
-            node.setMinDisk(kNode.getMinDisk());
-            node.setMinRam(kNode.getMinRam());
-            node.setOS(kNode.getOS());
-            node.setPrivateKey(kNode.getPrivateKey());
-            node.setSecurityGroup(kNode.getSecurityGroup());
-            node.setSshKey(kNode.getSshKey());
+            vm.setProvider(p);
+            vm.setGroupName(kNode.getGroupName());
+            vm.setImageId(kNode.getImageID());
+            vm.setIs64os(kNode.getIs64os());
+            vm.setLocation(kNode.getLocation());
+            vm.setMinCores(kNode.getMinCore());
+            vm.setMinDisk(kNode.getMinDisk());
+            vm.setMinRam(kNode.getMinRam());
+            vm.setOs(kNode.getOS());
+            vm.setPrivateKey(kNode.getPrivateKey());
+            vm.setSecurityGroup(kNode.getSecurityGroup());
+            vm.setSshKey(kNode.getSshKey());
 
-            nodes.put(node.getName(), node);
+            nodes.put(vm.getName(), vm);
 
-            model.getNodeTypes().put(node.getName(), node);
+            model.getVms().put(vm.getName(), vm);
         }
 
         for (net.cloudml.core.Artefact ka : kDeploy.getArtefactTypes()) {//first pass on the contained elements
-            Artefact a = new Artefact(ka.getName());
+            InternalComponent a = new InternalComponent(ka.getName());
             initProperties(ka, a);
             artefacts.put(a.getName(), a);
 
             for (net.cloudml.core.ServerPort kap : ka.getProvided()) {//TODO: duplicated code to be rationalized
-                ServerPort ap = new ServerPort(kap.getName(), a, kap.getIsRemote());//TODO
+                ProvidedPort ap = new ProvidedPort(kap.getName(), a, kap.getIsRemote());//TODO
                 initProperties(kap, ap);
                 ap.setPortNumber(kap.getPortNumber());
-                a.getProvided().add(ap);//!
+                a.getProvidedPorts().add(ap);//!
 
                 serverPorts.put(a.getName() + "_" + ap.getName(), ap);
             }
 
             for (net.cloudml.core.ClientPort kap : ka.getRequired()) {//TODO: duplicated code to be rationalized
-                ClientPort ap = new ClientPort(kap.getName(), a, kap.getIsRemote(), kap.getIsOptional());//TODO
+                RequiredPort ap = new RequiredPort(kap.getName(), a, kap.getIsRemote(), kap.getIsOptional());//TODO
                 initProperties(kap, ap);
                 ap.setPortNumber(kap.getPortNumber());
-                a.getRequired().add(ap);//!
+                a.getRequiredPorts().add(ap);//!
 
                 clientPorts.put(a.getName() + "_" + ap.getName(), ap);
             }
@@ -118,11 +118,11 @@ public class KMFBridge {
             a.setResource(r);
 
 
-            model.getArtefactTypes().put(a.getName(), a);
+            model.getComponents().put(a.getName(), a);
         }
 
         for (net.cloudml.core.Artefact ka : kDeploy.getArtefactTypes()) {//second pass on the referenced elements
-            Artefact a = artefacts.get(ka.getName());
+            InternalComponent a = artefacts.get(ka.getName());
             if (ka.getDestination() != null) {
                 a.setDestination(serverPorts.get(((net.cloudml.core.Artefact)ka.getDestination().eContainer()).getName() + "_" + ka.getDestination().getName()));
             }
@@ -130,7 +130,7 @@ public class KMFBridge {
         }
 
         for (net.cloudml.core.Binding kb : kDeploy.getBindingTypes()) {
-            Binding b = new Binding(clientPorts.get(((net.cloudml.core.Artefact)kb.getClient().eContainer()).getName() + "_" + kb.getClient().getName()), serverPorts.get(((net.cloudml.core.Artefact)kb.getServer().eContainer()).getName() + "_" + kb.getServer().getName()));
+            Relationship b = new Relationship(clientPorts.get(((net.cloudml.core.Artefact)kb.getClient().eContainer()).getName() + "_" + kb.getClient().getName()), serverPorts.get(((net.cloudml.core.Artefact)kb.getServer().eContainer()).getName() + "_" + kb.getServer().getName()));
             b.setName(kb.getName());
             if (kb.getClientResource() != null) {
                 Resource cr = new Resource(kb.getClientResource().getName());
@@ -170,23 +170,23 @@ public class KMFBridge {
                 }
                 b.setServerResource(cr);
             }
-            model.getBindingTypes().put(b.getName(), b);
+            model.getRelationships().put(b.getName(), b);
             bindings.put(b.getName(), b);
         }
 
         for (net.cloudml.core.NodeInstance kni : kDeploy.getNodeInstances()) {
-            NodeInstance ni = new NodeInstance(kni.getName(), nodes.get(kni.getType().getName()));
+            VMInstance ni = new VMInstance(kni.getName(), nodes.get(kni.getType().getName()));
             ni.setPublicAddress(kni.getPublicAddress());
             initProperties(kni, ni);
 
             nodeInstances.put(ni.getName(), ni);
 
-            model.getNodeInstances().add(ni);
+            model.getVMInstances().add(ni);
         }
 
 
         for (net.cloudml.core.ArtefactInstance kai : kDeploy.getArtefactInstances()) {//pass1
-            ArtefactInstance ai = new ArtefactInstance(kai.getName(), artefacts.get(kai.getType().getName()));
+            InternalComponentInstance ai = new InternalComponentInstance(kai.getName(), artefacts.get(kai.getType().getName()));
             initProperties(kai, ai);
             artefactInstances.put(ai.getName(), ai);
 
@@ -195,38 +195,38 @@ public class KMFBridge {
             }
 
             for (net.cloudml.core.ServerPortInstance kapi : kai.getProvided()) {
-                ServerPortInstance api = new ServerPortInstance(kapi.getName(), serverPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()), ai);
+                ProvidedPortInstance api = new ProvidedPortInstance(kapi.getName(), serverPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()), ai);
                 initProperties(kapi, api);
-                ai.getProvided().add(api);
+                ai.getProvidedPortInstances().add(api);
                 serverPortInstances.put(api.getName(), api);
             }
 
             for (net.cloudml.core.ClientPortInstance kapi : kai.getRequired()) {
-                ClientPortInstance api = new ClientPortInstance(kapi.getName(), clientPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()), ai);
+                RequiredPortInstance api = new RequiredPortInstance(kapi.getName(), clientPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()), ai);
                 initProperties(kapi, api);
-                ai.getRequired().add(api);
+                ai.getRequiredPortInstances().add(api);
                 clientPortInstances.put(api.getName(), api);
             }
 
-            model.getArtefactInstances().add(ai);
+            model.getComponentInstances().add(ai);
         }
 
         /*for (net.cloudml.core.ArtefactInstance kai : kDeploy.getArtefactInstances()) {//pass 2
             ArtefactInstance ai = artefactInstances.get(kai.getName());
 
-            for (net.cloudml.core.ArtefactPortInstance kapi : kai.getRequired()) {
-                ai.getRequired().add(clientPortInstances.get(kapi.getName()));
+            for (net.cloudml.core.PortInstance kapi : kai.getRequiredPorts()) {
+                ai.getRequiredPorts().add(clientPortInstances.get(kapi.getName()));
             }
             
-            for (net.cloudml.core.ArtefactPortInstance kapi : kai.getProvided()) {
-                ai.getProvided().add(serverPortInstances.get(kapi.getName()));
+            for (net.cloudml.core.PortInstance kapi : kai.getProvidedPortInstances()) {
+                ai.getProvidedPortInstances().add(serverPortInstances.get(kapi.getName()));
             }
         }*/
 
         for (net.cloudml.core.BindingInstance kb : kDeploy.getBindingInstances()) {
-            BindingInstance b = new BindingInstance(clientPortInstances.get(kb.getClient().getName()), serverPortInstances.get(kb.getServer().getName()), bindings.get(kb.getType().getName()));
+            RelationshipInstance b = new RelationshipInstance(clientPortInstances.get(kb.getClient().getName()), serverPortInstances.get(kb.getServer().getName()), bindings.get(kb.getType().getName()));
             b.setName(kb.getName());
-            model.getBindingInstances().add(b);
+            model.getRelationshipInstances().add(b);
         }
 
         return model;
@@ -239,7 +239,7 @@ public class KMFBridge {
      * @param kElement
      * @param element
      */
-    private void initProperties(net.cloudml.core.WithProperties kElement, WithProperties element) {
+    private void initProperties(net.cloudml.core.WithProperties kElement, CloudMLElementWithProperties element) {
         for (net.cloudml.core.Property kp : kElement.getProperties()) {
             Property p = new Property(kp.getName(), kp.getValue());
             element.getProperties().add(p);
@@ -253,7 +253,7 @@ public class KMFBridge {
      * @param element
      * @param kElement
      */
-    private void initProperties(WithProperties element, net.cloudml.core.WithProperties kElement, net.cloudml.core.CoreFactory factory) {
+    private void initProperties(CloudMLElementWithProperties element, net.cloudml.core.WithProperties kElement, net.cloudml.core.CoreFactory factory) {
         for (Property p : element.getProperties()) {
             net.cloudml.core.Property kp = factory.createProperty();
             kp.setName(p.getName());
@@ -262,7 +262,7 @@ public class KMFBridge {
         }
     }
 
-    public net.cloudml.core.DeploymentModel toKMF(DeploymentModel deploy) {
+    public net.cloudml.core.DeploymentModel toKMF(CloudMLModel deploy) {
         Map<String, net.cloudml.core.Node> nodes = new HashMap<String, net.cloudml.core.Node>();
         Map<String, net.cloudml.core.Provider> providers = new HashMap<String, net.cloudml.core.Provider>();
         Map<String, net.cloudml.core.Artefact> artefacts = new HashMap<String, net.cloudml.core.Artefact>();
@@ -289,23 +289,23 @@ public class KMFBridge {
         }
 
         //TODO: continue cloning and conversion...
-        for (Node node : deploy.getNodeTypes().values()) {
+        for (VM vm : deploy.getVms().values()) {
             net.cloudml.core.Node kNode = factory.createNode();
-            initProperties(node, kNode, factory);
-            kNode.setName(node.getName());
+            initProperties(vm, kNode, factory);
+            kNode.setName(vm.getName());
 
-            kNode.setCloudProvider(providers.get(node.getProvider().getName()));
-            kNode.setGroupName(node.getGroupName());
-            kNode.setImageID(node.getImageId());
-            kNode.setIs64os(node.getIs64os());
-            kNode.setLocation(node.getLocation());
-            kNode.setMinCore(node.getMinCore());
-            kNode.setMinDisk(node.getMinDisk());
-            kNode.setMinRam(node.getMinRam());
-            kNode.setOS(node.getOS());
-            kNode.setPrivateKey(node.getPrivateKey());
-            kNode.setSecurityGroup(node.getSecurityGroup());
-            kNode.setSshKey(node.getSshKey());
+            kNode.setCloudProvider(providers.get(vm.getProvider().getName()));
+            kNode.setGroupName(vm.getGroupName());
+            kNode.setImageID(vm.getImageId());
+            kNode.setIs64os(vm.getIs64os());
+            kNode.setLocation(vm.getLocation());
+            kNode.setMinCore(vm.getMinCores());
+            kNode.setMinDisk(vm.getMinDisk());
+            kNode.setMinRam(vm.getMinRam());
+            kNode.setOS(vm.getOs());
+            kNode.setPrivateKey(vm.getPrivateKey());
+            kNode.setSecurityGroup(vm.getSecurityGroup());
+            kNode.setSshKey(vm.getSshKey());
 
             nodes.put(kNode.getName(), kNode);
 
@@ -313,43 +313,44 @@ public class KMFBridge {
         }
 
 
-        for (Artefact a : deploy.getArtefactTypes().values()) {//first pass on the contained elements
+        for (Component a : deploy.getComponents().values()) {//first pass on the contained elements
             net.cloudml.core.Artefact ka = factory.createArtefact();
             ka.setName(a.getName());
             initProperties(a, ka, factory);
 
             artefacts.put(ka.getName(), ka);
 
-            for (ServerPort ap : a.getProvided()) {//TODO: duplicated code to be rationalized
+            for (ProvidedPort ap : a.getProvidedPorts()) {//TODO: duplicated code to be rationalized
                 net.cloudml.core.ServerPort kap = factory.createServerPort();
                 kap.setName(ap.getName());
                 initProperties(ap, kap, factory);
                 kap.setPortNumber(ap.getPortNumber());
-                kap.setIsRemote(ap.getIsRemote());
+                kap.setIsRemote(ap.getIsLocal());
                 ka.addProvided(kap);//!
 
                 serverPorts.put(ka.getName() + "_" + kap.getName(), kap);
             }
+            if(a instanceof InternalComponent){
+                for (RequiredPort ap : ((InternalComponent)a).getRequiredPorts()) {
+                    net.cloudml.core.ClientPort kap = factory.createClientPort();
+                    kap.setName(ap.getName());
+                    initProperties(ap, kap, factory);
+                    kap.setPortNumber(ap.getPortNumber());
+                    kap.setIsRemote(ap.getIsLocal());
+                    kap.setIsOptional(ap.getIsMandatory());
+                    ka.addRequired(kap);
 
-            for (ClientPort ap : a.getRequired()) {
-                net.cloudml.core.ClientPort kap = factory.createClientPort();
-                kap.setName(ap.getName());
-                initProperties(ap, kap, factory);
-                kap.setPortNumber(ap.getPortNumber());
-                kap.setIsRemote(ap.getIsRemote());
-                kap.setIsOptional(ap.getIsOptional());
-                ka.addRequired(kap);
-
-                clientPorts.put(ka.getName() + "_" + kap.getName(), kap);
+                    clientPorts.put(ka.getName() + "_" + kap.getName(), kap);
+                }
             }
 
             net.cloudml.core.Resource kr = factory.createResource();
             kr.setName(a.getResource().getName());
-            kr.setDeployingCommand(a.getResource().getDeployingResourceCommand());
-            kr.setRetrievingCommand(a.getResource().getRetrievingResourceCommand());
-            kr.setConfigurationCommand(a.getResource().getConfigurationResourceCommand());
-            kr.setStartCommand(a.getResource().getStartResourceCommand());
-            kr.setStopCommand(a.getResource().getStopResourceCommand());
+            kr.setDeployingCommand(a.getResource().getInstallCommand());
+            kr.setRetrievingCommand(a.getResource().getRetrieveCommand());
+            kr.setConfigurationCommand(a.getResource().getConfigureCommand());
+            kr.setStartCommand(a.getResource().getStartCommand());
+            kr.setStopCommand(a.getResource().getStopCommand());
 
             for(Entry<String, String> up : a.getResource().getUploadCommand().entrySet()){
                 net.cloudml.core.UploadCommand kup = factory.createUploadCommand();
@@ -363,36 +364,38 @@ public class KMFBridge {
             kDeploy.addArtefactTypes(ka);
         }
 
-        for (Artefact a : deploy.getArtefactTypes().values()) {//second pass on the referenced elements
+        for (Component a : deploy.getComponents().values()) {//second pass on the referenced elements
             net.cloudml.core.Artefact ka = artefacts.get(a.getName());
-            if (a.getDestination() != null) {
-                ka.setDestination(serverPorts.get(a.getDestination().getOwner() + "_" + a.getDestination().getName()));
+            if(a instanceof InternalComponent){
+                if (((InternalComponent)a).getDestination() != null) {
+                    ka.setDestination(serverPorts.get(((InternalComponent)a).getDestination().getComponent() + "_" + ((InternalComponent)a).getDestination().getName()));
+                }
             }
         }
 
-        for (Binding b : deploy.getBindingTypes().values()) {
+        for (Relationship b : deploy.getRelationships().values()) {
             net.cloudml.core.Binding kb = factory.createBinding();
             kb.setName(b.getName());
-            kb.setClient(clientPorts.get(b.getClient().getOwner().getName() + "_" + b.getClient().getName()));
-            kb.setServer(serverPorts.get(b.getServer().getOwner().getName() + "_" + b.getServer().getName()));
+            kb.setClient(clientPorts.get(b.getRequiredPort().getComponent().getName() + "_" + b.getRequiredPort().getName()));
+            kb.setServer(serverPorts.get(b.getProvidedPort().getComponent().getName() + "_" + b.getProvidedPort().getName()));
             
             if (b.getClientResource() != null) {
                 net.cloudml.core.Resource cr = factory.createResource();
                 cr.setName(b.getClientResource().getName());
-                if (b.getClientResource().getDeployingResourceCommand() != null) {
-                    cr.setDeployingCommand(b.getClientResource().getDeployingResourceCommand());
+                if (b.getClientResource().getInstallCommand() != null) {
+                    cr.setDeployingCommand(b.getClientResource().getInstallCommand());
                 }
-                if (b.getClientResource().getRetrievingResourceCommand() != null) {
-                    cr.setRetrievingCommand(b.getClientResource().getRetrievingResourceCommand());
+                if (b.getClientResource().getRetrieveCommand() != null) {
+                    cr.setRetrievingCommand(b.getClientResource().getRetrieveCommand());
                 }
-                if (b.getClientResource().getConfigurationResourceCommand() != null) {
-                    cr.setConfigurationCommand(b.getClientResource().getConfigurationResourceCommand());
+                if (b.getClientResource().getConfigureCommand() != null) {
+                    cr.setConfigurationCommand(b.getClientResource().getConfigureCommand());
                 }
-                if (b.getClientResource().getStartResourceCommand() != null) {
-                    cr.setStartCommand(b.getClientResource().getStartResourceCommand());
+                if (b.getClientResource().getStartCommand() != null) {
+                    cr.setStartCommand(b.getClientResource().getStartCommand());
                 }
-                if (b.getClientResource().getStopResourceCommand() != null) {
-                    cr.setStopCommand(b.getClientResource().getStopResourceCommand());
+                if (b.getClientResource().getStopCommand() != null) {
+                    cr.setStopCommand(b.getClientResource().getStopCommand());
                 }
                 kb.setClientResource(cr);
             }
@@ -400,20 +403,20 @@ public class KMFBridge {
             if (b.getServerResource() != null) {
                 net.cloudml.core.Resource cr = factory.createResource();
                 cr.setName(b.getServerResource().getName());
-                if (b.getServerResource().getDeployingResourceCommand() != null) {
-                    cr.setDeployingCommand(b.getServerResource().getDeployingResourceCommand());
+                if (b.getServerResource().getInstallCommand() != null) {
+                    cr.setDeployingCommand(b.getServerResource().getInstallCommand());
                 }
-                if (b.getServerResource().getRetrievingResourceCommand() != null) {
-                    cr.setRetrievingCommand(b.getServerResource().getRetrievingResourceCommand());
+                if (b.getServerResource().getRetrieveCommand() != null) {
+                    cr.setRetrievingCommand(b.getServerResource().getRetrieveCommand());
                 }
-                if (b.getServerResource().getConfigurationResourceCommand() != null) {
-                    cr.setConfigurationCommand(b.getServerResource().getConfigurationResourceCommand());
+                if (b.getServerResource().getConfigureCommand() != null) {
+                    cr.setConfigurationCommand(b.getServerResource().getConfigureCommand());
                 }
-                if (b.getServerResource().getStartResourceCommand() != null) {
-                    cr.setStartCommand(b.getServerResource().getStartResourceCommand());
+                if (b.getServerResource().getStartCommand() != null) {
+                    cr.setStartCommand(b.getServerResource().getStartCommand());
                 }
-                if (b.getServerResource().getStopResourceCommand() != null) {
-                    cr.setStopCommand(b.getServerResource().getStopResourceCommand());
+                if (b.getServerResource().getStopCommand() != null) {
+                    cr.setStopCommand(b.getServerResource().getStopCommand());
                 }
                 kb.setServerResource(cr);
             }
@@ -423,7 +426,7 @@ public class KMFBridge {
             bindings.put(kb.getName(), kb);
         }
 
-        for (NodeInstance ni : deploy.getNodeInstances()) {
+        for (VMInstance ni : deploy.getVMInstances()) {
             net.cloudml.core.NodeInstance kni = factory.createNodeInstance();
             kni.setName(ni.getName());
             kni.setPublicAddress(ni.getPublicAddress());
@@ -435,7 +438,7 @@ public class KMFBridge {
             kDeploy.addNodeInstances(kni);
         }
 
-        for (ArtefactInstance ai : deploy.getArtefactInstances()) {//pass 1
+        for (ComponentInstance ai : deploy.getComponentInstances()) {//pass 1
             net.cloudml.core.ArtefactInstance kai = factory.createArtefactInstance();
             kai.setName(ai.getName());
             kai.setType(artefacts.get(ai.getType().getName()));
@@ -447,34 +450,38 @@ public class KMFBridge {
                 kai.setDestination(nodeInstances.get(ai.getDestination().getName()));
             }
 
-            for (ServerPortInstance api : ai.getProvided()) {
+            if(ai instanceof InternalComponentInstance){
+                InternalComponentInstance iai=(InternalComponentInstance)ai;
+
+                for (RequiredPortInstance api : iai.getRequiredPortInstances()) {
+                    net.cloudml.core.ClientPortInstance kapi = factory.createClientPortInstance();
+                    kapi.setName(api.getName());
+                    kapi.setType(clientPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
+                    //kapi.setComponent(artefactInstances.get(ai.getName()));
+                    initProperties(api, kapi, factory);
+                    kai.addRequired(kapi);
+                    clientPortInstances.put(kapi.getName(), kapi);
+                }
+            }
+
+            for (ProvidedPortInstance api : ai.getProvidedPortInstances()) {
                 net.cloudml.core.ServerPortInstance kapi = factory.createServerPortInstance();
                 kapi.setName(api.getName());
                 kapi.setType(serverPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
-                //kapi.setOwner(artefactInstances.get(ai.getName()));
+                //kapi.setComponent(artefactInstances.get(ai.getName()));
                 initProperties(api, kapi, factory);
                 kai.addProvided(kapi);
                 serverPortInstances.put(kapi.getName(), kapi);
             }
 
-            for (ClientPortInstance api : ai.getRequired()) {
-                net.cloudml.core.ClientPortInstance kapi = factory.createClientPortInstance();
-                kapi.setName(api.getName());
-                kapi.setType(clientPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
-                //kapi.setOwner(artefactInstances.get(ai.getName()));
-                initProperties(api, kapi, factory);
-                kai.addRequired(kapi);
-                clientPortInstances.put(kapi.getName(), kapi);
-            }
-
             kDeploy.addArtefactInstances(kai);
         }
 
-        for (BindingInstance b : deploy.getBindingInstances()) {
+        for (RelationshipInstance b : deploy.getRelationshipInstances()) {
             net.cloudml.core.BindingInstance kb = factory.createBindingInstance();
             kb.setName(b.getName());
-            kb.setClient(clientPortInstances.get(b.getClient().getName()));
-            kb.setServer(serverPortInstances.get(b.getServer().getName()));
+            kb.setClient(clientPortInstances.get(b.getRequiredPortInstance().getName()));
+            kb.setServer(serverPortInstances.get(b.getProvidedPortInstance().getName()));
             kb.setType(bindings.get(b.getType().getName()));
 
             kDeploy.addBindingInstances(kb);
@@ -507,8 +514,8 @@ public class KMFBridge {
      * name.endsWith(".json"); } }; File inputDirectory = new
      * File(xmiCodec.getClass().getResource("/").toURI()); for (File input :
      * inputDirectory.listFiles(filter)) { System.out.println("loading " +
-     * input.getAbsolutePath() + ", " + jsonCodec); DeploymentModel model =
-     * (DeploymentModel) jsonCodec.load(new FileInputStream(input));
+     * input.getAbsolutePath() + ", " + jsonCodec); CloudMLModel model =
+     * (CloudMLModel) jsonCodec.load(new FileInputStream(input));
      * xmiCodec.save(model, new FileOutputStream(new File(input.getParentFile(),
      * input.getName() + ".xmi"))); } } catch (FileNotFoundException ex) {
      * Logger.getLogger(KMFBridge.class.getName()).log(Level.SEVERE, null, ex);

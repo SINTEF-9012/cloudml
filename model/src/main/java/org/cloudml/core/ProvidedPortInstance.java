@@ -25,30 +25,30 @@ package org.cloudml.core;
 import java.util.List;
 
 
-public class ServerPortInstance extends ArtefactPortInstance<ServerPort>{
+public class ProvidedPortInstance extends PortInstance<ProvidedPort> {
 	
 	
-	public ServerPortInstance(String name, ServerPort type, ArtefactInstance owner) {
+	public ProvidedPortInstance(String name, ProvidedPort type, InternalComponentInstance owner) {
 		super(name, type, owner);
 	}
 	
-	public ServerPortInstance(String name, ServerPort type, List<Property> properties, ArtefactInstance owner) {
+	public ProvidedPortInstance(String name, ProvidedPort type, List<Property> properties, InternalComponentInstance owner) {
         super(name, type, properties, owner);
     }
 	
-	public ServerPortInstance(String name, ServerPort type, List<Property> properties, ArtefactInstance owner, boolean isRemote){
+	public ProvidedPortInstance(String name, ProvidedPort type, List<Property> properties, InternalComponentInstance owner, boolean isRemote){
 		super(name, type, properties, owner, isRemote);
 	}
 	
 	@Override
     public String toString() {
-        return "ServerPortInstance " + name + " owner:" + owner.getName();
+        return "ProvidedPortInstance " + name + " component:" + owner.getName();
     }
 	
 	@Override
     public boolean equals(Object other) {
-        if (other instanceof ServerPortInstance) {
-        	ServerPortInstance otherNode = (ServerPortInstance) other;
+        if (other instanceof ProvidedPortInstance) {
+        	ProvidedPortInstance otherNode = (ProvidedPortInstance) other;
             return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
         } else {
             return false;
