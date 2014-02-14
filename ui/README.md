@@ -1,4 +1,4 @@
 cloudml
 =======
 
-CloudML user interface.
+CloudML user interfaces.
