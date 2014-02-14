@@ -23,40 +23,37 @@
 package org.cloudml.facade.commands;
 
 /**
- * Request to stop a given artifact, identified by its ID.
+ * Request detailed information about a selected artefact type
  * 
  * @author Franck Chauvel
  * @since 1.0
  */
-public class StopArtifact extends ManageableCommand {
+public class ViewComponent extends ManageableCommand {
 
-	private final String artefactId;
-
-	/**
-	 * Create a new StopArtifact request from the ID of the artifact to stop
-	 * 
-	 * @param artifactId
-	 *            the ID of the artifact to stop
-	 */
-	public StopArtifact(CommandHandler handler, String artifactId) {
-		super(handler);
-		this.artefactId = artifactId;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.cloudml.facade.commands.Command#execute(org.cloudml.facade.Facade)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
-
-	/**
-	 * @return the artefactId to stop
-	 */
-	public String getArtefactId() {
-		return artefactId;
-	}
+    private final String ComponentId;
+    
+    
+    /**
+     * Create a new ViewComponent from the ID of the component type whose
+     * details are needed
+     * @param ComponentId the ID of the needed component type.
+     */
+    public ViewComponent(CommandHandler handler, final String ComponentId) {
+        super(handler);
+        this.ComponentId = ComponentId;
+    }
+    
+    
+    /**
+     * @return the ID of the needed component type.
+     */
+    public String getComponentId() {
+        return this.ComponentId;
+    }
+    
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
+    }
+    
 }

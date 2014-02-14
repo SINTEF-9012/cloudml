@@ -22,38 +22,36 @@
  */
 package org.cloudml.facade.commands;
 
+
 /**
- * Request detailed information about a selected artefact type
+ * Capture a request for starting a component whose ID is given
  * 
- * @author Franck Chauvel
+ * @author Franck Chauvel - SINTEF ICT
  * @since 1.0
  */
-public class ViewArtefactType extends ManageableCommand {
+public class StartComponent extends ManageableCommand {
 
-    private final String artefactTypeId;
-    
-    
-    /**
-     * Create a new ViewArtefactType from the ID of the artefact type whose 
-     * details are needed
-     * @param artefactTypeId the ID of the needed artefact type.
-     */
-    public ViewArtefactType(CommandHandler handler, final String artefactTypeId) {
-        super(handler);
-        this.artefactTypeId = artefactTypeId;
-    }
-    
-    
-    /**
-     * @return the ID of the needed artefact type.
-     */
-    public String getArtefactTypeId() {
-        return this.artefactTypeId;
-    }
-    
-    @Override
-    public void execute(CommandHandler handler) {
-        handler.handle(this);
-    }
-    
+	private final String componentId;
+	
+	
+	public StartComponent(CommandHandler handler, String componentId) {
+		super(handler);
+		this.componentId = componentId;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.cloudml.facade.commands.Command#execute(org.cloudml.facade.Facade)
+	 */
+	public void execute(CommandHandler target) {
+		target.handle(this);
+	}
+
+	/**
+	 * @return the ID of the component to start
+	 */
+	public String getComponentId() {
+		return componentId;
+	}
+
 }

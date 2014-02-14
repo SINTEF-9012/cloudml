@@ -31,9 +31,9 @@ package org.cloudml.facade.commands;
  * 
  * @author Franck CHAUVEL - SINTEF ICT
  */
-public class ListArtefactTypes extends ManageableCommand {
+public class ListComponents extends ManageableCommand {
 
-    public ListArtefactTypes(CommandHandler handler) {
+    public ListComponents(CommandHandler handler) {
         super(handler);
     }
     

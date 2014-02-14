@@ -76,8 +76,8 @@ object CommandPrinter extends (CloudMlCommand => String) {
       case Upload(l, a, r) => "upload " + l + " on " + a + " at " + r
       case LoadDeployment(p) => "load deployment " + p
       case StoreDeployment(p) => "store deployment in " + p
-      case l: ListArtefactTypes => "list types"
-      case l: ListArtefactInstances => "list instances"
+      case l: ListComponents => "list types"
+      case l: ListComponentInstances => "list instances"
       case ViewArtefactType(id) => "view instance " + id
       case ViewArtefactInstance(id) => "view type " + id
       case c: Deploy => "deploy"
@@ -94,15 +94,15 @@ object CommandPrinter extends (CloudMlCommand => String) {
 
 object StartArtifact {
   
-  def unapply(sa: StartArtifact): Option[String] =
-    Some(sa.getArtifactId())
+  def unapply(sa: StartComponent): Option[String] =
+    Some(sa.getComponentId())
     
 }
 
 object StopArtifact {
   
-  def unapply(sa: StopArtifact): Option[String] =
-    Some(sa.getArtefactId())
+  def unapply(sa: StopComponent): Option[String] =
+    Some(sa.getComponentId())
     
 }
 
@@ -166,16 +166,16 @@ object StoreDeployment {
 
 object ViewArtefactInstance {
   
-  def unapply(vai: ViewArtefactInstance): Option[String] =
-    Some(vai.getArtefactId())
+  def unapply(vai: ViewComponentInstance): Option[String] =
+    Some(vai.getComponentId())
 
 }
 
 
 object ViewArtefactType {
   
-  def unapply(vat: ViewArtefactType): Option[String] =
-    Some(vat.getArtefactTypeId())
+  def unapply(vat: ViewComponent): Option[String] =
+    Some(vat.getComponentId())
   
 }
 

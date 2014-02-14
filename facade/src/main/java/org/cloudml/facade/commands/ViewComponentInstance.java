@@ -28,26 +28,26 @@ package org.cloudml.facade.commands;
  * @author Franck Chauvel
  * @since 1.0
  */
-public class ViewArtefactInstance extends ManageableCommand {
+public class ViewComponentInstance extends ManageableCommand {
     
-    private final String artefactId;
+    private final String componentId;
     
     /**
-     * Create a new ViewArtefactInstance command from the artefact whose details
+     * Create a new ViewComponentInstance command from the artefact whose details
      * are needed.
      * 
-     * @param artefactId the ID of the needed artefact
+     * @param componentId the ID of the needed artefact
      */
-    public ViewArtefactInstance(CommandHandler handler, final String artefactId) {
+    public ViewComponentInstance(CommandHandler handler, final String componentId) {
         super(handler);
-        this.artefactId = artefactId;
+        this.componentId = componentId;
     }
     
     /**
      * @return the ID of the needed artefact 
      */
-    public String getArtefactId() {
-        return this.artefactId;
+    public String getComponentId() {
+        return this.componentId;
     }
 
     @Override

@@ -35,10 +35,10 @@ public class CommandFactory {
      *
      * @param artefactId the ID of the artifact to start
      *
-     * @see {@link org.cloudml.facade.commands.StartArtifact}
+     * @see {@link StartComponent}
      */
     public CloudMlCommand createStartArtifact(final String artifactId) {
-        return new StartArtifact(handler, artifactId);
+        return new StartComponent(handler, artifactId);
     }
 
     /**
@@ -46,10 +46,10 @@ public class CommandFactory {
      *
      * @param artefactId the ID of the artifact to stop
      *
-     * @see {@link org.cloudml.facade.commands.StopArtifact}
+     * @see {@link StopComponent}
      */
     public CloudMlCommand createStopArtifact(final String artifactId) {
-        return new StopArtifact(handler, artifactId);
+        return new StopComponent(handler, artifactId);
     }
 
     /**
@@ -184,42 +184,42 @@ public class CommandFactory {
      *
      * @return the related CloudMlCommand
      *
-     * @see {@link org.cloudml.facade.commands.ListArtefactTypes}
+     * @see {@link ListComponents}
      */
     public CloudMlCommand createListArtefactTypes() {
-        return new ListArtefactTypes(handler);
+        return new ListComponents(handler);
     }
 
     /**
-     * Create a new instance of ListArtefactInstances command
+     * Create a new instance of ListComponentInstances command
      *
-     * @return a fresh ListArtefactInstances command
+     * @return a fresh ListComponentInstances command
      *
-     * @see {@link org.cloudml.facade.commands.ListArtefactInstances}
+     * @see {@link ListComponentInstances}
      */
     public CloudMlCommand createListArtefactInstances() {
-        return new ListArtefactInstances(handler);
+        return new ListComponentInstances(handler);
     }
 
     /**
-     * Create a new instance of ViewArtefactType command
+     * Create a new instance of ViewComponent command
      *
      * @param id the ID of the artefact type which is needed
      * @return a command to see the detail of the artefact type with the given
      * id
      */
     public CloudMlCommand createViewArtefactType(final String id) {
-        return new ViewArtefactType(handler, id);
+        return new ViewComponent(handler, id);
     }
 
     /**
-     * Create a new instance of ViewArtefactInstance command
+     * Create a new instance of ViewComponentInstance command
      *
      * @param id the ID of the artefact instance which is needed
      * @return a command to fetch the artefact instance with the given ID
      */
     public CloudMlCommand createViewArtefactInstance(final String id) {
-        return new ViewArtefactInstance(handler, id);
+        return new ViewComponentInstance(handler, id);
     }
 
     /**

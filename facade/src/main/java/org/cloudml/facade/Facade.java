@@ -210,13 +210,13 @@ class Facade implements CloudML, CommandHandler {
 	/*
 	 * COMMAND HANDLERS
 	 */
-	public void handle(StartArtifact command) {
+	public void handle(StartComponent command) {
 		// TODO Auto-generated method stub
 		dispatch(new Message(command, Category.ERROR, "Not yet implemented"));
 		//command.markAsCompleted();
 	}
 
-	public void handle(StopArtifact command) {
+	public void handle(StopComponent command) {
 		// TODO Auto-generated method stub
 		dispatch(new Message(command, Category.ERROR, "Not yet implemented"));
 		//command.markAsCompleted();
@@ -362,7 +362,7 @@ class Facade implements CloudML, CommandHandler {
 		//command.markAsCompleted();
 	}
 
-	public void handle(ListArtefactTypes command) {
+	public void handle(ListComponents command) {
 		if (deploy == null) {
 			final String text = "No deployment model. Please first load a deployment model";
 			final Message message = new Message(command, Category.ERROR, text);
@@ -376,7 +376,7 @@ class Facade implements CloudML, CommandHandler {
 		//command.markAsCompleted();
 	}
 
-	public void handle(ListArtefactInstances command) {
+	public void handle(ListComponentInstances command) {
 		if (deploy == null) {
 			final String text = "No deployment model. Please first load a deployment model";
 			final Message message = new Message(command, Category.ERROR, text);
@@ -391,16 +391,16 @@ class Facade implements CloudML, CommandHandler {
 		//command.markAsCompleted();
 	}
 
-	public void handle(ViewArtefactType command) {
+	public void handle(ViewComponent command) {
 		if (deploy == null) {
 			final String text = "No deployment model. Please first load a deployment model";
 			final Message message = new Message(command, Category.ERROR, text);
 			dispatch(message);
 
 		} else {
-			Component type = findComponentById(command.getArtefactTypeId());
+			Component type = findComponentById(command.getComponentId());
 			if (type == null) {
-				final String text = String.format("No artefact type with ID \"%s\"", command.getArtefactTypeId());
+				final String text = String.format("No artefact type with ID \"%s\"", command.getComponentId());
 				final Message message = new Message(command, Category.ERROR, text);
 				dispatch(message);
 
@@ -413,16 +413,16 @@ class Facade implements CloudML, CommandHandler {
 		//command.markAsCompleted();
 	}
 
-	public void handle(ViewArtefactInstance command) {
+	public void handle(ViewComponentInstance command) {
 		if (deploy == null) {
 			final String text = "No deployment model. Please first load a deployment model";
 			final Message message = new Message(command, Category.ERROR, text);
 			dispatch(message);
 
 		} else {
-			ComponentInstance instance = findComponentInstanceById(command.getArtefactId());
+			ComponentInstance instance = findComponentInstanceById(command.getComponentId());
 			if (instance == null) {
-				final String text = String.format("No artefact instance with ID \"%s\"", command.getArtefactId());
+				final String text = String.format("No artefact instance with ID \"%s\"", command.getComponentId());
 				final Message message = new Message(command, Category.ERROR, text);
 				dispatch(message);
 

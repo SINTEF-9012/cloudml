@@ -31,9 +31,9 @@ package org.cloudml.facade.commands;
  */
 public interface CommandHandler {
 
-    public void handle(StartArtifact command);
+    public void handle(StartComponent command);
 
-    public void handle(StopArtifact command);
+    public void handle(StopComponent command);
 
     public void handle(Attach command);
 
@@ -55,13 +55,13 @@ public interface CommandHandler {
 
     public void handle(Deploy command);
 
-    public void handle(ListArtefactTypes command);
+    public void handle(ListComponents command);
     
-    public void handle(ListArtefactInstances command);
+    public void handle(ListComponentInstances command);
     
-    public void handle(ViewArtefactType command);
+    public void handle(ViewComponent command);
 
-    public void handle(ViewArtefactInstance command);
+    public void handle(ViewComponentInstance command);
     
     public void handle(LoadCredentials command);
     

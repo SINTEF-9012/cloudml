@@ -20,38 +20,27 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.cloudml.facade.commands;
 
-
 /**
- * Capture a request for starting a artefact whose ID is given
+ * Request the list of available artefacts instances
  * 
- * @author Franck Chauvel - SINTEF ICT
+ * @author Franck Chauvel
  * @since 1.0
  */
-public class StartArtifact extends ManageableCommand {
+public class ListComponentInstances extends ManageableCommand {
 
-	private final String artifactId;
-	
-	
-	public StartArtifact(CommandHandler handler, String artifactId) {
-		super(handler);
-		this.artifactId = artifactId;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.Command#execute(org.cloudml.facade.Facade)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
-
-	/**
-	 * @return the ID of the artifact to start
-	 */
-	public String getArtifactId() {
-		return artifactId;
-	}
-
+    public ListComponentInstances(CommandHandler handler) {
+        super(handler);
+    }
+    
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
+    }
+    
 }

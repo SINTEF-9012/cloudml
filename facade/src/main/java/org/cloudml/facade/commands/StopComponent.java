@@ -20,27 +20,43 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.cloudml.facade.commands;
 
 /**
- * Request the list of available artefacts instances
+ * Request to stop a given artifact, identified by its ID.
  * 
  * @author Franck Chauvel
  * @since 1.0
  */
-public class ListArtefactInstances extends ManageableCommand {
+public class StopComponent extends ManageableCommand {
 
-    public ListArtefactInstances(CommandHandler handler) {
-        super(handler);
-    }
-    
-    @Override
-    public void execute(CommandHandler handler) {
-        handler.handle(this);
-    }
-    
+	private final String componentId;
+
+	/**
+	 * Create a new StopComponent request from the ID of the artifact to stop
+	 * 
+	 * @param componentId
+	 *            the ID of the artifact to stop
+	 */
+	public StopComponent(CommandHandler handler, String componentId) {
+		super(handler);
+		this.componentId = componentId;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.cloudml.facade.commands.Command#execute(org.cloudml.facade.Facade)
+	 */
+	public void execute(CommandHandler target) {
+		target.handle(this);
+	}
+
+	/**
+	 * @return the componentId to stop
+	 */
+	public String getComponentId() {
+		return componentId;
+	}
 }
