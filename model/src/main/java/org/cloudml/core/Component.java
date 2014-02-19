@@ -31,7 +31,6 @@ import java.util.List;
 public abstract class Component extends CloudMLElementWithProperties {
 
     private List<ProvidedPort> providedPorts = new LinkedList<ProvidedPort>();
-    private Resource resource;
 
     public Component() {
     }
@@ -57,13 +56,6 @@ public abstract class Component extends CloudMLElementWithProperties {
         this.providedPorts = providedPorts;
     }
 
-    public Resource getResource() {
-        return resource;
-    }
-
-    public void setResource(Resource resource) {
-        this.resource = resource;
-    }
 
     @Override
     public String toString() {

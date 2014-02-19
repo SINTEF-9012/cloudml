@@ -29,6 +29,8 @@ public abstract class CloudMLElementWithProperties extends CloudMLElement {
 
     protected List<Property> properties = new LinkedList<Property>();
 
+    protected List<Resource> resources = new LinkedList<Resource>();
+
     public CloudMLElementWithProperties(){}
     
     public CloudMLElementWithProperties(String name) {
@@ -46,6 +48,14 @@ public abstract class CloudMLElementWithProperties extends CloudMLElement {
 
     public void setProperties(List<Property> properties) {
         this.properties = properties;
+    }
+
+    public List<Resource> getResources(){
+        return this.resources;
+    }
+
+    public void setResources(List<Resource> resources){
+        this.resources = resources;
     }
     
     public String getProperty(String key){

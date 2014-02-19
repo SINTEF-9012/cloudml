@@ -79,15 +79,15 @@ public class Resource extends CloudMLElementWithProperties {
 		return uploadCommand;
 	}
 
-	public void setDeployingCommand(String deployingCommand){
+	public void setInstallCommand(String deployingCommand){
 		this.installCommand =deployingCommand;
 	}
 	
-	public void setRetrievingCommand(String retrievingCommand){
+	public void setRetrieveCommand(String retrievingCommand){
 		this.retrieveCommand =retrievingCommand;
 	}
 	
-	public void setConfigurationCommand(String configurationCommand){
+	public void setConfigureCommand(String configurationCommand){
 		this.configureCommand =configurationCommand;
 	}
 	

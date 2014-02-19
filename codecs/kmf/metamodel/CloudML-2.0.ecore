@@ -98,9 +98,9 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="providedPort" lowerBound="1"
           eType="#//core/ProvidedPort"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPortResource"
-          eType="#//core/Resource"/>
+          eType="#//core/Resource" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="providedPortResource"
-          eType="#//core/Resource"/>
+          eType="#//core/Resource" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Cloud" eSuperTypes="#//core/CloudMLElementWithProperties">
       <eStructuralFeatures xsi:type="ecore:EReference" name="vmInstances" upperBound="-1"

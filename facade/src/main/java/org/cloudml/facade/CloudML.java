@@ -59,7 +59,7 @@ public interface CloudML extends CommandHandler{
 
     
     /**
-     * Properly free the resource allocated by the facade
+     * Properly free the resources allocated by the facade
      */
     public void terminate();
     

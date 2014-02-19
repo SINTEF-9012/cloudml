@@ -173,7 +173,7 @@ public class FlexiantConnector implements Connector{
 				template.getNics().add(n);
 				
 				/*Disk d = new Disk();
-				d.setSize(vm.getMinDisk());
+				d.setSize(vm.getMinStorage());
 				template.getDisks().add(d);*/
 				
 				//TODO: Add disk

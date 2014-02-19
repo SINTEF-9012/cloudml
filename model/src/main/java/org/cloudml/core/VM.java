@@ -69,7 +69,7 @@ public class VM extends CloudMLElementWithProperties {
 
 	@Override
 	public String toString() {
-		return "VM " + name + "(minRam: " + minRam + ", minCores: " + minCores + ", minDisk: " + minDisk + ")";
+		return "VM " + name + "(minRam: " + minRam + ", minCores: " + minCores + ", minStorage: " + minStorage + ")";
 	}
 	/*
 	 * NODE Configuration
@@ -78,8 +78,8 @@ public class VM extends CloudMLElementWithProperties {
     private int maxRam = 0;
 	private int minCores = 0;
     private int maxCores = 0;
-	private int minDisk = 0;
-    private int maxDisk = 0;
+	private int minStorage = 0;
+    private int maxStorage = 0;
 	private String location = "";
 	private String os = "";
 	private String sshKey = "";
@@ -108,12 +108,12 @@ public class VM extends CloudMLElementWithProperties {
         return maxCores;
     }
 
-	public int getMinDisk() {
-		return minDisk;
+	public int getMinStorage() {
+		return minStorage;
 	}
 
-    public int getMaxDisk() {
-        return maxDisk;
+    public int getMaxStorage() {
+        return maxStorage;
     }
 
 	public String getLocation() {
@@ -163,12 +163,12 @@ public class VM extends CloudMLElementWithProperties {
         this.maxCores = maxCores;
     }
 
-	public void setMinDisk(int minDisk) {
-		this.minDisk = minDisk;
+	public void setMinStorage(int minStorage) {
+		this.minStorage = minStorage;
 	}
 
-    public void setMaxDisk(int maxDisk) {
-        this.maxDisk = maxDisk;
+    public void setMaxStorage(int maxStorage) {
+        this.maxStorage = maxStorage;
     }
 
 	public void setLocation(String location) {

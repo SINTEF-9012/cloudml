@@ -42,417 +42,441 @@ import org.cloudml.core.ComponentInstance.State;
 
 public class CloudAppDeployer {
 
-	private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
+    private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
 
-	ArrayList<ComponentInstance> alreadyDeployed=new ArrayList<ComponentInstance>();
-	ArrayList<ComponentInstance> alreadyStarted=new ArrayList<ComponentInstance>();
+    ArrayList<ComponentInstance> alreadyDeployed=new ArrayList<ComponentInstance>();
+    ArrayList<ComponentInstance> alreadyStarted=new ArrayList<ComponentInstance>();
 
-	private CloudMLModel currentModel;
+    private CloudMLModel currentModel;
 
-	public CloudAppDeployer(){
-		System.setProperty ("jsse.enableSNIExtension", "false");
-	}
+    public CloudAppDeployer(){
+        System.setProperty ("jsse.enableSNIExtension", "false");
+    }
 
 
-	/**
-	 * Deploy from a deployment model
-	 * @param targetModel a deployment model
-	 */
-	public void deploy(CloudMLModel targetModel){
-		//alreadyDeployed=new ArrayList<InternalComponentInstance>();
-		//alreadyStarted=new ArrayList<InternalComponentInstance>();
-		if(currentModel == null){
-			journal.log(Level.INFO, ">> First deployment...");
-			this.currentModel=targetModel;
+    /**
+     * Deploy from a deployment model
+     * @param targetModel a deployment model
+     */
+    public void deploy(CloudMLModel targetModel){
+        //alreadyDeployed=new ArrayList<InternalComponentInstance>();
+        //alreadyStarted=new ArrayList<InternalComponentInstance>();
+        if(currentModel == null){
+            journal.log(Level.INFO, ">> First deployment...");
+            this.currentModel=targetModel;
 
-			// Provisioning vms
-			provisioning(targetModel.getVMInstances());
+            // Provisioning vms
+            provisioning(targetModel.getVMInstances());
 
-			// Deploying on vms
-			// TODO: need to be recursive
-			prepareComponents(targetModel.getComponentInstances(), targetModel.getRelationshipInstances());
+            // Deploying on vms
+            // TODO: need to be recursive
+            prepareComponents(targetModel.getComponentInstances(), targetModel.getRelationshipInstances());
 
-			//Configure the components with the relationships
-			configureWithRelationships(targetModel.getRelationshipInstances());
+            //Configure the components with the relationships
+            configureWithRelationships(targetModel.getRelationshipInstances());
 
-			//configuration process at SaaS level
-			configureSaas(targetModel.getComponentInstances());
+            //configuration process at SaaS level
+            configureSaas(targetModel.getComponentInstances());
 
-		}else{
-			journal.log(Level.INFO, ">> Updating a deployment...");
-			CloudMLModelComparator diff=new CloudMLModelComparator(currentModel, targetModel);
-			diff.compareCloudMLModel();
+        }else{
+            journal.log(Level.INFO, ">> Updating a deployment...");
+            CloudMLModelComparator diff=new CloudMLModelComparator(currentModel, targetModel);
+            diff.compareCloudMLModel();
 
-			//Added stuff
-			provisioning(diff.getAddedVMs());
-			prepareComponents(diff.getAddedComponents(), targetModel.getRelationshipInstances());
-			configureWithRelationships(diff.getAddedRelationships());
-			configureSaas(diff.getAddedComponents());
+            //Added stuff
+            provisioning(diff.getAddedVMs());
+            prepareComponents(diff.getAddedComponents(), targetModel.getRelationshipInstances());
+            configureWithRelationships(diff.getAddedRelationships());
+            configureSaas(diff.getAddedComponents());
 
-			//removed stuff
-			unconfigureRelationships(diff.getRemovedRelationships());
-			stopComponents(diff.getRemovedComponents());
-			teminateVMs(diff.getRemovedVMs());
-			updateCurrentModel(diff);
-		}
-	}
+            //removed stuff
+            unconfigureRelationships(diff.getRemovedRelationships());
+            stopComponents(diff.getRemovedComponents());
+            teminateVMs(diff.getRemovedVMs());
+            updateCurrentModel(diff);
+        }
+    }
 
-	/**
-	 * Update the currentModel with the targetModel and preserve all the CPSM metadata
-	 * @param diff a model comparator
-	 */
-	public void updateCurrentModel(CloudMLModelComparator diff){
-		currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
-		currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
-		currentModel.getVMInstances().removeAll(diff.getRemovedVMs());
-		alreadyDeployed.removeAll(diff.getRemovedComponents());
-		alreadyStarted.removeAll(diff.getRemovedComponents());
+    /**
+     * Update the currentModel with the targetModel and preserve all the CPSM metadata
+     * @param diff a model comparator
+     */
+    public void updateCurrentModel(CloudMLModelComparator diff){
+        currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
+        currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
+        currentModel.getVMInstances().removeAll(diff.getRemovedVMs());
+        alreadyDeployed.removeAll(diff.getRemovedComponents());
+        alreadyStarted.removeAll(diff.getRemovedComponents());
 
-		currentModel.getComponentInstances().addAll(diff.getAddedComponents());
-		currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
-		currentModel.getVMInstances().addAll(diff.getAddedVMs());
-	}
+        currentModel.getComponentInstances().addAll(diff.getAddedComponents());
+        currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
+        currentModel.getVMInstances().addAll(diff.getAddedVMs());
+    }
 
-	/**
-	 * Prepare the components before their start. Retrieves their resources, builds their PaaS and installs them
-	 * @param components a list of components
-	 * @throws MalformedURLException 
-	 */
-	private void prepareComponents(List<ComponentInstance> components, List<RelationshipInstance> relationships) {
-		for(ComponentInstance x : components){
+    /**
+     * Prepare the components before their start. Retrieves their resources, builds their PaaS and installs them
+     * @param components a list of components
+     * @throws MalformedURLException
+     */
+    private void prepareComponents(List<ComponentInstance> components, List<RelationshipInstance> relationships) {
+        for(ComponentInstance x : components){
             if(x instanceof InternalComponentInstance){
-			    prepareAnInternalComponent((InternalComponentInstance) x, components, relationships);
+                prepareAnInternalComponent((InternalComponentInstance) x, components, relationships);
             }
-		}
-	}
+        }
+    }
 
-	/**
-	 * Prepare an component before it starts. Retrieves its resources, builds its PaaS and installs it
-	 * @param x an InternalComponentInstance
-	 * @param components a list of components
-	 * @throws MalformedURLException 
-	 */
-	private void prepareAnInternalComponent(InternalComponentInstance x, List<ComponentInstance> components, List<RelationshipInstance> relationships) {
-		Connector jc;
-		if(!alreadyDeployed.contains(x) && (x.getDestination() != null)){
-			VMInstance ownerVM = x.getDestination();
-			VM n=ownerVM.getType();
+    /**
+     * Prepare an component before it starts. Retrieves its resources, builds its PaaS and installs it
+     * @param x an InternalComponentInstance
+     * @param components a list of components
+     * @throws MalformedURLException
+     */
+    private void prepareAnInternalComponent(InternalComponentInstance x, List<ComponentInstance> components, List<RelationshipInstance> relationships) {
+        Connector jc;
+        if(!alreadyDeployed.contains(x) && (x.getDestination() != null)){
+            VMInstance ownerVM = x.getDestination();
+            VM n=ownerVM.getType();
 
-			jc=ConnectorFactory.createConnector(n.getProvider());
+            jc=ConnectorFactory.createConnector(n.getProvider());
 
-			for(String path : x.getType().getResource().getUploadCommand().keySet()){
-				jc.uploadFile(path, x.getType().getResource().getUploadCommand().get(path), ownerVM.getId(), "ubuntu", n.getPrivateKey());
-			}
+            for(Resource r: x.getType().getResources()){
+                for(String path : r.getUploadCommand().keySet()){
+                    jc.uploadFile(path, r.getUploadCommand().get(path), ownerVM.getId(), "ubuntu", n.getPrivateKey());
+                }
+            }
 
-			jc.execCommand(ownerVM.getId(), x.getType().getResource().getRetrieveCommand(),"ubuntu",n.getPrivateKey());
-			alreadyDeployed.add(x);
+            for(Resource r: x.getType().getResources()){
+                jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(),"ubuntu",n.getPrivateKey());
+            }
+            alreadyDeployed.add(x);
 
-			buildPaas(x, relationships);
-
-			jc.execCommand(ownerVM.getId(), x.getType().getResource().getInstallCommand(), "ubuntu", n.getPrivateKey());
-			x.setStatus(State.installed);
-			jc.closeConnection();
-		}
-	}
-
-
-	/**
-	 * Build the paas of an component instance
-	 * @param x An component instance
-	 * @throws MalformedURLException 
-	 */
-	private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
-		VMInstance ownerVM = x.getDestination();
-		VM n=ownerVM.getType();
-
-		Connector jc;
-		jc=ConnectorFactory.createConnector(n.getProvider());
-		//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+            buildPaas(x, relationships);
+            for(Resource r: x.getType().getResources()){
+                jc.execCommand(ownerVM.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
+            }
+            x.setStatus(State.installed);
+            jc.closeConnection();
+        }
+    }
 
 
-		for(RelationshipInstance bi : relationships){
-			if(bi.getRequiredPortInstance().getType().getIsMandatory() && x.getRequiredPortInstances().contains(bi.getRequiredPortInstance())){
-				ProvidedPortInstance p=bi.getProvidedPortInstance();
-				VMInstance owner=p.getOwner().getDestination();
-				if(owner == null)
-					owner=ownerVM;
-				if(!alreadyDeployed.contains(p.getOwner())){
-					jc.execCommand(owner.getId(), p.getOwner().getType().getResource().getRetrieveCommand() ,"ubuntu",n.getPrivateKey());
-					jc.execCommand(owner.getId(), p.getOwner().getType().getResource().getInstallCommand(),"ubuntu",n.getPrivateKey());
-					p.getOwner().setStatus(State.installed);
-					
-					String configurationCommand=p.getOwner().getType().getResource().getConfigureCommand();
-					String startCommand=p.getOwner().getType().getResource().getStartCommand();
-					configure(jc, n, owner, configurationCommand);
-					p.getOwner().setStatus(State.configured);
-					start(jc, n, owner, startCommand);
-					p.getOwner().setStatus(State.running);
-					
-					
-					alreadyDeployed.add(p.getOwner());
-					alreadyStarted.add(p.getOwner());
-				}
-			}
-		}
-		jc.closeConnection();
+    /**
+     * Build the paas of an component instance
+     * @param x An component instance
+     * @throws MalformedURLException
+     */
+    private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
+        VMInstance ownerVM = x.getDestination();
+        VM n=ownerVM.getType();
 
-	}
+        Connector jc;
+        jc=ConnectorFactory.createConnector(n.getProvider());
+        //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
 
+        for(RelationshipInstance bi : relationships){
+            if(bi.getRequiredPortInstance().getType().getIsMandatory() && x.getRequiredPortInstances().contains(bi.getRequiredPortInstance())){
+                ProvidedPortInstance p=bi.getProvidedPortInstance();
+                VMInstance owner=p.getOwner().getDestination();
+                if(owner == null)
+                    owner=ownerVM;
+                if(!alreadyDeployed.contains(p.getOwner())){
+                    for(Resource r:  p.getOwner().getType().getResources()){
+                        jc.execCommand(owner.getId(), r.getRetrieveCommand() ,"ubuntu",n.getPrivateKey());
+                    }
+                    for(Resource r:  p.getOwner().getType().getResources()){
+                        jc.execCommand(owner.getId(), r.getInstallCommand(),"ubuntu",n.getPrivateKey());
+                    }
+                    p.getOwner().setStatus(State.installed);
 
-	/**
-	 * Configure and start SaaS components
-	 * @param components a list of components
-	 * @throws MalformedURLException 
-	 */
-	private void configureSaas(List<ComponentInstance> components) {
-		Connector jc;
-		for(ComponentInstance x : components){
-			if((x instanceof InternalComponentInstance) && (!alreadyStarted.contains(x))){
+                    for(Resource r:  p.getOwner().getType().getResources()){
+                        String configurationCommand=r.getConfigureCommand();
+                        configure(jc, n, owner, configurationCommand);
+                    }
+                    p.getOwner().setStatus(State.configured);
+
+                    for(Resource r:  p.getOwner().getType().getResources()){
+                        String startCommand=r.getStartCommand();
+                        start(jc, n, owner, startCommand);
+                    }
+                    p.getOwner().setStatus(State.running);
+
+
+                    alreadyDeployed.add(p.getOwner());
+                    alreadyStarted.add(p.getOwner());
+                }
+            }
+        }
+        jc.closeConnection();
+
+    }
+
+
+
+    /**
+     * Configure and start SaaS components
+     * @param components a list of components
+     * @throws MalformedURLException
+     */
+    private void configureSaas(List<ComponentInstance> components) {
+        Connector jc;
+        for(ComponentInstance x : components){
+            if((x instanceof InternalComponentInstance) && (!alreadyStarted.contains(x))){
                 InternalComponentInstance ix=(InternalComponentInstance)x;
-				VMInstance ownerVM = ix.getDestination();
-				VM n=ownerVM.getType();
-				jc=ConnectorFactory.createConnector(n.getProvider());
-				//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+                VMInstance ownerVM = ix.getDestination();
+                VM n=ownerVM.getType();
+                jc=ConnectorFactory.createConnector(n.getProvider());
+                //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
-				String configurationCommand=ix.getType().getResource().getConfigureCommand();
-				String startCommand= ix.getType().getResource().getStartCommand();
-				configure(jc, n, ownerVM, configurationCommand);
-				ix.setStatus(State.configured);
-				start(jc, n, ownerVM, startCommand);
-				ix.setStatus(State.running);
-				alreadyStarted.add(ix);
-				jc.closeConnection();
-			}//TODO if not InternalComponent
-		}
-	}
+                for(Resource r:ix.getType().getResources()){
+                    String configurationCommand=r.getConfigureCommand();
+                    configure(jc, n, ownerVM, configurationCommand);
+                }
+                ix.setStatus(State.configured);
 
+                for(Resource r:ix.getType().getResources()){
+                    String startCommand= r.getStartCommand();
+                    start(jc, n, ownerVM, startCommand);
+                }
+                ix.setStatus(State.running);
 
-	/**
-	 * Configure a component
-	 * @param jc a connector
-	 * @param n A VM type
-	 * @param ni a VM instance
-	 * @param configurationCommand the command to configure the component, parameters are: IP IPDest portDest
-	 */
-	private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand){
-		if(!configurationCommand.equals(""))
-			jc.execCommand(ni.getId(), configurationCommand,"ubuntu",n.getPrivateKey());
-	}
-	
-	
-	/**
-	 * start a component
-	 * @param jc a connector
-	 * @param n A VM type
-	 * @param ni a VM instance
-	 * @param startCommand the command to start the component
-	 */
-	private void start(Connector jc, VM n, VMInstance ni, String startCommand){
-		if(!startCommand.equals(""))
-			jc.execCommand(ni.getId(), startCommand,"ubuntu",n.getPrivateKey());
-	}
-	
-
-	/**
-	 * Provision the VMs and upload the model with informations about the VM
-	 * @param vms
-	 * 			A list of vms
-	 */
-	private void provisioning(List<VMInstance> vms){
-		for(VMInstance n : vms){
-			provisionAVM(n);
-		}
-	}
-
-	/**
-	 * Provision a VM
-	 * @param n a VMInstance
-	 */
-	private void provisionAVM(VMInstance n){
-		Provider p=n.getType().getProvider();
-		Connector jc=ConnectorFactory.createConnector(p);
-		jc.createInstance(n);
-		jc.closeConnection();
-	}
+                alreadyStarted.add(ix);
+                jc.closeConnection();
+            }//TODO if not InternalComponent
+        }
+    }
 
 
-	/**
-	 * Configure components according to the relationships
-	 * @param relationships a list of relationships
-	 * @throws MalformedURLException 
-	 */
-	private void configureWithRelationships(List<RelationshipInstance> relationships) {
-		//Configure on the basis of the relationships
-		//parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
-		for(RelationshipInstance bi : relationships){
-			if(!bi.getRequiredPortInstance().getType().getIsLocal()){
-				RequiredPortInstance client=bi.getRequiredPortInstance();
-				ProvidedPortInstance server=bi.getProvidedPortInstance();
+    /**
+     * Configure a component
+     * @param jc a connector
+     * @param n A VM type
+     * @param ni a VM instance
+     * @param configurationCommand the command to configure the component, parameters are: IP IPDest portDest
+     */
+    private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand){
+        if(!configurationCommand.equals(""))
+            jc.execCommand(ni.getId(), configurationCommand,"ubuntu",n.getPrivateKey());
+    }
 
-				Resource clientResource=bi.getType().getClientResource();
-				Resource serverResource=bi.getType().getServerResource();
 
-				String destinationIpAddress=server.getOwner().getDestination().getPublicAddress();
-				int destinationPortNumber=server.getType().getPortNumber();
-				String ipAddress=client.getOwner().getDestination().getPublicAddress();
+    /**
+     * start a component
+     * @param jc a connector
+     * @param n A VM type
+     * @param ni a VM instance
+     * @param startCommand the command to start the component
+     */
+    private void start(Connector jc, VM n, VMInstance ni, String startCommand){
+        if(!startCommand.equals(""))
+            jc.execCommand(ni.getId(), startCommand,"ubuntu",n.getPrivateKey());
+    }
 
-				//client resources
-				configureWithIP(clientResource,client,destinationIpAddress,ipAddress,destinationPortNumber);
 
-				//server resources
-				configureWithIP(serverResource,server,destinationIpAddress,ipAddress,destinationPortNumber);
-			}
-		}
-	}
+    /**
+     * Provision the VMs and upload the model with informations about the VM
+     * @param vms
+     * 			A list of vms
+     */
+    private void provisioning(List<VMInstance> vms){
+        for(VMInstance n : vms){
+            provisionAVM(n);
+        }
+    }
 
-	/**
-	 * Configuration with parameters IP, IPDest, PortDest
-	 * @param r resource for configuration
-	 * @param i port of the component to be configured
-	 * @param destinationIpAddress IP of the server
-	 * @param ipAddress IP of the client
-	 * @param destinationPortNumber port of the server
-	 * @throws MalformedURLException 
-	 */
-	private void configureWithIP(Resource r, PortInstance i, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
-		Connector jc;
-		if(r != null){
-			VMInstance ownerVM = i.getOwner().getDestination();
-			VM n=ownerVM.getType();
-			jc=ConnectorFactory.createConnector(n.getProvider());
-			//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-			jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(),"ubuntu",n.getPrivateKey());
-			String configurationCommand=r.getConfigureCommand()+" \""+ipAddress+"\" \""+destinationIpAddress+"\" "+destinationPortNumber;
-			configure(jc, n, ownerVM, configurationCommand);
-			jc.closeConnection();
-		}
-	}
+    /**
+     * Provision a VM
+     * @param n a VMInstance
+     */
+    private void provisionAVM(VMInstance n){
+        Provider p=n.getType().getProvider();
+        Connector jc=ConnectorFactory.createConnector(p);
+        jc.createInstance(n);
+        jc.closeConnection();
+    }
 
-	/**
-	 * Terminates a set of VMs
-	 * @param vms A list of vmInstances
-	 * @throws MalformedURLException 
-	 */
-	private void teminateVMs(List<VMInstance> vms) {
-		for(VMInstance n: vms){
-			terminateVM(n);
-		}
-	}
 
-	/**
-	 * Terminate a VM
-	 * @param n A VM instance to be terminated
-	 * @throws MalformedURLException 
-	 */
-	private void terminateVM(VMInstance n){
-		Provider p=n.getType().getProvider();
-		Connector jc=ConnectorFactory.createConnector(p);
-		jc.destroyVM(n.getId());
-		jc.closeConnection();
-		n.setStatusAsStopped();
-	}
+    /**
+     * Configure components according to the relationships
+     * @param relationships a list of relationships
+     * @throws MalformedURLException
+     */
+    private void configureWithRelationships(List<RelationshipInstance> relationships) {
+        //Configure on the basis of the relationships
+        //parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
+        for(RelationshipInstance bi : relationships){
+            if(!bi.getRequiredPortInstance().getType().getIsLocal()){
+                RequiredPortInstance client=bi.getRequiredPortInstance();
+                ProvidedPortInstance server=bi.getProvidedPortInstance();
 
-	/**
-	 * Stop a list of component
-	 * @param components a list of ComponentInstance
-	 * @throws MalformedURLException 
-	 */
-	private void stopComponents(List<ComponentInstance> components) {
-		for(ComponentInstance a : components){
-			stopComponent(a);
-		}
-	}
+                Resource clientResource=bi.getType().getClientResource();
+                Resource serverResource=bi.getType().getServerResource();
 
-	/**
-	 * Stop a specific component instance
-	 * @param a An InternalComponent Instance
-	 * @throws MalformedURLException 
-	 */
-	private void stopComponent(ComponentInstance a) {
-		VMInstance ownerVM = findDestination(a);
-		if(ownerVM != null){
-			VM n=ownerVM.getType();
-			Connector jc=ConnectorFactory.createConnector(n.getProvider());
-			String stopCommand=a.getType().getResource().getStopCommand();
-			jc.execCommand(ownerVM.getId(), stopCommand,"ubuntu",n.getPrivateKey());
-			jc.closeConnection();
-			a.setStatus(State.configured);
-		}
-	}
+                String destinationIpAddress=server.getOwner().getDestination().getPublicAddress();
+                int destinationPortNumber=server.getType().getPortNumber();
+                String ipAddress=client.getOwner().getDestination().getPublicAddress();
 
-	/**
-	 * After the deletion of a relationships the configuration parameters specific to this relationships are removed
-	 * @param relationships list of relationships removed
-	 */
-	private void unconfigureRelationships(List<RelationshipInstance> relationships) {
-		for(RelationshipInstance b:relationships){
-			unconfigureRelationship(b);
-		}
-	}
+                //client resources
+                configureWithIP(clientResource,client,destinationIpAddress,ipAddress,destinationPortNumber);
 
-	private void unconfigureRelationship(RelationshipInstance b) {
-		if(!b.getRequiredPortInstance().getType().getIsLocal()){
-			RequiredPortInstance client=b.getRequiredPortInstance();
-			ProvidedPortInstance server=b.getProvidedPortInstance();
+                //server resources
+                configureWithIP(serverResource,server,destinationIpAddress,ipAddress,destinationPortNumber);
+            }
+        }
+    }
 
-			Resource clientResource=b.getType().getClientResource();
-			Resource serverResource=b.getType().getServerResource();
+    /**
+     * Configuration with parameters IP, IPDest, PortDest
+     * @param r resources for configuration
+     * @param i port of the component to be configured
+     * @param destinationIpAddress IP of the server
+     * @param ipAddress IP of the client
+     * @param destinationPortNumber port of the server
+     * @throws MalformedURLException
+     */
+    private void configureWithIP(Resource r, PortInstance i, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
+        Connector jc;
+        if(r != null){
+            VMInstance ownerVM = i.getOwner().getDestination();
+            VM n=ownerVM.getType();
+            jc=ConnectorFactory.createConnector(n.getProvider());
+            //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+            jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(),"ubuntu",n.getPrivateKey());
+            String configurationCommand=r.getConfigureCommand()+" \""+ipAddress+"\" \""+destinationIpAddress+"\" "+destinationPortNumber;
+            configure(jc, n, ownerVM, configurationCommand);
+            jc.closeConnection();
+        }
+    }
 
-			//client resources
-			unconfigureWithIP(clientResource,client);
+    /**
+     * Terminates a set of VMs
+     * @param vms A list of vmInstances
+     * @throws MalformedURLException
+     */
+    private void teminateVMs(List<VMInstance> vms) {
+        for(VMInstance n: vms){
+            terminateVM(n);
+        }
+    }
 
-			//server resources
-			unconfigureWithIP(serverResource,server);
-		}
-	}
+    /**
+     * Terminate a VM
+     * @param n A VM instance to be terminated
+     * @throws MalformedURLException
+     */
+    private void terminateVM(VMInstance n){
+        Provider p=n.getType().getProvider();
+        Connector jc=ConnectorFactory.createConnector(p);
+        jc.destroyVM(n.getId());
+        jc.closeConnection();
+        n.setStatusAsStopped();
+    }
 
-	private void unconfigureWithIP(Resource r, PortInstance i) {
-		Connector jc;
-		if(r != null){
-			VMInstance ownerVM = i.getOwner().getDestination();
-			VM n=ownerVM.getType();
-			jc=ConnectorFactory.createConnector(n.getProvider());
-			//jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-			jc.execCommand(ownerVM.getId(), r.getStopCommand(),"ubuntu",n.getPrivateKey());;
-			jc.closeConnection();
-		}
-	}
+    /**
+     * Stop a list of component
+     * @param components a list of ComponentInstance
+     * @throws MalformedURLException
+     */
+    private void stopComponents(List<ComponentInstance> components) {
+        for(ComponentInstance a : components){
+            stopComponent(a);
+        }
+    }
 
-	/**
-	 * To initialize a deployment Model as the model of the current system if the system is already running
-	 * @param current the current Deployment model
-	 */
-	public void setCurrentModel(CloudMLModel current){
-		this.currentModel=current;
-		Connector jc;
-		for(VMInstance n: currentModel.getVMInstances()){
-			if(n.getPublicAddress().equals("")){
-				jc=ConnectorFactory.createConnector(n.getType().getProvider());
-				jc.updateVMMetadata(n);
-			}
-		}
-	}
+    /**
+     * Stop a specific component instance
+     * @param a An InternalComponent Instance
+     * @throws MalformedURLException
+     */
+    private void stopComponent(ComponentInstance a) {
+        VMInstance ownerVM = findDestination(a);
+        if(ownerVM != null){
+            VM n=ownerVM.getType();
+            Connector jc=ConnectorFactory.createConnector(n.getProvider());
 
-	/**
-	 * Find the destination of an ComponentInstance
-	 * @param a an instance of component
-	 * @return a VMInstance
-	 */
-	private VMInstance findDestination(ComponentInstance a){
-		if(a.getDestination() != null){
-			return a.getDestination();
-		}else{
-			for(RelationshipInstance b: currentModel.getRelationshipInstances()){
+            for(Resource r: a.getType().getResources()){
+                String stopCommand=r.getStopCommand();
+                jc.execCommand(ownerVM.getId(), stopCommand,"ubuntu",n.getPrivateKey());
+            }
+
+            jc.closeConnection();
+            a.setStatus(State.configured);
+        }
+    }
+
+    /**
+     * After the deletion of a relationships the configuration parameters specific to this relationships are removed
+     * @param relationships list of relationships removed
+     */
+    private void unconfigureRelationships(List<RelationshipInstance> relationships) {
+        for(RelationshipInstance b:relationships){
+            unconfigureRelationship(b);
+        }
+    }
+
+    private void unconfigureRelationship(RelationshipInstance b) {
+        if(!b.getRequiredPortInstance().getType().getIsLocal()){
+            RequiredPortInstance client=b.getRequiredPortInstance();
+            ProvidedPortInstance server=b.getProvidedPortInstance();
+
+            Resource clientResource=b.getType().getClientResource();
+            Resource serverResource=b.getType().getServerResource();
+
+            //client resources
+            unconfigureWithIP(clientResource,client);
+
+            //server resources
+            unconfigureWithIP(serverResource,server);
+        }
+    }
+
+    private void unconfigureWithIP(Resource r, PortInstance i) {
+        Connector jc;
+        if(r != null){
+            VMInstance ownerVM = i.getOwner().getDestination();
+            VM n=ownerVM.getType();
+            jc=ConnectorFactory.createConnector(n.getProvider());
+            //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+            jc.execCommand(ownerVM.getId(), r.getStopCommand(),"ubuntu",n.getPrivateKey());;
+            jc.closeConnection();
+        }
+    }
+
+    /**
+     * To initialize a deployment Model as the model of the current system if the system is already running
+     * @param current the current Deployment model
+     */
+    public void setCurrentModel(CloudMLModel current){
+        this.currentModel=current;
+        Connector jc;
+        for(VMInstance n: currentModel.getVMInstances()){
+            if(n.getPublicAddress().equals("")){
+                jc=ConnectorFactory.createConnector(n.getType().getProvider());
+                jc.updateVMMetadata(n);
+            }
+        }
+    }
+
+    /**
+     * Find the destination of an ComponentInstance
+     * @param a an instance of component
+     * @return a VMInstance
+     */
+    private VMInstance findDestination(ComponentInstance a){
+        if(a.getDestination() != null){
+            return a.getDestination();
+        }else{
+            for(RelationshipInstance b: currentModel.getRelationshipInstances()){
                 if(a instanceof InternalComponentInstance){
                     if(((InternalComponentInstance)a).getRequiredPortInstances().contains(b.getRequiredPortInstance()) && b.getRequiredPortInstance().getType().getIsLocal())
                         return b.getProvidedPortInstance().getOwner().getDestination();
                 }
-				if(a.getProvidedPortInstances().contains(b.getProvidedPortInstance()) && b.getProvidedPortInstance().getType().getIsLocal())
-					return b.getRequiredPortInstance().getOwner().getDestination();
-			}
-			return null;
-		}
-	}
+                if(a.getProvidedPortInstances().contains(b.getProvidedPortInstance()) && b.getProvidedPortInstance().getType().getIsLocal())
+                    return b.getRequiredPortInstance().getOwner().getDestination();
+            }
+            return null;
+        }
+    }
 
 }

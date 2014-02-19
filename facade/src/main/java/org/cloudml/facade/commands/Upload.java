@@ -23,7 +23,7 @@
 package org.cloudml.facade.commands;
 
 /**
- * Request for the direct upload of a local resource on one of the artifact
+ * Request for the direct upload of a local resources on one of the artifact
  * managed through the deployment model
  * 
  * @author Franck Chauvel
@@ -36,15 +36,15 @@ public class Upload extends ManageableCommand {
 	private final String remotePath;
 
 	/**
-	 * Create a request for a direct upload of a local resource on one of the
+	 * Create a request for a direct upload of a local resources on one of the
 	 * existing artifact.
 	 * 
 	 * @param artifactI
-	 *            the ID of the artifact where the resource shall be uploaded
+	 *            the ID of the artifact where the resources shall be uploaded
 	 * @param localPath
-	 *            the path to the local resource to upload
+	 *            the path to the local resources to upload
 	 * @param remotePath
-	 *            the path on the remote host, where the resource shall be
+	 *            the path on the remote host, where the resources shall be
 	 *            stored
 	 */
 	public Upload(CommandHandler handler, final String artifactId, final String localPath,

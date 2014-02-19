@@ -51,15 +51,15 @@ public class XmiCodec implements Codec {
 
     public CloudMLElement load(InputStream content) {
         XMIModelLoader loader = new XMIModelLoader();
-        net.cloudml.core.DeploymentModel kDeploy = (net.cloudml.core.DeploymentModel) loader.loadModelFromStream(content).get(0);
+        net.cloudml.core.CloudMLModel kDeploy = (net.cloudml.core.CloudMLModel) loader.loadModelFromStream(content).get(0);
 
-        /*net.cloudml.core.Resource resource = (net.cloudml.core.Resource) kDeploy.findByPath("artefactTypes[Dome]/resource[domewar]");
-        if (resource != null) {
-            System.out.println("Found! " + resource);
+        /*net.cloudml.core.Resource resources = (net.cloudml.core.Resource) kDeploy.findByPath("artefactTypes[Dome]/resources[domewar]");
+        if (resources != null) {
+            System.out.println("Found! " + resources);
         }
 
         net.cloudml.core.PortInstance pi = (net.cloudml.core.PortInstance) kDeploy.findByPath("artefactInstances[jboss1]/provided[wc1]");
-        if (resource != null) {
+        if (resources != null) {
             System.out.println("Found! " + pi);
         }*/
 

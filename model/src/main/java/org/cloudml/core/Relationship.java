@@ -32,11 +32,15 @@ public class Relationship extends CloudMLElementWithProperties {
 	
 	private RequiredPort requiredPort;
 	private ProvidedPort providedPort;
-	
+
 	private Resource clientResource;
 	private Resource serverResource;
 	
 	public Relationship(){}
+
+    public Relationship(String name){
+        super(name);
+    }
 	
 	public Relationship(RequiredPort requiredPort, ProvidedPort providedPort){
 		this.requiredPort = requiredPort;

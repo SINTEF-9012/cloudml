@@ -133,12 +133,12 @@ public class CommandFactory {
     }
 
     /**
-     * Upload a local resource on one of the artifact of the model in use
+     * Upload a local resources on one of the artifact of the model in use
      *
-     * @param artifactId the ID of the artifact where the resource must be
+     * @param artifactId the ID of the artifact where the resources must be
      * uploaded
-     * @param localPath the local path where the resource is located
-     * @param remotePath the remote path where the resource must be stored
+     * @param localPath the local path where the resources is located
+     * @param remotePath the remote path where the resources must be stored
      *
      * @link {@link org.cloudml.facade.commands.Upload}
      */

@@ -83,7 +83,7 @@ public class JCloudsConnector implements Connector{
 			// choose only amazon images that are ebs-backed
 			//overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_OWNERS,"107378836295");
 			overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
-					"component-id=137112412989,107378836295,099720109477;state=available;image-type=machine;root-device-type=ebs");
+					"owner-id=137112412989,107378836295,099720109477;state=available;image-type=machine;root-device-type=ebs");
 		}
 		overrides.setProperty(PROPERTY_CONNECTION_TIMEOUT, 0 + "");
 		overrides.setProperty(PROPERTY_SO_TIMEOUT, 0 + "");
@@ -277,8 +277,8 @@ public class JCloudsConnector implements Connector{
 			else templateBuilder.osFamily(OsFamily.UBUNTU);
 			templateBuilder.os64Bit(vm.getIs64os());
 
-			/*if(vm.getMinDisk() > 0 && provider.equals("aws-ec2")){
-    		Hardware hw=findHardwareByDisk(vm.getMinDisk());
+			/*if(vm.getMinStorage() > 0 && provider.equals("aws-ec2")){
+    		Hardware hw=findHardwareByDisk(vm.getMinStorage());
     		templateBuilder.hardwareId(hw.getId());
     	}*/
 
@@ -288,7 +288,7 @@ public class JCloudsConnector implements Connector{
 			a.getProperties().add(new Property("location", template.getLocation().getId()));
 
 			if(provider.equals("aws-ec2")){
-				template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", vm.getMinDisk(), true);
+				template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", vm.getMinStorage(), true);
 				template.getOptions().as(EC2TemplateOptions.class).securityGroups(vm.getSecurityGroup());
 				template.getOptions().as(EC2TemplateOptions.class).keyPair(vm.getSshKey());
 				template.getOptions().as(EC2TemplateOptions.class).userMetadata("Name", a.getName());

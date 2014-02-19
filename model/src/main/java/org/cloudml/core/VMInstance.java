@@ -96,7 +96,7 @@ public class VMInstance extends CloudMLElementWithProperties {
         return "VMInstance: "+name+" Type:"+type.getName()+"{\n" +
         		"minRam:" + type.getMinRam()+"\n"+
         		"minCore" + type.getMinCores()+"\n"+
-        		"minDisk" + type.getMinDisk()+"\n"+
+        		"minDisk" + type.getMinStorage()+"\n"+
         		"OS" + type.getOs()+"\n"+
         		"location" + type.getLocation()+"\n"+
         		"publicAdress" + getPublicAddress()+"\n"+
