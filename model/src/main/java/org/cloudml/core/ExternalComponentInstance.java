@@ -14,4 +14,15 @@ public class ExternalComponentInstance extends ComponentInstance{
         return "Instance " + name + " : " + getType().getName();
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof InternalComponentInstance) {
+            ExternalComponentInstance otherCompInst = (ExternalComponentInstance) other;
+            Boolean match= name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
+            return match;
+        } else {
+            return false;
+        }
+    }
+
 }
