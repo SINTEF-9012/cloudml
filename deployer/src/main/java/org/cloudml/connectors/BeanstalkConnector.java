@@ -48,6 +48,18 @@ import com.amazonaws.services.identitymanagement.model.CreateAccessKeyResult;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.*;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.DescribeInstanceAttributeRequest;
+import com.amazonaws.services.ec2.model.DescribeInstanceAttributeResult;
+import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentResourcesRequest;
+import com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentResourcesResult;
+import com.amazonaws.services.elasticbeanstalk.model.Instance;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class BeanstalkConnector implements PaaSConnector{
 	/*
@@ -67,10 +79,14 @@ public class BeanstalkConnector implements PaaSConnector{
 	//private String endpoint="elasticbeanstalk.eu-west-1.amazonaws.com";
 	private AWSElasticBeanstalkClient client;
 	private AWSCredentials awsCredentials;
+        private String endpoint;
+
+
 
 	public BeanstalkConnector(String login, String pass, String endpoint){
 		awsCredentials=new BasicAWSCredentials(login, pass);
 		client=new AWSElasticBeanstalkClient(awsCredentials);
+                this.endpoint = endpoint;
 		client.setEndpoint(endpoint);
 	}
 
@@ -178,5 +194,27 @@ public class BeanstalkConnector implements PaaSConnector{
 		}
 		return "";
 	}
+        
+        public Collection<String> getEnvIPs(String envName){
+            DescribeEnvironmentResourcesRequest request = new DescribeEnvironmentResourcesRequest()
+                    .withEnvironmentName(envName);
+            DescribeEnvironmentResourcesResult res = client.describeEnvironmentResources(request);
+            List<Instance> instances = res.getEnvironmentResources().getInstances();
+            AmazonEC2Client ec2 = new AmazonEC2Client(awsCredentials);
+            ec2.setEndpoint(endpoint.replace("elasticbeanstalk","ec2"));
+            List<String> instanceIds = new ArrayList<String>();
+            for(Instance instance : instances){
+                instanceIds.add(instance.getId());
+            }
+            List<String> ips = new ArrayList<String>();
+            DescribeInstancesRequest desins = new DescribeInstancesRequest().withInstanceIds(instanceIds);
+            DescribeInstancesResult desinres = ec2.describeInstances(desins);
+            for(Reservation reservation: desinres.getReservations()){
+                for(com.amazonaws.services.ec2.model.Instance ins : reservation.getInstances()){
+                    ips.add(ins.getPublicIpAddress());
+                }
+            }
+            return ips;
+        }
 
 }
