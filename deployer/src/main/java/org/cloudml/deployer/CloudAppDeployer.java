@@ -33,7 +33,7 @@ import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
 import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.core.*;
-import org.cloudml.core.ComponentInstance.State;
+import org.cloudml.core.InternalComponentInstance.State;
 
 /*
  * The deployment Engine
@@ -91,7 +91,7 @@ public class CloudAppDeployer {
 
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
-            stopComponents(diff.getRemovedComponents());
+            stopInternalComponents(diff.getRemovedComponents());
             teminateVMs(diff.getRemovedVMs());
             updateCurrentModel(diff);
         }
@@ -136,7 +136,7 @@ public class CloudAppDeployer {
         Connector jc;
         if(!alreadyDeployed.contains(x) && (x.getDestination() != null)){
             VMInstance ownerVM = x.getDestination();
-            VM n=ownerVM.getType();
+            VM n=(VM)ownerVM.getType();
 
             jc=ConnectorFactory.createConnector(n.getProvider());
 
@@ -168,7 +168,7 @@ public class CloudAppDeployer {
      */
     private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
         VMInstance ownerVM = x.getDestination();
-        VM n=ownerVM.getType();
+        VM n=(VM)ownerVM.getType();
 
         Connector jc;
         jc=ConnectorFactory.createConnector(n.getProvider());
@@ -225,7 +225,7 @@ public class CloudAppDeployer {
             if((x instanceof InternalComponentInstance) && (!alreadyStarted.contains(x))){
                 InternalComponentInstance ix=(InternalComponentInstance)x;
                 VMInstance ownerVM = ix.getDestination();
-                VM n=ownerVM.getType();
+                VM n=(VM)ownerVM.getType();
                 jc=ConnectorFactory.createConnector(n.getProvider());
                 //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
@@ -339,7 +339,7 @@ public class CloudAppDeployer {
         Connector jc;
         if(r != null){
             VMInstance ownerVM = i.getOwner().getDestination();
-            VM n=ownerVM.getType();
+            VM n=(VM)ownerVM.getType();
             jc=ConnectorFactory.createConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
             jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(),"ubuntu",n.getPrivateKey());
@@ -378,9 +378,10 @@ public class CloudAppDeployer {
      * @param components a list of ComponentInstance
      * @throws MalformedURLException
      */
-    private void stopComponents(List<ComponentInstance> components) {
+    private void stopInternalComponents(List<ComponentInstance> components) {//TODO: List<InternalComponentInstances>
         for(ComponentInstance a : components){
-            stopComponent(a);
+            if(a instanceof InternalComponentInstance)
+                stopInternalComponent((InternalComponentInstance)a);
         }
     }
 
@@ -389,10 +390,10 @@ public class CloudAppDeployer {
      * @param a An InternalComponent Instance
      * @throws MalformedURLException
      */
-    private void stopComponent(ComponentInstance a) {
+    private void stopInternalComponent(InternalComponentInstance a) {
         VMInstance ownerVM = findDestination(a);
         if(ownerVM != null){
-            VM n=ownerVM.getType();
+            VM n=(VM)ownerVM.getType();
             Connector jc=ConnectorFactory.createConnector(n.getProvider());
 
             for(Resource r: a.getType().getResources()){
@@ -435,7 +436,7 @@ public class CloudAppDeployer {
         Connector jc;
         if(r != null){
             VMInstance ownerVM = i.getOwner().getDestination();
-            VM n=ownerVM.getType();
+            VM n=(VM)ownerVM.getType();
             jc=ConnectorFactory.createConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
             jc.execCommand(ownerVM.getId(), r.getStopCommand(),"ubuntu",n.getPrivateKey());;

@@ -30,12 +30,22 @@ import java.util.List;
  * node. It contains properties, communications channels and dependencies.
  *
  */
-public class InternalComponentInstance extends ComponentInstance {
+public class InternalComponentInstance extends ComponentInstance<InternalComponent> {
 
 		/*
 	 * Dependencies <PortName,PortInstance Reference>
 	 */
 	private List<RequiredPortInstance> requiredPortInstances = new LinkedList<RequiredPortInstance>();
+
+    protected State status;
+
+    public enum State{
+        uninstalled,
+        installed,
+        configured,
+        running,
+        error,
+    }
 
 	public InternalComponentInstance() {
 	}
@@ -47,20 +57,36 @@ public class InternalComponentInstance extends ComponentInstance {
 
 	public InternalComponentInstance(String name, InternalComponent type, VMInstance destination) {
 		super(name,type,destination);
+        this.status=State.uninstalled;
 	}
 
 	public InternalComponentInstance(String name, List<Property> properties, InternalComponent type) {
 		super(name, properties, type);
+        this.status=State.uninstalled;
 	}
 
 	public InternalComponentInstance(String name, List<Property> properties, InternalComponent type, VMInstance destination) {
 		super(name, properties, type, destination);
+        this.status=State.uninstalled;
 	}
 
 	public InternalComponentInstance(String name, List<Property> properties, List<RequiredPortInstance> requiredPortInstances, List<ProvidedPortInstance> providedPortInstances) {
 		super(name, properties, providedPortInstances);
 		this.requiredPortInstances = requiredPortInstances;
 	}
+
+
+    public State getStatus(){
+        return this.status;
+    }
+
+    public void setStatus(State s) {
+        this.status = s;
+    }
+
+    public void setStatus(String s) {
+        this.status = State.valueOf(s);
+    }
 
 	@Override
 	public String toString() {

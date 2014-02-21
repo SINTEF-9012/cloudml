@@ -27,6 +27,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.DefaultComboBoxModel;
@@ -239,11 +241,13 @@ MouseListener, MouseMotionListener {
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		for(ComponentInstance ai:dm.getComponentInstances()){
-			for(ProvidedPortInstance ci:ai.getProvidedPortInstances()){
-				if(ci.getType().equals(bi.getType().getProvidedPort())){
-					model.addElement(ci);
-				}
-			}
+            Iterator<ProvidedPortInstance> it=ai.getProvidedPortInstances().iterator();
+            while(it.hasNext()){//TODO: check issue with foreach on list<ProvidedPortInstances>
+                ProvidedPortInstance ci=it.next();
+                if(ci.getType().equals(bi.getType().getProvidedPort())){
+                    model.addElement(ci);
+                }
+            }
 		}
 		JComboBox comboBox = new JComboBox(model);
 		panel.add(comboBox);

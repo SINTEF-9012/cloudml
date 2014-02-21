@@ -179,7 +179,8 @@ public class CloudMLModelComparator {
 			if(i >= 0){
 				ComponentInstance a=currentDM.getComponentInstances().get(i);
 				int j=a.getProvidedPortInstances().indexOf(ni.getProvidedPortInstance());
-				ni.setProvidedPortInstance(a.getProvidedPortInstances().get(j));
+                List<ProvidedPortInstance> l= a.getProvidedPortInstances();
+				ni.setProvidedPortInstance(l.get(j));
 			}
 		}
 	}

@@ -24,41 +24,23 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public class VMInstance extends CloudMLElementWithProperties {
+public class VMInstance extends ExternalComponentInstance {
 
-    private VM type;
     private String publicAddress="";
     private String id="";
-    private State status;
-    
-    public enum State{
-    	stopped,
-    	running,
-    	error,
-    }
-    
+
     public VMInstance() {
     }
 
     public VMInstance(String name, VM type) {
-        super(name);
-        this.type = type;
-        this.status=State.stopped;
+        super(name, type);
     }
 
     public VMInstance(String name, VM type, List<Property> properties) {
-        super(name, properties);
-        this.type = type;
+        super(name, type, properties);
     }
     
-    public VM getType() {
-        return this.type;
-    }
-    
-    public void setType(VM type){
-        this.type = type;
-    }
-    
+
     public void setPublicAddress(String publicAddress){
     	this.publicAddress=publicAddress;
     }
@@ -75,32 +57,17 @@ public class VMInstance extends CloudMLElementWithProperties {
     	return this.id;
     }
     
-    public State getStatus(){
-    	return this.status;
-    }
-    
-    public void setStatusAsStopped(){
-    	this.status=State.stopped;
-    }
-    
-    public void setStatusAsError(){
-    	this.status=State.error;
-    }
-    
-    public void setStatusAsRunning(){
-    	this.status=State.running;
-    }
-    
+    //we should introduce genericity
     @Override
     public String toString() {
         return "VMInstance: "+name+" Type:"+type.getName()+"{\n" +
-        		"minRam:" + type.getMinRam()+"\n"+
-        		"minCore" + type.getMinCores()+"\n"+
-        		"minDisk" + type.getMinStorage()+"\n"+
-        		"OS" + type.getOs()+"\n"+
-        		"location" + type.getLocation()+"\n"+
+        		"minRam:" + ((VM)type).getMinRam()+"\n"+
+        		"minCore" + ((VM)type).getMinCores()+"\n"+
+        		"minDisk" + ((VM)type).getMinStorage()+"\n"+
+        		"OS" + ((VM)type).getOs()+"\n"+
+        		"location" + ((VM)type).getLocation()+"\n"+
         		"publicAdress" + getPublicAddress()+"\n"+
-        		"groupName" + type.getGroupName();
+        		"groupName" + ((VM)type).getGroupName();
     }
 
     @Override

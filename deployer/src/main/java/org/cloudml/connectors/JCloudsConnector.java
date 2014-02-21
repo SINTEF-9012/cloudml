@@ -246,7 +246,7 @@ public class JCloudsConnector implements Connector{
 	 * @return
 	 */
 	public void createInstance(VMInstance a){
-		VM vm = a.getType();
+		VM vm = (VM)a.getType();
 		ComputeMetadata cm= getVMByName(a.getName());
 		/* UPDATE THE MODEL */
 		if(cm != null){

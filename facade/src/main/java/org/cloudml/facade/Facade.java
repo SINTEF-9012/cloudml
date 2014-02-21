@@ -176,7 +176,7 @@ class Facade implements CloudML, CommandHandler {
 	 * @param user the user associated
 	 */
 	public void executeOnVM(ComponentInstance a, String command, String user) {//TODO: use the connector factory
-		VM ownerVM = a.getDestination().getType();
+		VM ownerVM = (VM)a.getDestination().getType();//TODO: generics
 		Provider p = ownerVM.getProvider();
 		JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
 				p.getPasswd());
@@ -296,7 +296,7 @@ class Facade implements CloudML, CommandHandler {
 				JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
 				ComputeMetadata c = jc.getVMByName(command.getArtifactId());
 				jc.uploadFile(command.getLocalPath(), command.getRemotePath(), c.getId(), "ubuntu",
-						ownerVM.getType().getPrivateKey());
+                        ((VM)ownerVM.getType()).getPrivateKey());
 			}else{
 				final String text = "There is no VM with this ID!";
 				final Message message = new Message(command, Category.ERROR, text);

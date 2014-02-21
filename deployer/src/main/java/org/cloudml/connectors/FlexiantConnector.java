@@ -148,7 +148,7 @@ public class FlexiantConnector implements Connector{
 		try {
 			Server template = new Server();
 			if(findResourceByName(a.getName(), ResourceType.SERVER).equals("")){
-				VM vm = a.getType();
+				VM vm = (VM)a.getType();
 				List<String> sshKeyList = new ArrayList<String> ();
 
 				template.setResourceType(ResourceType.SERVER);
