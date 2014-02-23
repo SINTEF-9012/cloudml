@@ -24,7 +24,7 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public class VMInstance extends ExternalComponentInstance {
+public class VMInstance extends ExternalComponentInstance<VM> {
 
     private String publicAddress="";
     private String id="";

@@ -81,7 +81,7 @@ public class KMFBridge {
 
             nodes.put(vm.getName(), vm);
 
-            model.getVms().put(vm.getName(), vm);
+            model.getExternalComponents().put(vm.getName(), vm);
         }
 
         for (net.cloudml.core.Component ba : kDeploy.getComponents()) {//first pass on the contained elements
@@ -179,7 +179,7 @@ public class KMFBridge {
 
             vmInstances.put(ni.getName(), ni);
 
-            model.getVMInstances().add(ni);
+            model.getExternalComponentInstances().add(ni);
         }
 
 
@@ -329,28 +329,31 @@ public class KMFBridge {
         }
 
         //TODO: continue cloning and conversion...
-        for (VM vm : deploy.getVms().values()) {
-            net.cloudml.core.VM kNode = factory.createVM();
-            initProperties(vm, kNode, factory);
-            initResources(vm, kNode, factory);
-            kNode.setName(vm.getName());
+        for (ExternalComponent ec : deploy.getExternalComponents().values()) {
+            if(ec instanceof VM){
+                VM vm=(VM)ec;
+                net.cloudml.core.VM kNode = factory.createVM();
+                initProperties(vm, kNode, factory);
+                initResources(vm, kNode, factory);
+                kNode.setName(vm.getName());
 
-            kNode.setProvider(providers.get(vm.getProvider().getName()));
-            kNode.setGroupName(vm.getGroupName());
-            kNode.setImageId(vm.getImageId());
-            kNode.setIs64os(vm.getIs64os());
-            kNode.setLocation(vm.getLocation());
-            kNode.setMinCores(vm.getMinCores());
-            kNode.setMinStorage(vm.getMinStorage());
-            kNode.setMinRam(vm.getMinRam());
-            kNode.setOs(vm.getOs());
-            kNode.setPrivateKey(vm.getPrivateKey());
-            kNode.setSecurityGroup(vm.getSecurityGroup());
-            kNode.setSshKey(vm.getSshKey());
+                kNode.setProvider(providers.get(vm.getProvider().getName()));
+                kNode.setGroupName(vm.getGroupName());
+                kNode.setImageId(vm.getImageId());
+                kNode.setIs64os(vm.getIs64os());
+                kNode.setLocation(vm.getLocation());
+                kNode.setMinCores(vm.getMinCores());
+                kNode.setMinStorage(vm.getMinStorage());
+                kNode.setMinRam(vm.getMinRam());
+                kNode.setOs(vm.getOs());
+                kNode.setPrivateKey(vm.getPrivateKey());
+                kNode.setSecurityGroup(vm.getSecurityGroup());
+                kNode.setSshKey(vm.getSshKey());
 
-            vms.put(kNode.getName(), kNode);
+                vms.put(kNode.getName(), kNode);
 
-            kDeploy.addVms(kNode);
+                kDeploy.addVms(kNode);
+            }
         }
 
         for (Component ca : deploy.getComponents().values()) {//first pass on the contained elements
@@ -451,16 +454,19 @@ public class KMFBridge {
             relationships.put(kb.getName(), kb);
         }
 
-        for (VMInstance ni : deploy.getVMInstances()) {
-            net.cloudml.core.VMInstance kni = factory.createVMInstance();
-            kni.setName(ni.getName());
-            kni.setPublicAddress(ni.getPublicAddress());
-            kni.setType(vms.get(ni.getType().getName()));
-            initProperties(ni, kni, factory);
+        for (ExternalComponentInstance eni : deploy.getExternalComponentInstances()) {
+            if(eni instanceof ExternalComponentInstance){
+                VMInstance ni=(VMInstance)eni;
+                net.cloudml.core.VMInstance kni = factory.createVMInstance();
+                kni.setName(ni.getName());
+                kni.setPublicAddress(ni.getPublicAddress());
+                kni.setType(vms.get(ni.getType().getName()));
+                initProperties(ni, kni, factory);
 
-            VMInstances.put(kni.getName(), kni);
+                VMInstances.put(kni.getName(), kni);
 
-            kDeploy.addVmInstances(kni);
+                kDeploy.addVmInstances(kni);
+            }
         }
 
         for (ComponentInstance bai : deploy.getComponentInstances()) {//pass 1

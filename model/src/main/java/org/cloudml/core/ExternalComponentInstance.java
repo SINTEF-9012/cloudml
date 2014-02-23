@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Created by Nicolas Ferry on 19.02.14.
  */
-public class ExternalComponentInstance extends ComponentInstance<ExternalComponent>{
+public class ExternalComponentInstance<T extends ExternalComponent> extends ComponentInstance<T>{
 
 
     private State status;
@@ -42,12 +42,12 @@ public class ExternalComponentInstance extends ComponentInstance<ExternalCompone
 
     public ExternalComponentInstance(){}
 
-    public ExternalComponentInstance(String name, ExternalComponent type){
+    public ExternalComponentInstance(String name, T type){
         super(name,type);
         this.status=State.stopped;
     }
 
-    public ExternalComponentInstance(String name, ExternalComponent type, List<Property> properties){
+    public ExternalComponentInstance(String name, T type, List<Property> properties){
         super(name, properties, type);
         this.status=State.stopped;
     }

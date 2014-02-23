@@ -66,7 +66,7 @@ public class CloudAppDeployer {
             this.currentModel=targetModel;
 
             // Provisioning vms
-            provisioning(targetModel.getVMInstances());
+            setExternalServices(targetModel.getExternalComponentInstances());
 
             // Deploying on vms
             // TODO: need to be recursive
@@ -84,7 +84,7 @@ public class CloudAppDeployer {
             diff.compareCloudMLModel();
 
             //Added stuff
-            provisioning(diff.getAddedVMs());
+            setExternalServices(diff.getAddedVMs());
             prepareComponents(diff.getAddedComponents(), targetModel.getRelationshipInstances());
             configureWithRelationships(diff.getAddedRelationships());
             configureSaas(diff.getAddedComponents());
@@ -92,7 +92,7 @@ public class CloudAppDeployer {
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
             stopInternalComponents(diff.getRemovedComponents());
-            teminateVMs(diff.getRemovedVMs());
+            terminateExternalServices(diff.getRemovedVMs());
             updateCurrentModel(diff);
         }
     }
@@ -104,13 +104,13 @@ public class CloudAppDeployer {
     public void updateCurrentModel(CloudMLModelComparator diff){
         currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
         currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
-        currentModel.getVMInstances().removeAll(diff.getRemovedVMs());
+        currentModel.getExternalComponentInstances().removeAll(diff.getRemovedVMs());
         alreadyDeployed.removeAll(diff.getRemovedComponents());
         alreadyStarted.removeAll(diff.getRemovedComponents());
 
         currentModel.getComponentInstances().addAll(diff.getAddedComponents());
         currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
-        currentModel.getVMInstances().addAll(diff.getAddedVMs());
+        currentModel.getExternalComponentInstances().addAll(diff.getAddedVMs());
     }
 
     /**
@@ -136,7 +136,7 @@ public class CloudAppDeployer {
         Connector jc;
         if(!alreadyDeployed.contains(x) && (x.getDestination() != null)){
             VMInstance ownerVM = x.getDestination();
-            VM n=(VM)ownerVM.getType();
+            VM n=ownerVM.getType();
 
             jc=ConnectorFactory.createConnector(n.getProvider());
 
@@ -168,7 +168,7 @@ public class CloudAppDeployer {
      */
     private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
         VMInstance ownerVM = x.getDestination();
-        VM n=(VM)ownerVM.getType();
+        VM n=ownerVM.getType();
 
         Connector jc;
         jc=ConnectorFactory.createConnector(n.getProvider());
@@ -225,7 +225,7 @@ public class CloudAppDeployer {
             if((x instanceof InternalComponentInstance) && (!alreadyStarted.contains(x))){
                 InternalComponentInstance ix=(InternalComponentInstance)x;
                 VMInstance ownerVM = ix.getDestination();
-                VM n=(VM)ownerVM.getType();
+                VM n=ownerVM.getType();
                 jc=ConnectorFactory.createConnector(n.getProvider());
                 //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
@@ -279,9 +279,10 @@ public class CloudAppDeployer {
      * @param vms
      * 			A list of vms
      */
-    private void provisioning(List<VMInstance> vms){
-        for(VMInstance n : vms){
-            provisionAVM(n);
+    private void setExternalServices(List<ExternalComponentInstance> vms){
+        for(ExternalComponentInstance n : vms){
+            if(n instanceof VMInstance)
+                provisionAVM((VMInstance)n);
         }
     }
 
@@ -339,7 +340,7 @@ public class CloudAppDeployer {
         Connector jc;
         if(r != null){
             VMInstance ownerVM = i.getOwner().getDestination();
-            VM n=(VM)ownerVM.getType();
+            VM n=ownerVM.getType();
             jc=ConnectorFactory.createConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
             jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(),"ubuntu",n.getPrivateKey());
@@ -354,9 +355,10 @@ public class CloudAppDeployer {
      * @param vms A list of vmInstances
      * @throws MalformedURLException
      */
-    private void teminateVMs(List<VMInstance> vms) {
-        for(VMInstance n: vms){
-            terminateVM(n);
+    private void terminateExternalServices(List<ExternalComponentInstance> vms) {
+        for(ExternalComponentInstance n: vms){
+            if(n instanceof ExternalComponentInstance)
+                terminateVM((VMInstance)n);
         }
     }
 
@@ -393,7 +395,7 @@ public class CloudAppDeployer {
     private void stopInternalComponent(InternalComponentInstance a) {
         VMInstance ownerVM = findDestination(a);
         if(ownerVM != null){
-            VM n=(VM)ownerVM.getType();
+            VM n=ownerVM.getType();
             Connector jc=ConnectorFactory.createConnector(n.getProvider());
 
             for(Resource r: a.getType().getResources()){
@@ -436,7 +438,7 @@ public class CloudAppDeployer {
         Connector jc;
         if(r != null){
             VMInstance ownerVM = i.getOwner().getDestination();
-            VM n=(VM)ownerVM.getType();
+            VM n=ownerVM.getType();
             jc=ConnectorFactory.createConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
             jc.execCommand(ownerVM.getId(), r.getStopCommand(),"ubuntu",n.getPrivateKey());;
@@ -451,10 +453,13 @@ public class CloudAppDeployer {
     public void setCurrentModel(CloudMLModel current){
         this.currentModel=current;
         Connector jc;
-        for(VMInstance n: currentModel.getVMInstances()){
-            if(n.getPublicAddress().equals("")){
-                jc=ConnectorFactory.createConnector(n.getType().getProvider());
-                jc.updateVMMetadata(n);
+        for(ExternalComponentInstance en: currentModel.getExternalComponentInstances()){
+            if(en instanceof VMInstance){
+                VMInstance n=(VMInstance)en;
+                if(n.getPublicAddress().equals("")){
+                    jc=ConnectorFactory.createConnector(n.getType().getProvider());
+                    jc.updateVMMetadata(n);
+                }
             }
         }
     }

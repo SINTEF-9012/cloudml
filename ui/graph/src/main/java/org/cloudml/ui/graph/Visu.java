@@ -298,7 +298,7 @@ public class Visu {
 
 	public DefaultListModel fillList(){
 		DefaultListModel lm=new DefaultListModel();
-		for(VM n:dmodel.getVms().values()){
+		for(ExternalComponent n:dmodel.getExternalComponents().values()){
 			lm.addElement(n.getName());
 		}
 		for(Component n:dmodel.getComponents().values()){

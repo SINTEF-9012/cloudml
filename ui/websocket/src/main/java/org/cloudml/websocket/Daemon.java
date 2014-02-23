@@ -61,7 +61,7 @@ public class Daemon
             Logger.getLogger(Daemon.class.getName()).log(Level.SEVERE, null, ex);
         }
         return root;
-//        for(VMInstance ni : root.getVMInstances()){
+//        for(VMInstance ni : root.getExternalComponentInstances()){
 //            ni.getProperties().add(new Property("state","onn"));
 //        }
 //        for(InternalComponentInstance ai : root.getComponentInstances()){
