@@ -26,30 +26,30 @@ import java.util.List;
 
 public abstract class Port extends CloudMLElementWithProperties {
 
-	protected boolean isLocal =false;
-    protected InternalComponent component;
+	protected boolean isLocal = false;
+    protected Component component;
     protected int portNumber = 0;
 
     public Port() {
     }
 
-    public Port(String name, InternalComponent component, boolean isLocal) {
+    public Port(String name, Component component, boolean isLocal) {
         super(name);
         this.component = component;
         this.isLocal = isLocal;
     }
 
-    public Port(String name, List<Property> properties, InternalComponent component, boolean isLocal) {
+    public Port(String name, List<Property> properties, Component component, boolean isLocal) {
         super(name, properties);
         this.component = component;
         this.isLocal = isLocal;
     }
 
-    public InternalComponent getComponent() {
+    public Component getComponent() {
         return component;
     }
 
-    public void setComponent(InternalComponent component) {
+    public void setComponent(Component component) {
         this.component = component;
     }
 
