@@ -188,20 +188,26 @@ public class CloudAppDeployer {
                     for(Resource r:  p.getOwner().getType().getResources()){
                         jc.execCommand(owner.getId(), r.getInstallCommand(),"ubuntu",n.getPrivateKey());
                     }
-                    p.getOwner().setStatus(State.installed);
+
+                    if(p.getOwner() instanceof InternalComponentInstance){
+                        ((InternalComponentInstance)p.getOwner()).setStatus(State.installed);
+                    }
 
                     for(Resource r:  p.getOwner().getType().getResources()){
                         String configurationCommand=r.getConfigureCommand();
                         configure(jc, n, owner, configurationCommand);
                     }
-                    p.getOwner().setStatus(State.configured);
+                    if(p.getOwner() instanceof InternalComponentInstance){
+                        ((InternalComponentInstance)p.getOwner()).setStatus(State.configured);
+                    }
 
                     for(Resource r:  p.getOwner().getType().getResources()){
                         String startCommand=r.getStartCommand();
                         start(jc, n, owner, startCommand);
                     }
-                    p.getOwner().setStatus(State.running);
-
+                    if(p.getOwner() instanceof InternalComponentInstance){
+                        ((InternalComponentInstance)p.getOwner()).setStatus(State.running);
+                    }
 
                     alreadyDeployed.add(p.getOwner());
                     alreadyStarted.add(p.getOwner());

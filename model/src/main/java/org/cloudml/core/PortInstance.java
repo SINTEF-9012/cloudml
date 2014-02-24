@@ -27,12 +27,12 @@ import java.util.List;
 public abstract class PortInstance<T extends Port> extends CloudMLElementWithProperties {
 
     protected T type;
-    protected InternalComponentInstance owner;
+    protected ComponentInstance owner;
 
     public PortInstance() {
     }
 
-    public PortInstance(String name, T type, InternalComponentInstance owner) {
+    public PortInstance(String name, T type, ComponentInstance owner) {
         super(name);
         this.type = type;
         this.owner = owner;
@@ -41,7 +41,7 @@ public abstract class PortInstance<T extends Port> extends CloudMLElementWithPro
         component.getType().getProvidedPorts().add(type);*/
     }
     
-    public PortInstance(String name, T type, List<Property> properties, InternalComponentInstance owner) {
+    public PortInstance(String name, T type, List<Property> properties, ComponentInstance owner) {
         super(name, properties);
         this.type = type;
         this.owner = owner;
@@ -50,7 +50,7 @@ public abstract class PortInstance<T extends Port> extends CloudMLElementWithPro
         component.getType().getProvidedPorts().add(type);*/
     }
     
-    public PortInstance(String name, T type, List<Property> properties, InternalComponentInstance owner, boolean isRemote) {
+    public PortInstance(String name, T type, List<Property> properties, ComponentInstance owner, boolean isRemote) {
         super(name, properties);
         this.type = type;
         this.owner = owner;
@@ -59,7 +59,7 @@ public abstract class PortInstance<T extends Port> extends CloudMLElementWithPro
         component.getType().getProvidedPorts().add(type);*/
     }
 
-    public InternalComponentInstance getOwner() {
+    public ComponentInstance getOwner() {
         return this.owner;
     }
 

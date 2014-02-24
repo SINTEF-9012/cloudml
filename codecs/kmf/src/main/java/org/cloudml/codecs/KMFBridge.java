@@ -38,6 +38,8 @@ public class KMFBridge {
     public KMFBridge() {
     }
 
+
+
     public CloudMLElement toPOJO(net.cloudml.core.CloudMLModel kDeploy) {
         Map<String, VM> nodes = new HashMap<String, VM>();
         Map<String, Provider> providers = new HashMap<String, Provider>();
