@@ -29,7 +29,6 @@
 		<module>facade</module>
 		<module>ui</module>
 		<module>misc</module>
-        <module>factory</module>
     </modules>
 
 	<build>

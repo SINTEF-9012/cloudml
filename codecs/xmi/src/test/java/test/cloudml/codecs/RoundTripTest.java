@@ -68,7 +68,8 @@ public class RoundTripTest extends TestCase {
         if (input != null && codec != null) {
             InputStream stream = null;
             try {
-
+                stream = new FileInputStream(input);
+                
             } catch (IOException ex) {
                 Logger.getLogger(RoundTripTest.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
