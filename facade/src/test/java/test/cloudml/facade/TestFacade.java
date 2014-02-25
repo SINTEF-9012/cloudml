@@ -22,14 +22,9 @@
  */
 package test.cloudml.facade;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import junit.framework.TestCase;
 import org.cloudml.facade.*;
 import org.cloudml.facade.commands.*;
-import test.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.junit.Test;
 
@@ -73,32 +68,38 @@ public class TestFacade extends TestCase implements EventHandler {
         return true;
     }
 
+    @Override
     public void handle(Event event) {
         System.out.println(event);
     }
 
+    @Override
     public void handle(Message message) {
-        handle((Event) message);
+        this.handle((Event) message);
     }
 
-    public void handle(ArtefactTypeList artefacts) {
+    @Override
+    public void handle(ComponentList artefacts) {
         handle((Event) artefacts);
     }
 
+    @Override
     public void handle(Data data) {
-         handle((Event) data);
+        handle((Event) data);
     }
 
-      public void handle(ArtefactInstanceList artefacts) {
+    @Override
+    public void handle(ComponentInstanceList artefacts) {
         this.handle((Event) artefacts);
     }
 
-    public void handle(ArtefactInstanceData artefact) {
+    @Override
+    public void handle(ComponentInstanceData artefact) {
         this.handle((Event) artefact);
     }
 
-    public void handle(ArtefactTypeData type) {
+    @Override
+    public void handle(ComponentData type) {
         this.handle((Event) type);
     }
-    
 }

@@ -47,6 +47,14 @@ public class SaveAsTest extends TestCase {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void testSaveAsWithEmptyStringAsFileName() throws FileNotFoundException {
+        String fileName = "";
+        CloudMLModel model = new CloudMLModel();
+        CodecsLibrary library = new CodecsLibrary();
+        library.saveAs(model, fileName);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testSaveAsWithNullAsFileName() throws FileNotFoundException {
         String fileName = null;
         CloudMLModel model = new CloudMLModel();
@@ -90,21 +98,21 @@ public class SaveAsTest extends TestCase {
     @Test
     public void testGetExtensionWithMultipleExtensions() {
         CodecsLibrary library = new CodecsLibrary();
-        String extension = library.getExtension("test.pouet.toto");
+        String extension = library.getFileExtension("test.pouet.toto");
         assertEquals(".toto", extension);
     }
 
     @Test
     public void testGetExtensionWithMultipleDots() {
         CodecsLibrary library = new CodecsLibrary();
-        String extension = library.getExtension("test....pouet");
+        String extension = library.getFileExtension("test....pouet");
         assertEquals(".pouet", extension);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetExtensionWithoutExtension() {
         CodecsLibrary library = new CodecsLibrary();
-        String extension = library.getExtension("test");
+        String extension = library.getFileExtension("test");
     }
 
     private void cleanDirectory() {

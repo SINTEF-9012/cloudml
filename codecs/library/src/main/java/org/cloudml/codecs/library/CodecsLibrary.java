@@ -22,6 +22,7 @@
  */
 package org.cloudml.codecs.library;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
@@ -37,45 +38,81 @@ import org.cloudml.core.CloudMLModel;
  */
 public class CodecsLibrary {
 
-    
     private final HashMap<String, Codec> codecs;
-    
-    
+
     public CodecsLibrary() {
         codecs = new HashMap<String, Codec>();
         codecs.put(".json", new JsonCodec());
         codecs.put(".xmi", new XmiCodec());
     }
-  
-    public void saveAs(CloudMLModel model, String fileName) throws FileNotFoundException{
-        checkParameters(model, fileName);
-        String extension = getExtension(fileName);
+
+    /**
+     * Save a model into a the given file, based on the extension of the file
+     *
+     * @param model the model to serialise
+     * @param pathToFile the path to the file
+     * @throws FileNotFoundException if the path is not valid on disc
+     */
+    public void saveAs(CloudMLModel model, String pathToFile) throws FileNotFoundException {
+        checkModel(model);
+        checkPath(pathToFile);
+        String extension = getFileExtension(pathToFile);
         Codec codec = this.codecs.get(extension);
-        if (codec == null) {
-            throw new IllegalArgumentException("Unknown file extension '" + extension + "'");
-        }
-        codec.save(model, new FileOutputStream(fileName));
+        checkCodec(codec, extension);
+        codec.save(model, new FileOutputStream(pathToFile));
     }
 
-    public String getExtension(String fileName) {
+    public String getFileExtension(String fileName) {
         String extension = "";
         Pattern pattern = Pattern.compile("(\\.\\w+)$");
         Matcher matcher = pattern.matcher(fileName);
         if (matcher.find()) {
             extension = matcher.group(1);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Cannot select codec on file without extension");
         }
         return extension;
     }
 
-    private void checkParameters(CloudMLModel model, String fileName) throws IllegalArgumentException {
-        if (model==null) {
+    private void checkModel(CloudMLModel model) throws IllegalArgumentException {
+        if (model == null) {
             throw new IllegalArgumentException("Cannot serialize a 'null' model");
-        }
-        if (fileName == null) {
-            throw new IllegalArgumentException("Cannot serialize in a non-existing file");
         }
     }
 
+    /**
+     * Read a file and build the related model selecting the appropriate codec
+     * based on the file extension.
+     *
+     * @param pathToFile the path to the file
+     * @return the related CloudMLModel object
+     * @throws FileNotFoundException if the given path is invalid
+     */
+    public CloudMLModel load(String pathToFile) throws FileNotFoundException {
+        checkPath(pathToFile);
+        String extension = getFileExtension(pathToFile);
+        Codec codec = this.codecs.get(extension);
+        checkCodec(codec, extension);
+        CloudMLModel model = (CloudMLModel) codec.load(new FileInputStream(pathToFile));
+        if (model == null) {
+            model = new CloudMLModel();
+        }
+        return model;
+    }
+
+    private void checkCodec(Codec codec, String extension) throws IllegalArgumentException {
+        if (codec == null) {
+            throw new IllegalArgumentException("Unknown file extension '" + extension + "'");
+        }
+    }
+
+    private void checkPath(String fileName) {
+        if (fileName == null) {
+            throw new IllegalArgumentException("Cannot serialize in a non-existing file");
+        }
+        if (fileName.equals("")) {
+            throw new IllegalArgumentException("Cannot find file named ''");
+        }
+    }
 }
