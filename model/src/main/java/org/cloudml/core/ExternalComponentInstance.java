@@ -22,13 +22,58 @@
  */
 package org.cloudml.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Nicolas Ferry on 19.02.14.
  */
-public class ExternalComponentInstance extends ComponentInstance{
+public class ExternalComponentInstance<T extends ExternalComponent> extends ComponentInstance<T>{
 
-    public ExternalComponentInstance(String name, ExternalComponent type){
+
+    private State status;
+    private List<String> ips=new ArrayList<String>();
+
+    private enum State{
+        stopped,
+        running,
+        error,
+    }
+
+    public ExternalComponentInstance(){}
+
+    public ExternalComponentInstance(String name, T type){
         super(name,type);
+        this.status=State.stopped;
+    }
+
+    public ExternalComponentInstance(String name, T type, List<Property> properties){
+        super(name, properties, type);
+        this.status=State.stopped;
+    }
+
+    public List<String> getIps(){
+        return this.ips;
+    }
+
+    public void setIps(List<String> ips){
+        this.ips=ips;
+    }
+
+    public State getStatus(){
+        return this.status;
+    }
+
+    public void setStatusAsStopped(){
+        this.status=State.stopped;
+    }
+
+    public void setStatusAsError(){
+        this.status=State.error;
+    }
+
+    public void setStatusAsRunning(){
+        this.status=State.running;
     }
 
     @Override

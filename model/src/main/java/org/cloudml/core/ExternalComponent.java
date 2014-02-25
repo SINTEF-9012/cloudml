@@ -35,12 +35,26 @@ public class ExternalComponent extends Component{
     private String endPoint;
     private String credentials;
 
+    protected Provider provider;
+
+    public ExternalComponent(){}
+
     public ExternalComponent(String name){
         super(name);
     }
 
+    public ExternalComponent(String name, Provider provider){
+        super(name);
+        this.provider=provider;
+    }
+
     public ExternalComponent(String name, List<Property> properties) {
         super(name, properties);
+    }
+
+    public ExternalComponent(String name, List<Property> properties, Provider provider) {
+        super(name, properties);
+        this.provider=provider;
     }
 
     public String getLogin(){
@@ -50,6 +64,15 @@ public class ExternalComponent extends Component{
     public String getPasswd(){
         return this.passwd;
     }
+
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider p) {
+        provider = p;
+    }
+
 
     public String getEndPoint(){
         return this.endPoint;

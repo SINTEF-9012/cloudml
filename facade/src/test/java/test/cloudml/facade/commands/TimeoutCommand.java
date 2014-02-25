@@ -20,33 +20,33 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.ui.shell.commands;
+package test.cloudml.facade.commands;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.cloudml.ui.shell.Command;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+//import org.cloudml.facade.commands.ManageableCommand;
+import org.cloudml.facade.commands.CommandHandler;
+/**
+ * Request the loading of a given deployment model. The format will be infered
+ * from the extension of the given file.
+ *
+ * @author Brice Morin
+ * @since 1.0
+ */
+public class TimeoutCommand /*extends ManageableCommand*/ {
 
-public class Exit extends Command {
-    
-    @SuppressWarnings("serial")
-    protected Set<String> getAliases() {
-        return new HashSet<String>() {
-            { 
-                add("q");
-                add("quit");
-            }
-        };
-    }
-    protected String getName() { return "exit"; }
-    
-    protected String getShortHelp() {
-        return "exit the program (q and quit do the same)";
+    static final long sleep = 2000;
+
+  /*  public TimeoutCommand(CommandHandler handler) {
+        super(handler);
     }
     
-    protected String getUsage() { return "exit"; }
-    
-    public String execute() {
-        System.exit(0);
-        return null;
+    public void execute(CommandHandler target) {
+        try {
+            Thread.currentThread().sleep(sleep);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(TimeoutCommand.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
+  */
 }

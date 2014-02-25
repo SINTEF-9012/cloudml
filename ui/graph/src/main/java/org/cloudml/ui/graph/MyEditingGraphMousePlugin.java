@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
+import java.util.Iterator;
 import java.util.Random;
 
 import javax.swing.DefaultComboBoxModel;
@@ -119,10 +120,10 @@ MouseListener, MouseMotionListener {
                             }
                         }//TODO Else
 					}
-					for(VM a:dm.getVms().values()){
-						if(a.getName().equals(nodeType)){
-							VMInstance ai= a.instantiates(nodeType + cnt);
-							dm.getVMInstances().add(ai);
+					for(ExternalComponent a:dm.getExternalComponents().values()){
+						if(a.getName().equals(nodeType) && a instanceof ExternalComponent){
+							VMInstance ai= ((VM)a).instantiates(nodeType + cnt);
+							dm.getExternalComponentInstances().add(ai);
 							Vertex v=new Vertex(nodeType+cnt, "node", ai);
 							graph.addVertex(v);
 							vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
@@ -164,7 +165,7 @@ MouseListener, MouseMotionListener {
 				if(vertex != null){
 					if(vertex.getType().equals("node")){
 						//need to remove also the bindings and the requirements !!!
-						dm.getVMInstances().remove(vertex);
+						dm.getExternalComponentInstances().remove(vertex);
 						graph.removeVertex(vertex);
 					}else{
 						dm.getComponentInstances().remove(vertex);
@@ -220,7 +221,7 @@ MouseListener, MouseMotionListener {
 		JPanel panel = new JPanel();
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		for(VMInstance n:dm.getVMInstances()){
+		for(ExternalComponentInstance n:dm.getExternalComponentInstances()){
 			model.addElement(n);
 		}
 		JComboBox comboBox = new JComboBox(model);
@@ -239,11 +240,13 @@ MouseListener, MouseMotionListener {
 		panel.add(new JLabel("Please make a selection:"));
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		for(ComponentInstance ai:dm.getComponentInstances()){
-			for(ProvidedPortInstance ci:ai.getProvidedPortInstances()){
-				if(ci.getType().equals(bi.getType().getProvidedPort())){
-					model.addElement(ci);
-				}
-			}
+            Iterator<ProvidedPortInstance> it=ai.getProvidedPortInstances().iterator();
+            while(it.hasNext()){//TODO: check issue with foreach on list<ProvidedPortInstances>
+                ProvidedPortInstance ci=it.next();
+                if(ci.getType().equals(bi.getType().getProvidedPort())){
+                    model.addElement(ci);
+                }
+            }
 		}
 		JComboBox comboBox = new JComboBox(model);
 		panel.add(comboBox);

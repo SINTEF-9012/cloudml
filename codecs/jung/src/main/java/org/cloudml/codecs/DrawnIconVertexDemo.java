@@ -164,7 +164,7 @@ public class DrawnIconVertexDemo implements Serializable {
 	
 	public ArrayList<Vertex> drawVerticesFromDeploymentModel(CloudMLModel dm){
 		ArrayList<Vertex> V=new ArrayList<Vertex>();
-		for(VMInstance n : dm.getVMInstances()){
+		for(ExternalComponentInstance n : dm.getExternalComponentInstances()){
 			Vertex v= new Vertex(n.getName(), "node",n);
 			V.add(v);
 			createVertice(v);

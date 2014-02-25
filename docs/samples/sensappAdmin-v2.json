@@ -1,0 +1,290 @@
+{ "eClass":"net.cloudml.core:CloudMLModel" ,
+ "name":"SensAppAdmnin",
+"vms": [
+{ "eClass":"net.cloudml.core:VM" ,
+ "name":"ML",
+ "minRam":"1000",
+ "maxRam":"0",
+ "minCores":"2",
+ "maxCores":"0",
+ "minStorage":"50",
+ "maxStorage":"0",
+ "os":"ubuntu",
+ "is64os":true,
+ "location":"eu-west-1b",
+ "securityGroup":"SensApp",
+ "sshKey":"cloudml",
+ "groupName":"sensapp",
+ "provider":"providers[aws-ec2]",
+"properties": [
+{ "eClass":"net.cloudml.core:Property" ,
+ "name":"KeyPath",
+ "value":"./cloudml.pem"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:VM" ,
+ "name":"SL",
+ "minRam":"1000",
+ "maxRam":"0",
+ "minCores":"1",
+ "maxCores":"0",
+ "minStorage":"50",
+ "maxStorage":"0",
+ "os":"ubuntu",
+ "is64os":true,
+ "imageId":"Ubuntu-SINTEF",
+ "securityGroup":"SensApp",
+ "sshKey":"cloudml",
+ "groupName":"SensApp",
+ "provider":"providers[flexiant]",
+"properties": [
+{ "eClass":"net.cloudml.core:Property" ,
+ "name":"KeyPath",
+ "value":"./cloudml.pem"}
+]
+}
+]
+,
+"providers": [
+{ "eClass":"net.cloudml.core:Provider" ,
+ "name":"aws-ec2",
+ "credentials":"C:\Users\nicolasf\Desktop\cmltestNew\credentials"}
+,
+{ "eClass":"net.cloudml.core:Provider" ,
+ "name":"flexiant",
+ "credentials":"C:\Users\nicolasf\Desktop\cmltestNew\credentials",
+"properties": [
+{ "eClass":"net.cloudml.core:Property" ,
+ "name":"endPoint",
+ "value":"https://api.sd1.flexiant.net:4442/userapi"}
+]
+}
+]
+,
+"components": [
+{ "eClass":"net.cloudml.core:InternalComponent" ,
+ "name":"SensApp",
+"resources": [
+{ "eClass":"net.cloudml.core:Resource" ,
+ "name":"sensAppWar",
+ "downloadCommand":"wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensapp/sensapp.sh",
+ "installCommand":"cd ~; sudo bash sensapp.sh"}
+]
+,
+"providedPorts": [
+{ "eClass":"net.cloudml.core:ProvidedPort" ,
+ "name":"rest",
+ "isLocal":false,
+ "portNumber":"8080"}
+]
+,
+"requiredPorts": [
+{ "eClass":"net.cloudml.core:RequiredPort" ,
+ "name":"mongoDBRequired",
+ "isLocal":true,
+ "portNumber":"0",
+ "isMandatory":true}
+,
+{ "eClass":"net.cloudml.core:RequiredPort" ,
+ "name":"scRequired",
+ "isLocal":true,
+ "portNumber":"0",
+ "isMandatory":true}
+]
+}
+,
+{ "eClass":"net.cloudml.core:InternalComponent" ,
+ "name":"mongoDB",
+"resources": [
+{ "eClass":"net.cloudml.core:Resource" ,
+ "name":"MongoDBBin",
+ "downloadCommand":"wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/mongoDB/mongoDB.sh",
+ "installCommand":"cd ~; sudo bash mongoDB.sh"}
+]
+,
+"providedPorts": [
+{ "eClass":"net.cloudml.core:ProvidedPort" ,
+ "name":"mongoDB",
+ "isLocal":false,
+ "portNumber":"0"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:InternalComponent" ,
+ "name":"JettySC",
+"resources": [
+{ "eClass":"net.cloudml.core:Resource" ,
+ "name":"jettyBin",
+ "downloadCommand":"wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/jetty/jetty.sh",
+ "installCommand":"cd ~; sudo bash jetty.sh"}
+]
+,
+"providedPorts": [
+{ "eClass":"net.cloudml.core:ProvidedPort" ,
+ "name":"sc",
+ "isLocal":true,
+ "portNumber":"0"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:InternalComponent" ,
+ "name":"SensAppAdmin",
+"resources": [
+{ "eClass":"net.cloudml.core:Resource" ,
+ "name":"sensAppAdminWar",
+ "downloadCommand":"wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sensappAdmin/SensAppGUI.tar; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/startsensappgui.sh ; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/sensappgui.sh ; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sensappAdmin/localTopology.json; wget http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sources.list; sudo mv sources.list /etc/apt/sources.list",
+ "installCommand":"cd ~; sudo bash sensappgui.sh",
+ "startCommand":"cd ~; sudo bash startsensappgui.sh"}
+]
+,
+"requiredPorts": [
+{ "eClass":"net.cloudml.core:RequiredPort" ,
+ "name":"scRequired",
+ "isLocal":true,
+ "portNumber":"0",
+ "isMandatory":true}
+,
+{ "eClass":"net.cloudml.core:RequiredPort" ,
+ "name":"restRequired",
+ "isLocal":false,
+ "portNumber":"8080",
+ "isMandatory":true}
+]
+}
+]
+,
+"relationships": [
+{ "eClass":"net.cloudml.core:Relationship" ,
+ "name":"SensAppSC",
+ "requiredPort":"components[SensApp]/requiredPorts[scRequired]",
+ "providedPort":"components[JettySC]/providedPorts[sc]"}
+,
+{ "eClass":"net.cloudml.core:Relationship" ,
+ "name":"SensAppMongoDB",
+ "requiredPort":"components[SensApp]/requiredPorts[mongoDBRequired]",
+ "providedPort":"components[mongoDB]/providedPorts[mongoDB]"}
+,
+{ "eClass":"net.cloudml.core:Relationship" ,
+ "name":"SensAppAdminSensApp",
+ "requiredPort":"components[SensAppAdmin]/requiredPorts[restRequired]",
+ "providedPort":"components[SensApp]/providedPorts[rest]",
+"requiredPortResource":{ "eClass":"net.cloudml.core:Resource" ,
+ "name":"client",
+ "downloadCommand":"wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/configuresensappgui.sh",
+ "installCommand":"cd ~; sudo bash configuresensappgui.sh"}
+}
+,
+{ "eClass":"net.cloudml.core:Relationship" ,
+ "name":"SensAppAdminSC",
+ "requiredPort":"components[SensAppAdmin]/requiredPorts[scRequired]",
+ "providedPort":"components[JettySC]/providedPorts[sc]"}
+]
+,
+"componentInstances": [
+{ "eClass":"net.cloudml.core:InternalComponentInstance" ,
+ "name":"jettySC1",
+ "type":"components[JettySC]",
+ "destination":"vmInstances[sensapp-ML1]",
+"providedPortInstances": [
+{ "eClass":"net.cloudml.core:ProvidedPortInstance" ,
+ "name":"sc1",
+ "type":"components[JettySC]/providedPorts[sc]"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:InternalComponentInstance" ,
+ "name":"sensApp1",
+ "type":"components[SensApp]",
+ "destination":"vmInstances[sensapp-ML1]",
+"providedPortInstances": [
+{ "eClass":"net.cloudml.core:ProvidedPortInstance" ,
+ "name":"rest1",
+ "type":"components[SensApp]/providedPorts[rest]"}
+]
+,
+"requiredPortInstances": [
+{ "eClass":"net.cloudml.core:RequiredPortInstance" ,
+ "name":"scRequired1",
+ "type":"components[SensApp]/requiredPorts[scRequired]"}
+,
+{ "eClass":"net.cloudml.core:RequiredPortInstance" ,
+ "name":"mongoDBRequired1",
+ "type":"components[SensApp]/requiredPorts[mongoDBRequired]"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:InternalComponentInstance" ,
+ "name":"mongoDB1",
+ "type":"components[mongoDB]",
+ "destination":"vmInstances[sensapp-ML1]",
+"providedPortInstances": [
+{ "eClass":"net.cloudml.core:ProvidedPortInstance" ,
+ "name":"mongoDB1",
+ "type":"components[mongoDB]/providedPorts[mongoDB]"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:InternalComponentInstance" ,
+ "name":"jettySC2",
+ "type":"components[JettySC]",
+ "destination":"vmInstances[sensapp-SL1]",
+"providedPortInstances": [
+{ "eClass":"net.cloudml.core:ProvidedPortInstance" ,
+ "name":"sc2",
+ "type":"components[JettySC]/providedPorts[sc]"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:InternalComponentInstance" ,
+ "name":"sensAppAdmin1",
+ "type":"components[SensAppAdmin]",
+ "destination":"vmInstances[sensapp-SL1]",
+"requiredPortInstances": [
+{ "eClass":"net.cloudml.core:RequiredPortInstance" ,
+ "name":"scRequired2",
+ "type":"components[SensAppAdmin]/requiredPorts[scRequired]"}
+,
+{ "eClass":"net.cloudml.core:RequiredPortInstance" ,
+ "name":"restRequired1",
+ "type":"components[SensAppAdmin]/requiredPorts[restRequired]"}
+]
+}
+]
+,
+"relationshipInstances": [
+{ "eClass":"net.cloudml.core:RelationshipInstance" ,
+ "name":"sensAppSC1",
+ "type":"relationships[SensAppSC]",
+ "requiredPortInstance":"componentInstances[sensApp1]/requiredPortInstances[scRequired1]",
+ "providedPortInstance":"componentInstances[jettySC1]/providedPortInstances[sc1]"}
+,
+{ "eClass":"net.cloudml.core:RelationshipInstance" ,
+ "name":"sensAppAdminSensApp1",
+ "type":"relationships[SensAppAdminSensApp]",
+ "requiredPortInstance":"componentInstances[sensAppAdmin1]/requiredPortInstances[restRequired1]",
+ "providedPortInstance":"componentInstances[sensApp1]/providedPortInstances[rest1]"}
+,
+{ "eClass":"net.cloudml.core:RelationshipInstance" ,
+ "name":"sensAppAdminSC1",
+ "type":"relationships[SensAppAdminSC]",
+ "requiredPortInstance":"componentInstances[sensAppAdmin1]/requiredPortInstances[scRequired2]",
+ "providedPortInstance":"componentInstances[jettySC2]/providedPortInstances[sc2]"}
+,
+{ "eClass":"net.cloudml.core:RelationshipInstance" ,
+ "name":"sensAppMongoDB1",
+ "type":"relationships[SensAppMongoDB]",
+ "requiredPortInstance":"componentInstances[sensApp1]/requiredPortInstances[mongoDBRequired1]",
+ "providedPortInstance":"componentInstances[mongoDB1]/providedPortInstances[mongoDB1]"}
+]
+,
+"vmInstances": [
+{ "eClass":"net.cloudml.core:VMInstance" ,
+ "name":"sensapp-ML1",
+ "type":"vms[ML]"}
+,
+{ "eClass":"net.cloudml.core:VMInstance" ,
+ "name":"sensapp-SL1",
+ "type":"vms[SL]"}
+]
+}

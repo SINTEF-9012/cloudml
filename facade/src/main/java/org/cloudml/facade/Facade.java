@@ -176,7 +176,7 @@ class Facade implements CloudML, CommandHandler {
 	 * @param user the user associated
 	 */
 	public void executeOnVM(ComponentInstance a, String command, String user) {//TODO: use the connector factory
-		VM ownerVM = a.getDestination().getType();
+		VM ownerVM = (VM)a.getDestination().getType();//TODO: generics
 		Provider p = ownerVM.getProvider();
 		JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
 				p.getPasswd());
@@ -286,17 +286,17 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			VMInstance ownerVM=null;
-			for(VMInstance ni : deploy.getVMInstances()){
+            ExternalComponentInstance ownerVM=null;
+			for(ExternalComponentInstance ni : deploy.getExternalComponentInstances()){
 				if(ni.getName().equals(command.getArtifactId()))
 					ownerVM=ni;
 			}
-			if(ownerVM != null){
-				Provider p = ownerVM.getType().getProvider();
+			if(ownerVM != null && ownerVM instanceof VMInstance){
+				Provider p = ((VMInstance)ownerVM).getType().getProvider();
 				JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
 				ComputeMetadata c = jc.getVMByName(command.getArtifactId());
 				jc.uploadFile(command.getLocalPath(), command.getRemotePath(), c.getId(), "ubuntu",
-						ownerVM.getType().getPrivateKey());
+                        ((VM)ownerVM.getType()).getPrivateKey());
 			}else{
 				final String text = "There is no VM with this ID!";
 				final Message message = new Message(command, Category.ERROR, text);
@@ -536,13 +536,13 @@ class Facade implements CloudML, CommandHandler {
 	/**
 	 * Search for a VM instance whose name matches a given id
 	 *
-	 * @param id of the VM instance
-	 * @return the VM instance with the given id or null
+	 * @param id of the vm instance
+	 * @return the vm instance with the given id or null
 	 */
 	private VMInstance findVMInstanceById(final String id) {
-		for (VMInstance ni : deploy.getVMInstances()) {
-			if (ni.getName().equals(id)) {
-				return ni;
+		for (ExternalComponentInstance ni : deploy.getExternalComponentInstances()) {
+			if (ni.getName().equals(id) && ni instanceof VMInstance) {
+				return (VMInstance)ni;
 			}
 		}
 		return null;

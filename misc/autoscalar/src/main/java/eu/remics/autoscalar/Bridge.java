@@ -31,10 +31,7 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
-import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.CloudMLModel;
-import org.cloudml.core.VM;
-import org.cloudml.core.VMInstance;
+import org.cloudml.core.*;
 
 class Bridge {
 
@@ -48,10 +45,11 @@ class Bridge {
 
             Map<String, VM> groups = new HashMap<String, VM>();
 
-            for (VM n : model.getVms().values()) {
-                final String groupName = n.getProperty("groupName");
-                System.out.println(n.getName() + ": " + groupName);
-                if (groupName != null) {
+            for (ExternalComponent en : model.getExternalComponents().values()) {
+                final String groupName = en.getProperty("groupName");
+                System.out.println(en.getName() + ": " + groupName);
+                if (groupName != null && en instanceof VM) {
+                    VM n=(VM)en;
                     final String minServer = (n.getProperty("minServer") != null) ? n.getProperty("minServer") : "1";
                     final String maxServer = (n.getProperty("maxServer") != null) ? n.getProperty("maxServer") : "3";
                     final String deltaUp = (n.getProperty("deltaUp") != null) ? n.getProperty("deltaUp") : "1";
@@ -77,16 +75,19 @@ class Bridge {
 
             config = config.replace("<!-- GROUP -->", "");
 
-            for (VMInstance ni : model.getVMInstances()) {
-                final String scalingGroup = (ni.getType().getProperty("groupName") != null) ? ni.getType().getProperty("groupName") : "fixed";;
+            for (ExternalComponentInstance eni : model.getExternalComponentInstances()) {
+                if(eni instanceof VMInstance){
+                    VMInstance ni=(VMInstance)eni;
+                    final String scalingGroup = (ni.getType().getProperty("groupName") != null) ? ni.getType().getProperty("groupName") : "fixed";;
 
-                String newComponent = new String(component);
-                newComponent = newComponent.replace("<!--ID-->", ni.getName());
-                newComponent = newComponent.replace("<!--IP-->", (!(ni.getPublicAddress() == null || ni.getPublicAddress().equals(""))) ? ni.getPublicAddress() : "to be populated when resource has been booked!");
-                newComponent = newComponent.replace("<!--TYPE-->", (ni.getProperty("ProviderInstanceType") != null ) ? ni.getProperty("ProviderInstanceType") : "to be populated when resource has been booked!");
-                newComponent = newComponent.replace("<!--GROUP-->", scalingGroup);
+                    String newComponent = new String(component);
+                    newComponent = newComponent.replace("<!--ID-->", ni.getName());
+                    newComponent = newComponent.replace("<!--IP-->", (!(ni.getPublicAddress() == null || ni.getPublicAddress().equals(""))) ? ni.getPublicAddress() : "to be populated when resource has been booked!");
+                    newComponent = newComponent.replace("<!--TYPE-->", (ni.getProperty("ProviderInstanceType") != null ) ? ni.getProperty("ProviderInstanceType") : "to be populated when resource has been booked!");
+                    newComponent = newComponent.replace("<!--GROUP-->", scalingGroup);
 
-                config = config.replace("<!-- COMPONENT -->", "<!-- COMPONENT -->\n" + newComponent + "\n");
+                    config = config.replace("<!-- COMPONENT -->", "<!-- COMPONENT -->\n" + newComponent + "\n");
+                }
             }
 
             config = config.replace("<!-- COMPONENT -->", "");

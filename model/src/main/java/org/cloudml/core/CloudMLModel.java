@@ -32,8 +32,8 @@ public class CloudMLModel extends CloudMLElementWithProperties {
     private Map<String, Component> components = new HashMap<String, Component>();
     private List<ComponentInstance> componentInstances = new LinkedList<ComponentInstance>();
 
-    private Map<String, VM> vms = new HashMap<String, VM>();
-    private List<VMInstance> VMInstances = new LinkedList<VMInstance>();
+    private Map<String, ExternalComponent> externalComponents = new HashMap<String, ExternalComponent>();
+    private List<ExternalComponentInstance> externalComponentInstances = new LinkedList<ExternalComponentInstance>();
     
     private List<Provider> providers = new LinkedList<Provider>();
 
@@ -50,23 +50,23 @@ public class CloudMLModel extends CloudMLElementWithProperties {
     
     public CloudMLModel(String name, List<Property> properties,
                         Map<String, Component> components, List<ComponentInstance> componentInstances,
-                        Map<String, VM> vms, List<VMInstance> VMInstances, List<Provider> providers) {
+                        Map<String, ExternalComponent> externalComponents, List<ExternalComponentInstance> externalComponentInstances, List<Provider> providers) {
         super(name, properties);
         this.components = components;
         this.componentInstances = componentInstances;
-        this.VMInstances = VMInstances;
-        this.vms = vms;
+        this.externalComponentInstances = externalComponentInstances;
+        this.externalComponents = externalComponents;
         this.providers = providers;
     }
     
     public CloudMLModel(String name, List<Property> properties,
                         Map<String, Component> components, List<ComponentInstance> componentInstances,
-                        Map<String, VM> vms, List<VMInstance> VMInstances, List<Provider> providers, Map<String, Relationship> relationships, List<RelationshipInstance> relationshipInstances) {
+                        Map<String, ExternalComponent> externalComponents, List<ExternalComponentInstance> externalComponentInstances, List<Provider> providers, Map<String, Relationship> relationships, List<RelationshipInstance> relationshipInstances) {
         super(name, properties);
         this.components = components;
         this.componentInstances = componentInstances;
-        this.VMInstances = VMInstances;
-        this.vms = vms;
+        this.externalComponentInstances = externalComponentInstances;
+        this.externalComponents = externalComponents;
         this.providers = providers;
         this.relationshipInstances = relationshipInstances;
         this.relationships = relationships;
@@ -88,20 +88,20 @@ public class CloudMLModel extends CloudMLElementWithProperties {
         this.components = components;
     }
 
-    public List<VMInstance> getVMInstances() {
-        return VMInstances;
+    public List<ExternalComponentInstance> getExternalComponentInstances() {
+        return externalComponentInstances;
     }
 
-    public  Map<String, VM> getVms() {
-        return vms;
+    public  Map<String, ExternalComponent> getExternalComponents() {
+        return externalComponents;
     }
 
-    public void setVMInstances(List<VMInstance> VMInstances) {
-        this.VMInstances = VMInstances;
+    public void setExternalComponentInstances(List<ExternalComponentInstance> externalComponentInstances) {
+        this.externalComponentInstances = externalComponentInstances;
     }
 
-    public void setVms(Map<String, VM> vms) {
-        this.vms = vms;
+    public void setExternalComponents(Map<String, ExternalComponent> externalComponents) {
+        this.externalComponents = externalComponents;
     }
     
     public List<Provider> getProviders() {
@@ -141,7 +141,7 @@ public class CloudMLModel extends CloudMLElementWithProperties {
         if (other instanceof CloudMLModel) {
             CloudMLModel otherDepModel = (CloudMLModel) other;
             return components.equals(otherDepModel.components) && componentInstances.equals(otherDepModel.componentInstances)
-            		&& vms.equals(otherDepModel.vms) && VMInstances.equals(otherDepModel.VMInstances)
+            		&& externalComponents.equals(otherDepModel.externalComponents) && externalComponentInstances.equals(otherDepModel.externalComponentInstances)
             		&& relationships.equals(otherDepModel.relationships) && relationshipInstances.equals(otherDepModel.relationshipInstances);
         } else {
             return false;
@@ -173,12 +173,12 @@ public class CloudMLModel extends CloudMLElementWithProperties {
         }
         builder.append("}\n");
         builder.append("- VM types: {\n");
-        for(VM nt : vms.values()) {
+        for(ExternalComponent nt : externalComponents.values()) {
             builder.append("  - " + nt + "\n");
         }
         builder.append("}\n");
         builder.append("- VM instances: {\n");
-        for(VMInstance ni : VMInstances) {
+        for(ExternalComponentInstance ni : externalComponentInstances) {
             builder.append("  - " + ni + "\n");
         }
         builder.append("}\n");

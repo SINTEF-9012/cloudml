@@ -17,7 +17,6 @@
 
   <modules>
     <module>shell</module>
-	<module>lightshell</module>
     <module>graph</module>
 	<module>webeditor</module>
     <module>websocket</module>

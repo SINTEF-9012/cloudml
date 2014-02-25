@@ -28,30 +28,21 @@ import java.util.List;
 /**
  * Created by Nicolas Ferry on 13.02.14.
  */
-public abstract class ComponentInstance extends CloudMLElementWithProperties{
+public abstract class ComponentInstance<T extends Component> extends CloudMLElementWithProperties{
 
     protected VMInstance destination = null;
-    protected Component type;
+    protected T type;
     private List<ProvidedPortInstance> providedPortInstances = new LinkedList<ProvidedPortInstance>();
-    protected State status;
 
-    public enum State{
-        uninstalled,
-        installed,
-        configured,
-        running,
-        error,
-    }
 
     public ComponentInstance(){}
 
-    public ComponentInstance(String name, Component type) {
+    public ComponentInstance(String name, T type) {
         super(name);
         this.type=type;
-        this.status=State.uninstalled;
     }
 
-    public ComponentInstance(String name, List<Property> properties, Component type) {
+    public ComponentInstance(String name, List<Property> properties, T type) {
         super(name,properties);
         this.type=type;
     }
@@ -60,13 +51,13 @@ public abstract class ComponentInstance extends CloudMLElementWithProperties{
         super(name,properties);
         this.providedPortInstances=providedPortInstances;
     }
-    public ComponentInstance(String name, InternalComponent type, VMInstance destination) {
+    public ComponentInstance(String name, T type, VMInstance destination) {
         super(name);
         this.type=type;
         this.destination = destination;
     }
 
-    public ComponentInstance(String name, List<Property> properties, InternalComponent type, VMInstance destination) {
+    public ComponentInstance(String name, List<Property> properties, T type, VMInstance destination) {
         super(name,properties);
         this.type=type;
         this.destination = destination;
@@ -76,7 +67,7 @@ public abstract class ComponentInstance extends CloudMLElementWithProperties{
         return this.providedPortInstances;
     }
 
-    public Component getType() {
+    public T getType() {
         return this.type;
     }
 
@@ -84,7 +75,7 @@ public abstract class ComponentInstance extends CloudMLElementWithProperties{
         this.providedPortInstances = providedPortInstances;
     }
 
-    public void setType(Component type) {
+    public void setType(T type) {
         this.type = type;
     }
 
@@ -95,19 +86,6 @@ public abstract class ComponentInstance extends CloudMLElementWithProperties{
     public VMInstance getDestination() {
         return destination;
     }
-
-    public State getStatus(){
-        return this.status;
-    }
-
-    public void setStatus(State s) {
-        this.status = s;
-    }
-
-    public void setStatus(String s) {
-        this.status = State.valueOf(s);
-    }
-
 
     @Override
     public String toString() {

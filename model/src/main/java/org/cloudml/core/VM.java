@@ -24,9 +24,7 @@ package org.cloudml.core;
 
 import java.util.List;
 
-public class VM extends CloudMLElementWithProperties {
-
-	private Provider provider;
+public class VM extends ExternalComponent {
 
 	public VM() {
 	}
@@ -36,8 +34,7 @@ public class VM extends CloudMLElementWithProperties {
 	}
 
 	public VM(String name, Provider provider) {
-		super(name);
-		this.provider = provider;
+		super(name,provider);
 	}
 
 	public VM(String name, List<Property> properties) {
@@ -45,23 +42,14 @@ public class VM extends CloudMLElementWithProperties {
 	}
 
 	public VM(String name, List<Property> properties, Provider provider) {
-		super(name, properties);
-		this.provider = provider;
-	}
-
-	public Provider getProvider() {
-		return provider;
-	}
-
-	public void setProvider(Provider p) {
-		provider = p;
+		super(name, properties,provider);
 	}
 
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof VM) {
 			VM otherVM = (VM) other;
-			return name.equals(otherVM.getName()) && provider.equals(otherVM.getProvider());
+			return name.equals(otherVM.getName()) && this.provider.equals(otherVM.getProvider());
 		} else {
 			return false;
 		}

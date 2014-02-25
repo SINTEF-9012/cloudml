@@ -24,7 +24,7 @@ package org.cloudml.core;
 
 
 /**
- * Relationship between to InternalComponent
+ * Relationship between two InternalComponents
  * @author Nicolas Ferry
  *
  */

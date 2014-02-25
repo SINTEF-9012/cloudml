@@ -1,128 +1,128 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cloudml</groupId>
-	<artifactId>root</artifactId>
-	<version>1.4-SNAPSHOT</version>
-	<packaging>pom</packaging>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.cloudml</groupId>
+    <artifactId>root</artifactId>
+    <version>1.4-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>CloudML :: Root</name>
-	<description>Transparent deployment of cloud-based application</description>
-	<inceptionYear>2012</inceptionYear>
-	<url>http://cloudml.org</url>
+    <name>CloudML :: Root</name>
+    <description>Transparent deployment of cloud-based application</description>
+    <inceptionYear>2012</inceptionYear>
+    <url>http://cloudml.org</url>
 
-	<organization>
-		<name>SINTEF ICT</name>
-		<url>http://www.sintef.no</url>
-	</organization>
+    <organization>
+        <name>SINTEF ICT</name>
+        <url>http://www.sintef.no</url>
+    </organization>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<maven.compiler.source>1.6</maven.compiler.source>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.6</maven.compiler.source>
+    </properties>
 
-	<modules>
-		<module>model</module>
-		<module>codecs</module>
-		<module>deployer</module>
-		<module>facade</module>
-		<module>ui</module>
-		<module>misc</module>
-	</modules>
+    <modules>
+        <module>model</module>
+        <module>codecs</module>
+        <module>deployer</module>
+        <module>facade</module>
+        <module>ui</module>
+        <module>misc</module>
+    </modules>
 
-	<build>
-		<plugins>
-			<!-- Licence headers -->
-			<plugin>
-				<inherited>false</inherited>
-				<groupId>com.mycila.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.9.0</version>
-				<configuration>
-					<strictCheck>true</strictCheck>
-					<header>${project.basedir}/lgpl_header.txt</header>
-					<failIfMissing>true</failIfMissing>
-					<aggregate>true</aggregate>
-					<properties>
-						<projectname>CloudML</projectname>
-						<projecturl>http://cloudml.org</projecturl>
-						<organization>SINTEF ICT</organization>
-						<owner>Franck Chauvel</owner>
-						<year>${project.inceptionYear}</year>
-						<email>franck.chauvel@sintef.no</email>
-						<artid>${project.artifactId}</artid>
-					</properties>
-					<mapping>
-						<scala>JAVADOC_STYLE</scala>
-						<conf>SCRIPT_STYLE</conf>
-					</mapping>
-					<excludes>
-						<exclude>.gitignore</exclude>
-						<exclude>.cache</exclude>
-						<exclude>**/site.xml</exclude>
-						<exclude>*.log</exclude>
-						<exclude>*.srt</exclude>
-						<exclude>*.csv</exclude>
-						<exclude>*.txt</exclude>
-						<exclude>*.json</exclude>
-						<exclude>.idea/**</exclude>
-						<exclude>**/src/main/resources/lgpl_header.txt</exclude>
-						<exclude>**/src/test/resources/**</exclude>
-						<exclude>**/src/test/data/**</exclude>
-					</excludes>
-				</configuration>
-				<executions>
-					<execution>
-						<id>check-headers</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+    <build>
+        <plugins>
+            <!-- Licence headers -->
+            <plugin>
+                <inherited>false</inherited>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.9.0</version>
+                <configuration>
+                    <strictCheck>true</strictCheck>
+                    <header>${project.basedir}/lgpl_header.txt</header>
+                    <failIfMissing>true</failIfMissing>
+                    <aggregate>true</aggregate>
+                    <properties>
+                        <projectname>CloudML</projectname>
+                        <projecturl>http://cloudml.org</projecturl>
+                        <organization>SINTEF ICT</organization>
+                        <owner>Franck Chauvel</owner>
+                        <year>${project.inceptionYear}</year>
+                        <email>franck.chauvel@sintef.no</email>
+                        <artid>${project.artifactId}</artid>
+                    </properties>
+                    <mapping>
+                        <scala>JAVADOC_STYLE</scala>
+                        <conf>SCRIPT_STYLE</conf>
+                    </mapping>
+                    <excludes>
+                        <exclude>.gitignore</exclude>
+                        <exclude>.cache</exclude>
+                        <exclude>**/site.xml</exclude>
+                        <exclude>*.log</exclude>
+                        <exclude>*.srt</exclude>
+                        <exclude>*.csv</exclude>
+                        <exclude>*.txt</exclude>
+                        <exclude>*.json</exclude>
+                        <exclude>.idea/**</exclude>
+                        <exclude>**/src/main/resources/lgpl_header.txt</exclude>
+                        <exclude>**/src/test/resources/**</exclude>
+                        <exclude>**/src/test/data/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<tagBase>https://svn.apache.org/repos/asf/maven/components/releases</tagBase>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <tagBase>https://svn.apache.org/repos/asf/maven/components/releases</tagBase>
+                </configuration>
+            </plugin>
 
 
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.2</version>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
+        </plugins>
+    </build>
 
-	<distributionManagement>
+    <distributionManagement>
 
-		<repository>
-			<id>thingml-release</id>
-			<name>thingml-release</name>
-			<url>http://maven.thingml.org/archiva/repository/thingml-release</url>
-		</repository>
+        <repository>
+            <id>thingml-release</id>
+            <name>thingml-release</name>
+            <url>http://maven.thingml.org/archiva/repository/thingml-release</url>
+        </repository>
 
-		<snapshotRepository>
-			<id>thingml-snapshot</id>
-			<name>thingml-snapshot</name>
-			<url>http://maven.thingml.org/archiva/repository/thingml-snapshot</url>
-		</snapshotRepository>
+        <snapshotRepository>
+            <id>thingml-snapshot</id>
+            <name>thingml-snapshot</name>
+            <url>http://maven.thingml.org/archiva/repository/thingml-snapshot</url>
+        </snapshotRepository>
 
-	</distributionManagement>
+    </distributionManagement>
 
-	<scm>
-		<connection>scm:git:git@github.com:SINTEF-9012/cloudml.git</connection>
-		<url>scm:git:git@github.com:SINTEF-9012/cloudml.git</url>
-		<developerConnection>scm:git:git@github.com:SINTEF-9012/cloudml.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
+    <scm>
+        <connection>scm:git:git@github.com:SINTEF-9012/cloudml.git</connection>
+        <url>scm:git:git@github.com:SINTEF-9012/cloudml.git</url>
+        <developerConnection>scm:git:git@github.com:SINTEF-9012/cloudml.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
 </project>

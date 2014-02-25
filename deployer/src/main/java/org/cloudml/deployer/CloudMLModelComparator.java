@@ -42,9 +42,9 @@ public class CloudMLModelComparator {
 	private static final Logger journal = Logger.getLogger(CloudMLModelComparator.class.getName());
 
 	//Attributes related to model comparison
-	private Map<VMInstance,VMInstance> matchingVMs = new Hashtable<VMInstance,VMInstance>();
-	private List<VMInstance> removedVMs = new ArrayList<VMInstance>();
-	private List<VMInstance> addedVMs = new ArrayList<VMInstance>();
+	private Map<ExternalComponentInstance,ExternalComponentInstance> matchingVMs = new Hashtable<ExternalComponentInstance,ExternalComponentInstance>();
+	private List<ExternalComponentInstance> removedVMs = new ArrayList<ExternalComponentInstance>();
+	private List<ExternalComponentInstance> addedVMs = new ArrayList<ExternalComponentInstance>();
 
 
 	private Map<ComponentInstance,ComponentInstance> matchingComponents = new Hashtable<ComponentInstance,ComponentInstance>();
@@ -108,8 +108,8 @@ public class CloudMLModelComparator {
 	public void compareVMs(){
 		journal.log(Level.INFO, ">> Comparing vms ...");
 		Boolean match=false;
-		for(VMInstance ni : currentDM.getVMInstances()){
-			secondloop:{ for(VMInstance ni2 : targetDM.getVMInstances()){
+		for(ExternalComponentInstance ni : currentDM.getExternalComponentInstances()){
+			secondloop:{ for(ExternalComponentInstance ni2 : targetDM.getExternalComponentInstances()){
 				match=ni.equals(ni2);
 				if(ni.equals(ni2)){
 					matchingVMs.put(ni, ni2);
@@ -124,14 +124,14 @@ public class CloudMLModelComparator {
 		addVMs();
 	}
 
-	private void removeVM(VMInstance ni){
+	private void removeVM(ExternalComponentInstance ni){
 		removedVMs.add(ni);
 		//create action
 
 	}
 
 	private void addVMs(){
-		addedVMs =  new ArrayList<VMInstance>(targetDM.getVMInstances());
+		addedVMs =  new ArrayList<ExternalComponentInstance>(targetDM.getExternalComponentInstances());
 		addedVMs.removeAll(matchingVMs.values());
 	}
 
@@ -179,7 +179,8 @@ public class CloudMLModelComparator {
 			if(i >= 0){
 				ComponentInstance a=currentDM.getComponentInstances().get(i);
 				int j=a.getProvidedPortInstances().indexOf(ni.getProvidedPortInstance());
-				ni.setProvidedPortInstance(a.getProvidedPortInstances().get(j));
+                List<ProvidedPortInstance> l= a.getProvidedPortInstances();
+				ni.setProvidedPortInstance(l.get(j));
 			}
 		}
 	}
@@ -243,11 +244,11 @@ public class CloudMLModelComparator {
 		return this.addedComponents;
 	}
 
-	public List<VMInstance> getRemovedVMs(){
+	public List<ExternalComponentInstance> getRemovedVMs(){
 		return this.removedVMs;
 	}
 
-	public List<VMInstance> getAddedVMs(){
+	public List<ExternalComponentInstance> getAddedVMs(){
 		return this.addedVMs;
 	}
 
@@ -267,7 +268,7 @@ public class CloudMLModelComparator {
 		return this.matchingComponents;
 	}
 
-	public Map<VMInstance,VMInstance> getMatchingVMs(){
+	public Map<ExternalComponentInstance,ExternalComponentInstance> getMatchingVMs(){
 		return this.matchingVMs;
 	}
 }
