@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.cloudml.codecs.JsonCodec;
@@ -39,6 +40,10 @@ import org.cloudml.core.CloudMLModel;
 public class CodecsLibrary {
 
     private final HashMap<String, Codec> codecs;
+
+    public Set<String> getExtensions(){
+        return codecs.keySet();
+    }
 
     public CodecsLibrary() {
         codecs = new HashMap<String, Codec>();
@@ -72,7 +77,7 @@ public class CodecsLibrary {
         else {
             throw new IllegalArgumentException("Cannot select codec on file without extension");
         }
-        return extension;
+        return extension.toLowerCase();
     }
 
     private void checkModel(CloudMLModel model) throws IllegalArgumentException {

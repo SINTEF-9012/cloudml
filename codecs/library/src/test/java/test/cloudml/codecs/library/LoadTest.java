@@ -38,11 +38,28 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class LoadTest extends TestCase {
 
+    private static final String TEST_RESOURCE_PATH="src/test/resources/";
+
     @Test(expected = FileNotFoundException.class)
     public void testLoadUnexistingFile() throws FileNotFoundException {
         CodecsLibrary library = new CodecsLibrary();
         String fileName = "plop.json";
         library.load(fileName);
+    }
+
+    @Test
+    public void testLoadUpperCaseFileName() throws FileNotFoundException {
+        CodecsLibrary library = new CodecsLibrary();
+        String fileName = TEST_RESOURCE_PATH+"sensapp2.JSON";
+        CloudMLModel model=library.load(fileName);
+        assertFalse(model.getComponentInstances().isEmpty());
+        assertFalse(model.getComponents().isEmpty());
+        assertFalse(model.getExternalComponentInstances().isEmpty());
+        assertFalse(model.getExternalComponents().isEmpty());
+        assertTrue(model.getClouds().isEmpty());
+        assertFalse(model.getRelationshipInstances().isEmpty());
+        assertFalse(model.getRelationships().isEmpty());
+        assertFalse(model.getProviders().isEmpty());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -55,7 +72,7 @@ public class LoadTest extends TestCase {
     @Test
     public void testLoadEmptyFile() throws FileNotFoundException {
         CodecsLibrary library = new CodecsLibrary();
-        String fileName = "src/test/resources/empty.json";
+        String fileName = TEST_RESOURCE_PATH+"empty.json";
         CloudMLModel model = library.load(fileName);
         assertTrue(model.getComponentInstances().isEmpty());
         assertTrue(model.getComponents().isEmpty());
@@ -74,14 +91,4 @@ public class LoadTest extends TestCase {
         library.load(fileName);
     }
 
-    // TODO: we shall be able to compare two models
-    @Ignore
-    @Test
-    public void testCompareSensApp() throws FileNotFoundException {
-        CodecsLibrary library = new CodecsLibrary();
-        String fileName = "src/test/resources/sensapp.json";
-        CloudMLModel sensapp = library.load(fileName);
-        CloudMLModel reference = new SampleModels().buildSensApp();
-        assertEquals(reference, sensapp);
-    }
 }

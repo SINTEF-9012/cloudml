@@ -96,6 +96,17 @@ public class SaveAsTest extends TestCase {
     }
 
     @Test
+    public void testSaveAsWithUpperCase() throws FileNotFoundException {
+        String fileName = "test.JSON";
+        CloudMLModel model = new CloudMLModel();
+        CodecsLibrary library = new CodecsLibrary();
+        library.saveAs(model, fileName);
+        File file = new File(fileName);
+        assertTrue(file.exists());
+        assertEquals(EMPTY_FILE_SIZE, file.length());
+    }
+
+    @Test
     public void testGetExtensionWithMultipleExtensions() {
         CodecsLibrary library = new CodecsLibrary();
         String extension = library.getFileExtension("test.pouet.toto");
@@ -107,6 +118,13 @@ public class SaveAsTest extends TestCase {
         CodecsLibrary library = new CodecsLibrary();
         String extension = library.getFileExtension("test....pouet");
         assertEquals(".pouet", extension);
+    }
+
+    @Test
+    public void testGetExtensionWithUpperCase() {
+        CodecsLibrary library = new CodecsLibrary();
+        String extension = library.getFileExtension("test.JSON");
+        assertEquals(".json", extension);
     }
 
     @Test(expected = IllegalArgumentException.class)
