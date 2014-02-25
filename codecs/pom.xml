@@ -18,7 +18,8 @@
 	<module>kmf</module>
   	<module>json</module>
 	<module>xmi</module>
-        <module>jung</module>
+    <module>jung</module>
+	<module>library</module>
   </modules>
 
 </project>
