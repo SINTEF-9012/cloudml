@@ -153,9 +153,21 @@ public class BridgeToPojo {
 
     public void relationshipToPOJO(net.cloudml.core.Relationship kRelationship){
         checkForNull(kRelationship, "Cannot convert null!");
+        RequiredPort rp;
+        ProvidedPort pp;
 
-        RequiredPort rp=requiredPorts.get(((InternalComponent)kRelationship.getRequiredPort().eContainer()).getName() + "_" + kRelationship.getRequiredPort().getName());
-        ProvidedPort pp=providedPorts.get(((Component) kRelationship.getProvidedPort().eContainer()).getName() + "_" + kRelationship.getProvidedPort().getName());
+        if(kRelationship.getProvidedPort() == null &&
+                kRelationship.getProvidedPort().getName() == null &&
+                kRelationship.getProvidedPort().eContainer() == null)
+            throw new IllegalArgumentException("A binding need at least a provided port with a name");
+        else pp=providedPorts.get(((Component) kRelationship.getProvidedPort().eContainer()).getName() + "_" + kRelationship.getProvidedPort().getName());
+
+        if(kRelationship.getRequiredPort() == null &&
+                kRelationship.getRequiredPort().getName() == null &&
+                kRelationship.getRequiredPort().eContainer() == null)
+            throw new IllegalArgumentException("A binding need at least a required port with a name");
+        else rp=requiredPorts.get(((InternalComponent)kRelationship.getRequiredPort().eContainer()).getName() + "_" + kRelationship.getRequiredPort().getName());
+
         Relationship b = new Relationship(rp, pp);
         b.setName(kRelationship.getName());
         if (kRelationship.getRequiredPortResource() != null) {
@@ -283,7 +295,7 @@ public class BridgeToPojo {
                 externalComponentInstanceToPOJO((net.cloudml.core.ExternalComponentInstance)bai);
             }
             if(bai instanceof net.cloudml.core.InternalComponentInstance){
-
+                internalComponentInstanceToPOJO((net.cloudml.core.InternalComponentInstance)bai);
             }
         }
 
