@@ -22,14 +22,16 @@
  */
 package org.cloudml.connectors;
 
+import cloudadapter.Adapter;
 import java.io.File;
 
 import org.cloudml.core.Provider;
 
-/*import eu.cloud4soa.adapter.rest.response.model.Application;
+import eu.cloud4soa.adapter.rest.response.model.Application;
 import eu.cloud4soa.adapter.rest.response.model.Database;
 import eu.cloud4soa.api.datamodel.governance.ApplicationInstance;
 import eu.cloud4soa.api.datamodel.governance.Credentials;
+import eu.cloud4soa.api.datamodel.governance.DatabaseInfo;
 import eu.cloud4soa.api.datamodel.governance.DeployApplicationParameters;
 import eu.cloud4soa.api.datamodel.governance.PaasInstance;
 import eu.cloud4soa.api.datamodel.governance.StartStopCommand;
@@ -37,15 +39,20 @@ import eu.cloud4soa.api.util.exception.adapter.Cloud4SoaException;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule.Paas;
 import eu.cloud4soa.governance.ems.IExecutionManagementService;
-*/
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class Cloud4soaConnector {
 	
-	/*private ApplicationInstance ai;
+    private ApplicationInstance ai;
     private PaasInstance pi;
     private Provider provider;
     private Credentials credentials;
     private IExecutionManagementService ems; 
+    private String platform;
+    
+    private static final Logger journal = Logger.getLogger(Cloud4soaConnector.class.getName());
 	
     public Cloud4soaConnector(Provider provider){
     	ems = new ExecutionManagementServiceModule();
@@ -55,10 +62,27 @@ public class Cloud4soaConnector {
         pi.setName(provider.getName());
     }
     
-    private Application[] listApplications() throws Cloud4SoaException {
-    	String adapterUrl=provider.getProperty("enPoint");
-        return ems.listApplications("adapterUrl", credentials, pi);
+    public Cloud4soaConnector(String apiKey, String securityKey, String account, String platform){
+        credentials = new Credentials(apiKey, securityKey, account);
+        this.platform = platform;
     }
+    
+    public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel){
+        try {
+            String tmp2=Adapter.uploadAndDeployToEnv(platform, warFile,
+                    credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),	
+                    applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml");
+            journal.log(Level.INFO, ">> Created application:" + tmp2);
+        } catch (Cloud4SoaException ex) {
+            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
+//    private Application[] listApplications() throws Cloud4SoaException {
+//    	String adapterUrl=provider.getProperty("enPoint");
+//        return ems.listApplications("adapterUrl", credentials, pi);
+//    }
     
     private void deploy(String name, File warFile) throws Cloud4SoaException {
         DeployApplicationParameters parameters = new DeployApplicationParameters();
@@ -79,29 +103,47 @@ public class Cloud4soaConnector {
     }
 
 
-    private void startStop(StartStopCommand command) throws Cloud4SoaException {
-        ems.startStopApplication("adapterUrl", credentials, pi, ai, command);
-    }
+//    private void startStop(StartStopCommand command) throws Cloud4SoaException {
+//        ems.startStopApplication("adapterUrl", credentials, pi, ai, command);
+//    }
+//    
+//    private Database getDatabaseJob() throws Cloud4SoaException {
+//    	return null;
+////        return ems.getDatabase(ai, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName);
+//    }
+//    
+//    private Database[] listDatabasesJob() throws Cloud4SoaException {
+//    	return null;
+//        
+////        return ems.listDatabases(ai, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY);
+//    }
     
-    private Database getDatabaseJob() throws Cloud4SoaException {
-    	return null;
-//        return ems.getDatabase(ai, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName);
-    }
-    
-    private Database[] listDatabasesJob() throws Cloud4SoaException {
-    	return null;
-        
-//        return ems.listDatabases(ai, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY);
-    }
-    
-    private void createDatabaseJob() throws Cloud4SoaException {
+//    private void createDatabaseJob() throws Cloud4SoaException {
 //        ems.createDatabase(ai, pi, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName, dbuser,
 //                dbpassword, dbtype);
-    }
+//    }
 
-    private void deleteDatabaseJob() throws Cloud4SoaException {
+//    private void deleteDatabaseJob() throws Cloud4SoaException {
 //        ems.deleteDatabase(ai, pi, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName, dbuser,
 //                dbpassword, dbtype);
-    }*/
+ //   }
+    
+      public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password, 
+            Integer allocatedSize, String dbInstanceClass){
+        try {
+            DatabaseInfo dbinfo = Adapter.createDB(platform, credentials.getPublicKey(), credentials.getPrivateKey(),credentials.getAccountName(),
+                    dbInstanceIdentifier, engine, version, "created by cloudml",
+                    dbName, username, password
+            );
+            
+            journal.log(Level.INFO, ">>DB created: "+dbinfo.toString());
+            
+        } catch (Cloud4SoaException ex) {
+            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //Adapter.
+      }
+    
+    
     
 }

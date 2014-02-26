@@ -113,6 +113,30 @@
 			<artifactId>aws-java-sdk</artifactId>
 			<version>1.6.4</version>
 		</dependency>
+                
+                <dependency>
+                    <groupId>eu.modaclouds.cloud4soa</groupId>
+                    <artifactId>api</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </dependency>
+                
+                <dependency>
+                    <groupId>eu.modaclouds.cloud4soa</groupId>
+                    <artifactId>adapter</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </dependency>
+                
+                <dependency>
+                    <groupId>eu.modaclouds.cloud4soa</groupId>
+                    <artifactId>adapter-REST</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </dependency>
+                
+                <dependency>
+                    <groupId>eu.modaclouds.cloud4soa</groupId>
+                    <artifactId>governance-ems</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </dependency>
 
 
 		<!--  cloud4soa 
