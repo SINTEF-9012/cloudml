@@ -22,7 +22,6 @@
  */
 package org.cloudml.codecs;
 
-import net.cloudml.core.VM;
 import org.cloudml.core.*;
 
 import java.util.HashMap;
@@ -34,7 +33,7 @@ import java.util.Map;
  */
 public class BridgeToKmf {
 
-    private Map<String, net.cloudml.core.VM> vms = new HashMap<String, VM>();
+    private Map<String, net.cloudml.core.VM> vms = new HashMap<String, net.cloudml.core.VM>();
     private Map<String, net.cloudml.core.Provider> providers = new HashMap<String, net.cloudml.core.Provider>();
     private Map<String, net.cloudml.core.InternalComponent> internalComponents = new HashMap<String, net.cloudml.core.InternalComponent>();
     private Map<String, net.cloudml.core.RequiredPort> requiredPorts = new HashMap<String, net.cloudml.core.RequiredPort>();
