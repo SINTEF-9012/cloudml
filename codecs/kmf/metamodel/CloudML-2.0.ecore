@@ -27,8 +27,6 @@
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="stopCommand" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="CloudMLModel" eSuperTypes="#//core/CloudMLElementWithProperties">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="vms" upperBound="-1"
-          eType="#//core/VM" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="providers" upperBound="-1"
           eType="#//core/Provider" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
@@ -41,14 +39,10 @@
           eType="#//core/ComponentInstance" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="relationshipInstances"
           upperBound="-1" eType="#//core/RelationshipInstance" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="vmInstances" upperBound="-1"
-          eType="#//core/VMInstance" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="VM" eSuperTypes="#//core/CloudMLElementWithProperties">
+    <eClassifiers xsi:type="ecore:EClass" name="VM" eSuperTypes="#//core/ExternalComponent">
       <eStructuralFeatures xsi:type="ecore:EReference" name="provided" upperBound="-1"
           eType="#//core/VMPort" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="provider" lowerBound="1"
-          eType="#//core/Provider"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="minRam" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="maxRam" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="minCores" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
@@ -106,9 +100,7 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="vmInstances" upperBound="-1"
           eType="#//core/VMInstance" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="VMInstance" eSuperTypes="#//core/CloudMLElementWithProperties">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
-          eType="#//core/VM"/>
+    <eClassifiers xsi:type="ecore:EClass" name="VMInstance" eSuperTypes="#//core/ExternalComponentInstance">
       <eStructuralFeatures xsi:type="ecore:EReference" name="provided" upperBound="-1"
           eType="#//core/VMPortInstance" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="publicAddress" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -144,6 +136,14 @@
           lowerBound="1" eType="#//core/RequiredPortInstance"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="providedPortInstance"
           lowerBound="1" eType="#//core/ProvidedPortInstance"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ExternalComponent" eSuperTypes="#//core/Component">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="provider" eType="#//core/Provider"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="endPoint" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ExternalComponentInstance" eSuperTypes="#//core/ComponentInstance">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="ips" upperBound="-1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>
   </eSubpackages>
 </ecore:EPackage>
