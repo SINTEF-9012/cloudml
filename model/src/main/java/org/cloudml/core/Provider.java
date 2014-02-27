@@ -70,10 +70,9 @@ public class Provider extends CloudMLElementWithProperties {
 
             login = props.getProperty("login");
             passwd = props.getProperty("passwd");
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Provider.class.getName()).log(Level.SEVERE, null, ex);
+
         } catch (IOException ex) {
-            Logger.getLogger(Provider.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Provider.class.getName()).log(Level.SEVERE, "Missing credentials", new Object[]{});
         } finally {
             try {
                 if (in != null) {

@@ -27,7 +27,10 @@ import java.util.List;
 public class RequiredPort extends Port {
 
 	private boolean isMandatory =true;
-	
+
+    public RequiredPort() {
+    }
+
 	public RequiredPort(String name, InternalComponent owner, boolean isLocal) {
         super(name, owner, isLocal);
     }
