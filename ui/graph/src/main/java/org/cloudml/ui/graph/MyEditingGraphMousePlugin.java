@@ -120,7 +120,7 @@ MouseListener, MouseMotionListener {
                             }
                         }//TODO Else
 					}
-					for(ExternalComponent a:dm.getExternalComponents().values()){
+					for(ExternalComponent a:dm.getExternalComponents()){
 						if(a.getName().equals(nodeType) && a instanceof ExternalComponent){
 							VMInstance ai= ((VM)a).instantiates(nodeType + cnt);
 							dm.getExternalComponentInstances().add(ai);

@@ -62,7 +62,7 @@ public class CommandExecutor {
             String[] parsed = modi.split("\\s+");
             if("add".equals(parsed[0])){
                if("in".equals(parsed[4]) && "root".equals(parsed[5]) && "nodeTypes".equals(parsed[6]))
-                   repo.getRoot().getExternalComponents().put(parsed[3], new VM(parsed[3]));
+                   repo.getRoot().getComponents().put(parsed[3], new VM(parsed[3]));
             }
         }
     }
