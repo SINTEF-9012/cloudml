@@ -154,7 +154,6 @@ public class BridgeToKmf {
     public void convertAndAddProvidedPorts(List<ProvidedPort> ports, net.cloudml.core.Component kc){
         checkNull(ports, "cannot iterate on null!");
         for (ProvidedPort pp : ports) {
-            System.out.println("Provided Port: "+pp.getName());
             checkNull(pp, "cannot convert null!");
             net.cloudml.core.ProvidedPort kpp = factory.createProvidedPort();
             kpp.setName(pp.getName());
