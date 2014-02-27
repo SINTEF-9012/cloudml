@@ -45,7 +45,7 @@ class Bridge {
 
             Map<String, VM> groups = new HashMap<String, VM>();
 
-            for (ExternalComponent en : model.getExternalComponents().values()) {
+            for (ExternalComponent en : model.getExternalComponents()) {
                 final String groupName = en.getProperty("groupName");
                 System.out.println(en.getName() + ": " + groupName);
                 if (groupName != null && en instanceof VM) {
