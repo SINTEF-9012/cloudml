@@ -26,10 +26,8 @@ package test.cloudml.codecs.library;
 
 import java.io.FileNotFoundException;
 import junit.framework.TestCase;
-import static junit.framework.TestCase.assertTrue;
 import org.cloudml.codecs.library.CodecsLibrary;
 import org.cloudml.core.CloudMLModel;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

@@ -39,16 +39,16 @@ import org.cloudml.core.CloudMLModel;
  */
 public class CodecsLibrary {
 
-    private final HashMap<String, Codec> codecs;
+    private final HashMap<String, Codec> codecsByExtension;
 
     public Set<String> getExtensions(){
-        return codecs.keySet();
+        return codecsByExtension.keySet();
     }
 
     public CodecsLibrary() {
-        codecs = new HashMap<String, Codec>();
-        codecs.put(".json", new JsonCodec());
-        codecs.put(".xmi", new XmiCodec());
+        codecsByExtension = new HashMap<String, Codec>();
+        codecsByExtension.put(".json", new JsonCodec());
+        codecsByExtension.put(".xmi", new XmiCodec());
     }
 
     /**
@@ -62,7 +62,7 @@ public class CodecsLibrary {
         checkModel(model);
         checkPath(pathToFile);
         String extension = getFileExtension(pathToFile);
-        Codec codec = this.codecs.get(extension);
+        Codec codec = this.codecsByExtension.get(extension);
         checkCodec(codec, extension);
         codec.save(model, new FileOutputStream(pathToFile));
     }
@@ -97,7 +97,7 @@ public class CodecsLibrary {
     public CloudMLModel load(String pathToFile) throws FileNotFoundException {
         checkPath(pathToFile);
         String extension = getFileExtension(pathToFile);
-        Codec codec = this.codecs.get(extension);
+        Codec codec = this.codecsByExtension.get(extension);
         checkCodec(codec, extension);
         CloudMLModel model = (CloudMLModel) codec.load(new FileInputStream(pathToFile));
         if (model == null) {
