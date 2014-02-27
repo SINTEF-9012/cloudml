@@ -23,6 +23,7 @@
 package org.cloudml.codecs;
 
 import org.cloudml.core.*;
+import org.cloudml.core.RequiredPortInstance;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,13 +50,24 @@ public class BridgeToKmf {
 
     public BridgeToKmf(){}
 
-    /**
-     * Complements kElement with the properties (instances of
-     * org.cloudml.property.Property) defined in element
-     *
-     * @param element
-     * @param kElement
-     */
+    public net.cloudml.core.CloudMLModel getKmfModel(){
+        return this.kDeploy;
+    }
+
+    public net.cloudml.core.CloudMLModel toKMF(CloudMLModel deploy) {
+        kDeploy.setName(deploy.getName());
+
+        providersToKmf(deploy.getProviders());
+        externalComponentToKmf(deploy.getExternalComponents());
+        internalComponentsToKmf(deploy.getInternalComponents());
+        relationshipsToKmf(deploy.getRelationships().values());
+
+        externalComponentInstanceToKmf(deploy.getExternalComponentInstances());
+        internalComponentInstancesToKmf(deploy.getInternalComponentInstances());
+        relationshipInstancesToKmf(deploy.getRelationshipInstances());
+        return kDeploy;
+    }
+
     private void initProperties(CloudMLElementWithProperties element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory) {
         for (Property p : element.getProperties()) {
             net.cloudml.core.Property kp = factory.createProperty();
@@ -84,8 +96,13 @@ public class BridgeToKmf {
         }
     }
 
+    public void checkNull(Object obj, String message){
+        if(obj == null)
+            throw new IllegalArgumentException(message);
+    }
 
     public void providersToKmf(List<Provider> providers){
+        checkNull(providers, "Cannot iterate on null!");
         for (Provider p : providers) {
             net.cloudml.core.Provider kProvider = factory.createProvider();
             initProperties(p, kProvider, factory);
@@ -97,9 +114,9 @@ public class BridgeToKmf {
         }
     }
 
-    public void externalComponentToKmf(List<ExternalComponent> ExternalComponents){
-        //TODO: continue cloning and conversion...
-        for (ExternalComponent ec : ExternalComponents) {
+    public void externalComponentToKmf(List<ExternalComponent> externalComponents){
+        checkNull(externalComponents,"Cannot iterate on null!");
+        for (ExternalComponent ec : externalComponents) {
             if(ec instanceof org.cloudml.core.VM){
                 org.cloudml.core.VM vm=(org.cloudml.core.VM)ec;
                 net.cloudml.core.VM kNode = factory.createVM();
@@ -127,100 +144,156 @@ public class BridgeToKmf {
         }
     }
 
-    public void internalComponentToKmf(List<InternalComponent> internalComponents){
-        for (Component ca : internalComponents) {//first pass on the contained elements
-            InternalComponent a=(InternalComponent)ca;
-            net.cloudml.core.InternalComponent ka = factory.createInternalComponent();
-            ka.setName(a.getName());
-            initProperties(a, ka, factory);
-            initResources(a,ka,factory);
-
-            this.internalComponents.put(ka.getName(), ka);
-
-            for (ProvidedPort ap : a.getProvidedPorts()) {//TODO: duplicated code to be rationalized
-                net.cloudml.core.ProvidedPort kap = factory.createProvidedPort();
-                kap.setName(ap.getName());
-                initProperties(ap, kap, factory);
-                kap.setPortNumber(ap.getPortNumber());
-                kap.setIsLocal(ap.getIsLocal());
-                ka.addProvidedPorts(kap);//!
-
-                providedPorts.put(ka.getName() + "_" + kap.getName(), kap);
-            }
-            for (RequiredPort ap : a.getRequiredPorts()) {
-                net.cloudml.core.RequiredPort kap = factory.createRequiredPort();
-                kap.setName(ap.getName());
-                initProperties(ap, kap, factory);
-                kap.setPortNumber(ap.getPortNumber());
-                kap.setIsLocal(ap.getIsLocal());
-                kap.setIsMandatory(ap.getIsMandatory());
-                ka.addRequiredPorts(kap);
-
-                requiredPorts.put(ka.getName() + "_" + kap.getName(), kap);
-            }
-
-            kDeploy.addComponents(ka);
+    public void internalComponentsToKmf(List<InternalComponent> internalComponents){
+        checkNull(internalComponents, "Cannot iterate on null!");
+        for (InternalComponent ic : internalComponents) {//first pass on the contained elements
+            internalComponentToKmf(ic);
         }
     }
 
+    public void convertAndAddProvidedPorts(List<ProvidedPort> ports, net.cloudml.core.Component kc){
+        checkNull(ports, "cannot iterate on null!");
+        for (ProvidedPort pp : ports) {
+            System.out.println("Provided Port: "+pp.getName());
+            checkNull(pp, "cannot convert null!");
+            net.cloudml.core.ProvidedPort kpp = factory.createProvidedPort();
+            kpp.setName(pp.getName());
+            initProperties(pp, kpp, factory);
+            kpp.setPortNumber(pp.getPortNumber());
+            kpp.setIsLocal(pp.getIsLocal());
+            kc.addProvidedPorts(kpp);
+            kpp.setComponent(kc);
 
-    public void relationshipToKmf(Iterable<Relationship> relationships){
-        for (Relationship b : relationships) {
-            net.cloudml.core.Relationship kb = factory.createRelationship();
-            kb.setName(b.getName());
-            kb.setRequiredPort(requiredPorts.get(b.getRequiredPort().getComponent().getName() + "_" + b.getRequiredPort().getName()));
-            kb.setProvidedPort(providedPorts.get(b.getProvidedPort().getComponent().getName() + "_" + b.getProvidedPort().getName()));
-
-            if (b.getClientResource() != null) {
-                net.cloudml.core.Resource cr = factory.createResource();
-                cr.setName(b.getClientResource().getName());
-                if (b.getClientResource().getInstallCommand() != null) {
-                    cr.setInstallCommand(b.getClientResource().getInstallCommand());
-                }
-                if (b.getClientResource().getRetrieveCommand() != null) {
-                    cr.setDownloadCommand(b.getClientResource().getRetrieveCommand());
-                }
-                if (b.getClientResource().getConfigureCommand() != null) {
-                    cr.setConfigureCommand(b.getClientResource().getConfigureCommand());
-                }
-                if (b.getClientResource().getStartCommand() != null) {
-                    cr.setStartCommand(b.getClientResource().getStartCommand());
-                }
-                if (b.getClientResource().getStopCommand() != null) {
-                    cr.setStopCommand(b.getClientResource().getStopCommand());
-                }
-                kb.setRequiredPortResource(cr);
-            }
-
-            if (b.getServerResource() != null) {
-                net.cloudml.core.Resource cr = factory.createResource();
-                cr.setName(b.getServerResource().getName());
-                if (b.getServerResource().getInstallCommand() != null) {
-                    cr.setInstallCommand(b.getServerResource().getInstallCommand());
-                }
-                if (b.getServerResource().getRetrieveCommand() != null) {
-                    cr.setDownloadCommand(b.getServerResource().getRetrieveCommand());
-                }
-                if (b.getServerResource().getConfigureCommand() != null) {
-                    cr.setConfigureCommand(b.getServerResource().getConfigureCommand());
-                }
-                if (b.getServerResource().getStartCommand() != null) {
-                    cr.setStartCommand(b.getServerResource().getStartCommand());
-                }
-                if (b.getServerResource().getStopCommand() != null) {
-                    cr.setStopCommand(b.getServerResource().getStopCommand());
-                }
-                kb.setProvidedPortResource(cr);
-            }
-
-
-            kDeploy.addRelationships(kb);
-            this.relationships.put(kb.getName(), kb);
+            providedPorts.put(calculatePortIdentifier(pp), kpp);
         }
+        assert providedPorts.size() >= ports.size();
+        assert kc.getProvidedPorts().size() == ports.size();
+    }
+
+    public void convertAndAddRequiredPorts(List<RequiredPort> ports, net.cloudml.core.InternalComponent kic){
+        checkNull(ports, "Cannot iterate on null!");
+        for (RequiredPort rp : ports) {
+            checkNull(rp, "cannot convert null!");
+            net.cloudml.core.RequiredPort krp = factory.createRequiredPort();
+            krp.setName(rp.getName());
+            initProperties(rp, krp, factory);
+            krp.setPortNumber(rp.getPortNumber());
+            krp.setIsLocal(rp.getIsLocal());
+            krp.setIsMandatory(rp.getIsMandatory());
+            kic.addRequiredPorts(krp);
+            krp.setComponent(kic);
+
+            requiredPorts.put(calculatePortIdentifier(rp), krp);
+        }
+        assert requiredPorts.size() >= ports.size();
+        assert kic.getRequiredPorts().size() == ports.size();
+    }
+
+
+    public void internalComponentToKmf(InternalComponent internalComponent){
+        checkNull(internalComponent, "Cannot convert null!");
+        net.cloudml.core.InternalComponent kic = factory.createInternalComponent();
+        kic.setName(internalComponent.getName());
+        initProperties(internalComponent, kic, factory);
+        initResources(internalComponent, kic, factory);
+
+        this.internalComponents.put(kic.getName(), kic);
+
+        convertAndAddProvidedPorts(internalComponent.getProvidedPorts(), kic);
+        convertAndAddRequiredPorts(internalComponent.getRequiredPorts(), kic);
+
+        kDeploy.addComponents(kic);
+    }
+
+
+    public void relationshipsToKmf(Iterable<Relationship> relationships){
+        checkNull(relationships, "cannot iterate on null!");
+        for (Relationship relationship : relationships) {
+            relationshipToKmf(relationship);
+        }
+    }
+
+    public String calculatePortIdentifier(Port p){
+        return String.format("%s_%s", p.getComponent().getName(), p.getName());
+    }
+
+    public void checkValidPort(Port p){
+        if(p == null)
+            throw new IllegalArgumentException("Port is null! ");
+        if(p.getName() == null)
+            throw new IllegalArgumentException("Port name is null! "+p.getClass().getName());
+        if(p.getComponent() == null)
+            throw new IllegalArgumentException("Port has no container! "+p.getClass().getName());
+    }
+
+
+    public void relationshipToKmf(Relationship relationship){
+        checkNull(relationship, "cannot convert null");
+        net.cloudml.core.Relationship krelationship = factory.createRelationship();
+
+        krelationship.setName(relationship.getName());
+
+        RequiredPort rp=relationship.getRequiredPort();
+        checkValidPort(rp);
+        krelationship.setRequiredPort(requiredPorts.get(calculatePortIdentifier(rp)));
+        assert krelationship.getRequiredPort() != null;
+
+        ProvidedPort pp=relationship.getProvidedPort();
+        checkValidPort(pp);
+        krelationship.setProvidedPort(providedPorts.get(calculatePortIdentifier(pp)));
+        assert krelationship.getProvidedPort() != null;
+
+        if (relationship.getClientResource() != null) {
+            net.cloudml.core.Resource cr = factory.createResource();
+            cr.setName(relationship.getClientResource().getName());
+            if (relationship.getClientResource().getInstallCommand() != null) {
+                cr.setInstallCommand(relationship.getClientResource().getInstallCommand());
+            }
+            if (relationship.getClientResource().getRetrieveCommand() != null) {
+                cr.setDownloadCommand(relationship.getClientResource().getRetrieveCommand());
+            }
+            if (relationship.getClientResource().getConfigureCommand() != null) {
+                cr.setConfigureCommand(relationship.getClientResource().getConfigureCommand());
+            }
+            if (relationship.getClientResource().getStartCommand() != null) {
+                cr.setStartCommand(relationship.getClientResource().getStartCommand());
+            }
+            if (relationship.getClientResource().getStopCommand() != null) {
+                cr.setStopCommand(relationship.getClientResource().getStopCommand());
+            }
+            krelationship.setRequiredPortResource(cr);
+        }
+
+        if (relationship.getServerResource() != null) {
+            net.cloudml.core.Resource cr = factory.createResource();
+            cr.setName(relationship.getServerResource().getName());
+            if (relationship.getServerResource().getInstallCommand() != null) {
+                cr.setInstallCommand(relationship.getServerResource().getInstallCommand());
+            }
+            if (relationship.getServerResource().getRetrieveCommand() != null) {
+                cr.setDownloadCommand(relationship.getServerResource().getRetrieveCommand());
+            }
+            if (relationship.getServerResource().getConfigureCommand() != null) {
+                cr.setConfigureCommand(relationship.getServerResource().getConfigureCommand());
+            }
+            if (relationship.getServerResource().getStartCommand() != null) {
+                cr.setStartCommand(relationship.getServerResource().getStartCommand());
+            }
+            if (relationship.getServerResource().getStopCommand() != null) {
+                cr.setStopCommand(relationship.getServerResource().getStopCommand());
+            }
+            krelationship.setProvidedPortResource(cr);
+        }
+
+
+        kDeploy.addRelationships(krelationship);
+        this.relationships.put(krelationship.getName(), krelationship);
     }
 
     public void externalComponentInstanceToKmf(List<ExternalComponentInstance> externalComponentInstances){
+        checkNull(externalComponentInstances, "Cannot iterate on null");
         for (ExternalComponentInstance eni : externalComponentInstances) {
+            checkNull(eni, "Cannot convert null");
             if(eni instanceof VMInstance){
                 VMInstance ni=(VMInstance)eni;
                 net.cloudml.core.VMInstance kni = factory.createVMInstance();
@@ -232,69 +305,105 @@ public class BridgeToKmf {
                 VMInstances.put(kni.getName(), kni);
 
                 kDeploy.addComponentInstances(kni);
+            } else {
+                throw new IllegalArgumentException("Unknown subtype of ExternalComponentInstance: " + eni.getClass().getName());
             }
         }
     }
 
-    public void internalComponentInstances(List<InternalComponentInstance> internalComponentInstances){
+    public void internalComponentInstanceToKmf(InternalComponentInstance ici) {
+        checkNull(ici, "Cannot convert null");
+        net.cloudml.core.InternalComponentInstance kai = factory.createInternalComponentInstance();
+        kai.setName(ici.getName());
+        kai.setType(internalComponents.get(ici.getType().getName()));
+        initProperties(ici, kai, factory);
+
+        this.internalComponentInstances.put(kai.getName(), kai);
+
+        if (ici.getDestination() != null) {
+            kai.setDestination(VMInstances.get(ici.getDestination().getName()));
+        }
+
+        convertAndAddRequiredPortInstances(ici.getRequiredPortInstances(), kai);
+        convertAndAddProvidedPortInstances(ici.getProvidedPortInstances(), kai);
+
+        kDeploy.addComponentInstances(kai);
+    }
+
+    private void convertAndAddRequiredPortInstances(List<RequiredPortInstance> requiredPortInstances, net.cloudml.core.InternalComponentInstance kai) {
+        checkNull(requiredPortInstances, "Cannot iterate on null");
+        for (RequiredPortInstance api : requiredPortInstances) {
+            checkNull(api, "Cannot convert null");
+            net.cloudml.core.RequiredPortInstance kapi = factory.createRequiredPortInstance();
+            kapi.setName(api.getName());
+            kapi.setType(requiredPorts.get(calculatePortIdentifier(api.getType())));
+            //kapi.setType(requiredPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
+            initProperties(api, kapi, factory);
+            kai.addRequiredPortInstances(kapi);
+            this.requiredPortInstances.put(escapePortInstanceName(api), kapi);
+        }
+    }
+
+    private void convertAndAddProvidedPortInstances(List<ProvidedPortInstance> ports, net.cloudml.core.InternalComponentInstance kai) {
+        checkNull(ports, "Cannot iterate on null");
+        for (ProvidedPortInstance api : ports) {
+            checkNull(api, "Cannot convert null");
+            net.cloudml.core.ProvidedPortInstance kapi = factory.createProvidedPortInstance();
+            kapi.setName(api.getName());
+            kapi.setType(providedPorts.get(calculatePortIdentifier(api.getType())));
+            // kapi.setType(providedPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
+            initProperties(api, kapi, factory);
+            kai.addProvidedPortInstances(kapi);
+            this.providedPortInstances.put(escapePortInstanceName(api), kapi);
+        }
+
+    }
+
+    private String escapePortInstanceName(PortInstance portInstance) {
+        return String.format("%s_%s", portInstance.getOwner().getName(), portInstance.getName());
+    }
+
+    public void internalComponentInstancesToKmf(List<InternalComponentInstance> internalComponentInstances){
+        checkNull(internalComponentInstances, "Cannot iterate on null");
         for (InternalComponentInstance bai : internalComponentInstances) {//pass 1
-            InternalComponentInstance ai=(InternalComponentInstance)bai;
-            net.cloudml.core.InternalComponentInstance kai = factory.createInternalComponentInstance();
-            kai.setName(ai.getName());
-            kai.setType(internalComponents.get(ai.getType().getName()));
-            initProperties(ai, kai, factory);
-
-            this.internalComponentInstances.put(kai.getName(), kai);
-
-            if (ai.getDestination() != null) {
-                kai.setDestination(VMInstances.get(ai.getDestination().getName()));
-            }
-
-
-            for (RequiredPortInstance api : ai.getRequiredPortInstances()) {
-                net.cloudml.core.RequiredPortInstance kapi = factory.createRequiredPortInstance();
-                kapi.setName(api.getName());
-                kapi.setType(requiredPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
-                initProperties(api, kapi, factory);
-                kai.addRequiredPortInstances(kapi);
-                requiredPortInstances.put(kapi.getName(), kapi);
-            }
-
-            for (ProvidedPortInstance api : ai.getProvidedPortInstances()) {
-                net.cloudml.core.ProvidedPortInstance kapi = factory.createProvidedPortInstance();
-                kapi.setName(api.getName());
-                kapi.setType(providedPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
-                initProperties(api, kapi, factory);
-                kai.addProvidedPortInstances(kapi);
-                providedPortInstances.put(kapi.getName(), kapi);
-            }
-
-            kDeploy.addComponentInstances(kai);
+            internalComponentInstanceToKmf(bai);
         }
     }
 
-    public void relationshipInstanceToKmf(List<RelationshipInstance> relationshipInstances){
+    public void relationshipInstancesToKmf(List<RelationshipInstance> relationshipInstances){
+        checkNull(relationshipInstances, "CAnnot iterate on null");
         for (RelationshipInstance b : relationshipInstances) {
-            net.cloudml.core.RelationshipInstance kb = factory.createRelationshipInstance();
-            kb.setName(b.getName());
-            kb.setRequiredPortInstance(requiredPortInstances.get(b.getRequiredPortInstance().getName()));
-            kb.setProvidedPortInstance(providedPortInstances.get(b.getProvidedPortInstance().getName()));
-            kb.setType(relationships.get(b.getType().getName()));
-
-            kDeploy.addRelationshipInstances(kb);
+            relationshipInstanceToKmf(b);
         }
     }
 
-    public net.cloudml.core.CloudMLModel toKMF(CloudMLModel deploy) {
-        kDeploy.setName(deploy.getName());
-        providersToKmf(deploy.getProviders());
-        externalComponentToKmf(deploy.getExternalComponents());
-        internalComponentToKmf(deploy.getInternalComponents());
-        relationshipToKmf(deploy.getRelationships().values());
-        externalComponentInstanceToKmf(deploy.getExternalComponentInstances());
-        internalComponentInstances(deploy.getInternalComponentInstances());
-        relationshipInstanceToKmf(deploy.getRelationshipInstances());
-        return kDeploy;
+    public void relationshipInstanceToKmf(RelationshipInstance ri) {
+        checkNull(ri, "Cannot convert null");
+        net.cloudml.core.RelationshipInstance kb = factory.createRelationshipInstance();
+        kb.setName(ri.getName());
+        checkValidPortInstance(ri.getRequiredPortInstance());
+        kb.setRequiredPortInstance(requiredPortInstances.get(escapePortInstanceName(ri.getRequiredPortInstance())));
+        checkValidPortInstance(ri.getProvidedPortInstance());
+        kb.setProvidedPortInstance(providedPortInstances.get(escapePortInstanceName(ri.getProvidedPortInstance())));
+        kb.setType(relationships.get(ri.getType().getName()));
+
+        kDeploy.addRelationshipInstances(kb);
+
+    }
+
+    private void checkValidPortInstance(PortInstance portInstance) {
+        if (portInstance == null) {
+            throw new IllegalArgumentException("Port instance is null");
+        }
+        if(portInstance.getName() == null) {
+            throw new IllegalArgumentException("Port instance has no name");
+        }
+        if (portInstance.getOwner() == null) {
+            throw new IllegalArgumentException("Port instance has no owner");
+        }
+        if (portInstance.getType() == null) {
+            throw new IllegalArgumentException("Port instance has no type");
+        }
     }
 
 }

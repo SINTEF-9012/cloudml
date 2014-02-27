@@ -36,11 +36,11 @@ import org.cloudml.core.*;
  */
 public class KMFBridge {
 
-    private BridgeToPojo toPojo;
+    private BridgeToCloudML toPojo;
     private BridgeToKmf toKmf;
 
     public KMFBridge() {
-        toPojo=new BridgeToPojo();
+        toPojo=new BridgeToCloudML();
         toKmf=new BridgeToKmf();
     }
 
