@@ -31,6 +31,7 @@ import java.util.List;
 public abstract class Component extends CloudMLElementWithProperties {
 
     private List<ProvidedPort> providedPorts = new LinkedList<ProvidedPort>();
+    private List<ProvidedExecutionPlatform> providedExecutionPlatforms = new LinkedList<ProvidedExecutionPlatform>();
 
     public Component() {
     }
@@ -43,9 +44,10 @@ public abstract class Component extends CloudMLElementWithProperties {
         super(name, properties);
     }
 
-    public Component(String name, List<Property> properties, List<ProvidedPort> providedPorts) {
+    public Component(String name, List<Property> properties, List<ProvidedPort> providedPorts, List<ProvidedExecutionPlatform> providedExecutionPlatforms) {
         super(name, properties);
         this.providedPorts=providedPorts;
+        this.providedExecutionPlatforms=providedExecutionPlatforms;
     }
 
     public List<ProvidedPort> getProvidedPorts() {
@@ -56,6 +58,14 @@ public abstract class Component extends CloudMLElementWithProperties {
         this.providedPorts = providedPorts;
     }
 
+    public List<ProvidedExecutionPlatform> getProvidedExecutionPlatforms(){
+        return this.providedExecutionPlatforms;
+    }
+
+    public void setProvidedExecutionPlatforms(List<ProvidedExecutionPlatform> providedExecutionPlatforms){
+        this.providedExecutionPlatforms=providedExecutionPlatforms;
+    }
+
 
     @Override
     public String toString() {
@@ -64,6 +74,9 @@ public abstract class Component extends CloudMLElementWithProperties {
 
     @Override
     public boolean equals(Object other) {
+        if(other == null)
+            return false;
+
         if (other instanceof Component) {
             Component otherComp = (Component) other;
             return name.equals(otherComp.getName());

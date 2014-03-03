@@ -37,6 +37,8 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 	 */
 	private List<RequiredPortInstance> requiredPortInstances = new LinkedList<RequiredPortInstance>();
 
+    private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance;
+
     protected State status;
 
     public enum State{
@@ -86,6 +88,14 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 
     public void setStatus(String s) {
         this.status = State.valueOf(s);
+    }
+
+    public RequiredExecutionPlatformInstance getRequiredExecutionPlatformInstance() {
+        return requiredExecutionPlatformInstance;
+    }
+
+    public void setRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
+        this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
     }
 
 	@Override

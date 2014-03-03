@@ -35,6 +35,9 @@ public abstract class ComponentInstance<T extends Component> extends CloudMLElem
     private List<ProvidedPortInstance> providedPortInstances = new LinkedList<ProvidedPortInstance>();
 
 
+    private List<ProvidedExecutionPlatformInstance> providedExecutionPlatformInstances= new LinkedList<ProvidedExecutionPlatformInstance>();
+
+
     public ComponentInstance(){}
 
     public ComponentInstance(String name, T type) {
@@ -87,6 +90,15 @@ public abstract class ComponentInstance<T extends Component> extends CloudMLElem
         return destination;
     }
 
+    public List<ProvidedExecutionPlatformInstance> getProvidedExecutionPlatformInstances() {
+        return providedExecutionPlatformInstances;
+    }
+
+    public void setProvidedExecutionPlatformInstances(List<ProvidedExecutionPlatformInstance> providedExecutionPlatformInstances) {
+        this.providedExecutionPlatformInstances = providedExecutionPlatformInstances;
+    }
+
+
     @Override
     public String toString() {
         return "Instance " + name + " : " + getType().getName();
@@ -94,6 +106,9 @@ public abstract class ComponentInstance<T extends Component> extends CloudMLElem
 
     @Override
     public boolean equals(Object other) {
+        if(other == null)
+            return false;
+
         if (other instanceof ComponentInstance) {
             ComponentInstance otherCompInst = (ComponentInstance) other;
             Boolean match= name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
