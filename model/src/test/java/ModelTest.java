@@ -34,7 +34,8 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class ModelTest extends TestCase {
-
+    //TODO: test propagation of demands and offers for internal components
+    
     @Test(expected=IllegalArgumentException.class)
     public void testExecuteInstanceOnProvidedNull(){
         ExecuteInstance ei=new ExecuteInstance("foo", null, new RequiredExecutionPlatformInstance());
