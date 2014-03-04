@@ -32,6 +32,7 @@ import java.util.List;
 public class InternalComponent extends Component {
 
     private Port destination;
+    private RequiredExecutionPlatform requiredExecutionPlatform;
 
     /*
      * Dependencies <PortName,Port Reference>
@@ -105,6 +106,14 @@ public class InternalComponent extends Component {
 
     public Port getDestination() {
         return destination;
+    }
+
+    public RequiredExecutionPlatform getRequiredExecutionPlatform(){
+        return requiredExecutionPlatform;
+    }
+
+    public void setRequiredExecutionPlatform(RequiredExecutionPlatform requiredExecutionPlatform){
+        this.requiredExecutionPlatform=requiredExecutionPlatform;
     }
 
 }

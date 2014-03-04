@@ -76,6 +76,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * PaasConnector for BeansTalk and RDS
  *
@@ -159,9 +160,11 @@ public class BeanstalkConnector implements PaaSConnector {
         }
     }
 
+
     public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
         prepareWar(new File(warFile), versionLabel, applicationName);
         CreateEnvironmentRequest cr = new CreateEnvironmentRequest();
+
         cr.setApplicationName(applicationName);
         cr.setEnvironmentName(envName);
         cr.setVersionLabel(versionLabel);
@@ -426,6 +429,7 @@ public class BeanstalkConnector implements PaaSConnector {
         DeleteDBInstanceRequest request = new DeleteDBInstanceRequest();
         request.setDBInstanceIdentifier(dbInstanceIdentifier);
         rdsClient.deleteDBInstance(request);
+
     }
 
 }
