@@ -22,8 +22,17 @@
  */
 package org.cloudml.connectors;
 
+import java.util.Collection;
+
 public interface PaaSConnector {
-	//Should be part of the interface at some point
+    
+    void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel);
+    void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
+            Integer allocatedSize, String dbInstanceClass);
+    String getDBEndPoint(String dbInstanceId, int timeout);
+    
+    
+//Should be part of the interface at some point
 	//public void createApplication();
 	
 	//public void deployApplication();

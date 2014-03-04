@@ -23,6 +23,9 @@
 package org.cloudml.connectors;
 
 import cloudadapter.Adapter;
+import cloudadapter.DatabaseObject;
+import com.cloudbees.api.BeesClient;
+//import com.cloudbees.api.BeesClient;
 import java.io.File;
 
 import org.cloudml.core.Provider;
@@ -43,7 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class Cloud4soaConnector {
+public class Cloud4soaConnector implements PaaSConnector {
 	
     private ApplicationInstance ai;
     private PaasInstance pi;
@@ -73,6 +76,7 @@ public class Cloud4soaConnector {
                     credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),	
                     applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml");
             journal.log(Level.INFO, ">> Created application:" + tmp2);
+            
         } catch (Cloud4SoaException ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -101,6 +105,31 @@ public class Cloud4soaConnector {
         ai.setAdapterUrl("adapterURL");
         ems.undeployApplication(adapterUrl, credentials, pi, ai);
     }
+    
+    public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout) {
+        
+        System.out.print("uploadWar:");
+        while(timeout-- > 0){
+            System.out.print("-");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(BeanstalkConnector.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try{
+                String tmp2=Adapter.uploadAndDeployToEnv(platform, warFile,
+                    credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),	
+                    envName, versionLabel, "", "", "", "", "", "deployed by cloudml after db injection");
+                journal.log(Level.INFO, ">> Created application:" + tmp2);
+                break;
+            }
+            catch(Exception e){
+                
+            }
+            
+        }
+
+    }
 
 
 //    private void startStop(StartStopCommand command) throws Cloud4SoaException {
@@ -128,6 +157,7 @@ public class Cloud4soaConnector {
 //                dbpassword, dbtype);
  //   }
     
+      @Override
       public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password, 
             Integer allocatedSize, String dbInstanceClass){
         try {
@@ -136,7 +166,7 @@ public class Cloud4soaConnector {
                     dbName, username, password
             );
             
-            journal.log(Level.INFO, ">>DB created: "+dbinfo.toString());
+            journal.log(Level.INFO, ">>DB created: "+dbinfo.toString()+": "+dbinfo.getDatabaseUrl()+dbinfo.getHost());
             
         } catch (Cloud4SoaException ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
@@ -144,6 +174,51 @@ public class Cloud4soaConnector {
         //Adapter.
       }
     
-    
-    
+      /**
+       * Cloud4Soa does not work for Cloudbees
+       * @param dbInstanceId
+       * @param timeout
+       * @return 
+       */
+    public String getDBEndPoint(String dbInstanceId, int timeout) {
+        
+        //return "ec2-23-21-211-172.compute-1.amazonaws.com:3306/dieaslefehik";
+//        String bees_server = "https://api.cloudbees.com/api";
+//        String type = "json";
+//        String apiversion = "1.0";
+//        BeesClient bees = new BeesClient(bees_server, credentials.getPublicKey(), credentials.getPrivateKey(), type, apiversion);
+//        try {
+//            Object obj = bees.databaseInfo(dbInstanceId, false);
+//            if(obj)
+//            System.out.println(obj);
+//        } catch (Exception ex) {
+//            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return "";
+        System.out.print("Retriving DB endpoint:");
+        while(timeout-->0){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                DatabaseObject dbobject = Adapter.getDBInfo(platform,
+                        credentials.getPublicKey(),
+                        credentials.getPrivateKey(),
+                        credentials.getAccountName(),
+                        "mysql", "", "1.5.7", null, dbInstanceId, null, null);
+                if(dbobject.getDbhost()!=null && dbobject.getDbhost().length()>0){
+                    System.out.println(dbobject.getDbhost()+":"+dbobject.getPort());
+                    return dbobject.getDbhost()+":"+dbobject.getPort();
+                }
+            } catch (Cloud4SoaException ex) {
+                Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+                
+            }
+            
+        }
+        return "";
+    }
+
 }

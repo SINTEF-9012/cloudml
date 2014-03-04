@@ -38,6 +38,7 @@ import org.cloudml.core.InternalComponentInstance.State;
 /*
  * The deployment Engine
  * author: Nicolas Ferry
+ * author: Hui Song
  */
 
 public class CloudAppDeployer {
