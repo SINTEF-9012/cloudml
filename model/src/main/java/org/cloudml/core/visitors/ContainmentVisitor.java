@@ -23,26 +23,17 @@
 /*
  */
 
-package org.cloudml.core.validation;
+package org.cloudml.core.visitors;
 
 /**
  *
  * @author Franck Chauvel
  * @since 0.1
  */
-public enum Level {
-    ERROR("Error"), 
-    WARNING("Warning");
-    
-    private final String label;
-    
-    private Level(String label) {
-        this.label = label;
+public class ContainmentVisitor extends AbstractVisitor {
+
+    public ContainmentVisitor() {
+       super();
     }
 
-    public String getLabel() {
-        return label;
-    }
-    
-    
 }

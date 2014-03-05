@@ -24,131 +24,137 @@ package org.cloudml.core;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.cloudml.core.visitors.Visitable;
+import org.cloudml.core.visitors.Visitor;
 
-import org.cloudml.core.NodeInstance.State;
 
 /*
  * An instance of artefact is an elementary unit to be deployed on a single
  * node. It contains properties, communications channels and dependencies.
  *
  */
-public class ArtefactInstance extends WithProperties {
+public class ArtefactInstance extends WithProperties implements Visitable {
 
-	private Artefact type;
-	private NodeInstance destination = null;
-	private State status;
+    private Artefact type;
+    private NodeInstance destination = null;
+    private State status;
 
-	public enum State{
-		uninstalled,
-		installed,
-		configured,
-		running,
-		error,
-	}
+    public enum State {
 
-
-	/*
-	 * Dependencies <PortName,PortInstance Reference>
-	 */
-	private List<ClientPortInstance> required = new LinkedList<ClientPortInstance>();
-	private List<ServerPortInstance> provided = new LinkedList<ServerPortInstance>();
-
-	public ArtefactInstance() {
-	}
-
-	public ArtefactInstance(String name, Artefact type) {
-		super(name);
-		this.type = type;
-		this.status=State.uninstalled;
-	}
-
-	public ArtefactInstance(String name, Artefact type, NodeInstance destination) {
-		super(name);
-		this.type = type;
-		this.destination = destination;
-	}
-
-	public ArtefactInstance(String name, List<Property> properties, Artefact type) {
-		super(name, properties);
-		this.type = type;
-	}
-
-	public ArtefactInstance(String name, List<Property> properties, Artefact type, NodeInstance destination) {
-		super(name, properties);
-		this.destination = destination;
-	}
-
-	public ArtefactInstance(String name, List<Property> properties, List<ClientPortInstance> required, List<ServerPortInstance> provided) {
-		super(name, properties);
-		this.required = required;
-		this.provided = provided;
-	}
-
-	@Override
-	public String toString() {
-		return "Instance " + name + " : " + getType().getName();
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof ArtefactInstance) {
-			ArtefactInstance otherArt = (ArtefactInstance) other;
-			Boolean match= name.equals(otherArt.getName()) && type.equals(otherArt.getType());
-			if(destination != null)
-				return name.equals(otherArt.getName()) && type.equals(otherArt.getType()) && destination.equals(otherArt.getDestination());
-			else return match && (otherArt.getDestination() == null);
-		} else {
-			return false;
-		}
-	}
-
-	/*
-	 * Getters
-	 */
-
-	public List<ClientPortInstance> getRequired() {
-		return this.required;
-	}
-
-	public List<ServerPortInstance> getProvided() {
-		return this.provided;
-	}
-
-	public Artefact getType() {
-		return this.type;
-	}
-
-
-	public void setProvided(List<ServerPortInstance> provided) {
-		this.provided = provided;
-	}
-
-	public void setRequired(List<ClientPortInstance> required) {
-		this.required = required;
-	}
-
-	public void setType(Artefact type) {
-		this.type = type;
-	}
-
-	public void setDestination(NodeInstance destination) {
-		this.destination = destination;
-	}
-
-	public NodeInstance getDestination() {
-		return destination;
-	}
-	
-	public State getStatus(){
-    	return this.status;
+        uninstalled,
+        installed,
+        configured,
+        running,
+        error,
     }
-    
+    /*
+     * Dependencies <PortName,PortInstance Reference>
+     */
+    private List<ClientPortInstance> required = new LinkedList<ClientPortInstance>();
+    private List<ServerPortInstance> provided = new LinkedList<ServerPortInstance>();
+
+    public ArtefactInstance() {
+    }
+
+    public ArtefactInstance(String name, Artefact type) {
+        super(name);
+        this.type = type;
+        this.status = State.uninstalled;
+    }
+
+    public ArtefactInstance(String name, Artefact type, NodeInstance destination) {
+        super(name);
+        this.type = type;
+        this.destination = destination;
+    }
+
+    public ArtefactInstance(String name, List<Property> properties, Artefact type) {
+        super(name, properties);
+        this.type = type;
+    }
+
+    public ArtefactInstance(String name, List<Property> properties, Artefact type, NodeInstance destination) {
+        super(name, properties);
+        this.destination = destination;
+    }
+
+    public ArtefactInstance(String name, List<Property> properties, List<ClientPortInstance> required, List<ServerPortInstance> provided) {
+        super(name, properties);
+        this.required = required;
+        this.provided = provided;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitArtefactInstance(this);
+    }
+
+    @Override
+    public String toString() {
+        return "Instance " + name + " : " + getType().getName();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof ArtefactInstance) {
+            ArtefactInstance otherArt = (ArtefactInstance) other;
+            Boolean match = name.equals(otherArt.getName()) && type.equals(otherArt.getType());
+            if (destination != null) {
+                return name.equals(otherArt.getName()) && type.equals(otherArt.getType()) && destination.equals(otherArt.getDestination());
+            }
+            else {
+                return match && (otherArt.getDestination() == null);
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    /*
+     * Getters
+     */
+    public List<ClientPortInstance> getRequired() {
+        return this.required;
+    }
+
+    public List<ServerPortInstance> getProvided() {
+        return this.provided;
+    }
+
+    public Artefact getType() {
+        return this.type;
+    }
+
+    public void setProvided(List<ServerPortInstance> provided) {
+        this.provided = provided;
+    }
+
+    public void setRequired(List<ClientPortInstance> required) {
+        this.required = required;
+    }
+
+    public void setType(Artefact type) {
+        this.type = type;
+    }
+
+    public void setDestination(NodeInstance destination) {
+        this.destination = destination;
+    }
+
+    public NodeInstance getDestination() {
+        return destination;
+    }
+
+    public State getStatus() {
+        return this.status;
+    }
+
     public void setStatus(State s) {
         this.status = s;
     }
-    
+
     public void setStatus(String s) {
         this.status = State.valueOf(s);
     }
-    
 }

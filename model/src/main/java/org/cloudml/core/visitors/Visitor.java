@@ -22,27 +22,33 @@
  */
 /*
  */
+package org.cloudml.core.visitors;
 
-package org.cloudml.core.validation;
+import org.cloudml.core.Artefact;
+import org.cloudml.core.ArtefactInstance;
+import org.cloudml.core.DeploymentModel;
+import org.cloudml.core.Node;
+import org.cloudml.core.NodeInstance;
+import org.cloudml.core.Provider;
 
 /**
  *
- * @author Franck Chauvel
- * @since 0.1
+ * @author franckc
  */
-public enum Level {
-    ERROR("Error"), 
-    WARNING("Warning");
+public interface Visitor {
     
-    private final String label;
+    public void addListeners(Processor... listeners);
     
-    private Level(String label) {
-        this.label = label;
-    }
+    public void visitDeploymentModel(DeploymentModel model);
+ 
+    public void visitProvider(Provider provider); 
 
-    public String getLabel() {
-        return label;
-    }
-    
+    public void visitorNode(Node node);
+
+    public void visitNodeInstance(NodeInstance nodeInstance);
+
+    public void visitArtefact(Artefact artefact);
+
+    public void visitArtefactInstance(ArtefactInstance artefactInstance);
     
 }

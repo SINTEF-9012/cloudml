@@ -22,27 +22,14 @@
  */
 /*
  */
-
-package org.cloudml.core.validation;
+package org.cloudml.core.visitors;
 
 /**
  *
- * @author Franck Chauvel
- * @since 0.1
+ * @author franckc
  */
-public enum Level {
-    ERROR("Error"), 
-    WARNING("Warning");
+public interface Visitable {
     
-    private final String label;
-    
-    private Level(String label) {
-        this.label = label;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-    
+    public void accept(Visitor visitor);
     
 }

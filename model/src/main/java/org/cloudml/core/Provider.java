@@ -28,8 +28,11 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.cloudml.core.visitors.Visitable;
+import org.cloudml.core.visitors.Visitor;
 
-public class Provider extends WithProperties {
+
+public class Provider extends WithProperties implements Visitable {
 
     private String login = "";
     private String passwd = "";
@@ -56,6 +59,13 @@ public class Provider extends WithProperties {
         initCredentials();
     }
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitProvider(this); 
+    }
+
+    
+    
     /*
      * public Provider(String name, String login, String passwd) { this.name =
      * name; this.login = login; this.passwd = passwd;

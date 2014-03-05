@@ -22,10 +22,11 @@
  */
 package org.cloudml.core;
 
-import java.util.LinkedList;
 import java.util.List;
+import org.cloudml.core.visitors.Visitable;
+import org.cloudml.core.visitors.Visitor;
 
-public class NodeInstance extends WithProperties {
+public class NodeInstance extends WithProperties implements Visitable {
 
     private Node type;
     private String publicAddress="";
@@ -51,6 +52,13 @@ public class NodeInstance extends WithProperties {
         super(name, properties);
         this.type = type;
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitNodeInstance(this);
+    }
+    
+    
     
     public Node getType() {
         return this.type;

@@ -26,8 +26,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.cloudml.core.visitors.Visitable;
+import org.cloudml.core.visitors.Visitor;
 
-public class DeploymentModel extends WithProperties {
+public class DeploymentModel extends WithProperties implements Visitable {
 
     private Map<String, Artefact> artefactTypes = new HashMap<String, Artefact>();
     private List<ArtefactInstance> artefactInstances = new LinkedList<ArtefactInstance>();
@@ -56,6 +58,13 @@ public class DeploymentModel extends WithProperties {
         this.nodeTypes = nodeTypes;
         this.providers = providers;
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitDeploymentModel(this);
+    }
+    
+    
     
     public DeploymentModel(String name, List<Property> properties,
     		Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,

@@ -24,12 +24,14 @@ package org.cloudml.core;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.cloudml.core.visitors.Visitable;
+import org.cloudml.core.visitors.Visitor;
 
 /*
  * Artefact describes the type of an Artefact instance. It also contains
  * communication channels and dependencies between Port Types
  */
-public class Artefact extends WithProperties {
+public class Artefact extends WithProperties implements Visitable {
 
     private ArtefactPort destination;
     private Resource resource;
@@ -67,6 +69,13 @@ public class Artefact extends WithProperties {
         this.provided = provided;
     }
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitArtefact(this);
+    }
+
+    
+    
     @Override
     public String toString() {
         return "Type " + name;
