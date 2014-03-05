@@ -1,196 +1,216 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
+ * <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
+ * CloudML is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.core;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.io.FileUtils;
+import org.cloudml.core.validation.Report;
 
 public class Node extends WithProperties {
 
-	private Provider cloudProvider;
+    private Provider cloudProvider;
 
-	public Node() {
-	}
+    public Node() {
+    }
 
-	public Node(String name) {
-		super(name);
-	}
+    public Node(String name) {
+        super(name);
+    }
 
-	public Node(String name, Provider provider) {
-		super(name);
-		this.cloudProvider = provider;
-	}
+    public Node(String name, Provider provider) {
+        super(name);
+        this.cloudProvider = provider;
+    }
 
-	public Node(String name, List<Property> properties) {
-		super(name, properties);
-	}
+    public Node(String name, List<Property> properties) {
+        super(name, properties);
+    }
 
-	public Node(String name, List<Property> properties, Provider provider) {
-		super(name, properties);
-		this.cloudProvider = provider;
-	}
+    public Node(String name, List<Property> properties, Provider provider) {
+        super(name, properties);
+        this.cloudProvider = provider;
+    }
 
-	public Provider getProvider() {
-		return cloudProvider;
-	}
+    public Report validate() {
+        Report report = new Report();
+        if (this.name == null) {
+            report.addError("A node must have as a name (null found)");
+        }
+        if (this.cloudProvider == null) {
+            report.addError("A node must have a provider (null found)");
+        }
+        return report;
+    }
 
-	public void setProvider(Provider p) {
-		cloudProvider = p;
-	}
+    public Provider getProvider() {
+        return cloudProvider;
+    }
 
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof Node) {
-			Node otherNode = (Node) other;
-			return name.equals(otherNode.getName()) && cloudProvider.equals(otherNode.getProvider());
-		} else {
-			return false;
-		}
-	}
+    public void setProvider(Provider p) {
+        cloudProvider = p;
+    }
 
-	@Override
-	public String toString() {
-		return "Node " + name + "(minRam: " + minRam + ", minCore: " + minCore + ", minDisk: " + minDisk + ")";
-	}
-	/*
-	 * NODE Configuration
-	 */
-	private int minRam = 0;
-	private int minCore = 0;
-	private int minDisk = 0;
-	private String location = "";
-	private String OS = "";
-	private String sshKey = "";
-	private String securityGroup = "";
-	private String groupName = "";
-	private String privateKey = "";
-	private Boolean is64os = true;
-	private String imageId = "";
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (other instanceof Node) {
+            Node otherNode = (Node) other;
+            boolean nameMatch =
+                    (name == null && otherNode.getName() == null)
+                    || (name != null && name.equals(otherNode.getName()));
+            boolean providerMatch =
+                    (cloudProvider == null && otherNode.getProvider() == null)
+                    || (cloudProvider != null && cloudProvider.equals(otherNode.getProvider()));
+            return nameMatch && providerMatch;
+        }
+        return false;
+    }
 
-	/*
-	 * getters
-	 */
-	public int getMinRam() {
-		return minRam;
-	}
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
 
-	public int getMinCore() {
-		return minCore;
-	}
+    @Override
+    public String toString() {
+        return "Node " + name + "(minRam: " + minRam + ", minCore: " + minCore + ", minDisk: " + minDisk + ")";
+    }
+    /*
+     * NODE Configuration
+     */
+    private int minRam = 0;
+    private int minCore = 0;
+    private int minDisk = 0;
+    private String location = "";
+    private String OS = "";
+    private String sshKey = "";
+    private String securityGroup = "";
+    private String groupName = "";
+    private String privateKey = "";
+    private Boolean is64os = true;
+    private String imageId = "";
 
-	public int getMinDisk() {
-		return minDisk;
-	}
+    /*
+     * getters
+     */
+    public int getMinRam() {
+        return minRam;
+    }
 
-	public String getLocation() {
-		return location;
-	}
+    public int getMinCore() {
+        return minCore;
+    }
 
-	public String getOS() {
-		return OS;
-	}
+    public int getMinDisk() {
+        return minDisk;
+    }
 
-	public String getSshKey() {
-		return sshKey;
-	}
+    public String getLocation() {
+        return location;
+    }
 
-	public String getSecurityGroup() {
-		return securityGroup;
-	}
+    public String getOS() {
+        return OS;
+    }
 
-	public String getGroupName() {
-		return groupName;
-	}
+    public String getSshKey() {
+        return sshKey;
+    }
 
-	public String getPrivateKey() {
-		return privateKey;
-	}
+    public String getSecurityGroup() {
+        return securityGroup;
+    }
 
-	public Boolean getIs64os() {
-		return is64os;
-	}
+    public String getGroupName() {
+        return groupName;
+    }
 
-	public String getImageId() {
-		return imageId;
-	}
+    public String getPrivateKey() {
+        return privateKey;
+    }
 
-	/*
-	 * Setters
-	 */
-	public void setMinRam(int minRam) {
-		this.minRam = minRam;
-	}
+    public Boolean getIs64os() {
+        return is64os;
+    }
 
-	public void setMinCore(int minCore) {
-		this.minCore = minCore;
-	}
+    public String getImageId() {
+        return imageId;
+    }
 
-	public void setMinDisk(int minDisk) {
-		this.minDisk = minDisk;
-	}
+    /*
+     * Setters
+     */
+    public void setMinRam(int minRam) {
+        this.minRam = minRam;
+    }
 
-	public void setLocation(String location) {
-		this.location = location;
-	}
+    public void setMinCore(int minCore) {
+        this.minCore = minCore;
+    }
 
-	public void setOS(String OS) {
-		this.OS = OS;
-	}
+    public void setMinDisk(int minDisk) {
+        this.minDisk = minDisk;
+    }
 
-	public void setSshKey(String sshKey) {
-		this.sshKey = sshKey;//if we cannot access the file, we assume the key is directly passed
-	} 
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-	public void setSecurityGroup(String securityGroup) {
-		this.securityGroup = securityGroup;
-	}
+    public void setOS(String OS) {
+        this.OS = OS;
+    }
 
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
-	}
+    public void setSshKey(String sshKey) {
+        this.sshKey = sshKey;//if we cannot access the file, we assume the key is directly passed
+    }
 
-	public void setPrivateKey(String privateKey) {
-		this.privateKey = privateKey;
-	}
+    public void setSecurityGroup(String securityGroup) {
+        this.securityGroup = securityGroup;
+    }
 
-	public void setIs64os(Boolean is64os) {
-		this.is64os = is64os;
-	}
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
 
-	public void setImageId(String id) {
-		imageId = id;
-	}
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
 
-	public NodeInstance instanciates(String name) {
-		return new NodeInstance(name, this);
-	}
+    public void setIs64os(Boolean is64os) {
+        this.is64os = is64os;
+    }
 
-	public NodeInstance instanciates() {
-		return new NodeInstance("", this);
-	}
+    public void setImageId(String id) {
+        imageId = id;
+    }
+
+    public NodeInstance instanciates(String name) {
+        return new NodeInstance(name, this);
+    }
+
+    public NodeInstance instanciates() {
+        return new NodeInstance("", this);
+    }
 }
