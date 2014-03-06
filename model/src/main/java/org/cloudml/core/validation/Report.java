@@ -33,6 +33,8 @@ import java.util.List;
  * @since 0.1
  */
 public class Report {
+    
+    public static boolean WITHOUT_WARNING = false;
 
     private final ArrayList<Message> messages;
 

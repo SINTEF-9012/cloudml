@@ -23,10 +23,12 @@
 package org.cloudml.core;
 
 import java.util.List;
+import org.cloudml.core.validation.CanBeValidated;
+import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
-public class NodeInstance extends WithProperties implements Visitable {
+public class NodeInstance extends WithProperties implements Visitable, CanBeValidated {
 
     private Node type;
     private String publicAddress="";
@@ -57,9 +59,21 @@ public class NodeInstance extends WithProperties implements Visitable {
     public void accept(Visitor visitor) {
         visitor.visitNodeInstance(this);
     }
+
+    @Override
+    public Report validate() {
+        Report report = new Report();
+        if (name == null) {
+            report.addError("Node instance with 'null' as name");
+        }
+        if (type == null) {
+            final String message = String.format("Node instance '%s' has no type ('null' found)", getNameOrDefaultIfNull());
+            report.addError(message);
+        }
+        return report;
+    }
     
-    
-    
+      
     public Node getType() {
         return this.type;
     }
