@@ -30,7 +30,7 @@ public abstract class ArtefactPort extends WithProperties implements Visitable {
     public static final boolean LOCAL = false;
     public static final boolean REMOTE = true;
     
-    protected boolean isRemote = false;
+    protected boolean remote = false;
     protected Artefact owner;
     protected int portNumber = 0;
 
@@ -40,13 +40,13 @@ public abstract class ArtefactPort extends WithProperties implements Visitable {
     public ArtefactPort(String name, Artefact owner, boolean isRemote) {
         super(name);
         this.owner = owner;
-        this.isRemote = isRemote;
+        this.remote = isRemote;
     }
 
     public ArtefactPort(String name, List<Property> properties, Artefact owner, boolean isRemote) {
         super(name, properties);
         this.owner = owner;
-        this.isRemote = isRemote;
+        this.remote = isRemote;
     }
 
     public Artefact getOwner() {
@@ -65,13 +65,27 @@ public abstract class ArtefactPort extends WithProperties implements Visitable {
         this.portNumber = n;
     }
 
+    @Deprecated
     public void setIsRemote(boolean isRemote) {
-        this.isRemote = isRemote;
+        this.remote = isRemote;
+    }
+    
+    public void setRemote(boolean isRemote) {
+        this.remote = isRemote;
     }
 
+    @Deprecated
     public boolean getIsRemote() {
-        return this.isRemote;
+        return this.remote;
     }
+    
+    public boolean isRemote() {
+        return this.remote;
+    }
+    
+    public boolean isLocal() {
+        return !isRemote();
+    }  
 
     @Override
     public String toString() {

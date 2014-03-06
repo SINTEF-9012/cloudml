@@ -25,7 +25,6 @@
 package org.cloudml.core.validation;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -53,24 +52,17 @@ public class Report {
         return selectMessagesWithLevel(Level.ERROR);
     }
 
-    public boolean hasErrorAbout(String keyword) {
-        return hasMessageAbout(Level.ERROR, keyword);
+    public boolean hasErrorAbout(String... keywords) {
+        return hasMessageAbout(Level.ERROR, keywords);
     }
 
-    public boolean hasWarningAbout(String keyWord) {
-        return hasMessageAbout(Level.WARNING, keyWord);
+    public boolean hasWarningAbout(String... keywords) {
+        return hasMessageAbout(Level.WARNING, keywords);
     }
 
-    public boolean hasMessageAbout(Level level, String keyWord) {
-        boolean found = false;
-        Iterator<Message> iterator = this.messages.iterator();
-        while (iterator.hasNext() && !found) {
-            final Message message = iterator.next();
-            if (level == message.getLevel() && message.getMessage().contains(keyWord)) {
-                found = true;
-            }
-        }
-        return found;
+    
+    public boolean hasMessageAbout(Level level, String... keywords) {
+        return !selectMessagesWithLevel(level, keywords).isEmpty();
     }
 
     public boolean hasWarning() {
@@ -81,10 +73,10 @@ public class Report {
         return selectMessagesWithLevel(Level.WARNING);
     }
 
-    public List<Message> selectMessagesWithLevel(Level level) {
+    public List<Message> selectMessagesWithLevel(Level level, String... keywords) {
         ArrayList<Message> errors = new ArrayList<Message>();
-        for (Message message : this.messages) {
-            if (message.getLevel().equals(level)) {
+        for (Message message: this.messages) {
+            if (message.getLevel().equals(level) && message.containsAll(keywords)) {
                 errors.add(message);
             }
         }

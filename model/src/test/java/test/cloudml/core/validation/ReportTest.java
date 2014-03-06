@@ -1,23 +1,23 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
+ * <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
+ * CloudML is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 /*
@@ -26,6 +26,8 @@ package test.cloudml.core.validation;
 
 import junit.framework.TestCase;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 import org.cloudml.core.validation.Level;
 import org.cloudml.core.validation.Message;
 import org.cloudml.core.validation.Report;
@@ -71,5 +73,20 @@ public class ReportTest extends TestCase {
         String expected = String.format("%s: %s \n => No given advice", Level.ERROR.getLabel(), message);
         assertEquals(expected, error.toString());
     }
-    
+
+    @Test
+    public void testSelectMessagesWithManyKeyWords() {
+        Report report = new Report();
+        report.addError("Error about null pointer");
+        report.addError("Cyclic dependencies");
+        report.addError("Missing dependencies");
+
+        assertTrue(report.hasMessageAbout(Level.ERROR, "pointer"));
+        assertTrue(report.hasMessageAbout(Level.ERROR, "pointer", "null"));
+        assertTrue(report.hasMessageAbout(Level.ERROR, "Cyclic", "dependencies"));
+        assertFalse(report.hasMessageAbout(Level.ERROR, "John Doe"));
+        assertFalse(report.hasMessageAbout(Level.ERROR, "null", "pointer", "exceptions"));
+        assertTrue(report.hasMessageAbout(Level.ERROR));
+
+    }
 }
