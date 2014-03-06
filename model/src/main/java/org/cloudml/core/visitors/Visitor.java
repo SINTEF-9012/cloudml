@@ -20,10 +20,11 @@
  * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
+
 package org.cloudml.core.visitors;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.cloudml.core.Artefact;
 import org.cloudml.core.ArtefactInstance;
 import org.cloudml.core.Binding;
@@ -37,34 +38,116 @@ import org.cloudml.core.Provider;
 import org.cloudml.core.ServerPort;
 import org.cloudml.core.ServerPortInstance;
 
-/**
- * Behaviour required to traverse a deployment model
- */
-public interface Visitor {
+public abstract class AbstractVisitor implements Visitor {
 
-    public void addListeners(VisitListener... listeners);
+    private final Dispatcher dispatcher;
+    private final ArrayList<VisitListener> listeners;
 
-    public void visitDeploymentModel(DeploymentModel subject);
+    public AbstractVisitor(Dispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+        this.listeners = new ArrayList<VisitListener>();
+    }
 
-    public void visitProvider(Provider subject);
+    @Override
+    public void addListeners(VisitListener... listeners) {
+        if (listeners == null) {
+            throw new IllegalArgumentException("Unable to add 'null' listeners");
+        }
+        this.listeners.addAll(Arrays.asList(listeners));
+    }
 
-    public void visitorNode(Node subject);
+    @Override
+    public void visitDeploymentModel(DeploymentModel model) {
+        for (VisitListener processor : listeners) {
+            processor.onDeployment(model);
+        }
+        dispatcher.dispatchTo(this, model);
+    }
 
-    public void visitClientPort(ClientPort subject);
+    @Override
+    public void visitProvider(Provider subject) {
+        for (VisitListener processor : listeners) {
+            processor.onProvider(subject);
+        }
+    }
 
-    public void visitServerPort(ServerPort subject);
+    @Override
+    public void visitorNode(Node node) {
+        for (VisitListener processor : listeners) {
+            processor.onNode(node);
+        }
+        // No dispatch needed as nodes have no relationship
+    }
 
-    public void visitArtefact(Artefact subject);
+    @Override
+    public void visitNodeInstance(NodeInstance nodeInstance) {
+        for (VisitListener processor : listeners) {
+            processor.onNodeInstance(nodeInstance);
+        }
+        // No dispatch needed as node instances have no relationship
+    }
 
-    public void visitBinding(Binding subject);
+    @Override
+    public void visitArtefact(Artefact artefact) {
+        for (VisitListener listener : listeners) {
+            listener.onArtefact(artefact);
+        }
+        dispatcher.dispatchTo(this, artefact);
+    }
 
-    public void visitNodeInstance(NodeInstance subject);
+    @Override
+    public void visitArtefactInstance(ArtefactInstance artefactInstance) {
+        for (VisitListener listener : listeners) {
+            listener.onArtefactInstance(artefactInstance);
+        }
+        dispatcher.dispatchTo(this, artefactInstance);
+    }
 
-    public void visitArtefactInstance(ArtefactInstance subject);
+    @Override
+    public void visitBinding(Binding binding) {
+        for (VisitListener listener : listeners) {
+            listener.onBinding(binding);
+        }
+        dispatcher.dispatchTo(this, binding);
+    }
 
-    public void visitClientPortInstance(ClientPortInstance subject);
+    @Override
+    public void visitBindingInstance(BindingInstance subject) {
+        for (VisitListener listener : listeners) {
+            listener.onBindingInstance(subject);
+        }
+        dispatcher.dispatchTo(this, subject);
+    }
 
-    public void visitServerPortInstance(ServerPortInstance subject);
+    @Override
+    public void visitClientPort(ClientPort subject) {
+        for (VisitListener listener : listeners) {
+            listener.onClientPort(subject);
+        }
+        // No dispatch needed as ClientPorts have no relationship
+    }
 
-    public void visitBindingInstance(BindingInstance subject);
+    @Override
+    public void visitServerPort(ServerPort subject) {
+        for (VisitListener listener : listeners) {
+            listener.onServerPort(subject);
+        }
+        // No dispatch needed as ServerPorts have no relationship
+    }
+
+    @Override
+    public void visitClientPortInstance(ClientPortInstance subject) {
+        for (VisitListener listener : listeners) {
+            listener.onClientPortInstance(subject);
+        }
+        // No dispatch needed as ClientPorts have no relationship
+    }
+
+    @Override
+    public void visitServerPortInstance(ServerPortInstance subject) {
+        for (VisitListener listener : listeners) {
+            listener.onServerPortInstance(subject);
+        }
+        // No dispatch needed as ClientPorts have no relationship
+    }
 }
