@@ -1,55 +1,55 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
+ * <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
+ * CloudML is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
+
 package org.cloudml.core.visitors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.cloudml.core.Artefact;
 import org.cloudml.core.ArtefactInstance;
+import org.cloudml.core.Binding;
+import org.cloudml.core.BindingInstance;
+import org.cloudml.core.ClientPort;
+import org.cloudml.core.ClientPortInstance;
 import org.cloudml.core.DeploymentModel;
 import org.cloudml.core.Node;
 import org.cloudml.core.NodeInstance;
 import org.cloudml.core.Provider;
+import org.cloudml.core.ServerPort;
+import org.cloudml.core.ServerPortInstance;
 
-/**
- * TODO: Extract navigation code, which decide of the order in which children
- * are traversed
- *
- * @author Franck Chauvel
- * @since 0.1
- */
 public abstract class AbstractVisitor implements Visitor {
 
-    private final ArrayList<Processor> listeners;
+    private final Dispatcher dispatcher;
+    private final ArrayList<VisitListener> listeners;
 
-    public AbstractVisitor() {
-        this.listeners = new ArrayList<Processor>();
+    public AbstractVisitor(Dispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+        this.listeners = new ArrayList<VisitListener>();
     }
 
     @Override
-    public void addListeners(Processor... listeners) {
+    public void addListeners(VisitListener... listeners) {
         if (listeners == null) {
             throw new IllegalArgumentException("Unable to add 'null' listeners");
         }
@@ -58,64 +58,96 @@ public abstract class AbstractVisitor implements Visitor {
 
     @Override
     public void visitDeploymentModel(DeploymentModel model) {
-        for (Processor processor : listeners) {
-            processor.processDeployment(model);
+        for (VisitListener processor : listeners) {
+            processor.onDeployment(model);
         }
-        for (Provider provider : model.getProviders()) {
-            provider.accept(this);
-        }
-        for (Node node : model.getNodeTypes().values()) {
-            node.accept(this);
-        }
-        for (NodeInstance nodeInstance : model.getNodeInstances()) {
-            nodeInstance.accept(this);
-        }
-        for(Artefact artefact: model.getArtefactTypes().values()) {
-            artefact.accept(this);
-        }
-        for(ArtefactInstance artefactInstance: model.getArtefactInstances()) {
-            artefactInstance.accept(this);
-        }
+        dispatcher.dispatchTo(this, model);
     }
 
     @Override
-    public void visitProvider(Provider provider) {
-        for (Processor processor : listeners) {
-            processor.processProvider(provider);
+    public void visitProvider(Provider subject) {
+        for (VisitListener processor : listeners) {
+            processor.onProvider(subject);
         }
-        // TODO: dispatch to children
     }
 
     @Override
     public void visitorNode(Node node) {
-        for (Processor processor : listeners) {
-            processor.processNode(node);
+        for (VisitListener processor : listeners) {
+            processor.onNode(node);
         }
-        // TODO: dispatch to children
+        // No dispatch needed as nodes have no relationship
     }
 
     @Override
     public void visitNodeInstance(NodeInstance nodeInstance) {
-        for (Processor processor : listeners) {
-            processor.processNodeInstance(nodeInstance);
+        for (VisitListener processor : listeners) {
+            processor.onNodeInstance(nodeInstance);
         }
-        // TODO: dispatch to children
+        // No dispatch needed as node instances have no relationship
     }
 
     @Override
     public void visitArtefact(Artefact artefact) {
-        for (Processor listener: listeners) {
-            listener.processArtefact(artefact);
+        for (VisitListener listener : listeners) {
+            listener.onArtefact(artefact);
         }
-        // TODO: dispatch to children
+        dispatcher.dispatchTo(this, artefact);
     }
 
     @Override
     public void visitArtefactInstance(ArtefactInstance artefactInstance) {
-        for (Processor listener: listeners) {
-            listener.processArtefactInstance(artefactInstance);
+        for (VisitListener listener : listeners) {
+            listener.onArtefactInstance(artefactInstance);
         }
-        // TODO: dispatch to children
+        dispatcher.dispatchTo(this, artefactInstance);
     }
-    
+
+    @Override
+    public void visitBinding(Binding binding) {
+        for (VisitListener listener : listeners) {
+            listener.onBinding(binding);
+        }
+        dispatcher.dispatchTo(this, binding);
+    }
+
+    @Override
+    public void visitBindingInstance(BindingInstance subject) {
+        for (VisitListener listener : listeners) {
+            listener.onBindingInstance(subject);
+        }
+        dispatcher.dispatchTo(this, subject);
+    }
+
+    @Override
+    public void visitClientPort(ClientPort subject) {
+        for (VisitListener listener : listeners) {
+            listener.onClientPort(subject);
+        }
+        // No dispatch needed as ClientPorts have no relationship
+    }
+
+    @Override
+    public void visitServerPort(ServerPort subject) {
+        for (VisitListener listener : listeners) {
+            listener.onServerPort(subject);
+        }
+        // No dispatch needed as ServerPorts have no relationship
+    }
+
+    @Override
+    public void visitClientPortInstance(ClientPortInstance subject) {
+        for (VisitListener listener : listeners) {
+            listener.onClientPortInstance(subject);
+        }
+        // No dispatch needed as ClientPorts have no relationship
+    }
+
+    @Override
+    public void visitServerPortInstance(ServerPortInstance subject) {
+        for (VisitListener listener : listeners) {
+            listener.onServerPortInstance(subject);
+        }
+        // No dispatch needed as ClientPorts have no relationship
+    }
 }

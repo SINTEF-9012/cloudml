@@ -20,8 +20,8 @@
  * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
+
+
 package org.cloudml.core.visitors;
 
 import org.cloudml.core.Artefact;
@@ -38,33 +38,32 @@ import org.cloudml.core.ServerPort;
 import org.cloudml.core.ServerPortInstance;
 
 /**
- * Behaviour required to traverse a deployment model
+ * Required behaviour for a reacting to visit events
  */
-public interface Visitor {
+public interface VisitListener {
 
-    public void addListeners(VisitListener... listeners);
+    public void onDeployment(DeploymentModel subject);
 
-    public void visitDeploymentModel(DeploymentModel subject);
+    public void onProvider(Provider subject);
 
-    public void visitProvider(Provider subject);
+    public void onNode(Node subject);
 
-    public void visitorNode(Node subject);
+    public void onArtefact(Artefact subject);
 
-    public void visitClientPort(ClientPort subject);
+    public void onClientPort(ClientPort subject);
 
-    public void visitServerPort(ServerPort subject);
+    public void onServerPort(ServerPort subject);
 
-    public void visitArtefact(Artefact subject);
+    public void onBinding(Binding subject);
 
-    public void visitBinding(Binding subject);
+    public void onNodeInstance(NodeInstance subject);
 
-    public void visitNodeInstance(NodeInstance subject);
+    public void onArtefactInstance(ArtefactInstance subject);
 
-    public void visitArtefactInstance(ArtefactInstance subject);
+    public void onClientPortInstance(ClientPortInstance subject);
 
-    public void visitClientPortInstance(ClientPortInstance subject);
+    public void onServerPortInstance(ServerPortInstance subject);
 
-    public void visitServerPortInstance(ServerPortInstance subject);
-
-    public void visitBindingInstance(BindingInstance subject);
+    public void onBindingInstance(BindingInstance subject);
+    
 }

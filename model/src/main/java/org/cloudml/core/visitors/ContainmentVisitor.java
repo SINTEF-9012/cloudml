@@ -33,7 +33,7 @@ package org.cloudml.core.visitors;
 public class ContainmentVisitor extends AbstractVisitor {
 
     public ContainmentVisitor() {
-       super();
+       super(new ContainmentDispatcher());
     }
 
 }
