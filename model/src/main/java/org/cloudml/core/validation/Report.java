@@ -33,9 +33,8 @@ import java.util.List;
  * @since 0.1
  */
 public class Report {
-    
-    public static boolean WITHOUT_WARNING = false;
 
+    public static boolean WITHOUT_WARNING = false;
     private final ArrayList<Message> messages;
 
     public Report() {
@@ -62,7 +61,6 @@ public class Report {
         return hasMessageAbout(Level.WARNING, keywords);
     }
 
-    
     public boolean hasMessageAbout(Level level, String... keywords) {
         return !selectMessagesWithLevel(level, keywords).isEmpty();
     }
@@ -77,7 +75,7 @@ public class Report {
 
     public List<Message> selectMessagesWithLevel(Level level, String... keywords) {
         ArrayList<Message> errors = new ArrayList<Message>();
-        for (Message message: this.messages) {
+        for (Message message : this.messages) {
             if (message.getLevel().equals(level) && message.containsAll(keywords)) {
                 errors.add(message);
             }
@@ -91,5 +89,20 @@ public class Report {
 
     public void addWarning(String message) {
         this.messages.add(new Message(Level.WARNING, message));
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        if (messages.isEmpty()) {
+            builder.append("No message");
+        }
+        else {
+            for (Message message : messages) {
+                builder.append(message.toString());
+                builder.append("\n");
+            }
+        }
+        return builder.toString();
     }
 }

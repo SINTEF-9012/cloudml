@@ -22,8 +22,13 @@
  */
 package org.cloudml.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import org.cloudml.core.validation.CanBeValidated;
+import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
@@ -33,7 +38,7 @@ import org.cloudml.core.visitors.Visitor;
  * node. It contains properties, communications channels and dependencies.
  *
  */
-public class ArtefactInstance extends WithProperties implements Visitable {
+public class ArtefactInstance extends WithProperties implements Visitable, CanBeValidated {
 
     private Artefact type;
     private NodeInstance destination = null;
@@ -90,12 +95,72 @@ public class ArtefactInstance extends WithProperties implements Visitable {
     }
 
     @Override
+    public Report validate() {
+        final Report report = new Report();
+        if (name == null) {
+            report.addError("Artefact instance no name ('null' found)");
+        }
+        else if (name.isEmpty()) {
+            report.addError("Artefact has no name (empty string found)");
+        }
+
+        if (type == null) {
+            final String message = String.format("Artefact instance '%s' has no type ('null' found)", getNameOrDefaultIfNull());
+            report.addError(message);
+        }
+        else {
+            checkForMissingPorts(report, "server", this.type.getProvided());
+            checkForExtraPorts(report, "server", this.getProvided());
+            checkForMissingPorts(report, "client", this.type.getRequired());
+            checkForExtraPorts(report, "client", this.getRequired());
+        }
+        return report;
+    }
+
+    private void checkForMissingPorts(Report toComplete, String kind, Collection<? extends ArtefactPort> signature) {
+        for (ArtefactPort portInType : signature) {
+            if (!hasPortWithType(portInType)) {
+                String message = String.format("Missing %s port instance for port '%s' in artefact instance '%s'", kind, portInType.getNameOrDefaultIfNull(), getNameOrDefaultIfNull());
+                toComplete.addError(message);
+            }
+        }
+    }
+
+    private boolean hasPortWithType(ArtefactPort portType) {
+        Collection<ArtefactPortInstance> allPortsInstances = new ArrayList<ArtefactPortInstance>();
+        allPortsInstances.addAll(this.getProvided());
+        allPortsInstances.addAll(this.getRequired());
+
+        boolean found = false;
+        Iterator<ArtefactPortInstance> iterator = allPortsInstances.iterator();
+        while (iterator.hasNext() && !found) {
+            ArtefactPortInstance instance = iterator.next();
+            if (instance.getType().equals(portType)) {
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    private void checkForExtraPorts(Report report, String kind, Collection<? extends ArtefactPortInstance> instancePorts) {
+        for (ArtefactPortInstance port : instancePorts) {
+            if (!this.type.contains(port.getType())) {
+                String message = String.format("extra %s port '%s' that does not match any port in type '%s'", kind, port.getNameOrDefaultIfNull(), type.getNameOrDefaultIfNull());
+                report.addError(message);
+            }
+        }
+    }
+
+    @Override
     public String toString() {
         return "Instance " + name + " : " + getType().getName();
     }
 
     @Override
     public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
         if (other instanceof ArtefactInstance) {
             ArtefactInstance otherArt = (ArtefactInstance) other;
             Boolean match = name.equals(otherArt.getName()) && type.equals(otherArt.getType());

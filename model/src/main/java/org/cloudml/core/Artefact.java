@@ -1,23 +1,23 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
- * <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT
+ * Contact: Franck Chauvel <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * CloudML is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
  *
- * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
+ * CloudML is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.core;
@@ -34,8 +34,8 @@ import org.cloudml.core.visitors.Visitor;
  * communication channels and dependencies between Port Types
  */
 public class Artefact extends WithProperties implements Visitable, CanBeValidated {
-    public static final String DEFAULT_NAME = "no name";
 
+    public static final String DEFAULT_NAME = "no name";
     private ArtefactPort destination;
     private Resource resource;
 
@@ -87,7 +87,7 @@ public class Artefact extends WithProperties implements Visitable, CanBeValidate
             report.addError("Artefact name is empty");
         }
         if (required.isEmpty() && provided.isEmpty()) {
-            final String message = String.format("Artefact '%s' has no port (neither provided or required)!", getNameOrDefault());
+            final String message = String.format("Artefact '%s' has no port (neither provided or required)!", getNameOrDefaultIfNull());
             report.addWarning(message);
         }
         return report;
@@ -152,7 +152,12 @@ public class Artefact extends WithProperties implements Visitable, CanBeValidate
         this.resource = resource;
     }
 
-    private String getNameOrDefault() {
-        return (this.name == null) ? DEFAULT_NAME : this.name;
+    public boolean contains(ArtefactPort port) {
+        if (port instanceof ClientPort) {
+            return this.getRequired().contains((ClientPort) port);
+        }
+        else {
+            return this.getProvided().contains((ServerPort) port);
+        }
     }
 }
