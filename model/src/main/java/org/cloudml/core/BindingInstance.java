@@ -22,6 +22,8 @@
  */
 package org.cloudml.core;
 
+import org.cloudml.core.validation.CanBeValidated;
+import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
@@ -31,7 +33,7 @@ import org.cloudml.core.visitors.Visitor;
  * @author Nicolas Ferry
  *
  */
-public class BindingInstance extends WithProperties implements Visitable {
+public class BindingInstance extends WithProperties implements Visitable, CanBeValidated {
 
     private ClientPortInstance client;
     private ServerPortInstance server;
@@ -56,6 +58,57 @@ public class BindingInstance extends WithProperties implements Visitable {
         visitor.visitBindingInstance(this);
     }
 
+    @Override
+    public Report validate() {
+        final Report report = new Report();
+        validateName(report);
+        validateType(report);
+        validateClientEnd(report);
+        validateServerEnd(report);
+        return report;
+    }
+    
+    private void validateName(Report report) {
+        if (name == null) {
+            report.addError("Binding instance has no name ('null' found)");
+        } else if (name.isEmpty()) {
+            report.addError("Binding instance has no name (empty string found)");
+        }
+    }
+    
+    private void validateType(Report report) {
+        if (type == null) {
+            report.addError("Binding instance without type ('null' found)");
+        }
+    }
+    
+    private void validateClientEnd(Report report) {
+        if (client == null) {
+            report.addError("Binding instance has a pending client end ('null' found)");
+        }
+        else if (type != null) {
+            if (!client.getType().equals(type.getClient())) {
+                final String message = String.format(
+                        "illegal binding instance that does not matches its type (client found '%s' but expected '%s')", 
+                        client.getType().getNameOrDefaultIfNull(), 
+                        type.getClient().getNameOrDefaultIfNull());
+                report.addError(message);
+            }
+        }
+    }
+    
+     private void validateServerEnd(Report report) {
+        if (server == null) {
+            report.addError("Binding instance has a pending server end ('null' found)");
+        } 
+        else if (type != null) {
+            if (!server.getType().equals(type.getServer())) {
+                final String message = String.format("illegal binding instance that does not matches its type (server found '%s' but expected '%s')", server.getType().getNameOrDefaultIfNull(), type.getServer().getNameOrDefaultIfNull());
+                report.addError(message);
+            }
+        }
+    }
+
     public void setClient(ClientPortInstance p) {
         this.client = p;
     }
@@ -74,6 +127,10 @@ public class BindingInstance extends WithProperties implements Visitable {
 
     public Binding getType() {
         return type;
+    }
+    
+    public void setType(Binding type) {
+        this.type = type;
     }
 
     @Override

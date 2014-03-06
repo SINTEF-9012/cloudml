@@ -85,7 +85,6 @@ public class ArtefactInstanceTest extends TestCase {
         instance.getRequired().add(new ClientPortInstance("rp#3", new ClientPort("extra port", null, true), instance));
 
         Report report = instance.validate();
-        System.out.println(report);
         
         assertTrue(report.hasErrorAbout("extra", "port", "client"));
     }

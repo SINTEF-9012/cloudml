@@ -105,6 +105,7 @@ public class Builder {
         abortIfExternal(client);
         abortIfExternal(server);
         BindingInstance binding = new BindingInstance(client, server, type);
+        binding.setName(name);
         this.inProgress.getBindingInstances().add(binding);
         return binding;
     }
