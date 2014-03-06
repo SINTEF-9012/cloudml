@@ -1,38 +1,40 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
+ * <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
+ * CloudML is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.core;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.cloudml.core.validation.CanBeValidated;
+import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
-
-public class Provider extends WithProperties implements Visitable {
+public class Provider extends WithProperties implements Visitable, CanBeValidated {
 
     private String login = "";
     private String passwd = "";
@@ -61,15 +63,38 @@ public class Provider extends WithProperties implements Visitable {
 
     @Override
     public void accept(Visitor visitor) {
-        visitor.visitProvider(this); 
+        visitor.visitProvider(this);
     }
 
+    @Override
+    public Report validate() {
+        final Report report = new Report();
+        if (name == null) {
+            report.addError("Missing name in provider!");
+        } 
+        else if (name.isEmpty()) {
+            report.addError("Empty name for provider");
+        }
+        
+        if (credentials == null) {
+            final String message = String.format("No credentials for provider '%s'", getNameOrDefault());
+            report.addWarning(message);
+        } 
+        else if (!credentialsExist()) {
+            final String message = String.format("Unable to retreive credentials from  '%s' (provider '%s')", credentials, getNameOrDefault());
+            report.addWarning(message);
+        }
+        
+        return report;
+    }
     
-    
+    private String getNameOrDefault() {
+        return (name == null) ? "(no name)" : name;
+    }
+
     /*
      * public Provider(String name, String login, String passwd) { this.name =
-     * name; this.login = login; this.passwd = passwd;
-    }
+     * name; this.login = login; this.passwd = passwd; }
      */
     private void initCredentials() {
         FileInputStream in = null;
@@ -84,7 +109,8 @@ public class Provider extends WithProperties implements Visitable {
             Logger.getLogger(Provider.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(Provider.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
+        }
+        finally {
             try {
                 if (in != null) {
                     in.close();
@@ -96,16 +122,14 @@ public class Provider extends WithProperties implements Visitable {
     }
 
     /*
-     * public void setLogin(String login) { this.login = login;
-    }
+     * public void setLogin(String login) { this.login = login; }
      */
     public String getLogin() {
         return login;
     }
 
     /*
-     * public void setPasswd(String passwd) { this.passwd = passwd;
-    }
+     * public void setPasswd(String passwd) { this.passwd = passwd; }
      */
     public String getPasswd() {
         return passwd;
@@ -130,8 +154,13 @@ public class Provider extends WithProperties implements Visitable {
         if (other instanceof Provider) {
             Provider otherProvider = (Provider) other;
             return name.equals(otherProvider.getName());
-        } else {
+        }
+        else {
             return false;
         }
+    }
+
+    private boolean credentialsExist() {
+        return new File(credentials).exists();
     }
 }

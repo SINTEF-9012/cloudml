@@ -90,4 +90,12 @@ public class Report {
         }
         return errors;
     }
+
+    public boolean pass(boolean warningAllowed) {
+        return !hasError() && (!warningAllowed || hasWarning());
+    }
+
+    public void addWarning(String message) {
+        this.messages.add(new Message(Level.WARNING, message));
+    }
 }

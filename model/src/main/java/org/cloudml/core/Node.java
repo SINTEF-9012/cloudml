@@ -23,11 +23,12 @@
 package org.cloudml.core;
 
 import java.util.List;
+import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
-public class Node extends WithProperties implements Visitable {
+public class Node extends WithProperties implements Visitable, CanBeValidated {
 
     private Provider cloudProvider;
 
@@ -59,6 +60,7 @@ public class Node extends WithProperties implements Visitable {
     
     
 
+    @Override
     public Report validate() {
         Report report = new Report();
         if (this.name == null) {
