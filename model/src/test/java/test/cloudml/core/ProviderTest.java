@@ -1,6 +1,6 @@
 /*
  */
-package test.cloudml.core.visitors;
+package test.cloudml.core;
 
 import junit.framework.TestCase;
 import static junit.framework.TestCase.assertTrue;

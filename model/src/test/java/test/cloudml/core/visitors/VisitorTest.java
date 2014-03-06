@@ -57,7 +57,7 @@ import test.cloudml.core.builder.Builder;
  * @since 0.1
  */
 @RunWith(JMock.class)
-public class TestVisitor extends TestCase {
+public class VisitorTest extends TestCase {
 
     public static final boolean REMOTE = true;
     Mockery context = new JUnit4Mockery();
