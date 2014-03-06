@@ -23,9 +23,11 @@
 package org.cloudml.core;
 
 import java.util.List;
+import org.cloudml.core.validation.CanBeValidated;
+import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 
-public abstract class ArtefactPort extends WithProperties implements Visitable {
+public abstract class ArtefactPort extends WithProperties implements Visitable, CanBeValidated {
 
     public static final boolean LOCAL = false;
     public static final boolean REMOTE = true;
@@ -48,6 +50,22 @@ public abstract class ArtefactPort extends WithProperties implements Visitable {
         this.owner = owner;
         this.remote = isRemote;
     }
+
+    @Override
+    public Report validate() {
+        final Report report = new Report();
+        if (name == null) {
+            report.addError("Port name is 'null'");
+        } else if (name.isEmpty()) {
+            report.addError("Port name is empty'");
+        }
+        if (owner == null) {
+            final String message = String.format("The owner of port '%s' is null", getNameOrDefaultIfNull());
+            report.addError(message);
+        }
+        return report;
+    }
+   
 
     public Artefact getOwner() {
         return owner;
