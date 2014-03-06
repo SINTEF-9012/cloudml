@@ -38,7 +38,7 @@ import org.cloudml.core.NodeInstance;
 import org.cloudml.core.Provider;
 import org.cloudml.core.ServerPort;
 import org.cloudml.core.ServerPortInstance;
-import org.cloudml.core.visitors.ContainmentVisitor;
+import org.cloudml.core.visitors.ContainmentDispatcher;
 import org.cloudml.core.visitors.VisitListener;
 import org.cloudml.core.visitors.Visitor;
 import org.junit.Test;
@@ -48,6 +48,8 @@ import static org.jmock.Expectations.any;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
 import org.jmock.integration.junit4.JUnit4Mockery;
+import test.cloudml.core.builder.ArtefactBuilder;
+import test.cloudml.core.builder.Builder;
 
 /**
  *
@@ -64,7 +66,7 @@ public class TestVisitor extends TestCase {
     public void testListenersAreInvoked() {
         final DeploymentModel model = prepareModel();
         final VisitListener processor = context.mock(VisitListener.class);
-        Visitor visitor = new ContainmentVisitor();
+        Visitor visitor = new Visitor(new ContainmentDispatcher());
         visitor.addListeners(processor);
 
         context.checking(new Expectations() {
@@ -88,53 +90,32 @@ public class TestVisitor extends TestCase {
         model.accept(visitor);
     }
 
+    
+    
     private DeploymentModel prepareModel() {
-        final DeploymentModel deploymentModel = new DeploymentModel();
-        final Provider provider = new Provider("My provider");
-        deploymentModel.getProviders().add(provider);
-
-        final String linuxTypeName = "Linux Ubuntu";
-        Node linux = new Node(linuxTypeName, provider);
-        deploymentModel.getNodeTypes().put(linuxTypeName, linux);
-
-        final String windowsTypeName = "Windows";
-        Node windowsType = new Node(windowsTypeName, provider);
-        deploymentModel.getNodeTypes().put(windowsTypeName, windowsType);
+        final Builder builder = new Builder();
         
-        final String clientAppTypeName = "Client App Type";
-        Artefact clientType = new Artefact(clientAppTypeName);
-        deploymentModel.getArtefactTypes().put(clientAppTypeName, clientType);
-
-        ClientPort clientEndPoint = new ClientPort("SSH Client", clientType, ArtefactPort.REMOTE, ClientPort.MANDATORY);
-        clientType.getRequired().add(clientEndPoint);
-
-        final String serverAppTypeName = "Server App. Type";
-        Artefact serverType = new Artefact(serverAppTypeName);
-        deploymentModel.getArtefactTypes().put(serverAppTypeName, serverType);
-
-        ServerPort serverEndPoint = new ServerPort("SSH Server", serverType, ArtefactPort.REMOTE);
-        serverType.getProvided().add(serverEndPoint);
-
-        final Binding sshConnection = new Binding(clientEndPoint, serverEndPoint);
-        deploymentModel.getBindingTypes().put("SSH Connection", sshConnection);
-
-        NodeInstance windowsServer = windowsType.instanciates("Windows Server");
-        deploymentModel.getNodeInstances().add(windowsServer);
-
-        ArtefactInstance client = new ArtefactInstance("client", clientType, windowsServer);
-        client.getRequired().add(new ClientPortInstance("ssh#1", clientEndPoint, client));
-        deploymentModel.getArtefactInstances().add(client);
+        Provider amazon = builder.createProvider("Amazon EC2");
         
-        NodeInstance linuxServer = linux.instanciates("Linux Server");
-        deploymentModel.getNodeInstances().add(linuxServer);
+        Node linux = builder.createNodeType("Linux Ubuntu", amazon);
+        Node windows = builder.createNodeType("Windows 7", amazon);
         
-        ArtefactInstance server = serverType.instanciates("the server", linuxServer);
-        server.getProvided().add(new ServerPortInstance("ssh#1", serverEndPoint, server));
-        deploymentModel.getArtefactInstances().add(server);
+        ArtefactBuilder clientBuilder = builder.createArtefactType("Client Application");
+        ClientPort client = clientBuilder.createClientPort("SSH client", ArtefactPort.REMOTE, ClientPort.MANDATORY);
 
-        BindingInstance bindingInstance = sshConnection.instanciates(client.getRequired().get(0), server.getProvided().get(0));
-        deploymentModel.getBindingInstances().add(bindingInstance);
+        ArtefactBuilder serverBuilder = builder.createArtefactType("Server Application");
+        ServerPort server = serverBuilder.createServerPort("SSH server", ArtefactPort.REMOTE);
+
+        Binding sshConnection = builder.createBindingType("SSH connection", client, server);
         
-        return deploymentModel;
+        NodeInstance windowsHost = builder.provision(windows, "Windows Server");
+        ArtefactInstance clientApp = builder.install(clientBuilder.getResult(), "client", windowsHost);
+        
+        NodeInstance linuxHost = builder.provision(linux, "Windows Server");   
+        ArtefactInstance serverApp = builder.install(serverBuilder.getResult(), "server", linuxHost);
+      
+        builder.connect("ssh connection", sshConnection, clientApp.getRequired().get(0), serverApp.getProvided().get(0));        
+        
+        return builder.getResult();
     }
 }

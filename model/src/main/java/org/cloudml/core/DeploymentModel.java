@@ -63,8 +63,7 @@ public class DeploymentModel extends WithProperties implements Visitable {
     public void accept(Visitor visitor) {
         visitor.visitDeploymentModel(this);
     }
-    
-    
+        
     
     public DeploymentModel(String name, List<Property> properties,
     		Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
@@ -182,5 +181,21 @@ public class DeploymentModel extends WithProperties implements Visitable {
         }
         builder.append("}\n");
         return builder.toString();
+    }
+
+    public boolean contains(Node nodeType) {
+        return this.nodeTypes.values().contains(nodeType);
+    }
+    
+    public boolean contains(Artefact artefactType) {
+        return this.artefactTypes.values().contains(artefactType);
+    }
+    
+    public boolean contains(Binding bindingType) {
+        return this.bindingTypes.values().contains(bindingType);
+    }
+    
+    public boolean contains(ArtefactInstance artefactInstance) {
+        return this.artefactInstances.contains(artefactInstance); 
     }
 }

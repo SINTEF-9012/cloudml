@@ -38,17 +38,16 @@ import org.cloudml.core.Provider;
 import org.cloudml.core.ServerPort;
 import org.cloudml.core.ServerPortInstance;
 
-public abstract class AbstractVisitor implements Visitor {
+public class Visitor { 
 
     private final Dispatcher dispatcher;
     private final ArrayList<VisitListener> listeners;
 
-    public AbstractVisitor(Dispatcher dispatcher) {
+    public Visitor(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.listeners = new ArrayList<VisitListener>();
     }
 
-    @Override
     public void addListeners(VisitListener... listeners) {
         if (listeners == null) {
             throw new IllegalArgumentException("Unable to add 'null' listeners");
@@ -56,38 +55,33 @@ public abstract class AbstractVisitor implements Visitor {
         this.listeners.addAll(Arrays.asList(listeners));
     }
 
-    @Override
     public void visitDeploymentModel(DeploymentModel model) {
-        for (VisitListener processor : listeners) {
-            processor.onDeployment(model);
+        for (VisitListener listener : listeners) {
+            listener.onDeployment(model);
         }
         dispatcher.dispatchTo(this, model);
     }
 
-    @Override
     public void visitProvider(Provider subject) {
-        for (VisitListener processor : listeners) {
-            processor.onProvider(subject);
+        for (VisitListener listener : listeners) {
+            listener.onProvider(subject);
         }
     }
 
-    @Override
     public void visitorNode(Node node) {
-        for (VisitListener processor : listeners) {
-            processor.onNode(node);
+        for (VisitListener listener : listeners) {
+            listener.onNode(node);
         }
         // No dispatch needed as nodes have no relationship
     }
 
-    @Override
     public void visitNodeInstance(NodeInstance nodeInstance) {
-        for (VisitListener processor : listeners) {
-            processor.onNodeInstance(nodeInstance);
+        for (VisitListener listener : listeners) {
+            listener.onNodeInstance(nodeInstance);
         }
         // No dispatch needed as node instances have no relationship
     }
 
-    @Override
     public void visitArtefact(Artefact artefact) {
         for (VisitListener listener : listeners) {
             listener.onArtefact(artefact);
@@ -95,7 +89,6 @@ public abstract class AbstractVisitor implements Visitor {
         dispatcher.dispatchTo(this, artefact);
     }
 
-    @Override
     public void visitArtefactInstance(ArtefactInstance artefactInstance) {
         for (VisitListener listener : listeners) {
             listener.onArtefactInstance(artefactInstance);
@@ -103,7 +96,6 @@ public abstract class AbstractVisitor implements Visitor {
         dispatcher.dispatchTo(this, artefactInstance);
     }
 
-    @Override
     public void visitBinding(Binding binding) {
         for (VisitListener listener : listeners) {
             listener.onBinding(binding);
@@ -111,7 +103,6 @@ public abstract class AbstractVisitor implements Visitor {
         dispatcher.dispatchTo(this, binding);
     }
 
-    @Override
     public void visitBindingInstance(BindingInstance subject) {
         for (VisitListener listener : listeners) {
             listener.onBindingInstance(subject);
@@ -119,7 +110,6 @@ public abstract class AbstractVisitor implements Visitor {
         dispatcher.dispatchTo(this, subject);
     }
 
-    @Override
     public void visitClientPort(ClientPort subject) {
         for (VisitListener listener : listeners) {
             listener.onClientPort(subject);
@@ -127,7 +117,6 @@ public abstract class AbstractVisitor implements Visitor {
         // No dispatch needed as ClientPorts have no relationship
     }
 
-    @Override
     public void visitServerPort(ServerPort subject) {
         for (VisitListener listener : listeners) {
             listener.onServerPort(subject);
@@ -135,7 +124,6 @@ public abstract class AbstractVisitor implements Visitor {
         // No dispatch needed as ServerPorts have no relationship
     }
 
-    @Override
     public void visitClientPortInstance(ClientPortInstance subject) {
         for (VisitListener listener : listeners) {
             listener.onClientPortInstance(subject);
@@ -143,7 +131,6 @@ public abstract class AbstractVisitor implements Visitor {
         // No dispatch needed as ClientPorts have no relationship
     }
 
-    @Override
     public void visitServerPortInstance(ServerPortInstance subject) {
         for (VisitListener listener : listeners) {
             listener.onServerPortInstance(subject);
