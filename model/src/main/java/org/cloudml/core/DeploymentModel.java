@@ -48,6 +48,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         super(name);
     }
 
+    @Deprecated
     public DeploymentModel(String name, List<Property> properties,
                            Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers) {
@@ -59,6 +60,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.providers = providers;
     }
 
+    @Deprecated
     public DeploymentModel(String name, List<Property> properties,
                            Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers, Map<String, Binding> bindingTypes, List<BindingInstance> bindingInstances) {
@@ -95,7 +97,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 && this.artefactInstances.isEmpty()
                 && this.bindingInstances.isEmpty();
     }
-    
+
     public List<ArtefactInstance> getArtefactInstances() {
         return artefactInstances;
     }

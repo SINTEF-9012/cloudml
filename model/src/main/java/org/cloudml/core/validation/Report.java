@@ -104,4 +104,12 @@ public class Report {
         }
         return builder.toString();
     }
+
+    public void clear() {
+        this.messages.clear();
+    }
+
+    public void append(Report anotherReport) {
+        this.messages.addAll(anotherReport.messages);
+    }
 }
