@@ -87,7 +87,7 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
     public boolean equals(Object other) {
         if (other instanceof ArtefactPortInstance) {
             ArtefactPortInstance otherNode = (ArtefactPortInstance) other;
-            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
+            return getName().equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
         }
         else {
             return false;
@@ -96,6 +96,6 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
 
     @Override
     public String toString() {
-        return "ArtefactPortInstance " + name + " owner:" + owner.getName();
+        return "ArtefactPortInstance " + getName() + " owner:" + owner.getName();
     }
 }

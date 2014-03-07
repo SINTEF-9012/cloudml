@@ -25,16 +25,6 @@ public abstract class ArtefactPortInstanceTest extends TestCase {
     }
 
     @Test
-    public void validationReportsNullName() {
-        ArtefactPortInstance instance = getValidInstance();
-        instance.setName(null);
-
-        Report validation = instance.validate();
-
-        assertTrue(validation.hasErrorAbout("name", "null"));
-    }
-
-    @Test
     public void validationReportsNullType() {
         ArtefactPortInstance instance = getValidInstance();
         instance.setType(null);

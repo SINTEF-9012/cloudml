@@ -15,7 +15,7 @@ public class ServerPortInstanceTest extends ArtefactPortInstanceTest {
 
     @Override
     public ArtefactPortInstance getValidInstance() {
-        return new ServerPortInstance("spi", new ServerPort(null, null, true), new ArtefactInstance());
+        return new ServerPortInstance("spi", new ServerPort("sp", null, true), new ArtefactInstance());
     }
     
     

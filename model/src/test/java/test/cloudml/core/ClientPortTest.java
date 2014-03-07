@@ -42,7 +42,7 @@ public class ClientPortTest extends ArtefactPortTest {
    
     @Override
     public ArtefactPort getPortWithoutOwner() {
-        return new ClientPort(null, null, true);
+        return new ClientPort("cp", null, true);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ClientPortTest extends ArtefactPortTest {
 
     @Override
     public ArtefactPort getPortWithoutName() {
-         return new ClientPort(null, null, true);
+         return new ClientPort("cp", null, true);
     }
 
 }

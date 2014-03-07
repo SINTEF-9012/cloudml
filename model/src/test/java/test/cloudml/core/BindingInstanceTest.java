@@ -52,26 +52,6 @@ public class BindingInstanceTest extends TestCase {
     }
 
     @Test
-    public void validationReportsNullName() {
-        BindingInstance instance = prepareBindingInstance();
-        instance.setName(null);
-
-        Report report = instance.validate();
-
-        assertTrue(report.hasErrorAbout("name", "null"));
-    }
-
-    @Test
-    public void validationReportsEmptyName() {
-        BindingInstance instance = prepareBindingInstance();
-        instance.setName("");
-
-        Report report = instance.validate();
-
-        assertTrue(report.hasErrorAbout("name", "empty"));
-    }
-
-    @Test
     public void validationReportsNullType() {
         BindingInstance instance = prepareBindingInstance();
         instance.setType(null);

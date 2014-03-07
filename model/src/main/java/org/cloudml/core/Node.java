@@ -63,7 +63,7 @@ public class Node extends WithProperties implements Visitable, CanBeValidated {
     @Override
     public Report validate() {
         Report report = new Report();
-        if (this.name == null) {
+        if (this.getName() == null) {
             report.addError("A node must have as a name (null found)");
         }
         if (this.cloudProvider == null) {
@@ -88,8 +88,8 @@ public class Node extends WithProperties implements Visitable, CanBeValidated {
         if (other instanceof Node) {
             Node otherNode = (Node) other;
             boolean nameMatch =
-                    (name == null && otherNode.getName() == null)
-                    || (name != null && name.equals(otherNode.getName()));
+                    (getName() == null && otherNode.getName() == null)
+                    || (getName() != null && getName().equals(otherNode.getName()));
             boolean providerMatch =
                     (cloudProvider == null && otherNode.getProvider() == null)
                     || (cloudProvider != null && cloudProvider.equals(otherNode.getProvider()));
@@ -106,7 +106,7 @@ public class Node extends WithProperties implements Visitable, CanBeValidated {
 
     @Override
     public String toString() {
-        return "Node " + name + "(minRam: " + minRam + ", minCore: " + minCore + ", minDisk: " + minDisk + ")";
+        return "Node " + getName() + "(minRam: " + minRam + ", minCore: " + minCore + ", minDisk: " + minDisk + ")";
     }
     /*
      * NODE Configuration

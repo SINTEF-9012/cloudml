@@ -53,15 +53,4 @@ public class ProviderTest extends TestCase {
         assertTrue(provider.validate().hasWarningAbout("credentials"));
     }
 
-    @Test
-    public void detectNullName() {
-        Provider provider = new Provider(null, "a_file_which_is_not_on_disk.properties");
-        assertTrue(provider.validate().hasErrorAbout("name"));
-    }
-
-    @Test
-    public void detectEmptyName() {
-        Provider provider = new Provider("", "a_file_which_is_not_on_disk.properties");
-        assertTrue(provider.validate().hasErrorAbout("name"));
-    }
 }

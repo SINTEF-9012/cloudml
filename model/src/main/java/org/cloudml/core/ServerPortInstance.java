@@ -48,9 +48,6 @@ public class ServerPortInstance extends ArtefactPortInstance<ServerPort> {
     @Override
     public Report validate() {
         final Report validation = new Report();
-        if (name == null) {
-            validation.addError("Server port instance has no name ('null' found)");
-        }
         if (type == null) {
             validation.addError("Server port instance has no type ('null' found)");
         }
@@ -62,14 +59,14 @@ public class ServerPortInstance extends ArtefactPortInstance<ServerPort> {
 
     @Override
     public String toString() {
-        return "ServerPortInstance " + name + " owner:" + owner.getName();
+        return "ServerPortInstance " + getName() + " owner:" + owner.getName();
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof ServerPortInstance) {
             ServerPortInstance otherNode = (ServerPortInstance) other;
-            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
+            return getName().equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
         }
         else {
             return false;

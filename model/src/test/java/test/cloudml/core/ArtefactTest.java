@@ -43,17 +43,6 @@ public class ArtefactTest extends TestCase {
         assertTrue(artefact.validate().pass(false));
     }
 
-    @Test
-    public void validationReportsNullName() {
-        Artefact artefact = new Artefact();
-        assertTrue(artefact.validate().hasErrorAbout("name"));
-    }
-
-    @Test
-    public void validationReportsEmptyName() {
-        Artefact artefact = new Artefact("");
-        assertTrue(artefact.validate().hasErrorAbout("name"));
-    }
     
     @Test
     public void validationReportsNoPorts() {

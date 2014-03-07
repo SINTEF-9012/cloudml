@@ -16,7 +16,7 @@ public class ClientPortInstanceTest extends ArtefactPortInstanceTest {
 
     @Override
     public ArtefactPortInstance getValidInstance() {
-        return new ClientPortInstance("name", new ClientPort(null, null, true), new ArtefactInstance());
+        return new ClientPortInstance("name", new ClientPort("cp", null, true), new ArtefactInstance());
     }
         
 }

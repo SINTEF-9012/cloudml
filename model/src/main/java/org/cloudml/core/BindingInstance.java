@@ -43,11 +43,12 @@ public class BindingInstance extends WithProperties implements Visitable, CanBeV
     }
 
     public BindingInstance(String name, Binding type) {
-        this.name = name;
+        super(name);
         this.type = type;
     }
 
     public BindingInstance(ClientPortInstance client, ServerPortInstance server, Binding type) {
+        super();
         this.client = client;
         this.server = server;
         this.type = type;
@@ -61,19 +62,10 @@ public class BindingInstance extends WithProperties implements Visitable, CanBeV
     @Override
     public Report validate() {
         final Report report = new Report();
-        validateName(report);
         validateType(report);
         validateClientEnd(report);
         validateServerEnd(report);
         return report;
-    }
-    
-    private void validateName(Report report) {
-        if (name == null) {
-            report.addError("Binding instance has no name ('null' found)");
-        } else if (name.isEmpty()) {
-            report.addError("Binding instance has no name (empty string found)");
-        }
     }
     
     private void validateType(Report report) {
@@ -90,8 +82,8 @@ public class BindingInstance extends WithProperties implements Visitable, CanBeV
             if (!client.getType().equals(type.getClient())) {
                 final String message = String.format(
                         "illegal binding instance that does not match its type (client found '%s' but expected '%s')", 
-                        client.getType().getNameOrDefaultIfNull(), 
-                        type.getClient().getNameOrDefaultIfNull());
+                        client.getType().getName(), 
+                        type.getClient().getName());
                 report.addError(message);
             }
         }
@@ -103,7 +95,7 @@ public class BindingInstance extends WithProperties implements Visitable, CanBeV
         } 
         else if (type != null) {
             if (!server.getType().equals(type.getServer())) {
-                final String message = String.format("illegal binding instance that does not match its type (server found '%s' but expected '%s')", server.getType().getNameOrDefaultIfNull(), type.getServer().getNameOrDefaultIfNull());
+                final String message = String.format("illegal binding instance that does not match its type (server found '%s' but expected '%s')", server.getType().getName(), type.getServer().getName());
                 report.addError(message);
             }
         }

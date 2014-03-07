@@ -54,13 +54,6 @@ public abstract class ArtefactPortTest extends TestCase {
     }
     
     @Test
-    public void testValidationReportsMissingName() {
-        ArtefactPort port = getPortWithoutName();
-
-        assertTrue(port.validate().hasErrorAbout("name"));
-    }
-
-    @Test
     public void testThatValidationsPassWhenPortIsValid() {
         ArtefactPort port = getValidPort();
         

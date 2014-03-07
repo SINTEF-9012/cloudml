@@ -34,7 +34,7 @@ public class ServerPortTest extends ArtefactPortTest {
 
     @Override
     public ArtefactPort getPortWithoutOwner() {
-        return new ServerPort(null, null, true);
+        return new ServerPort("sp", null, true);
     }
 
     @Override
@@ -46,6 +46,6 @@ public class ServerPortTest extends ArtefactPortTest {
 
     @Override
     public ArtefactPort getPortWithoutName() {
-        return new ServerPort(null, null, true);
+        return new ServerPort("sp", null, true);
     }
 }

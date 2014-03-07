@@ -49,20 +49,6 @@ public class ArtefactInstanceTest extends TestCase {
     }
 
     @Test
-    public void validationReportsNullName() {
-        ArtefactInstance instance = prepareInstance();
-        instance.setName(null);
-        assertTrue(instance.validate().hasErrorAbout("null", "name"));
-    }
-
-    @Test
-    public void validationReportsEmptyName() {
-        ArtefactInstance instance = prepareInstance();
-        instance.setName("");
-        assertTrue(instance.validate().hasErrorAbout("empty", "name"));
-    }
-
-    @Test
     public void validationReportsNullType() {
         ArtefactInstance instance = prepareInstance();
         instance.setType(null);

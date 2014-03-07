@@ -41,10 +41,11 @@ public class Provider extends WithProperties implements Visitable, CanBeValidate
     private String credentials;
 
     public Provider() {
+        super();
     }
 
     public Provider(String name) {
-        this.name = name;
+        super(name);
     }
 
     /**
@@ -69,29 +70,19 @@ public class Provider extends WithProperties implements Visitable, CanBeValidate
     @Override
     public Report validate() {
         final Report report = new Report();
-        if (name == null) {
-            report.addError("Missing name in provider!");
-        } 
-        else if (name.isEmpty()) {
-            report.addError("Empty name for provider");
-        }
-        
+       
         if (credentials == null) {
-            final String message = String.format("No credentials for provider '%s'", getNameOrDefault());
+            final String message = String.format("No credentials for provider '%s'", getName());
             report.addWarning(message);
         } 
         else if (!credentialsExist()) {
-            final String message = String.format("Unable to retreive credentials from  '%s' (provider '%s')", credentials, getNameOrDefault());
+            final String message = String.format("Unable to retreive credentials from  '%s' (provider '%s')", credentials, getName());
             report.addWarning(message);
         }
         
         return report;
     }
     
-    private String getNameOrDefault() {
-        return (name == null) ? "(no name)" : name;
-    }
-
     /*
      * public Provider(String name, String login, String passwd) { this.name =
      * name; this.login = login; this.passwd = passwd; }
@@ -146,14 +137,14 @@ public class Provider extends WithProperties implements Visitable, CanBeValidate
 
     @Override
     public String toString() {
-        return "Name: " + name + ", login: " + login;
+        return "Name: " + getName() + ", login: " + login;
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof Provider) {
             Provider otherProvider = (Provider) other;
-            return name.equals(otherProvider.getName());
+            return getName().equals(otherProvider.getName());
         }
         else {
             return false;

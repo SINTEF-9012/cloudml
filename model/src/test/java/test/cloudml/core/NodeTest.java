@@ -49,7 +49,6 @@ public class NodeTest extends TestCase {
     public void testValidateEmptyNode() {
         Node node = new Node();
         Report report = node.validate();
-        assertTrue(report.hasErrorAbout("name"));
         assertTrue(report.hasErrorAbout("provider"));
     }
 

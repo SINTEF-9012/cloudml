@@ -175,7 +175,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Deployment model " + name + "{\n");
+        builder.append("Deployment model " + getName() + "{\n");
         builder.append("- Artefact types: {\n");
         for (Artefact t : artefactTypes.values()) {
             builder.append("  - " + t + "\n");

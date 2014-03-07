@@ -45,6 +45,6 @@ public class ServerPort extends ArtefactPort {
 
     @Override
     public String toString() {
-        return "ServerPortType " + name + " ownerType" + owner.getName();
+        return "ServerPortType " + getName() + " ownerType" + owner.getName();
     }
 }

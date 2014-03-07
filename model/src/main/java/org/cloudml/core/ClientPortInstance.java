@@ -38,7 +38,7 @@ public class ClientPortInstance extends ArtefactPortInstance<ClientPort> {
 
     @Override
     public String toString() {
-        return "ClientPortInstance " + name + " owner:" + owner.getName();
+        return "ClientPortInstance " + getName() + " owner:" + owner.getName();
     }
 
     @Override
@@ -49,9 +49,6 @@ public class ClientPortInstance extends ArtefactPortInstance<ClientPort> {
     @Override
     public Report validate() {
         final Report validation = new Report();
-        if (name == null) {
-            validation.addError("Client port instance has no name ('null' found)");
-        }
         if (type == null) {
             validation.addError("Client port instance has no type ('null' found)");
         }
@@ -65,7 +62,7 @@ public class ClientPortInstance extends ArtefactPortInstance<ClientPort> {
     public boolean equals(Object other) {
         if (other instanceof ClientPortInstance) {
             ClientPortInstance otherNode = (ClientPortInstance) other;
-            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
+            return getName().equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
         }
         else {
             return false;

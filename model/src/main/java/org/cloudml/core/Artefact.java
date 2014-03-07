@@ -35,7 +35,6 @@ import org.cloudml.core.visitors.Visitor;
  */
 public class Artefact extends WithProperties implements Visitable, CanBeValidated {
 
-    public static final String DEFAULT_NAME = "no name";
     private ArtefactPort destination;
     private Resource resource;
 
@@ -80,14 +79,8 @@ public class Artefact extends WithProperties implements Visitable, CanBeValidate
     @Override
     public Report validate() {
         Report report = new Report();
-        if (name == null) {
-            report.addError("Artefact name is 'null'");
-        }
-        else if (name.isEmpty()) {
-            report.addError("Artefact name is empty");
-        }
         if (required.isEmpty() && provided.isEmpty()) {
-            final String message = String.format("Artefact '%s' has no port (neither provided or required)!", getNameOrDefaultIfNull());
+            final String message = String.format("Artefact '%s' has no port (neither provided or required)!", getName());
             report.addWarning(message);
         }
         return report;
@@ -95,14 +88,14 @@ public class Artefact extends WithProperties implements Visitable, CanBeValidate
 
     @Override
     public String toString() {
-        return "Type " + name;
+        return "Type " + getName();
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof Artefact) {
             Artefact otherArt = (Artefact) other;
-            return name.equals(otherArt.getName());
+            return getName().equals(otherArt.getName());
         }
         else {
             return false;

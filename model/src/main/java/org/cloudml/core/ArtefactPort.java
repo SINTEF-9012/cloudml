@@ -37,6 +37,7 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
     protected int portNumber = 0;
 
     public ArtefactPort() {
+        super();
     }
 
     public ArtefactPort(String name, Artefact owner, boolean isRemote) {
@@ -54,13 +55,8 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
     @Override
     public Report validate() {
         final Report report = new Report();
-        if (name == null) {
-            report.addError("Port name is 'null'");
-        } else if (name.isEmpty()) {
-            report.addError("Port name is empty'");
-        }
         if (owner == null) {
-            final String message = String.format("The owner of port '%s' is null", getNameOrDefaultIfNull());
+            final String message = String.format("The owner of port '%s' is null", getName());
             report.addError(message);
         }
         return report;
@@ -107,14 +103,14 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
 
     @Override
     public String toString() {
-        return "ArtefactPortType " + name + " ownerType" + owner.getName();
+        return "ArtefactPortType " + getName() + " ownerType" + owner.getName();
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof ArtefactPort) {
             ArtefactPort otherArt = (ArtefactPort) other;
-            return name.equals(otherArt.getName()) && owner.equals(otherArt.getOwner());
+            return getName().equals(otherArt.getName()) && owner.equals(otherArt.getOwner());
         }
         else {
             return false;

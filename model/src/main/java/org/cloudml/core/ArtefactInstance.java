@@ -45,7 +45,6 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
     private State status;
 
     public enum State {
-
         uninstalled,
         installed,
         configured,
@@ -59,6 +58,7 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
     private List<ServerPortInstance> provided = new LinkedList<ServerPortInstance>();
 
     public ArtefactInstance() {
+        super();
     }
 
     public ArtefactInstance(String name, Artefact type) {
@@ -97,15 +97,8 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
     @Override
     public Report validate() {
         final Report report = new Report();
-        if (name == null) {
-            report.addError("Artefact instance no name ('null' found)");
-        }
-        else if (name.isEmpty()) {
-            report.addError("Artefact has no name (empty string found)");
-        }
-
         if (type == null) {
-            final String message = String.format("Artefact instance '%s' has no type ('null' found)", getNameOrDefaultIfNull());
+            final String message = String.format("Artefact instance '%s' has no type ('null' found)", getName());
             report.addError(message);
         }
         else {
@@ -120,7 +113,7 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
     private void checkForMissingPorts(Report toComplete, String kind, Collection<? extends ArtefactPort> signature) {
         for (ArtefactPort portInType : signature) {
             if (!hasPortWithType(portInType)) {
-                String message = String.format("Missing %s port instance for port '%s' in artefact instance '%s'", kind, portInType.getNameOrDefaultIfNull(), getNameOrDefaultIfNull());
+                String message = String.format("Missing %s port instance for port '%s' in artefact instance '%s'", kind, portInType.getName(), getName());
                 toComplete.addError(message);
             }
         }
@@ -145,7 +138,7 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
     private void checkForExtraPorts(Report report, String kind, Collection<? extends ArtefactPortInstance> instancePorts) {
         for (ArtefactPortInstance port : instancePorts) {
             if (!this.type.contains(port.getType())) {
-                String message = String.format("extra %s port '%s' that does not match any port in type '%s'", kind, port.getNameOrDefaultIfNull(), type.getNameOrDefaultIfNull());
+                String message = String.format("extra %s port '%s' that does not match any port in type '%s'", kind, port.getName(), type.getName());
                 report.addError(message);
             }
         }
@@ -153,7 +146,7 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
 
     @Override
     public String toString() {
-        return "Instance " + name + " : " + getType().getName();
+        return "Instance " + getName() + " : " + getType().getName();
     }
 
     @Override
@@ -163,9 +156,9 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
         }
         if (other instanceof ArtefactInstance) {
             ArtefactInstance otherArt = (ArtefactInstance) other;
-            Boolean match = name.equals(otherArt.getName()) && type.equals(otherArt.getType());
+            Boolean match = getName().equals(otherArt.getName()) && type.equals(otherArt.getType());
             if (destination != null) {
-                return name.equals(otherArt.getName()) && type.equals(otherArt.getType()) && destination.equals(otherArt.getDestination());
+                return getName().equals(otherArt.getName()) && type.equals(otherArt.getType()) && destination.equals(otherArt.getDestination());
             }
             else {
                 return match && (otherArt.getDestination() == null);

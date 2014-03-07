@@ -43,13 +43,6 @@ public class NodeInstanceTest extends TestCase {
     }
 
     @Test
-    public void validationReportsNullName() {
-        NodeInstance instance = prepareInstance();
-        instance.setName(null);
-        assertTrue(instance.validate().hasErrorAbout("name", "null"));
-    }
-
-    @Test
     public void validationReportsNullType() {
         NodeInstance instance = prepareInstance();
         instance.setType(null);
