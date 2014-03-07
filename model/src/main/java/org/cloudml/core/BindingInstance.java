@@ -89,7 +89,7 @@ public class BindingInstance extends WithProperties implements Visitable, CanBeV
         else if (type != null) {
             if (!client.getType().equals(type.getClient())) {
                 final String message = String.format(
-                        "illegal binding instance that does not matches its type (client found '%s' but expected '%s')", 
+                        "illegal binding instance that does not match its type (client found '%s' but expected '%s')", 
                         client.getType().getNameOrDefaultIfNull(), 
                         type.getClient().getNameOrDefaultIfNull());
                 report.addError(message);
@@ -103,7 +103,7 @@ public class BindingInstance extends WithProperties implements Visitable, CanBeV
         } 
         else if (type != null) {
             if (!server.getType().equals(type.getServer())) {
-                final String message = String.format("illegal binding instance that does not matches its type (server found '%s' but expected '%s')", server.getType().getNameOrDefaultIfNull(), type.getServer().getNameOrDefaultIfNull());
+                final String message = String.format("illegal binding instance that does not match its type (server found '%s' but expected '%s')", server.getType().getNameOrDefaultIfNull(), type.getServer().getNameOrDefaultIfNull());
                 report.addError(message);
             }
         }

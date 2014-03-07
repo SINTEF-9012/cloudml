@@ -23,9 +23,10 @@
 package org.cloudml.core;
 
 import java.util.List;
+import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.visitors.Visitable;
 
-public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithProperties implements Visitable {
+public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithProperties implements Visitable, CanBeValidated {
 
     protected T type;
     protected ArtefactInstance owner;
@@ -68,6 +69,10 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
 
     public ArtefactInstance getOwner() {
         return this.owner;
+    }
+    
+    public void setOwner(ArtefactInstance newOwner) {
+        this.owner = newOwner;
     }
 
     public void setType(T type) {
