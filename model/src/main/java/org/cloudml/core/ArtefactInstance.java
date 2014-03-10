@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import static org.cloudml.core.NamedElement.findByName;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
@@ -144,6 +145,40 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
         }
     }
 
+    /*
+     * Provided ports
+     */
+    
+    public List<ServerPortInstance> getProvided() {
+        return this.provided;
+    }
+
+    public void addProvidedPort(ServerPortInstance provided) {
+        this.provided.add(provided);
+    }
+
+    public ServerPortInstance findProvidedPortByName(String serverPortName) {
+        return findByName(serverPortName, this.provided);
+    }
+    
+    /*
+     * Required Ports
+     */
+    
+    public List<ClientPortInstance> getRequired() {
+        return this.required;
+    }
+    
+    public void addRequiredPort(ClientPortInstance required) {
+        this.required.add(required);
+    }
+
+    public ClientPortInstance findRequiredPortByName(String clientPortName) {
+        return findByName(clientPortName, this.required);
+    }
+
+    
+    
     @Override
     public String toString() {
         return "Instance " + getName() + " : " + getType().getName();
@@ -169,17 +204,16 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
         }
     }
 
+    public boolean hasDestination() {
+        return this.destination != null;
+    }
+
     /*
      * Getters
      */
-    public List<ClientPortInstance> getRequired() {
-        return this.required;
-    }
 
-    public List<ServerPortInstance> getProvided() {
-        return this.provided;
-    }
 
+    
     public Artefact getType() {
         return this.type;
     }

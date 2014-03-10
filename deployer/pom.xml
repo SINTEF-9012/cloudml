@@ -14,7 +14,6 @@
 
 	<name>CloudML :: Deployer</name>
 
-
 	<build>
 		<plugins>
 			<plugin>

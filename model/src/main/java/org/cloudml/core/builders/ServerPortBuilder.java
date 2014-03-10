@@ -20,38 +20,47 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
-package test.cloudml.core.builder;
+
+package org.cloudml.core.builders;
 
 import org.cloudml.core.Artefact;
-import org.cloudml.core.ClientPort;
 import org.cloudml.core.ServerPort;
+import static org.cloudml.core.builders.Commons.*;
+import static org.cloudml.core.ServerPort.*;
 
-/**
- * Simplify the construction of complex artefact types
- */
-public class ArtefactBuilder {
 
-    private final Artefact inProgress;
+public class ServerPortBuilder {
 
-    public ArtefactBuilder(String artefactName) {
-        this.inProgress = new Artefact(artefactName);
+    private String name;
+    private boolean remote;
+    
+    public ServerPortBuilder() {
+        this.name = DEFAULT_NAME;
+        this.remote = DEFAULT_IS_REMOTE;
     }
-
-    public ClientPort createClientPort(String portName, boolean isRemote, boolean isMandatory) {
-        ClientPort port = new ClientPort(portName, inProgress, isRemote, isMandatory);
-        inProgress.getRequired().add(port);
-        return port;
+        
+    public ServerPortBuilder named(String name) {
+        this.name = name;
+        return this;
     }
     
-    public ServerPort createServerPort(String portName, boolean isRemote) {
-        ServerPort port = new ServerPort(portName, inProgress, isRemote);
-        inProgress.getProvided().add(port);
-        return port;
+    public ServerPortBuilder remote() {
+        this.remote = REMOTE;
+        return this;
+    }
+    
+    public ServerPortBuilder local() {
+        this.remote = LOCAL;
+        return this;
+    }
+    
+    public ServerPort build() {
+        return new ServerPort(name, anArtefact().build(), remote);
     }
 
-    public Artefact getResult() {
-        return this.inProgress;
+    public void integrateIn(Artefact container) {
+        ServerPort result = new ServerPort(name, container, remote);
+        container.getProvided().add(result);
     }
+    
 }

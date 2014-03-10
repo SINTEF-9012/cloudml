@@ -25,10 +25,9 @@
 package test.cloudml.core;
 
 import org.cloudml.core.ArtefactPort;
-import static org.cloudml.core.ArtefactPort.LOCAL;
 import org.cloudml.core.ServerPort;
-import test.cloudml.core.builder.ArtefactBuilder;
-import test.cloudml.core.builder.Builder;
+import static org.cloudml.core.builders.Commons.*;
+
 
 public class ServerPortTest extends ArtefactPortTest {
 
@@ -39,9 +38,7 @@ public class ServerPortTest extends ArtefactPortTest {
 
     @Override
     public ArtefactPort getValidPort() {
-        Builder builder = new Builder();
-        ArtefactBuilder artefact = builder.createArtefactType("My App type");
-        return artefact.createServerPort("ssh", LOCAL);
+        return aServerPort().named("ssh").remote().build();
     }
 
     @Override

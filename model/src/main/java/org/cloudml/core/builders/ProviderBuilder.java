@@ -22,41 +22,41 @@
  */
 /*
  */
+package org.cloudml.core.builders;
 
-package test.cloudml.core.validation;
-
-import junit.framework.TestCase;
 import org.cloudml.core.DeploymentModel;
-import org.cloudml.core.validation.DeploymentValidator;
-import org.cloudml.core.validation.Report;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.cloudml.core.NamedElement;
+import org.cloudml.core.Provider;
 
-/**
- *
- */
-@RunWith(JUnit4.class)
-public class DeploymentValidatorTest extends TestCase {
+public class ProviderBuilder {
 
-    final DeploymentValidator validator;
-    
-    public DeploymentValidatorTest() {
-        this.validator = new DeploymentValidator();
+    private String name;
+    private String credentials;
+
+    public ProviderBuilder() {
+        this.name = NamedElement.DEFAULT_NAME;
     }
-        
-    @Test
-    public void validationsPassWithWarningOnValidModels() {
-        DeploymentModel model = getValidModel();
-        
-        Report validation = this.validator.validate(model);
-        
-        assertTrue(validation.pass(Report.WITHOUT_WARNING));
+
+    public ProviderBuilder named(String name) {
+        this.name = name;
+        return this;
     }
-    
-    
-    private DeploymentModel getValidModel() {
-        return new DeploymentModel();
+
+    public ProviderBuilder withCredentials(String credentials) {
+        this.credentials = Provider.DEFAULT_CREDENTIALS;
+        return this;
     }
-    
+
+    public Provider build() {
+        final Provider result = new Provider();
+        result.setName(name);
+        //result.setCredentials(credentials);
+        return result;
+    }
+
+    public void integrateIn(DeploymentModel model) {
+        final Provider result = new Provider();
+        result.setName(name);
+        model.addProvider(result); 
+    }
 }

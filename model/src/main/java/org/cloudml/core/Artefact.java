@@ -153,4 +153,29 @@ public class Artefact extends WithProperties implements Visitable, CanBeValidate
             return this.getProvided().contains((ServerPort) port);
         }
     }
+
+    public ClientPort findRequiredPortByName(String clientPortName) {
+        return findByName(clientPortName, required);
+    }
+    
+    public void addProvidedPort(ServerPort server) {
+        this.provided.add(server);
+    }
+    
+    public void removeProvidedPort(ServerPort server) {
+        this.provided.remove(server);
+    }
+
+    public ServerPort findProvidedPortByName(String serverPortName) {
+        return findByName(serverPortName, provided);
+    }
+    
+    public void addRequiredPort(ClientPort client) {
+        this.required.add(client);
+    }
+    
+    public void removeRequiredPort(ClientPort client) {
+        this.required.remove(client);
+    }
+    
 }

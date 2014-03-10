@@ -31,6 +31,7 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
 
     public static final boolean LOCAL = false;
     public static final boolean REMOTE = true;
+    public static final boolean DEFAULT_IS_REMOTE = REMOTE;
     
     protected boolean remote = false;
     protected Artefact owner;

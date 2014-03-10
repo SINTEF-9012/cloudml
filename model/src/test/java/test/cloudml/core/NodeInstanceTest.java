@@ -24,14 +24,13 @@ package test.cloudml.core;
 
 import junit.framework.TestCase;
 import static junit.framework.TestCase.assertTrue;
-import org.cloudml.core.Node;
+import org.cloudml.core.DeploymentModel;
 import org.cloudml.core.NodeInstance;
-import org.cloudml.core.Provider;
 import org.cloudml.core.validation.Report;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import test.cloudml.core.builder.Builder;
+import static org.cloudml.core.builders.Commons.*;
 
 @RunWith(JUnit4.class)
 public class NodeInstanceTest extends TestCase {
@@ -50,10 +49,16 @@ public class NodeInstanceTest extends TestCase {
     }
 
     private NodeInstance prepareInstance() {
-        Builder builder = new Builder();
-        Provider provider = builder.createProvider("EC2");
-        Node nodeType = builder.createNodeType("Test Type", provider);
-        return builder.provision(nodeType, "My instance");
+        DeploymentModel model = aDeployment()
+                .withProvider(aProvider().named("EC2"))
+                .withNodeType(aNode()
+                    .named("Linux")
+                    .providedBy("EC2"))
+                .withNodeInstance(aNodeInstance()
+                    .named("My Instance")
+                    .ofType("Linux"))
+                .build();
+        return model.findNodeInstanceByName("My Instance");
     }
     
     

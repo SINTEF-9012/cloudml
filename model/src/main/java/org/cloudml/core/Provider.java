@@ -35,6 +35,7 @@ import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
 public class Provider extends WithProperties implements Visitable, CanBeValidated {
+    public static String DEFAULT_CREDENTIALS = "credentials.properties";
 
     private String login = "";
     private String passwd = "";

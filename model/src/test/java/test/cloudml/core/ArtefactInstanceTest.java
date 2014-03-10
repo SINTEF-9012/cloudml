@@ -27,17 +27,14 @@ import static junit.framework.TestCase.assertTrue;
 import org.cloudml.core.ArtefactInstance;
 import org.cloudml.core.ClientPort;
 import org.cloudml.core.ClientPortInstance;
-import org.cloudml.core.Node;
-import org.cloudml.core.NodeInstance;
-import org.cloudml.core.Provider;
+import org.cloudml.core.DeploymentModel;
 import org.cloudml.core.ServerPort;
 import org.cloudml.core.ServerPortInstance;
 import org.cloudml.core.validation.Report;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import test.cloudml.core.builder.ArtefactBuilder;
-import test.cloudml.core.builder.Builder;
+import static org.cloudml.core.builders.Commons.*;
 
 @RunWith(JUnit4.class)
 public class ArtefactInstanceTest extends TestCase {
@@ -96,15 +93,26 @@ public class ArtefactInstanceTest extends TestCase {
     }
 
     private ArtefactInstance prepareInstance() {
-        Builder builder = new Builder();
-        Provider providers = builder.createProvider("EC2");
-        Node linux = builder.createNodeType("Linux", providers);
-        NodeInstance host1 = builder.provision(linux, "host1");
-        ArtefactBuilder appBuilder = builder.createArtefactType("My App");
-        appBuilder.createClientPort("rp#1", ClientPort.LOCAL, ClientPort.MANDATORY);
-        appBuilder.createClientPort("rp#2", ClientPort.REMOTE, ClientPort.MANDATORY);
-        appBuilder.createServerPort("pp#1", ServerPort.LOCAL);
-        appBuilder.createServerPort("pp#2", ServerPort.REMOTE);
-        return builder.install(appBuilder.getResult(), "app 1", host1);
+        DeploymentModel model = aDeployment()
+                .withProvider(aProvider().named("EC2"))
+                .withNodeType(aNode()
+                    .named("Linux")
+                    .providedBy("EC2"))
+                .withNodeInstance(aNodeInstance()
+                    .named("host 1")
+                    .ofType("Linux"))
+                .withArtefact(anArtefact()
+                    .named("My App")
+                    .withClientPort(aClientPort().named("rp#1").remote().mandatory())
+                    .withClientPort(aClientPort().named("rp#2").remote().mandatory())
+                    .withServerPort(aServerPort().named("pp#1").remote())
+                    .withServerPort(aServerPort().named("pp#2").remote()))
+                .withArtefactInstance(anArtefactInstance()
+                    .named("app 1")
+                    .ofType("My App")
+                    .hostedBy("host 1"))
+                .build();
+                
+        return model.findArtefactInstanceByName("app 1");
     }
 }

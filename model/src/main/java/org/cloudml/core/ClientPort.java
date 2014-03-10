@@ -29,8 +29,9 @@ public class ClientPort extends ArtefactPort {
 
     public static final boolean OPTIONAL = true;
     public static final boolean MANDATORY = false;
+    public static final boolean DEFAULT_IS_OPTIONAL = MANDATORY;
     
-    private boolean isOptional = true;
+    private boolean optional = true;
 
     public ClientPort(String name, Artefact owner, boolean isRemote) {
         super(name, owner, isRemote);
@@ -38,12 +39,12 @@ public class ClientPort extends ArtefactPort {
 
     public ClientPort(String name, Artefact owner, boolean isRemote, boolean isOptional) {
         super(name, owner, isRemote);
-        this.isOptional = isOptional;
+        this.optional = isOptional;
     }
 
     public ClientPort(String name, List<Property> properties, Artefact owner, boolean isRemote, boolean isOptional) {
         super(name, properties, owner, isRemote);
-        this.isOptional = isOptional;
+        this.optional = isOptional;
     }
 
     @Override
@@ -52,17 +53,32 @@ public class ClientPort extends ArtefactPort {
     }
 
     
-    
+    @Deprecated
     public void setIsOptional(boolean isOptional) {
-        this.isOptional = isOptional;
+        this.optional = isOptional;
     }
 
+    @Deprecated
     public boolean getIsOptional() {
-        return isOptional;
+        return optional;
     }
 
+    public void setOptional(boolean isOptional) {
+        this.optional = isOptional;
+    }
+    
+    public boolean isOptional() {
+        return optional;
+    }
+    
+    public boolean isMandatory() {
+        return !this.optional;
+    }
+    
     @Override
     public String toString() {
         return "ClientTypePort " + getName() + " ownerType" + owner.getName();
     }
+
+    
 }

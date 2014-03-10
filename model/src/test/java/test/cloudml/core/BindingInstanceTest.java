@@ -24,21 +24,15 @@ package test.cloudml.core;
 
 import junit.framework.TestCase;
 import static junit.framework.TestCase.assertTrue;
-import org.cloudml.core.ArtefactInstance;
-import org.cloudml.core.ArtefactPort;
-import org.cloudml.core.Binding;
 import org.cloudml.core.BindingInstance;
 import org.cloudml.core.ClientPort;
-import org.cloudml.core.Node;
-import org.cloudml.core.NodeInstance;
-import org.cloudml.core.Provider;
+import org.cloudml.core.DeploymentModel;
 import org.cloudml.core.ServerPort;
 import org.cloudml.core.validation.Report;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import test.cloudml.core.builder.ArtefactBuilder;
-import test.cloudml.core.builder.Builder;
+import org.cloudml.core.samples.SshClientServer;
 
 @RunWith(JUnit4.class)
 public class BindingInstanceTest extends TestCase {
@@ -87,8 +81,7 @@ public class BindingInstanceTest extends TestCase {
         instance.getServer().setType(new ServerPort("Foo", null, true));
 
         Report report = instance.validate();
-        System.out.println(report);
-
+      
         assertTrue(report.hasErrorAbout("illegal", "binding", "instance", "type", "server"));
     }
 
@@ -98,34 +91,15 @@ public class BindingInstanceTest extends TestCase {
         instance.getClient().setType(new ClientPort("Foo", null, true));
 
         Report report = instance.validate();
-        System.out.println(report);
-
+      
         assertTrue(report.hasErrorAbout("illegal", "binding", "instance", "type", "client"));
     }
 
-    // TODO: remove duplication with the code in test visitor
     private BindingInstance prepareBindingInstance() {
-        final Builder builder = new Builder();
-
-        Provider amazon = builder.createProvider("Amazon EC2");
-
-        Node linux = builder.createNodeType("Linux Ubuntu", amazon);
-        Node windows = builder.createNodeType("Windows 7", amazon);
-
-        ArtefactBuilder clientBuilder = builder.createArtefactType("Client Application");
-        ClientPort client = clientBuilder.createClientPort("SSH client", ArtefactPort.REMOTE, ClientPort.MANDATORY);
-
-        ArtefactBuilder serverBuilder = builder.createArtefactType("Server Application");
-        ServerPort server = serverBuilder.createServerPort("SSH server", ArtefactPort.REMOTE);
-
-        Binding sshConnection = builder.createBindingType("SSH connection", client, server);
-
-        NodeInstance windowsHost = builder.provision(windows, "Windows Server");
-        ArtefactInstance clientApp = builder.install(clientBuilder.getResult(), "client", windowsHost);
-
-        NodeInstance linuxHost = builder.provision(linux, "Windows Server");
-        ArtefactInstance serverApp = builder.install(serverBuilder.getResult(), "server", linuxHost);
-
-        return builder.connect("ssh connection", sshConnection, clientApp.getRequired().get(0), serverApp.getProvided().get(0));
+        DeploymentModel model = new SshClientServer()
+                .getOneClientConnectedToOneServer()
+                .build();
+        
+        return model.findBindingInstanceByName("the SSH connection");
     }
 }

@@ -27,7 +27,6 @@ package test.cloudml.core.visitors;
 import junit.framework.TestCase;
 import org.cloudml.core.Artefact;
 import org.cloudml.core.ArtefactInstance;
-import org.cloudml.core.ArtefactPort;
 import org.cloudml.core.Binding;
 import org.cloudml.core.BindingInstance;
 import org.cloudml.core.ClientPort;
@@ -41,6 +40,7 @@ import org.cloudml.core.ServerPortInstance;
 import org.cloudml.core.visitors.ContainmentDispatcher;
 import org.cloudml.core.visitors.VisitListener;
 import org.cloudml.core.visitors.Visitor;
+import org.cloudml.core.samples.SshClientServer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jmock.Expectations;
@@ -48,14 +48,7 @@ import static org.jmock.Expectations.any;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
 import org.jmock.integration.junit4.JUnit4Mockery;
-import test.cloudml.core.builder.ArtefactBuilder;
-import test.cloudml.core.builder.Builder;
 
-/**
- *
- * @author Franck Chauvel
- * @since 0.1
- */
 @RunWith(JMock.class)
 public class VisitorTest extends TestCase {
 
@@ -63,14 +56,14 @@ public class VisitorTest extends TestCase {
 
     @Test
     public void testListenersAreInvoked() {
-        final DeploymentModel model = prepareModel();
+        final DeploymentModel model = new SshClientServer().getOneClientConnectedToOneServer().build();
         final VisitListener processor = context.mock(VisitListener.class);
         Visitor visitor = new Visitor(new ContainmentDispatcher());
         visitor.addListeners(processor);
 
         context.checking(new Expectations() {
             {
-                oneOf(processor).onDeployment(with(any(DeploymentModel.class))); 
+                oneOf(processor).onDeployment(with(any(DeploymentModel.class)));
                 oneOf(processor).onProvider(with(any(Provider.class)));
                 exactly(2).of(processor).onNode(with(any(Node.class)));
                 exactly(2).of(processor).onArtefact(with(any(Artefact.class)));
@@ -83,38 +76,8 @@ public class VisitorTest extends TestCase {
                 oneOf(processor).onServerPortInstance(with(any(ServerPortInstance.class)));
                 oneOf(processor).onBindingInstance(with(any(BindingInstance.class)));
             }
-
         });
 
         model.accept(visitor);
-    }
-
-    
-    
-    private DeploymentModel prepareModel() {
-        final Builder builder = new Builder();
-        
-        Provider amazon = builder.createProvider("Amazon EC2");
-        
-        Node linux = builder.createNodeType("Linux Ubuntu", amazon);
-        Node windows = builder.createNodeType("Windows 7", amazon);
-        
-        ArtefactBuilder clientBuilder = builder.createArtefactType("Client Application");
-        ClientPort client = clientBuilder.createClientPort("SSH client", ArtefactPort.REMOTE, ClientPort.MANDATORY);
-
-        ArtefactBuilder serverBuilder = builder.createArtefactType("Server Application");
-        ServerPort server = serverBuilder.createServerPort("SSH server", ArtefactPort.REMOTE);
-
-        Binding sshConnection = builder.createBindingType("SSH connection", client, server);
-        
-        NodeInstance windowsHost = builder.provision(windows, "Windows Server");
-        ArtefactInstance clientApp = builder.install(clientBuilder.getResult(), "client", windowsHost);
-        
-        NodeInstance linuxHost = builder.provision(linux, "Windows Server");   
-        ArtefactInstance serverApp = builder.install(serverBuilder.getResult(), "server", linuxHost);
-      
-        builder.connect("ssh connection", sshConnection, clientApp.getRequired().get(0), serverApp.getProvided().get(0));        
-        
-        return builder.getResult();
     }
 }
