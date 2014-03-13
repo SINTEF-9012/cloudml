@@ -47,6 +47,7 @@ public class Binding extends WithProperties implements Visitable, CanBeValidated
         this.client = client;
         this.server = server;
     }
+    
 
     @Override
     public void accept(Visitor visitor) {

@@ -124,6 +124,11 @@ public class BindingInstance extends WithProperties implements Visitable, CanBeV
     public void setType(Binding type) {
         this.type = type;
     }
+    
+     public boolean eitherEndIs(ArtefactPortInstance<? extends ArtefactPort> portInstance) {
+        return server.equals(portInstance)
+                || client.equals(portInstance);
+    }
 
     @Override
     public String toString() {

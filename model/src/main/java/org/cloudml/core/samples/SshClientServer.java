@@ -32,54 +32,88 @@ import org.cloudml.core.builders.DeploymentModelBuilder;
  * 
  */
 public class SshClientServer {
+    
+    public static final String PROVIDER = "Amazon EC2";
+    public static final String LINUX_TYPE = "Linux Ubuntu 12.04";
+    public static final String WINDOWS_TYPE = "Windows 7";
+    public static final String CLIENT_TYPE = "Client Application";
+    public static final String CLIENT_PORT = "SSH client";
+    public static final String SERVER_TYPE = "Server Application";
+    public static final String SERVER_PORT = "SSH server";
+    public static final String BINDING_TYPE = "SSH connection";
+    public static final String HOST_3 = "VM no. 3";
+    public static final String CLIENT_NO_2 = "client no. 2";
+    public static final String BINDING_NO_2 = "SSH connection no. 2";
+    public static final String SERVER_NO_1 = "server no. 1";
+    public static final String CLIENT_NO_1 = "client no. 1";
+    public static final String HOST_NO_1 = "VM no. 1";
+    public static final String HOST_NO_2 = "VM no. 2";
+    public static final String BINDING_NO_1 = "SSH connection no. 1";
 
     public DeploymentModelBuilder getTypes() {
         return aDeployment()
-                .withProvider(aProvider().named("Amazon EC2"))
+                .withProvider(aProvider().named(PROVIDER))
                 .withNodeType(aNode()
-                    .named("Linux Ubuntu 12.04")
-                    .providedBy("Amazon EC2"))
+                    .named(LINUX_TYPE)
+                    .providedBy(PROVIDER))
                 .withNodeType(aNode()
-                    .named("Windows 7")
-                    .providedBy("Amazon EC2"))
+                    .named(WINDOWS_TYPE)
+                    .providedBy(PROVIDER))
                 .withArtefact(anArtefact()
-                    .named("Client Application")
+                    .named(CLIENT_TYPE)
                     .withClientPort(aClientPort()
-                        .named("SSH client")
+                        .named(CLIENT_PORT)
                         .remote()))
                 .withArtefact(anArtefact()
-                    .named("Server Application")
+                    .named(SERVER_TYPE)
                     .withServerPort(aServerPort()
-                        .named("SSH server")
+                        .named(SERVER_PORT)
                         .remote()))
                 .withBinding(aBinding()
-                    .named("SSH connection")
-                    .from("Client Application", "SSH client")
-                    .to("Server Application", "SSH server"));
+                    .named(BINDING_TYPE)
+                    .from(CLIENT_TYPE, CLIENT_PORT)
+                    .to(SERVER_TYPE, SERVER_PORT));
     }
 
     public DeploymentModelBuilder getOneClientConnectedToOneServer() {
         return getTypes()
-                .named("1 client connected to one server by ")
+                .named("1 client connected to one server by SSH")
                 .withNodeInstance(aNodeInstance()
-                    .named("VM no. 1")
-                    .ofType("Linux Ubuntu 12.04"))
+                    .named(HOST_NO_1)
+                    .ofType(LINUX_TYPE))
                 .withNodeInstance(aNodeInstance()
-                    .named("VM no. 2")
-                    .ofType("Windows 7"))
+                    .named(HOST_NO_2)
+                    .ofType(WINDOWS_TYPE))
                 .withArtefactInstance(anArtefactInstance()
-                    .named("client")
-                    .ofType("Client Application")
-                    .hostedBy("VM no. 1"))
+                    .named(CLIENT_NO_1)
+                    .ofType(CLIENT_TYPE)
+                    .hostedBy(HOST_NO_1))
                 .withArtefactInstance(anArtefactInstance()
-                    .named("server")
-                    .ofType("Server Application")
-                    .hostedBy("VM no. 2"))
+                    .named(SERVER_NO_1)
+                    .ofType(SERVER_TYPE)
+                    .hostedBy(HOST_NO_2))
                 .withBindingInstance(aBindingInstance()
-                    .named("the SSH connection")
-                    .ofType("SSH connection")
-                    .from("client", "SSH client")
-                    .to("server", "SSH server"));
-
+                    .named(BINDING_NO_1)
+                    .ofType(BINDING_TYPE)
+                    .from(CLIENT_NO_1, CLIENT_PORT)
+                    .to(SERVER_NO_1, SERVER_PORT));
+    }
+    
+    
+    public DeploymentModelBuilder getTwoClientsConnectedToOneServer() {
+        return getOneClientConnectedToOneServer()
+                .named("2 clients connected to one server by SSH")
+                .withNodeInstance(aNodeInstance()
+                    .named(HOST_3)
+                    .ofType(LINUX_TYPE))
+                .withArtefactInstance(anArtefactInstance()
+                    .named(CLIENT_NO_2)
+                    .ofType(CLIENT_TYPE)
+                    .hostedBy(HOST_3))
+                .withBindingInstance(aBindingInstance()
+                    .named(BINDING_NO_2)
+                    .ofType(BINDING_TYPE)
+                    .from(CLIENT_NO_2, CLIENT_PORT)
+                    .to(SERVER_NO_1, SERVER_PORT));
     }
 }

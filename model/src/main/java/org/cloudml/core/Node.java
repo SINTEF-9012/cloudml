@@ -79,6 +79,10 @@ public class Node extends WithProperties implements Visitable, CanBeValidated {
     public void setProvider(Provider p) {
         cloudProvider = p;
     }
+    
+    public boolean isProvidedBy(Provider provider) {
+        return this.cloudProvider.equals(provider);
+    } 
 
     @Override
     public boolean equals(Object other) {

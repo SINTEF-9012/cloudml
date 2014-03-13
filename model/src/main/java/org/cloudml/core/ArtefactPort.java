@@ -109,6 +109,7 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
 
     @Override
     public boolean equals(Object other) {
+        if (other == null) { return false; }
         if (other instanceof ArtefactPort) {
             ArtefactPort otherArt = (ArtefactPort) other;
             return getName().equals(otherArt.getName()) && owner.equals(otherArt.getOwner());

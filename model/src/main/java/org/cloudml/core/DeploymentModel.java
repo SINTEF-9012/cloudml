@@ -25,6 +25,7 @@ package org.cloudml.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,9 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 && this.bindingInstances.isEmpty();
     }
 
-    // Providers
+    /*
+     * Providers
+     */
     public List<Provider> getProviders() {
         return providers;
     }
@@ -119,7 +122,19 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     }
 
     public void removeProvider(Provider provider) {
+        if (isUsed(provider)) {
+            String message = String.format("Unable to remove provider '%s' as it still provides nodes", provider.getName());
+            throw new IllegalStateException(message);
+        }
         this.providers.remove(provider);
+    }
+
+    public boolean contains(Provider provider) {
+        return this.providers.contains(provider);
+    }
+
+    public boolean isUsed(Provider provider) {
+        return !findNodesByProvider(provider).isEmpty();
     }
 
     public Provider findProviderByName(String providerName) {
@@ -142,24 +157,28 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     }
 
     public void addNode(Node node) {
+        if (!contains(node.getProvider())) {
+            String message = String.format("The provider '%s' (used by node '%s') is not part of the model", node.getProvider().getName(), node.getName());
+            throw new IllegalStateException(message);
+        }
         this.nodeTypes.put(node.getName(), node);
     }
 
     public void removeNode(Node node) {
-        if (hasAnyInstanceOf(node)) {
+        if (isUsed(node)) {
             final String message = String.format("Unable to remove node type '%s' as there are still some related instances", node.getName());
             throw new IllegalStateException(message);
         }
         this.nodeTypes.remove(node.getName());
     }
-    
-    public boolean hasAnyInstanceOf(Node node) {
+
+    public boolean isUsed(Node node) {
         return !findInstancesOf(node).isEmpty();
     }
-    
+
     public List<NodeInstance> findInstancesOf(Node node) {
         ArrayList<NodeInstance> selectedInstances = new ArrayList<NodeInstance>();
-        for (NodeInstance nodeInstance: this.nodeInstances) {
+        for (NodeInstance nodeInstance : this.nodeInstances) {
             if (nodeInstance.getType().equals(node)) {
                 selectedInstances.add(nodeInstance);
             }
@@ -169,6 +188,16 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
     public Node findNodeByName(String nodeName) {
         return this.nodeTypes.get(nodeName);
+    }
+
+    public List<Node> findNodesByProvider(Provider provider) {
+        ArrayList<Node> selectedNodes = new ArrayList<Node>();
+        for (Node node : this.nodeTypes.values()) {
+            if (node.isProvidedBy(provider)) {
+                selectedNodes.add(node);
+            }
+        }
+        return selectedNodes;
     }
 
     public boolean contains(Node nodeType) {
@@ -195,6 +224,10 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     }
 
     public void removeArtefact(Artefact artefact) {
+        if (isUsed(artefact)) {
+            String message = String.format("Cannot remove artefact '%s' as it still has instances", artefact.getName());
+            throw new IllegalStateException(message);
+        }
         this.artefactTypes.remove(artefact.getName());
     }
 
@@ -204,6 +237,19 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
     public boolean contains(Artefact artefactType) {
         return this.artefactTypes.values().contains(artefactType);
+    }
+
+    public boolean isUsed(Artefact artefact) {
+        return !findArtefactInstancesByType(artefact).isEmpty();
+    }
+
+    public boolean isUsed(ArtefactInstance server) {
+        boolean found = false;
+        final Iterator<ServerPortInstance> iterator = server.getProvided().iterator();
+        while (iterator.hasNext() && !found) {
+            found = isBound(iterator.next());
+        }
+        return found;
     }
 
     // Bindings Types
@@ -259,6 +305,16 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return findByName(nodeInstanceName, this.nodeInstances);
     }
 
+    public List<NodeInstance> findNodeInstancesByType(Node nodeType) {
+        final ArrayList<NodeInstance> selection = new ArrayList<NodeInstance>();
+        for (NodeInstance ni : nodeInstances) {
+            if (ni.getType().equals(nodeType)) {
+                selection.add(ni);
+            }
+        }
+        return selection;
+    }
+
     public boolean contains(NodeInstance nodeInstance) {
         return this.nodeInstances.contains(nodeInstance);
     }
@@ -292,6 +348,26 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return findByName(instanceName, this.artefactInstances);
     }
 
+    public List<ArtefactInstance> findArtefactInstancesByType(Artefact type) {
+        ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
+        for (ArtefactInstance instance : this.artefactInstances) {
+            if (instance.getType().equals(type)) {
+                selection.add(instance);
+            }
+        }
+        return selection;
+    }
+
+    public List<ArtefactInstance> findArtefactInstancesByDestination(NodeInstance destination) {
+        final ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
+        for (ArtefactInstance artefact : artefactInstances) {
+            if (artefact.getDestination().equals(destination)) {
+                selection.add(artefact);
+            }
+        }
+        return selection;
+    }
+
     // Bindings instances
     public void setBindingInstances(List<BindingInstance> bindingInstances) {
         this.bindingInstances = bindingInstances;
@@ -304,15 +380,60 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     public void addBindingInstance(BindingInstance bindingToAdd) {
         this.bindingInstances.add(bindingToAdd);
     }
-    
+
     public void removeBindingInstance(BindingInstance bindingToRemove) {
         this.bindingInstances.remove(bindingToRemove);
     }
-    
+
     public BindingInstance findBindingInstanceByName(String bindingInstanceName) {
         return findByName(bindingInstanceName, this.bindingInstances);
     }
+
+    public List<BindingInstance> findBindingInstancesByPort(ArtefactPortInstance<? extends ArtefactPort> port) {
+        final ArrayList<BindingInstance> selection = new ArrayList<BindingInstance>();
+        for (BindingInstance binding : bindingInstances) {
+            if (binding.eitherEndIs(port)) {
+                selection.add(binding);
+            }
+        }
+        return selection;
+    }
+
+    public List<BindingInstance> findBindingInstancesByClientEnd(ClientPortInstance cpi) {
+        return findBindingInstancesByPort(cpi);
+    }
+
+    public List<BindingInstance> findBindingInstancesByServerEnd(ServerPortInstance cpi) {
+        return findBindingInstancesByPort(cpi);
+    }
+
+    public boolean isBound(ArtefactPortInstance<? extends ArtefactPort> port) {
+        return !findBindingInstancesByPort(port).isEmpty();
+    }
     
+    public ServerPortInstance findServerPort(ClientPortInstance clientPort) {
+        final List<BindingInstance> bindings = findBindingInstancesByPort(clientPort);
+        if (bindings.isEmpty()) {
+            final String message = String.format("client port '%s' is not yet bound to any server", clientPort.getName());
+            throw new IllegalArgumentException(message);
+        }
+        return bindings.get(0).getServer();
+    }
+    
+   public List<ClientPortInstance> findClientPorts(ServerPortInstance serverPort) {
+       final List<BindingInstance> bindings = findBindingInstancesByPort(serverPort);
+         if (bindings.isEmpty()) {
+            final String message = String.format("server port '%s' is not yet bound to any server", serverPort.getName());
+            throw new IllegalArgumentException(message);
+        }
+        final List<ClientPortInstance> clients = new ArrayList<ClientPortInstance>();
+        for(BindingInstance binding: bindings) {
+            clients.add(binding.getClient());
+        }
+        return clients;
+    }
+    
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof DeploymentModel) {
@@ -362,5 +483,4 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         builder.append("}\n");
         return builder.toString();
     }
-
 }

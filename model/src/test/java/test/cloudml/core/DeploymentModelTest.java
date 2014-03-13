@@ -20,62 +20,91 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
+
 package test.cloudml.core;
 
 import junit.framework.TestCase;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import org.cloudml.core.Artefact;
 import org.cloudml.core.DeploymentModel;
 import org.cloudml.core.Node;
+import org.cloudml.core.Provider;
 import org.cloudml.core.validation.Report;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.cloudml.core.builders.DeploymentModelBuilder;
 import static org.cloudml.core.builders.Commons.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
-/**
- *
- * @author Franck Chauvel
- * @since 0.1
- */
 @RunWith(JUnit4.class)
 public class DeploymentModelTest extends TestCase {
 
     @Test
-    public void addedNodeAreContained() {
+    public void addedProvidersAreContained() {
         DeploymentModel model = new DeploymentModel();
-        assertTrue(model.isEmpty());
+        final Provider provider = new Provider("ec2");
 
-        final Node node = new Node("my node");
-        model.addNode(node);
+        model.addProvider(provider);
 
-        assertTrue(model.contains(node));
+        assertThat("provider included", model.contains(provider), is(true));
     }
 
     @Test
-    public void addedNodeCanBeFound() {
+    public void removedProviderAreNotContainedAnymore() {
         DeploymentModel model = new DeploymentModel();
-        assertTrue(model.isEmpty());
+        final Provider provider = new Provider("ec2");
+        model.addProvider(provider);
 
-        final String nodeName = "my node";
-        final Node expected = new Node(nodeName);
-        model.addNode(expected);
-        Node actual = model.findNodeByName(nodeName);
+        model.removeProvider(provider);
 
-        assertEquals(expected, actual);
+        assertThat("provider not contained", model.contains(provider), is(false));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void rejectRemovingProvidersThatAreStillInUse() {
+        DeploymentModel model = aDeployment()
+                .withProvider(aProvider().named("ec2"))
+                .withNodeType(aNode()
+                .named("Large Linux")
+                .providedBy("ec2"))
+                .build();
+        Provider provider = model.findProviderByName("ec2");
+        model.removeProvider(provider);
+    }
+
+    /*
+     * Node manipulation
+     */
+    @Test
+    public void addedNodeAreContained() {
+        DeploymentModel model = new DeploymentModel();
+        final Provider provider = new Provider("ec2");
+        model.addProvider(provider);
+
+        final Node node = new Node("my node", provider);
+        model.addNode(node);
+
+        assertThat("node is contained", model.contains(node), is(true));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void rejectAddingNodeWithForeignProvider() {
+        DeploymentModel model = new DeploymentModel();
+        Node node = new Node("my node", new Provider("ec2"));
+
+        model.addNode(node);
     }
 
     @Test
     public void removedNodeAreNotContainedAnymore() {
-        DeploymentModel model = new DeploymentModel();
-        final Node node = new Node("my node");
-        model.addNode(node);
-        assertTrue(model.contains(node));
+        DeploymentModel model = aDeployment()
+                .withProvider(aProvider().named("ec2"))
+                .withNodeType(aNode()
+                .named("My Node")
+                .providedBy("ec2"))
+                .build();
 
+        final Node node = model.findNodeByName("My Node");
         model.removeNode(node);
 
         assertFalse(model.contains(node));
@@ -86,13 +115,13 @@ public class DeploymentModelTest extends TestCase {
         DeploymentModel model = aDeployment()
                 .withProvider(aProvider().named("ec2"))
                 .withNodeType(aNode()
-                    .named("Linux")
-                    .providedBy("ec2"))
-                .withNodeInstance(aNodeInstance() 
-                    .named("i1")
-                    .ofType("Linux"))
+                .named("Linux")
+                .providedBy("ec2"))
+                .withNodeInstance(aNodeInstance()
+                .named("i1")
+                .ofType("Linux"))
                 .build();
-        
+
         Node node = model.findNodeByName("Linux");
         model.removeNode(node);
     }
@@ -118,6 +147,28 @@ public class DeploymentModelTest extends TestCase {
         model.removeArtefact(artefact);
 
         assertFalse(model.contains(artefact));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void rejectRemovingArtefactsThatAreStillInUse() {
+        DeploymentModel model = aDeployment()
+                .withProvider(aProvider().named("EC2"))
+                .withNodeType(aNode().named("Linux").providedBy("EC2"))
+                .withNodeInstance(aNodeInstance()
+                    .named("host no. 1")
+                    .ofType("Linux"))
+                .withArtefact(anArtefact()
+                    .named("My Artefact")
+                    .withServerPort(aServerPort()
+                        .named("server")))
+                .withArtefactInstance(anArtefactInstance()
+                    .named("My instance")
+                    .ofType("My Artefact")
+                    .hostedBy("host no. 1"))
+                .build();
+        
+        Artefact artefact = model.findArtefactByName("My Artefact");
+        model.removeArtefact(artefact);
     }
 
     @Test
