@@ -22,9 +22,11 @@
  */
 package org.cloudml.codecs;
 
+
 import org.cloudml.core.*;
 import org.cloudml.core.RequiredPortInstance;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,9 @@ public class BridgeToKmf {
     private Map<String, net.cloudml.core.ProvidedPortInstance> providedPortInstances = new HashMap<String, net.cloudml.core.ProvidedPortInstance>();
     private Map<String, net.cloudml.core.VMInstance> VMInstances = new HashMap<String, net.cloudml.core.VMInstance>();
     private Map<String, net.cloudml.core.Relationship> relationships = new HashMap<String, net.cloudml.core.Relationship>();
+    private Map<String, net.cloudml.core.ProvidedExecutionPlatform> providedExecutionPlatforms = new HashMap<String, net.cloudml.core.ProvidedExecutionPlatform>();
+    private Map<String, net.cloudml.core.ProvidedExecutionPlatformInstance> providedExecutionPlatformInstances = new HashMap<String, net.cloudml.core.ProvidedExecutionPlatformInstance>();
+    private Map<String, net.cloudml.core.RequiredExecutionPlatformInstance> requiredExecutionPlatformInstances = new HashMap<String, net.cloudml.core.RequiredExecutionPlatformInstance>();
 
     private net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
     private net.cloudml.core.CloudMLModel kDeploy = factory.createCloudMLModel();
@@ -58,17 +63,22 @@ public class BridgeToKmf {
         kDeploy.setName(deploy.getName());
 
         providersToKmf(deploy.getProviders());
+
         externalComponentToKmf(deploy.getExternalComponents());
         internalComponentsToKmf(deploy.getInternalComponents());
-        relationshipsToKmf(deploy.getRelationships().values());
 
         externalComponentInstanceToKmf(deploy.getExternalComponentInstances());
         internalComponentInstancesToKmf(deploy.getInternalComponentInstances());
+
+        executesToKmf(deploy.getExecuteInstances());
+
+        relationshipsToKmf(deploy.getRelationships().values());
         relationshipInstancesToKmf(deploy.getRelationshipInstances());
         return kDeploy;
     }
 
-    private void initProperties(CloudMLElementWithProperties element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory) {
+
+    private void convertProperties(CloudMLElementWithProperties element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory) {
         for (Property p : element.getProperties()) {
             net.cloudml.core.Property kp = factory.createProperty();
             kp.setName(p.getName());
@@ -77,7 +87,7 @@ public class BridgeToKmf {
         }
     }
 
-    private void initResources(CloudMLElementWithProperties element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory){
+    private void convertResources(CloudMLElementWithProperties element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory){
         for(Resource r:element.getResources()){
             net.cloudml.core.Resource kr = factory.createResource();
             kr.setName(r.getName());
@@ -105,7 +115,7 @@ public class BridgeToKmf {
         checkNull(providers, "Cannot iterate on null!");
         for (Provider p : providers) {
             net.cloudml.core.Provider kProvider = factory.createProvider();
-            initProperties(p, kProvider, factory);
+            convertProperties(p, kProvider, factory);
             kProvider.setName(p.getName());
             kProvider.setCredentials(p.getCredentials());
             kDeploy.addProviders(kProvider);
@@ -114,14 +124,35 @@ public class BridgeToKmf {
         }
     }
 
+
+    public void executesToKmf(List<ExecuteInstance> executeInstances){
+        checkNull(executeInstances,"Cannot iterate on null!");
+        for(ExecuteInstance ei: executeInstances){
+            executeToKmf(ei);
+        }
+    }
+
+    public void executeToKmf(ExecuteInstance ei){
+        checkNull(ei,"Cannot iterate on null!");
+        net.cloudml.core.ExecuteInstance kExecute=factory.createExecuteInstance();
+        convertProperties(ei,kExecute,factory);
+        convertResources(ei,kExecute,factory);
+
+        kExecute.setName(ei.getName());
+        kExecute.setProvidedExecutionPlatformInstance(providedExecutionPlatformInstances.get(calculateExecutionPlatformIdentifier(ei.getProvidedExecutionPlatformInstance())));
+        kExecute.setRequiredExecutionPlatformInstance(requiredExecutionPlatformInstances.get(calculateExecutionPlatformIdentifier(ei.getRequiredExecutionPlatformInstance())));
+
+        kDeploy.addExecutesInstances(kExecute);
+    }
+
     public void externalComponentToKmf(List<ExternalComponent> externalComponents){
         checkNull(externalComponents,"Cannot iterate on null!");
         for (ExternalComponent ec : externalComponents) {
             if(ec instanceof org.cloudml.core.VM){
                 org.cloudml.core.VM vm=(org.cloudml.core.VM)ec;
                 net.cloudml.core.VM kNode = factory.createVM();
-                initProperties(vm, kNode, factory);
-                initResources(vm, kNode, factory);
+                convertProperties(vm, kNode, factory);
+                convertResources(vm, kNode, factory);
                 kNode.setName(vm.getName());
 
                 kNode.setProvider(providers.get(vm.getProvider().getName()));
@@ -138,6 +169,7 @@ public class BridgeToKmf {
                 kNode.setSshKey(vm.getSshKey());
 
                 vms.put(kNode.getName(), kNode);
+                initProvidedExecutionPlatforms(ec, kNode);
 
                 kDeploy.addComponents(kNode);
             }
@@ -157,7 +189,7 @@ public class BridgeToKmf {
             checkNull(pp, "cannot convert null!");
             net.cloudml.core.ProvidedPort kpp = factory.createProvidedPort();
             kpp.setName(pp.getName());
-            initProperties(pp, kpp, factory);
+            convertProperties(pp, kpp, factory);
             kpp.setPortNumber(pp.getPortNumber());
             kpp.setIsLocal(pp.getIsLocal());
             kc.addProvidedPorts(kpp);
@@ -175,13 +207,12 @@ public class BridgeToKmf {
             checkNull(rp, "cannot convert null!");
             net.cloudml.core.RequiredPort krp = factory.createRequiredPort();
             krp.setName(rp.getName());
-            initProperties(rp, krp, factory);
+            convertProperties(rp, krp, factory);
             krp.setPortNumber(rp.getPortNumber());
             krp.setIsLocal(rp.getIsLocal());
             krp.setIsMandatory(rp.getIsMandatory());
             kic.addRequiredPorts(krp);
             krp.setComponent(kic);
-
             requiredPorts.put(calculatePortIdentifier(rp), krp);
         }
         assert requiredPorts.size() >= ports.size();
@@ -193,15 +224,55 @@ public class BridgeToKmf {
         checkNull(internalComponent, "Cannot convert null!");
         net.cloudml.core.InternalComponent kic = factory.createInternalComponent();
         kic.setName(internalComponent.getName());
-        initProperties(internalComponent, kic, factory);
-        initResources(internalComponent, kic, factory);
-
+        convertProperties(internalComponent, kic, factory);
+        convertResources(internalComponent, kic, factory);
         this.internalComponents.put(kic.getName(), kic);
+
+        initRequiredExecutionPlatform(internalComponent, kic);
+        initProvidedExecutionPlatforms(internalComponent, kic);
 
         convertAndAddProvidedPorts(internalComponent.getProvidedPorts(), kic);
         convertAndAddRequiredPorts(internalComponent.getRequiredPorts(), kic);
 
         kDeploy.addComponents(kic);
+    }
+
+    private void initRequiredExecutionPlatform(InternalComponent ic, net.cloudml.core.InternalComponent ka) {
+        if (ic.getRequiredExecutionPlatform() != null) {
+            net.cloudml.core.RequiredExecutionPlatform repi=factory.createRequiredExecutionPlatform();
+            repi.setName(ic.getRequiredExecutionPlatform().getName());
+            repi.setOwner(ka);
+            convertProperties(ic.getRequiredExecutionPlatform(), repi, factory);
+            convertResources(ic.getRequiredExecutionPlatform(), repi, factory);
+            ka.setRequiredExecutionPlatform(repi);
+        }
+    }
+
+    private void initProvidedExecutionPlatforms(Component c, net.cloudml.core.Component kc){
+        List<ProvidedExecutionPlatform> providedExecutionPlatforms= c.getProvidedExecutionPlatforms();
+        if(providedExecutionPlatforms != null){
+            List<net.cloudml.core.ProvidedExecutionPlatform> temp=new ArrayList<net.cloudml.core.ProvidedExecutionPlatform>();
+            for(ProvidedExecutionPlatform pep: providedExecutionPlatforms){
+                if(pep != null){
+                    net.cloudml.core.ProvidedExecutionPlatform kpep= initProvidedExecutionPlatform(pep, kc);
+                    temp.add(kpep);
+                    this.providedExecutionPlatforms.put(pep.getName(), kpep);
+                }
+            }
+            kc.setProvidedExecutionPlatforms(temp);
+        }
+    }
+
+    private net.cloudml.core.ProvidedExecutionPlatform initProvidedExecutionPlatform(ProvidedExecutionPlatform pep, net.cloudml.core.Component kc){
+        if(pep != null){
+            net.cloudml.core.ProvidedExecutionPlatform pepi=factory.createProvidedExecutionPlatform();
+            pepi.setName(pep.getName());
+            pepi.setOwner(kc);
+            convertProperties(pep, pepi, factory);
+            convertResources(pep,pepi,factory);
+            return pepi;
+        }
+        return null;
     }
 
 
@@ -214,6 +285,10 @@ public class BridgeToKmf {
 
     public String calculatePortIdentifier(Port p){
         return String.format("%s_%s", p.getComponent().getName(), p.getName());
+    }
+
+    public String calculateExecutionPlatformIdentifier(ExecutionPlatformInstance epi){
+        return String.format("%s-%s",epi.getOwner().getName(), epi.getName());
     }
 
     public void checkValidPort(Port p){
@@ -299,9 +374,11 @@ public class BridgeToKmf {
                 kni.setName(ni.getName());
                 kni.setPublicAddress(ni.getPublicAddress());
                 kni.setType(vms.get(ni.getType().getName()));
-                initProperties(ni, kni, factory);
+                convertProperties(ni, kni, factory);
 
                 VMInstances.put(kni.getName(), kni);
+
+                initProvidedExecutionPlatformInstances(eni, kni);
 
                 kDeploy.addComponentInstances(kni);
             } else {
@@ -315,18 +392,62 @@ public class BridgeToKmf {
         net.cloudml.core.InternalComponentInstance kai = factory.createInternalComponentInstance();
         kai.setName(ici.getName());
         kai.setType(internalComponents.get(ici.getType().getName()));
-        initProperties(ici, kai, factory);
+        convertProperties(ici, kai, factory);
 
         this.internalComponentInstances.put(kai.getName(), kai);
 
-        if (ici.getDestination() != null) {
-            kai.setDestination(VMInstances.get(ici.getDestination().getName()));
-        }
+        initRequiredExecutionPlatformInstance(ici, kai);
+        initProvidedExecutionPlatformInstances(ici, kai);
 
         convertAndAddRequiredPortInstances(ici.getRequiredPortInstances(), kai);
         convertAndAddProvidedPortInstances(ici.getProvidedPortInstances(), kai);
 
         kDeploy.addComponentInstances(kai);
+    }
+
+    private void initProvidedExecutionPlatformInstances(ComponentInstance ci, net.cloudml.core.ComponentInstance kci) {
+        List<ProvidedExecutionPlatformInstance> providedExecutionPlatforms= ci.getProvidedExecutionPlatformInstances();
+        if (providedExecutionPlatforms != null) {
+            List<net.cloudml.core.ProvidedExecutionPlatformInstance> temp=new ArrayList<net.cloudml.core.ProvidedExecutionPlatformInstance>();
+            for(ProvidedExecutionPlatformInstance pepi: providedExecutionPlatforms){
+                if(pepi != null)
+                    temp.add(initProvidedExecutionPlatformInstance(pepi, kci));
+            }
+            kci.setProvidedExecutionPlatformInstances(temp);
+        }
+    }
+
+    private net.cloudml.core.ProvidedExecutionPlatformInstance initProvidedExecutionPlatformInstance(ProvidedExecutionPlatformInstance pepi, net.cloudml.core.ComponentInstance kci){
+        if(pepi != null){
+            net.cloudml.core.ProvidedExecutionPlatformInstance kpepi=factory.createProvidedExecutionPlatformInstance();
+            kpepi.setName(pepi.getName());
+            kpepi.setOwner(kci);
+
+            assert kci.getType() != null;
+
+            kpepi.setType(this.providedExecutionPlatforms.get(pepi.getType().getName()));
+            convertProperties(pepi, kpepi, factory);
+            convertResources(pepi, kpepi, factory);
+            providedExecutionPlatformInstances.put(calculateExecutionPlatformIdentifier(pepi), kpepi);
+            return kpepi;
+        }
+        return null;
+    }
+
+    private void initRequiredExecutionPlatformInstance(InternalComponentInstance ici, net.cloudml.core.InternalComponentInstance kai) {
+        if (ici.getRequiredExecutionPlatformInstance() != null) {
+            net.cloudml.core.RequiredExecutionPlatformInstance krepi=factory.createRequiredExecutionPlatformInstance();
+            krepi.setName(ici.getRequiredExecutionPlatformInstance().getName());
+            krepi.setOwner(kai);
+
+            assert kai.getType() != null;
+
+            krepi.setType(((net.cloudml.core.InternalComponent) kai.getType()).getRequiredExecutionPlatform());
+            convertProperties(ici.getRequiredExecutionPlatformInstance(), krepi, factory);
+            convertResources(ici.getRequiredExecutionPlatformInstance(), krepi, factory);
+            kai.setRequiredExecutionPlatformInstance(krepi);
+            requiredExecutionPlatformInstances.put(calculateExecutionPlatformIdentifier(ici.getRequiredExecutionPlatformInstance()), krepi);
+        }
     }
 
     private void convertAndAddRequiredPortInstances(List<RequiredPortInstance> requiredPortInstances, net.cloudml.core.InternalComponentInstance kai) {
@@ -337,7 +458,7 @@ public class BridgeToKmf {
             kapi.setName(api.getName());
             kapi.setType(requiredPorts.get(calculatePortIdentifier(api.getType())));
             //kapi.setType(requiredPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
-            initProperties(api, kapi, factory);
+            convertProperties(api, kapi, factory);
             kai.addRequiredPortInstances(kapi);
             this.requiredPortInstances.put(escapePortInstanceName(api), kapi);
         }
@@ -351,7 +472,7 @@ public class BridgeToKmf {
             kapi.setName(api.getName());
             kapi.setType(providedPorts.get(calculatePortIdentifier(api.getType())));
             // kapi.setType(providedPorts.get(kai.getType().getName() + "_" + api.getType().getName()));
-            initProperties(api, kapi, factory);
+            convertProperties(api, kapi, factory);
             kai.addProvidedPortInstances(kapi);
             this.providedPortInstances.put(escapePortInstanceName(api), kapi);
         }

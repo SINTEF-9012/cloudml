@@ -22,6 +22,12 @@
  */
 package test.cloudml.codecs.kmf;
 
+import net.cloudml.core.ProvidedExecutionPlatformInstance;
+import net.cloudml.core.RequiredExecutionPlatform;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Match CloudML objects against KMY POJO Object
  */
@@ -90,11 +96,67 @@ public class Matcher {
         return false;
     }
 
+    public boolean matchRequiredExecutionPlatformInstance(net.cloudml.core.RequiredExecutionPlatformInstance krepi, org.cloudml.core.RequiredExecutionPlatformInstance repi){
+        if(krepi != null && repi != null){
+            return krepi.getName().equals(repi.getName()) &&
+                    matchRequiredExecutionPlatform((RequiredExecutionPlatform) krepi.getType(), repi.getType());
+        }
+        return false;
+    }
+
+    public boolean matchRequiredExecutionPlatform(net.cloudml.core.RequiredExecutionPlatform krep, org.cloudml.core.RequiredExecutionPlatform rep){
+        if(krep != null && rep != null){
+            return krep.getName().equals(rep.getName());
+        }
+        return false;
+    }
+
+    public boolean matchProvidedExecutionPlatform(net.cloudml.core.ProvidedExecutionPlatform kpep, org.cloudml.core.ProvidedExecutionPlatform pep){
+        if(kpep != null && pep != null){
+            return kpep.getName().equals(pep.getName());
+        }
+        return false;
+    }
+
+    public boolean matchProvidedExecutionPlatformInstances(List<net.cloudml.core.ProvidedExecutionPlatformInstance> kpepis, List<org.cloudml.core.ProvidedExecutionPlatformInstance> pepis){
+        if(kpepis != null && pepis != null){
+            boolean matched=true;
+            for(net.cloudml.core.ProvidedExecutionPlatformInstance kpepi: kpepis){
+                for(org.cloudml.core.ProvidedExecutionPlatformInstance pepi: pepis){
+                    if(kpepi.getName().equals(pepi.getName()) &&
+                        matchProvidedExecutionPlatform((net.cloudml.core.ProvidedExecutionPlatform)kpepi.getType(), pepi.getType())){
+                        matched=true;
+                        break;
+                    }
+                }
+                if(!matched)
+                    return false;
+            }
+            if(!matched)
+                return false;
+        }
+        return true;
+    }
+
     public boolean matchICI(net.cloudml.core.InternalComponentInstance kici, org.cloudml.core.InternalComponentInstance cici) {
         if(kici != null && cici != null){
             return cici.getName().equals(kici.getName())
                     && matchIC(kici.getType(), cici.getType())
-                    && matchVMInstance(kici.getDestination(), cici.getDestination());
+                    && matchRequiredExecutionPlatformInstance(kici.getRequiredExecutionPlatformInstance(), cici.getRequiredExecutionPlatformInstance())
+                    && matchProvidedExecutionPlatformInstances(kici.getProvidedExecutionPlatformInstances(), cici.getProvidedExecutionPlatformInstances());
+        }
+        return false;
+    }
+
+    public boolean matchExecuteInstance(net.cloudml.core.ExecuteInstance kei, org.cloudml.core.ExecuteInstance ei) {
+        if(kei != null && ei != null){
+            List<net.cloudml.core.ProvidedExecutionPlatformInstance> kpepis = new ArrayList<net.cloudml.core.ProvidedExecutionPlatformInstance>();
+            List<org.cloudml.core.ProvidedExecutionPlatformInstance> pepis=new ArrayList<org.cloudml.core.ProvidedExecutionPlatformInstance>();
+            kpepis.add(kei.getProvidedExecutionPlatformInstance());
+            pepis.add(ei.getProvidedExecutionPlatformInstance());
+            return kei.getName().equals(ei.getName())
+                    && matchProvidedExecutionPlatformInstances(kpepis,pepis)
+                    && matchRequiredExecutionPlatformInstance(kei.getRequiredExecutionPlatformInstance(), ei.getRequiredExecutionPlatformInstance());
         }
         return false;
     }

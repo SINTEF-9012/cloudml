@@ -33,9 +33,9 @@ import org.junit.runners.JUnit4;
  * Unit test for simple App.
  */
 @RunWith(JUnit4.class)
-public class ModelTest extends TestCase {
+public class ExecuteOnTest extends TestCase {
     //TODO: test propagation of demands and offers for internal components
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testExecuteInstanceOnProvidedNull(){
         ExecuteInstance ei=new ExecuteInstance("foo", null, new RequiredExecutionPlatformInstance());
@@ -48,14 +48,9 @@ public class ModelTest extends TestCase {
 
     @Test
     public void testLegalButEmptyExecuteOn() {
-        InternalComponent ic = new InternalComponent("type C");
-        InternalComponentInstance component = ic.instantiates("internal instance");
-
         RequiredExecutionPlatform requiredExecutionPlatform = new RequiredExecutionPlatform("War Container");
         RequiredExecutionPlatformInstance requiredExecutionPlatformInstance = requiredExecutionPlatform.instantiates("repi");
 
-        ExternalComponent c = new ExternalComponent("External Component");
-        ExternalComponentInstance<ExternalComponent> instance2 = c.instantiates("external instance");
         ProvidedExecutionPlatform providedExecutionPlatform = new ProvidedExecutionPlatform("Linux");
         ProvidedExecutionPlatformInstance providedExecutionPlatformInstance = providedExecutionPlatform.instantiates("pepi");
 
@@ -64,20 +59,28 @@ public class ModelTest extends TestCase {
 
     @Test(expected=IllegalArgumentException.class)
     public void testIllegalExecuteOn() {
-        InternalComponent ic = new InternalComponent("type C");
-        InternalComponentInstance component = ic.instantiates("internal instance");
-
         RequiredExecutionPlatform requiredExecutionPlatform = new RequiredExecutionPlatform("War Container");
         requiredExecutionPlatform.addDemand("type", "War Container");
         RequiredExecutionPlatformInstance requiredExecutionPlatformInstance = requiredExecutionPlatform.instantiates("repi");
 
-        ExternalComponent c = new ExternalComponent("External Component");
-        ExternalComponentInstance<ExternalComponent> instance2 = c.instantiates("external instance");
         ProvidedExecutionPlatform providedExecutionPlatform = new ProvidedExecutionPlatform("Linux");
         providedExecutionPlatform.addOffer("type", "Linux");
         ProvidedExecutionPlatformInstance providedExecutionPlatformInstance = providedExecutionPlatform.instantiates("pepi");
 
         ExecuteInstance executeInstance = new ExecuteInstance("illegal", providedExecutionPlatformInstance, requiredExecutionPlatformInstance);
+    }
+
+    @Test
+    public void testlegalExecuteOn() {
+        RequiredExecutionPlatform requiredExecutionPlatform = new RequiredExecutionPlatform("War Container");
+        requiredExecutionPlatform.addDemand("type", "War Container");
+        RequiredExecutionPlatformInstance requiredExecutionPlatformInstance = requiredExecutionPlatform.instantiates("repi");
+
+        ProvidedExecutionPlatform providedExecutionPlatform = new ProvidedExecutionPlatform("War Container");
+        providedExecutionPlatform.addOffer("type", "War Container");
+        ProvidedExecutionPlatformInstance providedExecutionPlatformInstance = providedExecutionPlatform.instantiates("pepi");
+
+        ExecuteInstance executeInstance = new ExecuteInstance("legal", providedExecutionPlatformInstance, requiredExecutionPlatformInstance);
     }
 
 }

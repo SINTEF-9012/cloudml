@@ -31,7 +31,6 @@ import java.util.List;
  */
 public class InternalComponent extends Component {
 
-    private Port destination;
     private RequiredExecutionPlatform requiredExecutionPlatform;
 
     /*
@@ -46,18 +45,18 @@ public class InternalComponent extends Component {
         super(name);
     }
 
-    public InternalComponent(String name, Port destination) {
+    public InternalComponent(String name, RequiredExecutionPlatform requiredExecutionPlatform) {
         super(name);
-        this.destination = destination;
+        this.requiredExecutionPlatform = requiredExecutionPlatform;
     }
 
     public InternalComponent(String name, List<Property> properties) {
         super(name, properties);
     }
 
-    public InternalComponent(String name, List<Property> properties, Port destination) {
+    public InternalComponent(String name, List<Property> properties, RequiredExecutionPlatform requiredExecutionPlatform) {
         super(name, properties);
-        this.destination = destination;
+        this.requiredExecutionPlatform = requiredExecutionPlatform;
     }
 
     public InternalComponent(String name, List<Property> properties, List<RequiredPort> requiredPorts) {
@@ -84,10 +83,6 @@ public class InternalComponent extends Component {
         return new InternalComponentInstance(name, this);
     }
 
-    public InternalComponentInstance instantiates(String name, VMInstance destination) {
-        return new InternalComponentInstance(name, this, destination);
-    }
-
     /*
      * Getters & Setters
      */
@@ -98,14 +93,6 @@ public class InternalComponent extends Component {
 
     public void setRequiredPorts(List<RequiredPort> requiredPorts) {
         this.requiredPorts = requiredPorts;
-    }
-
-    public void setDestination(Port destination) {
-        this.destination = destination;
-    }
-
-    public Port getDestination() {
-        return destination;
     }
 
     public RequiredExecutionPlatform getRequiredExecutionPlatform(){

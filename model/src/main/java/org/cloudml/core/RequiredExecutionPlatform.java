@@ -22,9 +22,7 @@
  */
 package org.cloudml.core;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
@@ -32,45 +30,53 @@ import java.util.Map;
 public class RequiredExecutionPlatform extends ExecutionPlatform{
 
     //TODO: provide abstract class
-    private final Map<String, Object> demands;
+    private final ArrayList<Property> demands;
 
     public RequiredExecutionPlatform(){
-        demands =new HashMap<String, Object>();
+        demands =new ArrayList<Property>();
     }
 
     public RequiredExecutionPlatform(String name){
         super(name);
-        demands =new HashMap<String, Object>();
+        demands =new ArrayList<Property>();
     }
 
     public RequiredExecutionPlatform(String name, List<Property> properties){
         super(name,properties);
-        demands =new HashMap<String, Object>();
+        demands =new ArrayList<Property>();
     }
 
     public RequiredExecutionPlatform(String name, List<Property> properties, Component owner){
         super(name,properties, owner);
-        demands =new HashMap<String, Object>();
+        demands = new ArrayList<Property>();
     }
 
-    public RequiredExecutionPlatform(String name, List<Property> properties, Component owner, Map<String, Object> demands){
+    public RequiredExecutionPlatform(String name, List<Property> properties, Component owner, Collection<Property> demands){
         super(name, properties, owner);
-        this.demands =new  HashMap<String, Object>();
-        this.demands.putAll(demands);
+        this.demands = new ArrayList<Property>();
+        this.demands.addAll(demands);
     }
 
 
-    public Map<String, Object> getDemands(){
+    public List<Property> getDemands(){
         return this.demands;
     }
 
-    public void setDemands(Map<String, Object> demands){
+    public void setDemands(Collection<Property> demands){
         this.demands.clear();
-        this.demands.putAll(demands);
+        this.demands.addAll(demands);
     }
 
-    public void addDemand(String key, Object value) {
-        this.demands.put(key, value);
+    public void addDemand(String key, String value) {
+        unlessNewKey(key);
+        this.demands.add(new Property(key, value));
+    }
+
+    private void unlessNewKey(String key){
+        for(Property p : this.demands){
+            if(p.getName().equals(key))
+                throw new IllegalArgumentException("Duplicated key for demand (" +key+ ")");
+        }
     }
 
     public RequiredExecutionPlatformInstance instantiates(String name) {

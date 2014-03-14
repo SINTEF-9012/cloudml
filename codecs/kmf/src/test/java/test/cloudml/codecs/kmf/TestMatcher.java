@@ -184,7 +184,7 @@ public class TestMatcher extends TestCase {
         KMFSamplesBuilder kmf = new KMFSamplesBuilder();
         CloudMLSamplesBuilder cloudml = new CloudMLSamplesBuilder();
         Matcher matcher = new Matcher();
-        boolean result = matcher.matchIC(kmf.getInternalComponentA(), cloudml.getSampleInternalComponentB());
+        boolean result = matcher.matchIC(kmf.getInternalComponentA(), cloudml.getInternalComponentB());
         assertFalse(result);
     }
 
@@ -258,7 +258,7 @@ public class TestMatcher extends TestCase {
         KMFSamplesBuilder kmf = new KMFSamplesBuilder();
         CloudMLSamplesBuilder cloudml = new CloudMLSamplesBuilder();
         Matcher matcher = new Matcher();
-        boolean result = matcher.matchRelationship(kmf.getRelationshipA(), cloudml.getSampleRelationshipB());
+        boolean result = matcher.matchRelationship(kmf.getRelationshipA(), cloudml.getRelationshipB());
         assertFalse(result);
     }
 
@@ -295,7 +295,7 @@ public class TestMatcher extends TestCase {
         KMFSamplesBuilder kmf = new KMFSamplesBuilder();
         CloudMLSamplesBuilder cloudml = new CloudMLSamplesBuilder();
         Matcher matcher = new Matcher();
-        boolean result = matcher.matchRelationshipInstance(kmf.getRelationshipInstanceA(), cloudml.getSampleRelationshipInstanceB());
+        boolean result = matcher.matchRelationshipInstance(kmf.getRelationshipInstanceA(), cloudml.getRelationshipInstanceB());
         assertFalse(result);
     }
 }

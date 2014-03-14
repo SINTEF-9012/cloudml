@@ -33,6 +33,7 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
 
     private State status;
     private List<String> ips=new ArrayList<String>();
+    protected String publicAddress="";
 
     private enum State{
         stopped,
@@ -50,6 +51,16 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
     public ExternalComponentInstance(String name, T type, List<Property> properties){
         super(name, properties, type);
         this.status=State.stopped;
+    }
+
+
+
+    public void setPublicAddress(String publicAddress){
+        this.publicAddress=publicAddress;
+    }
+
+    public String getPublicAddress(){
+        return this.publicAddress;
     }
 
     public List<String> getIps(){

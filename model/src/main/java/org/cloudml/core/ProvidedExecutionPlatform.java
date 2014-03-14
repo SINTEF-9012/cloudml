@@ -22,55 +22,67 @@
  */
 package org.cloudml.core;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
  */
 public class ProvidedExecutionPlatform extends ExecutionPlatform{
 
-    private final Map<String, Object> offers;
+    private final List<Property> offers;
 
     public ProvidedExecutionPlatform(){
-        offers =new HashMap<String, Object>();
+        offers =new ArrayList<Property>();
     }
 
     public ProvidedExecutionPlatform(String name){
         super(name);
-        offers =new HashMap<String, Object>();
+        offers =new ArrayList<Property>();
     }
 
     public ProvidedExecutionPlatform(String name, List<Property> properties){
         super(name,properties);
-        offers =new HashMap<String, Object>();
+        offers =new ArrayList<Property>();
     }
 
     public ProvidedExecutionPlatform(String name, List<Property> properties, Component owner){
         super(name,properties, owner);
-        offers =new HashMap<String, Object>();
+        offers =new ArrayList<Property>();
     }
 
-    public ProvidedExecutionPlatform(String name, List<Property> properties, Component owner, Map<String, Object> offers){
+    public ProvidedExecutionPlatform(String name, List<Property> properties, Component owner, Collection<Property> offers){
         super(name,properties, owner);
-        this.offers =new  HashMap<String, Object>();
-        this.offers.putAll(offers);
+        this.offers =new  ArrayList<Property>();
+        this.offers.addAll(offers);
     }
 
-    public Map<String, Object> getOffers(){
+    public List<Property> getOffers(){
         return this.offers;
     }
 
-    public void setOffers(Map<String, Object> offers){
+    public void setOffers(Collection<Property> offers){
         this.offers.clear();
-        this.offers.putAll(offers);
+        this.offers.addAll(offers);
     }
 
-    public void addOffer(String key, Object value) {
-        this.offers.put(key, value);
+    public void addOffer(String key, String value) {
+        unlessNewKey(key);
+        this.offers.add(new Property(key, value));
     }
 
+    private void unlessNewKey(String key){
+        if(getOfferByKey(key) != null){
+            throw new IllegalArgumentException("Duplicated Offer Id (" + key + ")");
+        }
+    }
+
+    public Property getOfferByKey(String key){
+        for(Property p : this.offers){
+            if(p.getName().equals(key))
+                return p;
+        }
+        return null;
+    }
 
     public ProvidedExecutionPlatformInstance instantiates(String name) {
         if (name == null) {

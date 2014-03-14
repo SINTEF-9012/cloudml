@@ -100,7 +100,7 @@ MouseListener, MouseMotionListener {
                             InternalComponent ic=(InternalComponent)a;
                             if(a.getName().equals(nodeType)){
                                 InternalComponentInstance ai= ic.instantiates(nodeType + cnt);
-                                ai.setDestination(selectDestination());
+                                //ai.setRequiredExecutionPlatformInstance(selectDestination());
                                 dm.getComponentInstances().add(ai);
                                 for(RequiredPort c:ic.getRequiredPorts())
                                     ai.getRequiredPortInstances().add(new RequiredPortInstance(c.getName()+cnt, c, ai));
@@ -109,10 +109,10 @@ MouseListener, MouseMotionListener {
                                 Vertex v=new Vertex(nodeType+cnt, "soft", ai);
                                 graph.addVertex(v);
                                 vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
-                                Edge newEdge=new Edge(ai.getDestination().getName()+cnt, "destination");
+                                Edge newEdge=new Edge(ai.getRequiredExecutionPlatformInstance().getName()+cnt, "destination");
                                 Vertex dest=null;
                                 for(Vertex vDest : graph.getVertices()){
-                                    if(vDest.getName().equals(ai.getDestination().getName())){
+                                    if(vDest.getName().equals(ai.getRequiredExecutionPlatformInstance().getName())){
                                         graph.addEdge(newEdge, v, vDest);
                                         break;
                                     }

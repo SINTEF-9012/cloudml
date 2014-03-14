@@ -36,9 +36,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 	 * Dependencies <PortName,PortInstance Reference>
 	 */
 	private List<RequiredPortInstance> requiredPortInstances = new LinkedList<RequiredPortInstance>();
-
-    private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance;
-
+    private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance = null;
     protected State status;
 
     public enum State{
@@ -57,9 +55,10 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 		this.status=State.uninstalled;
 	}
 
-	public InternalComponentInstance(String name, InternalComponent type, VMInstance destination) {
-		super(name,type,destination);
+	public InternalComponentInstance(String name, InternalComponent type, RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
+		super(name,type);
         this.status=State.uninstalled;
+        this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
 	}
 
 	public InternalComponentInstance(String name, List<Property> properties, InternalComponent type) {
@@ -67,9 +66,10 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         this.status=State.uninstalled;
 	}
 
-	public InternalComponentInstance(String name, List<Property> properties, InternalComponent type, VMInstance destination) {
-		super(name, properties, type, destination);
+	public InternalComponentInstance(String name, List<Property> properties, InternalComponent type, RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
+		super(name, properties, type);
         this.status=State.uninstalled;
+        this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
 	}
 
 	public InternalComponentInstance(String name, List<Property> properties, List<RequiredPortInstance> requiredPortInstances, List<ProvidedPortInstance> providedPortInstances) {
@@ -90,12 +90,13 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         this.status = State.valueOf(s);
     }
 
-    public RequiredExecutionPlatformInstance getRequiredExecutionPlatformInstance() {
-        return requiredExecutionPlatformInstance;
-    }
 
     public void setRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
         this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
+    }
+
+    public RequiredExecutionPlatformInstance getRequiredExecutionPlatformInstance() {
+        return requiredExecutionPlatformInstance;
     }
 
 	@Override
@@ -108,9 +109,9 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 		if (other instanceof InternalComponentInstance) {
 			InternalComponentInstance otherCompInst = (InternalComponentInstance) other;
 			Boolean match= name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
-			if(destination != null)
-				return name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType()) && destination.equals(otherCompInst.getDestination());
-			else return match && (otherCompInst.getDestination() == null);
+			if(requiredExecutionPlatformInstance != null)
+				return name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType()) && requiredExecutionPlatformInstance.equals(otherCompInst.getRequiredExecutionPlatformInstance());
+			else return match && (otherCompInst.getRequiredExecutionPlatformInstance() == null);
 		} else {
 			return false;
 		}

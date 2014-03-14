@@ -172,7 +172,7 @@ public class DrawnIconVertexDemo implements Serializable {
 		for(ComponentInstance x : dm.getComponentInstances()){
             if(x instanceof InternalComponentInstance){
                 InternalComponentInstance ix=(InternalComponentInstance)x;
-                if(ix.getDestination() == null){
+                if(ix.getRequiredExecutionPlatformInstance() == null){
                     Vertex v= new Vertex(x.getName(), "platform",ix);
                     V.add(v);
                     createVertice(v);
@@ -190,9 +190,9 @@ public class DrawnIconVertexDemo implements Serializable {
 		for(ComponentInstance x : dm.getComponentInstances()){
             if(x instanceof InternalComponentInstance){
                 InternalComponentInstance ix=(InternalComponentInstance)x;
-                if(ix.getDestination() != null){
+                if(ix.getRequiredExecutionPlatformInstance() != null){
                     Vertex v1=findVertex(ix.getName(), v);
-                    Vertex v2=findVertex(ix.getDestination().getName(), v);
+                    Vertex v2=findVertex(ix.getRequiredExecutionPlatformInstance().getName(), v);
                     Edge e=new Edge("dest"+ix.getName(), "destination");
                     createEdge(e, v1, v2);
                 }

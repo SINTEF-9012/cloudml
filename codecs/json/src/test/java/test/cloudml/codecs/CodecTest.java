@@ -22,40 +22,17 @@
  */
 package test.cloudml.codecs.json;
 
-import java.io.*;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
-import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
-import org.cloudml.core.*;
 
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.CloudMLModel;
-import org.cloudml.core.InternalComponent;
-import org.cloudml.core.InternalComponentInstance;
-import org.cloudml.core.Property;
-import org.cloudml.core.ProvidedPort;
-import org.cloudml.core.ProvidedPortInstance;
-import org.cloudml.core.Provider;
-import org.cloudml.core.Relationship;
-import org.cloudml.core.RelationshipInstance;
-import org.cloudml.core.RequiredPort;
-import org.cloudml.core.RequiredPortInstance;
-import org.cloudml.core.Resource;
-import org.cloudml.core.VM;
-import org.cloudml.core.VMInstance;
+import org.cloudml.core.*;
 
 
 /**
@@ -103,6 +80,10 @@ public class CodecTest
         ml.setSecurityGroup("SensApp");
         ml.getProperties().add(new Property("KeyPath", "./cloudml.pem"));
         ml.setIs64os(true);
+        ProvidedExecutionPlatform mlPep = new ProvidedExecutionPlatform();
+        mlPep.setName("mlProvided");
+        mlPep.setOwner(ml);
+        ml.getProvidedExecutionPlatforms().add(mlPep);
 
         VM sl=new VM("SL");
         sl.setProvider(flexiant);
@@ -117,15 +98,24 @@ public class CodecTest
         sl.getProperties().add(new Property("KeyPath", "./cloudml.pem"));
         sl.setIs64os(true);
         sl.setImageId("Ubuntu-SINTEF");
+        ProvidedExecutionPlatform slPep = new ProvidedExecutionPlatform();
+        slPep.setName("mlProvided");
+        slPep.setOwner(sl);
+        sl.getProvidedExecutionPlatforms().add(slPep);
 
         VMInstance vmi1=new VMInstance("sensapp-ML1",ml);
+        ProvidedExecutionPlatformInstance vmi1pep=new ProvidedExecutionPlatformInstance("mlProvided1",mlPep);
+        vmi1pep.setOwner(vmi1);
+        vmi1.getProvidedExecutionPlatformInstances().add(vmi1pep);
         VMInstance vmi2=new VMInstance("sensapp-SL1",sl);
+        ProvidedExecutionPlatformInstance vmi2pep=new ProvidedExecutionPlatformInstance("slProvided1", slPep);
+        vmi2pep.setOwner(vmi2);
+        vmi2.getProvidedExecutionPlatformInstances().add(vmi2pep);
 
         InternalComponent ic1=new InternalComponent("SensApp");
-        RequiredPort rp=new RequiredPort("scRequired",ic1,true);
-        rp.setPortNumber(0);
-        rp.setIsLocal(true);
-        ic1.getRequiredPorts().add(rp);
+        RequiredExecutionPlatform rep=new RequiredExecutionPlatform("scRequired");
+        rep.setOwner(ic1);
+        ic1.setRequiredExecutionPlatform(rep);
         RequiredPort rp2=new RequiredPort("mongoDBRequired",ic1,true);
         rp2.setPortNumber(0);
         rp2.setIsLocal(true);
@@ -139,10 +129,9 @@ public class CodecTest
         ic1.getResources().add(r);
 
         InternalComponent sensappAdmin=new InternalComponent("SensAppAdmin");
-        RequiredPort rpAdmin=new RequiredPort("scRequired",sensappAdmin,true);
-        rpAdmin.setPortNumber(0);
-        rpAdmin.setIsLocal(true);
-        sensappAdmin.getRequiredPorts().add(rpAdmin);
+        RequiredExecutionPlatform repiAdmin=new RequiredExecutionPlatform("scRequired");
+        repiAdmin.setOwner(sensappAdmin);
+        sensappAdmin.setRequiredExecutionPlatform(repiAdmin);
         RequiredPort rest=new RequiredPort("restRequired",sensappAdmin, false);
         rest.setPortNumber(8080);
         rest.setIsLocal(false);
@@ -158,9 +147,12 @@ public class CodecTest
         binary.setRetrieveCommand("wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/jetty/jetty.sh");
         binary.setInstallCommand("cd ~; sudo bash jetty.sh");
         jetty1.getResources().add(binary);
-        ProvidedPort jettyProc=new ProvidedPort("sc",jetty1,true);
-        jettyProc.setPortNumber(0);
-        jetty1.getProvidedPorts().add(jettyProc);
+        ProvidedExecutionPlatform jettyProc=new ProvidedExecutionPlatform("sc");
+        jettyProc.setOwner(jetty1);
+        jetty1.getProvidedExecutionPlatforms().add(jettyProc);
+        RequiredExecutionPlatform jettyRep=new RequiredExecutionPlatform("ml");
+        jettyRep.setOwner(jetty1);
+        jetty1.setRequiredExecutionPlatform(jettyRep);
 
         InternalComponent mongo=new InternalComponent("mongoDB");
         Resource mongoBin=new Resource("MongoDBBin");
@@ -170,49 +162,63 @@ public class CodecTest
         ProvidedPort mongoProv=new ProvidedPort("mongoDB",mongo,false);
         mongoProv.setPortNumber(0);
         mongo.getProvidedPorts().add(mongoProv);
+        RequiredExecutionPlatform mongoRep=new RequiredExecutionPlatform("ml");
+        mongoRep.setOwner(mongo);
+        mongo.setRequiredExecutionPlatform(mongoRep);
 
         InternalComponentInstance ici1=ic1.instantiates("sensApp1");
-        ici1.setDestination(vmi1);
-        RequiredPortInstance rpi=new RequiredPortInstance("scRequired1",rp,ici1);
+        RequiredExecutionPlatformInstance repi=new RequiredExecutionPlatformInstance("scRequired1", rep);
+        repi.setOwner(ici1);
         RequiredPortInstance rpi2=new RequiredPortInstance("mongoDBRequired1",rp2,ici1);
-        ici1.getRequiredPortInstances().add(rpi);
+        ici1.setRequiredExecutionPlatformInstance(repi);
         ici1.getRequiredPortInstances().add(rpi2);
         ProvidedPortInstance ppi=new ProvidedPortInstance("rest1",pp,ici1);
         ici1.getProvidedPortInstances().add(ppi);
 
         InternalComponentInstance sensAppAdmin=sensappAdmin.instantiates("sensAppAdmin1");
-        sensAppAdmin.setDestination(vmi2);
-        RequiredPortInstance rpAdmini=new RequiredPortInstance("scRequired2",rpAdmin,sensAppAdmin);
+        RequiredExecutionPlatformInstance repiAdmini=new RequiredExecutionPlatformInstance("scRequired2",repiAdmin);
+        repiAdmini.setOwner(sensAppAdmin);
+        sensAppAdmin.setRequiredExecutionPlatformInstance(repiAdmini);
         RequiredPortInstance resti=new RequiredPortInstance("restRequired1",rest,sensAppAdmin);
-        sensAppAdmin.getRequiredPortInstances().add(rpAdmini);
         sensAppAdmin.getRequiredPortInstances().add(resti);
 
         InternalComponentInstance jettyi=jetty1.instantiates("jettySC1");
-        jettyi.setDestination(vmi1);
-        ProvidedPortInstance sc1=new ProvidedPortInstance("sc1", jettyProc,jettyi);
-        jettyi.getProvidedPortInstances().add(sc1);
+        RequiredExecutionPlatformInstance repi1=new RequiredExecutionPlatformInstance("ml1",jettyRep);
+        repi1.setOwner(jettyi);
+        jettyi.setRequiredExecutionPlatformInstance(repi1);
+        ProvidedExecutionPlatformInstance pepi1=new ProvidedExecutionPlatformInstance("sc1",jettyProc);
+        pepi1.setOwner(jettyi);
+        jettyi.getProvidedExecutionPlatformInstances().add(pepi1);
 
         InternalComponentInstance jettyi2=jetty1.instantiates("jettySC2");
-        jettyi2.setDestination(vmi2);
-        ProvidedPortInstance sc2=new ProvidedPortInstance("sc2", jettyProc,jettyi2);
-        jettyi2.getProvidedPortInstances().add(sc2);
+        RequiredExecutionPlatformInstance repi2=new RequiredExecutionPlatformInstance("ml2",jettyRep);
+        repi2.setOwner(jettyi2);
+        jettyi2.setRequiredExecutionPlatformInstance(repi2);
+        ProvidedExecutionPlatformInstance pepi2=new ProvidedExecutionPlatformInstance("sc2",jettyProc);
+        pepi2.setOwner(jettyi2);
+        jettyi2.getProvidedExecutionPlatformInstances().add(pepi2);
 
         InternalComponentInstance mongo1=mongo.instantiates("mongoDB1");
-        mongo1.setDestination(vmi1);
+        RequiredExecutionPlatformInstance mongoRepi=new RequiredExecutionPlatformInstance("ml2",jettyRep);
+        mongoRepi.setOwner(mongo1);
+        mongo1.setRequiredExecutionPlatformInstance(mongoRepi);
         ProvidedPortInstance mon=new ProvidedPortInstance("mongoDB1",mongoProv,mongo1);
         mongo1.getProvidedPortInstances().add(mon);
 
-        Relationship sensappsc=new Relationship("SensAppSC");
-        sensappsc.setProvidedPort(jettyProc);
-        sensappsc.setRequiredPort(rp);
+        ExecuteInstance sensappsc=new ExecuteInstance("SensAppSC", pepi1, repi);
+
+        ExecuteInstance sensappadminsc=new ExecuteInstance("SensAppAdminSC", pepi2, repiAdmini);
+
+        ExecuteInstance jetty1ml=new ExecuteInstance("jetty1ml", vmi1pep, repi1);
+
+        ExecuteInstance jetty2sl=new ExecuteInstance("jetty2sl", vmi2pep, repi2);
+
+        ExecuteInstance mongoml=new ExecuteInstance("mongoML", vmi1pep, mongoRepi);
 
         Relationship sensappmongo=new Relationship("SensAppMongoDB");
         sensappmongo.setProvidedPort(mongoProv);
         sensappmongo.setRequiredPort(rp2);
 
-        Relationship sensappadminsc=new Relationship("SensAppAdminSC");
-        sensappadminsc.setProvidedPort(jettyProc);
-        sensappadminsc.setRequiredPort(rpAdmin);
 
         Relationship sensappadminsensapp=new Relationship("SensAppAdminSensApp");
         sensappadminsensapp.setProvidedPort(pp);
@@ -222,17 +228,9 @@ public class CodecTest
         br.setInstallCommand("cd ~; sudo bash configuresensappgui.sh");
         sensappadminsensapp.setClientResource(br);
 
-        RelationshipInstance sensappsc1=sensappsc.instantiates("sensAppSC1");
-        sensappsc1.setProvidedPortInstance(sc1);
-        sensappsc1.setRequiredPortInstance(rpi);
-
         RelationshipInstance sensappmongo1=sensappmongo.instantiates("sensAppMongoDB1");
         sensappmongo1.setProvidedPortInstance(mon);
         sensappmongo1.setRequiredPortInstance(rpi2);
-
-        RelationshipInstance sensappadminsc1=sensappadminsc.instantiates("sensAppAdminSC1");
-        sensappadminsc1.setProvidedPortInstance(sc2);
-        sensappadminsc1.setRequiredPortInstance(rpAdmini);
 
         RelationshipInstance sensappadminsensapp1=sensappadminsensapp.instantiates("sensAppAdminSensApp1");
         sensappadminsensapp1.setProvidedPortInstance(ppi);
@@ -254,13 +252,14 @@ public class CodecTest
         model.getComponentInstances().add(jettyi);
         model.getComponentInstances().add(jettyi2);
         model.getComponentInstances().add(mongo1);
-        model.getRelationships().put("sensappsc",sensappsc);
-        model.getRelationships().put("sensappadminsc",sensappadminsc);
         model.getRelationships().put("sensappmongo",sensappmongo);
         model.getRelationships().put("sensappadminsensapp",sensappadminsensapp);
-        model.getRelationshipInstances().add(sensappsc1);
+        model.getExecuteInstances().add(sensappsc);
+        model.getExecuteInstances().add(sensappadminsc);
+        model.getExecuteInstances().add(jetty1ml);
+        model.getExecuteInstances().add(jetty2sl);
+        model.getExecuteInstances().add(mongoml);
         model.getRelationshipInstances().add(sensappmongo1);
-        model.getRelationshipInstances().add(sensappadminsc1);
         model.getRelationshipInstances().add(sensappadminsensapp1);
 
         try{

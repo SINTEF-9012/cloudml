@@ -66,6 +66,33 @@ public abstract class Component extends CloudMLElementWithProperties {
         this.providedExecutionPlatforms=providedExecutionPlatforms;
     }
 
+    public void addProvidedExecutionPlatforms(ProvidedExecutionPlatform... platforms) {
+        for (ProvidedExecutionPlatform platform: platforms) {
+            unlessNewAndValidPlatform(platform);
+            this.providedExecutionPlatforms.add(platform);
+        }
+    }
+
+    private void unlessNewAndValidPlatform(ProvidedExecutionPlatform platform) {
+        if (platform == null) {
+            throw new IllegalArgumentException("The given provided executon platform is null");
+        }
+        if (platform.getName() == null) {
+            throw new IllegalArgumentException("Illegal platform without name!");
+        }
+        if (getProvidedExecutionPlatformByName(platform.getName()) != null) {
+            throw new IllegalArgumentException("Duplicated provided execution platform name: '" + platform.getName() + "'");
+        }
+    }
+
+    public ProvidedExecutionPlatform getProvidedExecutionPlatformByName(String name) {
+        for(ProvidedExecutionPlatform platform: providedExecutionPlatforms) {
+            if (platform.getName().equals(name)) {
+                return platform;
+            }
+        }
+        return null;
+    }
 
     @Override
     public String toString() {

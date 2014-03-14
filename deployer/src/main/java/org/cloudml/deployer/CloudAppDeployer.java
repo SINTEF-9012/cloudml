@@ -48,6 +48,7 @@ public class CloudAppDeployer {
     ArrayList<ComponentInstance> alreadyStarted=new ArrayList<ComponentInstance>();
 
     private CloudMLModel currentModel;
+    private CloudMLModel targetModel;
 
     public CloudAppDeployer(){
         System.setProperty ("jsse.enableSNIExtension", "false");
@@ -59,8 +60,7 @@ public class CloudAppDeployer {
      * @param targetModel a deployment model
      */
     public void deploy(CloudMLModel targetModel){
-        //alreadyDeployed=new ArrayList<InternalComponentInstance>();
-        //alreadyStarted=new ArrayList<InternalComponentInstance>();
+        this.targetModel=targetModel;
         if(currentModel == null){
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel=targetModel;
@@ -134,32 +134,58 @@ public class CloudAppDeployer {
      */
     private void prepareAnInternalComponent(InternalComponentInstance x, List<ComponentInstance> components, List<RelationshipInstance> relationships) {
         Connector jc;
-        if(!alreadyDeployed.contains(x) && (x.getDestination() != null)){
-            VMInstance ownerVM = x.getDestination();
-            VM n=ownerVM.getType();
+        if(!alreadyDeployed.contains(x) && (x.getRequiredExecutionPlatformInstance() != null)){
+            ExternalComponentInstance owner = getDestination(x);
+            if(owner instanceof VMInstance){
+                VMInstance ownerVM=(VMInstance) owner;
+                VM n=ownerVM.getType();
 
-            jc=ConnectorFactory.createConnector(n.getProvider());
+                jc=ConnectorFactory.createConnector(n.getProvider());
 
-            for(Resource r: x.getType().getResources()){
-                for(String path : r.getUploadCommand().keySet()){
-                    jc.uploadFile(path, r.getUploadCommand().get(path), ownerVM.getId(), "ubuntu", n.getPrivateKey());
+                for(Resource r: x.getType().getResources()){
+                    for(String path : r.getUploadCommand().keySet()){
+                        jc.uploadFile(path, r.getUploadCommand().get(path), ownerVM.getId(), "ubuntu", n.getPrivateKey());
+                    }
                 }
-            }
 
-            for(Resource r: x.getType().getResources()){
-                jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(),"ubuntu",n.getPrivateKey());
-            }
-            alreadyDeployed.add(x);
+                for(Resource r: x.getType().getResources()){
+                    jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(),"ubuntu",n.getPrivateKey());
+                }
+                alreadyDeployed.add(x);
 
-            buildPaas(x, relationships);
-            for(Resource r: x.getType().getResources()){
-                jc.execCommand(ownerVM.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
+                buildPaas(x, relationships);
+                for(Resource r: x.getType().getResources()){
+                    jc.execCommand(ownerVM.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
+                }
+                x.setStatus(State.installed);
+                jc.closeConnection();
             }
-            x.setStatus(State.installed);
-            jc.closeConnection();
         }
     }
 
+    /**
+     * Retrieve the external component on which an component should be deployed
+     * @param component the component who want to retrieve the destination
+     * @return
+     */
+    public ExternalComponentInstance getDestination(ComponentInstance component){
+        if(component instanceof InternalComponentInstance){
+            InternalComponentInstance internalComponent=(InternalComponentInstance)component;
+            RequiredExecutionPlatformInstance repi= internalComponent.getRequiredExecutionPlatformInstance();
+            for(ExecuteInstance ei: targetModel.getExecuteInstances()){
+                if(repi.equals(ei.getRequiredExecutionPlatformInstance())){
+                    if(ei.getProvidedExecutionPlatformInstance().getOwner() instanceof ExternalComponentInstance){
+                        return (ExternalComponentInstance) ei.getProvidedExecutionPlatformInstance().getOwner();
+                    }else{
+                        getDestination(ei.getProvidedExecutionPlatformInstance().getOwner());
+                    }
+                }
+            }
+        }else{
+            return (ExternalComponentInstance)component;
+        }
+        return null;
+    }
 
     /**
      * Build the paas of an component instance
@@ -167,7 +193,7 @@ public class CloudAppDeployer {
      * @throws MalformedURLException
      */
     private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
-        VMInstance ownerVM = x.getDestination();
+        VMInstance ownerVM = (VMInstance)getDestination(x); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n=ownerVM.getType();
 
         Connector jc;
@@ -178,7 +204,7 @@ public class CloudAppDeployer {
         for(RelationshipInstance bi : relationships){
             if(bi.getRequiredPortInstance().getType().getIsMandatory() && x.getRequiredPortInstances().contains(bi.getRequiredPortInstance())){
                 ProvidedPortInstance p=bi.getProvidedPortInstance();
-                VMInstance owner=p.getOwner().getDestination();
+                VMInstance owner=(VMInstance)getDestination(p.getOwner());
                 if(owner == null)
                     owner=ownerVM;
                 if(!alreadyDeployed.contains(p.getOwner())){
@@ -230,25 +256,28 @@ public class CloudAppDeployer {
         for(ComponentInstance x : components){
             if((x instanceof InternalComponentInstance) && (!alreadyStarted.contains(x))){
                 InternalComponentInstance ix=(InternalComponentInstance)x;
-                VMInstance ownerVM = ix.getDestination();
-                VM n=ownerVM.getType();
-                jc=ConnectorFactory.createConnector(n.getProvider());
-                //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+                ExternalComponentInstance owner = getDestination(ix);
+                if(owner instanceof VMInstance){ //TODO: refactor and be more generic for external component in general
+                    VMInstance ownerVM=(VMInstance) owner;
+                    VM n=ownerVM.getType();
+                    jc=ConnectorFactory.createConnector(n.getProvider());
+                    //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
-                for(Resource r:ix.getType().getResources()){
-                    String configurationCommand=r.getConfigureCommand();
-                    configure(jc, n, ownerVM, configurationCommand);
+                    for(Resource r:ix.getType().getResources()){
+                        String configurationCommand=r.getConfigureCommand();
+                        configure(jc, n, ownerVM, configurationCommand);
+                    }
+                    ix.setStatus(State.configured);
+
+                    for(Resource r:ix.getType().getResources()){
+                        String startCommand= r.getStartCommand();
+                        start(jc, n, ownerVM, startCommand);
+                    }
+                    ix.setStatus(State.running);
+
+                    alreadyStarted.add(ix);
+                    jc.closeConnection();
                 }
-                ix.setStatus(State.configured);
-
-                for(Resource r:ix.getType().getResources()){
-                    String startCommand= r.getStartCommand();
-                    start(jc, n, ownerVM, startCommand);
-                }
-                ix.setStatus(State.running);
-
-                alreadyStarted.add(ix);
-                jc.closeConnection();
             }//TODO if not InternalComponent
         }
     }
@@ -320,9 +349,9 @@ public class CloudAppDeployer {
                 Resource clientResource=bi.getType().getClientResource();
                 Resource serverResource=bi.getType().getServerResource();
 
-                String destinationIpAddress=server.getOwner().getDestination().getPublicAddress();
+                String destinationIpAddress=getDestination(server.getOwner()).getPublicAddress();
                 int destinationPortNumber=server.getType().getPortNumber();
-                String ipAddress=client.getOwner().getDestination().getPublicAddress();
+                String ipAddress=getDestination(client.getOwner()).getPublicAddress();
 
                 //client resources
                 configureWithIP(clientResource,client,destinationIpAddress,ipAddress,destinationPortNumber);
@@ -345,7 +374,7 @@ public class CloudAppDeployer {
     private void configureWithIP(Resource r, PortInstance i, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
         Connector jc;
         if(r != null){
-            VMInstance ownerVM = i.getOwner().getDestination();
+            VMInstance ownerVM = (VMInstance)getDestination(i.getOwner());//TODO:generalization for PaaS
             VM n=ownerVM.getType();
             jc=ConnectorFactory.createConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
@@ -399,7 +428,7 @@ public class CloudAppDeployer {
      * @throws MalformedURLException
      */
     private void stopInternalComponent(InternalComponentInstance a) {
-        VMInstance ownerVM = findDestination(a);
+        VMInstance ownerVM = (VMInstance)findDestinationWhenNoRequiredExecutionPlatformSpecified(a); //TODO: to be generalized
         if(ownerVM != null){
             VM n=ownerVM.getType();
             Connector jc=ConnectorFactory.createConnector(n.getProvider());
@@ -443,7 +472,7 @@ public class CloudAppDeployer {
     private void unconfigureWithIP(Resource r, PortInstance i) {
         Connector jc;
         if(r != null){
-            VMInstance ownerVM = i.getOwner().getDestination();
+            VMInstance ownerVM = (VMInstance)getDestination(i.getOwner()); //TODO: generalize to PaaS
             VM n=ownerVM.getType();
             jc=ConnectorFactory.createConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
@@ -475,17 +504,15 @@ public class CloudAppDeployer {
      * @param a an instance of component
      * @return a VMInstance
      */
-    private VMInstance findDestination(ComponentInstance a){
-        if(a.getDestination() != null){
-            return a.getDestination();
+    private ExternalComponentInstance findDestinationWhenNoRequiredExecutionPlatformSpecified(InternalComponentInstance a){
+        if(getDestination(a) != null){
+            return getDestination(a);
         }else{
             for(RelationshipInstance b: currentModel.getRelationshipInstances()){
-                if(a instanceof InternalComponentInstance){
-                    if(((InternalComponentInstance)a).getRequiredPortInstances().contains(b.getRequiredPortInstance()) && b.getRequiredPortInstance().getType().getIsLocal())
-                        return b.getProvidedPortInstance().getOwner().getDestination();
-                }
+                if(a.getRequiredPortInstances().contains(b.getRequiredPortInstance()) && b.getRequiredPortInstance().getType().getIsLocal())
+                    return getDestination(b.getProvidedPortInstance().getOwner());
                 if(a.getProvidedPortInstances().contains(b.getProvidedPortInstance()) && b.getProvidedPortInstance().getType().getIsLocal())
-                    return b.getRequiredPortInstance().getOwner().getDestination();
+                    return getDestination(b.getRequiredPortInstance().getOwner());
             }
             return null;
         }

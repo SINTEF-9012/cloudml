@@ -49,4 +49,15 @@ public interface Samples {
     public static final String REQUIRED_PORT_NAME = "rp";
     public static final String PROVIDED_PORT_INSTANCE_NAME = "ppi";
     public static final String REQUIRED_PORT_INSTANCE_NAME = "rpi";
+    public static final String REQUIRED_EXECUTION_PLATFORM_A_NAME = "erepa";
+    public static final String REQUIRED_EXECUTION_PLATFORM_B_NAME = "erepb";
+    public static final String PROVIDED_EXECUTION_PLATFORM_A_NAME = "epepa";
+    public static final String PROVIDED_EXECUTION_PLATFORM_B_NAME = "epepb";
+    public static final String REQUIRED_EXECUTION_PLATFORM_INSTANCE_NAME_A = "repna";
+    public static final String REQUIRED_EXECUTION_PLATFORM_INSTANCE_NAME_B = "repnb";
+    public static final String PROVIDED_EXECUTION_PLATFORM_INSTANCE_NAME_A = "pepna";
+    public static final String PROVIDED_EXECUTION_PLATFORM_INSTANCE_NAME_B = "pepnb";
+    public static final String EXECUTE_INSTANCE_NAME_A = "eia";
+    public static final String EXECUTE_INSTANCE_NAME_B = "eib";
+
 }

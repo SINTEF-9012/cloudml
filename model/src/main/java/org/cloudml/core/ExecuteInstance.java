@@ -23,7 +23,7 @@
 package org.cloudml.core;
 
 /**
- * Created by nicolasf on 03.03.14.
+ * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
  */
 public class ExecuteInstance extends CloudMLElementWithProperties {
 
@@ -33,27 +33,27 @@ public class ExecuteInstance extends CloudMLElementWithProperties {
     public ExecuteInstance(String name, ProvidedExecutionPlatformInstance providedExecutionPlatformInstance, RequiredExecutionPlatformInstance requiredExecutionPlatformInstance){
         super(name);
 
-        abortIfNull(providedExecutionPlatformInstance, "An Execute instance requires a Provided Execution Platform instance");
-        abortIfNull(requiredExecutionPlatformInstance, "An Execute instance requires a Required Execution Platform instance");
+        unlessNotNull(providedExecutionPlatformInstance, "An Execute instance requires a Provided Execution Platform instance");
+        unlessNotNull(requiredExecutionPlatformInstance, "An Execute instance requires a Required Execution Platform instance");
         unlessExpectationsAreMet(providedExecutionPlatformInstance, requiredExecutionPlatformInstance);
         this.providedExecutionPlatformInstance=providedExecutionPlatformInstance;
         this.requiredExecutionPlatformInstance=requiredExecutionPlatformInstance;
     }
 
-    private void abortIfNull(Object o, String msg){
+    private void unlessNotNull(Object o, String msg){
         if(o == null)
             throw new IllegalArgumentException(msg);
     }
 
+    //TODO: to be refined (we should not only match if values are strictly equals)
     private void unlessExpectationsAreMet(ProvidedExecutionPlatformInstance provided, RequiredExecutionPlatformInstance required) {
-        for (String expectedKey: required.getType().getDemands().keySet()) {
-            Object actual = provided.getType().getOffers().get(expectedKey);
-            if (actual == null) {
-                throw new IllegalArgumentException("Missing expectations: " + expectedKey);
+        for (Property demand : required.getType().getDemands()) {
+            Property offer = provided.getType().getOfferByKey(demand.getName());
+            if (offer == null) {
+                throw new IllegalArgumentException("Missing expectations: " + demand.getName());
             }
-            Object expected = required.getType().getDemands().get(expectedKey);
-            if (!expected.equals(actual)) {
-                throw new IllegalArgumentException("Unmet expectation '" + expectedKey + "' (expected + '" +  expected + "' but found: '" + actual + "')");
+            if (!demand.getValue().equals(offer.getValue())) {
+                throw new IllegalArgumentException("Unmet expectation '" + demand.getName() + "' (expected + '" +  demand.getValue() + "' but found: '" + offer.getValue() + "')");
             }
         }
     }
@@ -63,7 +63,7 @@ public class ExecuteInstance extends CloudMLElementWithProperties {
     }
 
     public void setRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
-        abortIfNull(requiredExecutionPlatformInstance, "An Execute instance requires a Required Execution Platform instance");
+        unlessNotNull(requiredExecutionPlatformInstance, "An Execute instance requires a Required Execution Platform instance");
         this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
     }
 
@@ -72,7 +72,7 @@ public class ExecuteInstance extends CloudMLElementWithProperties {
     }
 
     public void setProvidedExecutionPlatformInstance(ProvidedExecutionPlatformInstance providedExecutionPlatformInstance) {
-        abortIfNull(providedExecutionPlatformInstance, "An Execute instance requires a Provided Execution Platform instance");
+        unlessNotNull(providedExecutionPlatformInstance, "An Execute instance requires a Provided Execution Platform instance");
         this.providedExecutionPlatformInstance = providedExecutionPlatformInstance;
     }
 

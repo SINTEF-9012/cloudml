@@ -25,7 +25,6 @@ package org.cloudml.codecs;
 import org.cloudml.core.*;
 import org.cloudml.core.CloudMLElement;
 import org.cloudml.core.CloudMLElementWithProperties;
-import org.cloudml.core.Component;
 import org.cloudml.core.InternalComponent;
 import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.core.Property;
@@ -94,7 +93,7 @@ public class BridgeToCloudML {
 
         for (net.cloudml.core.Provider kProvider : kproviders) {
             Provider p = new Provider(kProvider.getName(), kProvider.getCredentials());
-            initProperties(kProvider, p);
+            convertProperties(kProvider, p);
             model.getProviders().add(p);
             providers.put(p.getName(), p);
         }
@@ -123,8 +122,8 @@ public class BridgeToCloudML {
         if(kExternalComponent instanceof net.cloudml.core.VM){
             net.cloudml.core.VM kVM=(net.cloudml.core.VM) kExternalComponent;
             VM vm = new VM(kVM.getName());
-            initProperties(kVM, vm);
-            initResources(kVM,vm);
+            convertProperties(kVM, vm);
+            convertResources(kVM, vm);
 
             Provider p = providers.get(kVM.getProvider().getName());
             //TODO: extract this to function
@@ -172,7 +171,7 @@ public class BridgeToCloudML {
     public void convertAndAddProvidedPortsToPOJO(List<net.cloudml.core.ProvidedPort> pps, InternalComponent ic){
         for (net.cloudml.core.ProvidedPort kpp : pps) {
             ProvidedPort pp = new ProvidedPort(kpp.getName(), ic, kpp.getIsLocal());
-            initProperties(kpp, pp);
+            convertProperties(kpp, pp);
             pp.setPortNumber(kpp.getPortNumber());
             ic.getProvidedPorts().add(pp);
             providedPorts.put(calculatePortIdentifier(kpp), pp);
@@ -184,7 +183,7 @@ public class BridgeToCloudML {
     public void convertAndAddRequiredPortsToPOJO(List<net.cloudml.core.RequiredPort> rps, InternalComponent ic){
         for (net.cloudml.core.RequiredPort krp : rps) {
             RequiredPort rp = new RequiredPort(krp.getName(), ic, krp.getIsLocal(), krp.getIsMandatory());
-            initProperties(krp, rp);
+            convertProperties(krp, rp);
             rp.setPortNumber(krp.getPortNumber());
             ic.getRequiredPorts().add(rp);
             requiredPorts.put(calculatePortIdentifier(krp), rp);
@@ -197,14 +196,29 @@ public class BridgeToCloudML {
         checkForNull(kInternalComponent, "Cannot convert null!");
 
         InternalComponent ic = new InternalComponent(kInternalComponent.getName());
-        initProperties(kInternalComponent, ic);
-        initResources(kInternalComponent, ic);
+        convertProperties(kInternalComponent, ic);
+        convertResources(kInternalComponent, ic);
         internalComponents.put(ic.getName(), ic);
+
+        initRequiredExecutionPlatform(kInternalComponent, ic);
 
         convertAndAddProvidedPortsToPOJO(kInternalComponent.getProvidedPorts(),ic);
         convertAndAddRequiredPortsToPOJO(kInternalComponent.getRequiredPorts(),ic);
 
         model.getComponents().put(ic.getName(), ic);
+    }
+
+    private void initRequiredExecutionPlatform(net.cloudml.core.InternalComponent kInternalComponent, InternalComponent ic) {
+        if (kInternalComponent.getRequiredExecutionPlatform() != null) {
+            //assert !vmInstances.isEmpty();
+            RequiredExecutionPlatform rep=
+                    new RequiredExecutionPlatform(kInternalComponent.getRequiredExecutionPlatform().getName());
+            rep.setOwner(ic);
+            convertProperties(kInternalComponent.getRequiredExecutionPlatform(), rep);
+            convertResources(kInternalComponent.getRequiredExecutionPlatform(), rep);
+
+            ic.setRequiredExecutionPlatform(rep);
+        }
     }
 
     public void relationshipsToPOJO(List<net.cloudml.core.Relationship> kRelationships){
@@ -307,7 +321,7 @@ public class BridgeToCloudML {
             assert externalComponents.containsKey(kVM.getType().getName());
             VMInstance ni = new VMInstance(kVM.getName(), externalComponents.get(kVM.getType().getName()));
             ni.setPublicAddress(kVM.getPublicAddress());
-            initProperties(kVM, ni);
+            convertProperties(kVM, ni);
 
             vmInstances.put(ni.getName(), ni);
 
@@ -337,29 +351,42 @@ public class BridgeToCloudML {
         checkForNull(kInternalComponentInstance, "Cannot convert null!");
 
         InternalComponentInstance ai = new InternalComponentInstance(kInternalComponentInstance.getName(), internalComponents.get(kInternalComponentInstance.getType().getName()));
-        initProperties(kInternalComponentInstance, ai);
+        convertProperties(kInternalComponentInstance, ai);
         internalComponentInstances.put(ai.getName(), ai);
 
-        if (kInternalComponentInstance.getDestination() != null) {
-            assert !vmInstances.isEmpty();
-            ai.setDestination(vmInstances.get(kInternalComponentInstance.getDestination().getName()));
-        }
+        initRequiredExecutionPlatformInstance(kInternalComponentInstance, ai);
+
+        //TODO: destination
 
         for (net.cloudml.core.ProvidedPortInstance kapi : kInternalComponentInstance.getProvidedPortInstances()) {
             ProvidedPortInstance api = new ProvidedPortInstance(kapi.getName(), providedPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()), ai);
-            initProperties(kapi, api);
+            convertProperties(kapi, api);
             ai.getProvidedPortInstances().add(api);
             providedPortInstances.put(api.getName(), api);
         }
 
         for (net.cloudml.core.RequiredPortInstance kapi : kInternalComponentInstance.getRequiredPortInstances()) {
             RequiredPortInstance api = new RequiredPortInstance(kapi.getName(), requiredPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()), ai);
-            initProperties(kapi, api);
+            convertProperties(kapi, api);
             ai.getRequiredPortInstances().add(api);
             requiredPortInstances.put(api.getName(), api);
         }
 
         model.getComponentInstances().add(ai);
+    }
+
+    private void initRequiredExecutionPlatformInstance(net.cloudml.core.InternalComponentInstance kInternalComponentInstance, InternalComponentInstance ai) {
+        if (kInternalComponentInstance.getRequiredExecutionPlatformInstance() != null) {
+            //assert !vmInstances.isEmpty();
+            RequiredExecutionPlatformInstance repi=
+                    new RequiredExecutionPlatformInstance(kInternalComponentInstance.getRequiredExecutionPlatformInstance().getName(),
+                            ai.getType().getRequiredExecutionPlatform());
+            repi.setOwner(ai);
+            convertProperties(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
+            convertResources(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
+
+            ai.setRequiredExecutionPlatformInstance(repi);
+        }
     }
 
     public void relationshipInstancesToPOJO(List<net.cloudml.core.RelationshipInstance> kRelationshipInstances){
@@ -399,14 +426,14 @@ public class BridgeToCloudML {
      * @param kElement
      * @param element
      */
-    private void initProperties(net.cloudml.core.CloudMLElementWithProperties kElement, CloudMLElementWithProperties element) {
+    private void convertProperties(net.cloudml.core.CloudMLElementWithProperties kElement, CloudMLElementWithProperties element) {
         for (net.cloudml.core.Property kp : kElement.getProperties()) {
             Property p = new Property(kp.getName(), kp.getValue());
             element.getProperties().add(p);
         }
     }
 
-    private void initResources(net.cloudml.core.CloudMLElementWithProperties kElement, CloudMLElementWithProperties element){
+    private void convertResources(net.cloudml.core.CloudMLElementWithProperties kElement, CloudMLElementWithProperties element){
         for(net.cloudml.core.Resource kr: kElement.getResources()){
             Resource r = new Resource(kr.getName(), kr.getInstallCommand(), kr.getDownloadCommand(), kr.getConfigureCommand(), kr.getStartCommand(), kr.getStopCommand());
 

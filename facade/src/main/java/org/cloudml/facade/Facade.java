@@ -176,7 +176,7 @@ class Facade implements CloudML, CommandHandler {
 	 * @param user the user associated
 	 */
 	public void executeOnVM(ComponentInstance a, String command, String user) {//TODO: use the connector factory
-		VM ownerVM = (VM)a.getDestination().getType();//TODO: generics
+		VM ownerVM = (VM)deployer.getDestination(a).getType();//TODO: generics
 		Provider p = ownerVM.getProvider();
 		JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getLogin(),
 				p.getPasswd());

@@ -34,6 +34,8 @@ public class CloudMLModel extends CloudMLElementWithProperties {
     private Map<String, Relationship> relationships = new HashMap<String, Relationship>();
     private List<RelationshipInstance> relationshipInstances = new LinkedList<RelationshipInstance>();
 
+    private List<ExecuteInstance> executeInstances= new LinkedList<ExecuteInstance>();
+
     private List<Cloud> clouds = new LinkedList<Cloud>();
 
     public CloudMLModel(){}
@@ -165,6 +167,14 @@ public class CloudMLModel extends CloudMLElementWithProperties {
 
     public void setClouds(List<Cloud> clouds){
         this.clouds=clouds;
+    }
+
+    public List<ExecuteInstance> getExecuteInstances(){
+        return this.executeInstances;
+    }
+
+    public void setExecuteInstances(List<ExecuteInstance> executeInstances){
+        this.executeInstances=executeInstances;
     }
     
     @Override

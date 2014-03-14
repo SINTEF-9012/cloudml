@@ -30,7 +30,6 @@ import java.util.List;
  */
 public abstract class ComponentInstance<T extends Component> extends CloudMLElementWithProperties{
 
-    protected VMInstance destination = null;
     protected T type;
     private List<ProvidedPortInstance> providedPortInstances = new LinkedList<ProvidedPortInstance>();
 
@@ -54,17 +53,7 @@ public abstract class ComponentInstance<T extends Component> extends CloudMLElem
         super(name,properties);
         this.providedPortInstances=providedPortInstances;
     }
-    public ComponentInstance(String name, T type, VMInstance destination) {
-        super(name);
-        this.type=type;
-        this.destination = destination;
-    }
 
-    public ComponentInstance(String name, List<Property> properties, T type, VMInstance destination) {
-        super(name,properties);
-        this.type=type;
-        this.destination = destination;
-    }
 
     public List<ProvidedPortInstance> getProvidedPortInstances() {
         return this.providedPortInstances;
@@ -80,14 +69,6 @@ public abstract class ComponentInstance<T extends Component> extends CloudMLElem
 
     public void setType(T type) {
         this.type = type;
-    }
-
-    public void setDestination(VMInstance destination) {
-        this.destination = destination;
-    }
-
-    public VMInstance getDestination() {
-        return destination;
     }
 
     public List<ProvidedExecutionPlatformInstance> getProvidedExecutionPlatformInstances() {
@@ -112,9 +93,7 @@ public abstract class ComponentInstance<T extends Component> extends CloudMLElem
         if (other instanceof ComponentInstance) {
             ComponentInstance otherCompInst = (ComponentInstance) other;
             Boolean match= name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
-            if(destination != null)
-                return name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType()) && destination.equals(otherCompInst.getDestination());
-            else return match && (otherCompInst.getDestination() == null);
+            return match;
         } else {
             return false;
         }

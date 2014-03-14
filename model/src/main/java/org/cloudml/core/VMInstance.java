@@ -26,7 +26,6 @@ import java.util.List;
 
 public class VMInstance extends ExternalComponentInstance<VM> {
 
-    private String publicAddress="";
     private String id="";
 
     public VMInstance() {
@@ -41,14 +40,6 @@ public class VMInstance extends ExternalComponentInstance<VM> {
     }
     
 
-    public void setPublicAddress(String publicAddress){
-    	this.publicAddress=publicAddress;
-    }
-    
-    public String getPublicAddress(){
-    	return this.publicAddress;
-    }
-    
     public void setId(String id){
     	this.id=id;
     }
@@ -66,7 +57,7 @@ public class VMInstance extends ExternalComponentInstance<VM> {
         		"minDisk" + ((VM)type).getMinStorage()+"\n"+
         		"OS" + ((VM)type).getOs()+"\n"+
         		"location" + ((VM)type).getLocation()+"\n"+
-        		"publicAdress" + getPublicAddress()+"\n"+
+        		"publicAdress" + publicAddress+"\n"+
         		"groupName" + ((VM)type).getGroupName();
     }
 

@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
  */
-public class ExecutionPlatformInstance<T extends ExecutionPlatform> extends CloudMLElementWithProperties {
+public abstract class ExecutionPlatformInstance<T extends ExecutionPlatform> extends CloudMLElementWithProperties {
 
     private T type;
     private ComponentInstance owner;
@@ -44,7 +44,6 @@ public class ExecutionPlatformInstance<T extends ExecutionPlatform> extends Clou
         super(name, properties);
         this.type=type;
     }
-
 
     public T getType(){
         return this.type;
