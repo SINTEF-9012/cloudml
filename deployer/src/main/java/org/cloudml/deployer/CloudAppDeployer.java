@@ -73,6 +73,7 @@ public class CloudAppDeployer {
 			configureWithBindings(targetModel.getBindingInstances());
 
 			//configuration process at SaaS level
+                        alreadyStarted.clear();
 			configureSaas(targetModel.getArtefactInstances());
 
 		}else{
@@ -217,7 +218,7 @@ public class CloudAppDeployer {
 				x.setStatus(State.running);
 				alreadyStarted.add(x);
 				jc.closeConnection();
-			}
+                        }
 		}
 	}
 
@@ -299,6 +300,19 @@ public class CloudAppDeployer {
 				//server resources
 				configureWithIP(serverResource,server,destinationIpAddress,ipAddress,destinationPortNumber);
 			}
+                        else{
+                                ClientPortInstance client=bi.getClient();
+				ServerPortInstance server=bi.getServer();
+
+				Resource clientResource=bi.getType().getClientResource();
+				Resource serverResource=bi.getType().getServerResource();
+
+				//client resources
+				configureWithIP(clientResource,client,"","",0);
+
+				//server resources
+				configureWithIP(serverResource,server,"","",0);
+                        }
 		}
 	}
 
