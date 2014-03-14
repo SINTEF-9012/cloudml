@@ -120,7 +120,7 @@ public class ZipModifier {
                      transformer.transform(new DOMSource(doc), output);
                 }
                 else{
-                    outZip.putNextEntry(en);
+                    outZip.putNextEntry(new ZipEntry(en.getName()));
                     copy(inZip.getInputStream(en),outZip);
                 }
                 outZip.closeEntry();

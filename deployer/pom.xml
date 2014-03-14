@@ -137,7 +137,24 @@
                     <artifactId>governance-ems</artifactId>
                     <version>0.0.1-SNAPSHOT</version>
                 </dependency>
-
+                
+                <dependency>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                    <version>4.2</version>
+                </dependency>
+                
+                <dependency>
+                    <groupId>com.cloudbees</groupId>
+                    <artifactId>cloudbees-api-client</artifactId>
+                    <version>1.5.6</version>
+                </dependency>
+                
+                <dependency>
+                    <groupId>com.thoughtworks.xstream</groupId>
+                    <artifactId>xstream</artifactId>
+                    <version>1.4.1</version>
+                </dependency>
 
 		<!--  cloud4soa 
         <dependency>
