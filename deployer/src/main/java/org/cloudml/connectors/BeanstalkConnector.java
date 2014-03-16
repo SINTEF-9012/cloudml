@@ -80,7 +80,7 @@ import java.util.Map;
 /**
  * PaasConnector for BeansTalk and RDS
  *
- * @author ? for beanstalk
+ * @author Nicolas Ferry for beanstalk
  * @author Hui Song for rds
  */
 public class BeanstalkConnector implements PaaSConnector {
@@ -187,7 +187,7 @@ public class BeanstalkConnector implements PaaSConnector {
     public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout) {
         
         prepareWar(new File(warFile), versionLabel, applicationName);
-        System.out.print("uploadWar:");
+        journal.log(Level.INFO, ">> Uploading War file!");
         while(timeout-- > 0){
             System.out.print("-");
             try {
@@ -201,6 +201,7 @@ public class BeanstalkConnector implements PaaSConnector {
                         = beanstalkClient.updateEnvironment(new UpdateEnvironmentRequest()
                                 .withEnvironmentName(envName)
                                 .withVersionLabel(versionLabel));
+                journal.log(Level.INFO, ">> War uploaded!");
                 break;
             }
             catch(com.amazonaws.AmazonServiceException e){
