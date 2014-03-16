@@ -133,7 +133,7 @@ public class BridgeToKmf {
     }
 
     public void executeToKmf(ExecuteInstance ei){
-        checkNull(ei,"Cannot iterate on null!");
+        checkNull(ei,"Cannot convert null!");
         net.cloudml.core.ExecuteInstance kExecute=factory.createExecuteInstance();
         convertProperties(ei,kExecute,factory);
         convertResources(ei,kExecute,factory);

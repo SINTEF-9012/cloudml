@@ -289,6 +289,22 @@ public class BridgeToCloudMLTest extends TestCase {
         assertTrue(new Matcher().matchRelationshipInstance(input, output));
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testExecuteInstanceToKmfWithNull(){
+        BridgeToCloudML bridge = new BridgeToCloudML();
+        bridge.relationshipInstancesToPOJO(null);
+    }
+
+    @Test
+    public void testExecuteInstanceToKmfWithValidElement(){
+        BridgeToCloudML bridge = new BridgeToCloudML();
+        net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
+        net.cloudml.core.CloudMLModel cm=factory.createCloudMLModel();
+
+
+        bridge.toPOJO(cm);
+    }
+
 
     public net.cloudml.core.RelationshipInstance createRelationshipInstanceNotValid(String name){
         net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
@@ -381,4 +397,6 @@ public class BridgeToCloudMLTest extends TestCase {
         kProvider.setCredentials(credentials);
         return kProvider;
     }
+
+
 }

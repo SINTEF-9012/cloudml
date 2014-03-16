@@ -37,10 +37,7 @@ import org.cloudml.core.RequiredPortInstance;
 import org.cloudml.core.Resource;
 import org.cloudml.core.VMInstance;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
@@ -58,6 +55,8 @@ public class BridgeToCloudML {
     private Map<String, ProvidedPortInstance> providedPortInstances = new HashMap<String, ProvidedPortInstance>();
     private Map<String, VMInstance> vmInstances = new HashMap<String, VMInstance>();
     private Map<String, Relationship> relationships = new HashMap<String, Relationship>();
+    private Map<String, ProvidedExecutionPlatformInstance> providedExecutionPlatformInstances=new HashMap<String, ProvidedExecutionPlatformInstance>();
+    private Map<String, RequiredExecutionPlatformInstance> requiredExecutionPlatformInstances= new HashMap<String, RequiredExecutionPlatformInstance>();
     private CloudMLModel model=new CloudMLModel();
 
     public BridgeToCloudML(){}
@@ -77,7 +76,7 @@ public class BridgeToCloudML {
         internalComponentInstancesToPOJO(kDeploy.getComponentInstances());
         relationshipsToPOJO(kDeploy.getRelationships());
         relationshipInstancesToPOJO(kDeploy.getRelationshipInstances());
-
+        executeInstancesToPOJO(kDeploy.getExecutesInstances());
         return model;
     }
 
@@ -140,6 +139,7 @@ public class BridgeToCloudML {
             vm.setSecurityGroup(kVM.getSecurityGroup());
             vm.setSshKey(kVM.getSshKey());
 
+            initProvidedExecutionPlatforms(kVM,vm);
             externalComponents.put(vm.getName(), vm);
 
             model.getComponents().put(vm.getName(), vm);
@@ -147,6 +147,28 @@ public class BridgeToCloudML {
             throw new IllegalArgumentException("Unknown subtype of ExternalComponent " + kExternalComponent.getClass().getName());
         }
     }
+
+    private void initProvidedExecutionPlatforms(net.cloudml.core.Component kc, Component c){
+        List<net.cloudml.core.ProvidedExecutionPlatform> providedExecutionPlatforms=  kc.getProvidedExecutionPlatforms();
+        if(providedExecutionPlatforms != null){
+            for(net.cloudml.core.ProvidedExecutionPlatform kpep: providedExecutionPlatforms){
+                c.getProvidedExecutionPlatforms().add(initProvidedExecutionPlatform(kpep, c));
+            }
+        }
+    }
+
+    private ProvidedExecutionPlatform initProvidedExecutionPlatform(net.cloudml.core.ProvidedExecutionPlatform kpep, Component c){
+        if(kpep != null){
+            ProvidedExecutionPlatform pep=new ProvidedExecutionPlatform();
+            pep.setName(kpep.getName());
+            pep.setOwner(c);
+            convertProperties(kpep, pep);
+            convertResources(kpep, pep);
+            return pep;
+        }
+        return null;
+    }
+
 
     public void internalComponentsToPOJO(List<net.cloudml.core.Component> components){
         int counter=0;
@@ -201,6 +223,7 @@ public class BridgeToCloudML {
         internalComponents.put(ic.getName(), ic);
 
         initRequiredExecutionPlatform(kInternalComponent, ic);
+        initProvidedExecutionPlatforms(kInternalComponent, ic);
 
         convertAndAddProvidedPortsToPOJO(kInternalComponent.getProvidedPorts(),ic);
         convertAndAddRequiredPortsToPOJO(kInternalComponent.getRequiredPorts(),ic);
@@ -323,6 +346,8 @@ public class BridgeToCloudML {
             ni.setPublicAddress(kVM.getPublicAddress());
             convertProperties(kVM, ni);
 
+            initProvidedExecutionPlatformInstances(kExternalComponentInstance, ni);
+
             vmInstances.put(ni.getName(), ni);
 
             model.getComponentInstances().add(ni);
@@ -355,7 +380,7 @@ public class BridgeToCloudML {
         internalComponentInstances.put(ai.getName(), ai);
 
         initRequiredExecutionPlatformInstance(kInternalComponentInstance, ai);
-
+        initProvidedExecutionPlatformInstances(kInternalComponentInstance, ai);
         //TODO: destination
 
         for (net.cloudml.core.ProvidedPortInstance kapi : kInternalComponentInstance.getProvidedPortInstances()) {
@@ -384,8 +409,33 @@ public class BridgeToCloudML {
             repi.setOwner(ai);
             convertProperties(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
             convertResources(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
-
+            requiredExecutionPlatformInstances.put(repi.getName(),repi);
             ai.setRequiredExecutionPlatformInstance(repi);
+        }
+    }
+
+    private void initProvidedExecutionPlatformInstances(net.cloudml.core.ComponentInstance kInternalComponentInstance, ComponentInstance ai) {
+        if(kInternalComponentInstance.getProvidedExecutionPlatformInstances() != null){
+            for(net.cloudml.core.ProvidedExecutionPlatformInstance kpepi: kInternalComponentInstance.getProvidedExecutionPlatformInstances()){
+                initProvidedExecutionPlatformInstance(kpepi, ai);
+            }
+        }
+    }
+
+    private void initProvidedExecutionPlatformInstance(net.cloudml.core.ProvidedExecutionPlatformInstance kpepi, ComponentInstance ai){
+        if(kpepi != null){
+            ProvidedExecutionPlatformInstance pepi=new ProvidedExecutionPlatformInstance();
+            pepi.setOwner(ai);
+            pepi.setName(kpepi.getName());
+            for(ProvidedExecutionPlatform pep: ai.getType().getProvidedExecutionPlatforms()){
+                if(pep.getName().equals(kpepi.getType().getName())){
+                    pepi.setType(pep);
+                }
+            }
+            convertProperties(kpepi, pepi);
+            convertResources(kpepi, pepi);
+            providedExecutionPlatformInstances.put(pepi.getName(),pepi);
+            ai.getProvidedExecutionPlatformInstances().add(pepi);
         }
     }
 
@@ -430,6 +480,24 @@ public class BridgeToCloudML {
         for (net.cloudml.core.Property kp : kElement.getProperties()) {
             Property p = new Property(kp.getName(), kp.getValue());
             element.getProperties().add(p);
+        }
+    }
+
+    public void executeInstancesToPOJO(List<net.cloudml.core.ExecuteInstance> kexecuteInstances){
+        if(kexecuteInstances != null){
+            for(net.cloudml.core.ExecuteInstance kei: kexecuteInstances){
+                executeInstanceToPOJO(kei);
+            }
+        }
+    }
+
+    public void executeInstanceToPOJO(net.cloudml.core.ExecuteInstance kei){
+        if(kei != null){
+
+            ExecuteInstance ei=new ExecuteInstance(kei.getName(),
+                    providedExecutionPlatformInstances.get(kei.getProvidedExecutionPlatformInstance().getName()),
+                    requiredExecutionPlatformInstances.get(kei.getRequiredExecutionPlatformInstance().getName()));
+            model.getExecuteInstances().add(ei);
         }
     }
 
