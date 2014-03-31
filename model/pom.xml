@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.cloudml</groupId>
         <artifactId>root</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.5-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 

@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.cloudml</groupId>
         <artifactId>root</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.5-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -32,31 +32,31 @@
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>deployer</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>model</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>codecs.json</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
         
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>codecs.xmi</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
         
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>codecs.jung</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
  
         <dependency>
