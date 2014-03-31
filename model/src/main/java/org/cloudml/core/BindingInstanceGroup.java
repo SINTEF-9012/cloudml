@@ -55,6 +55,11 @@ public class BindingInstanceGroup extends NamedElementGroup<BindingInstance> {
         }
         return new BindingInstanceGroup(getContext(), selection);
     }
+    
+    public BindingInstanceGroup ofType(String typeName) {
+        final Binding type = getContext().getBindingTypes().named(typeName);
+        return ofType(type);
+    }
 
     public BindingInstanceGroup withPort(ArtefactPortInstance<? extends ArtefactPort> port) {
         final ArrayList<BindingInstance> selection = new ArrayList<BindingInstance>();

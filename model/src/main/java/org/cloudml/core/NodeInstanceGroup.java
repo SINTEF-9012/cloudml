@@ -58,4 +58,10 @@ public class NodeInstanceGroup extends NamedElementGroup<NodeInstance> {
     }
     
     
+    public NodeInstanceGroup ofType(String typeName) {
+        final Node type = getContext().getNodeTypes().named(typeName);
+        return ofType(type);
+    }
+    
+    
 }

@@ -66,6 +66,11 @@ public class ArtefactInstanceGroup extends NamedElementGroup<ArtefactInstance> {
         }
         return new ArtefactInstanceGroup(getContext(), selection);
     }
+    
+    public ArtefactInstanceGroup ofType(String typeName) {
+        final Artefact type = getContext().getArtefactTypes().named(typeName);
+        return ofType(type);
+    }
 
     public ArtefactInstanceGroup hostedBy(NodeInstance destination) {
         final ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
