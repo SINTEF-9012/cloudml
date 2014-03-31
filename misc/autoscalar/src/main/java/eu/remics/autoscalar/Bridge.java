@@ -48,7 +48,7 @@ class Bridge {
 
             Map<String, Node> groups = new HashMap<String, Node>();
 
-            for (Node n : model.getNodeTypes().values()) {
+            for (Node n : model.getNodeTypes()) {
                 final String groupName = n.getProperty("groupName");
                 System.out.println(n.getName() + ": " + groupName);
                 if (groupName != null) {

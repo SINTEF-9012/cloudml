@@ -80,7 +80,7 @@ public class KMFBridge {
 
             nodes.put(node.getName(), node);
 
-            model.getNodeTypes().put(node.getName(), node);
+            model.getNodeTypes().add(node);
         }
 
         for (net.cloudml.core.Artefact ka : kDeploy.getArtefactTypes()) {//first pass on the contained elements
@@ -289,7 +289,7 @@ public class KMFBridge {
         }
 
         //TODO: continue cloning and conversion...
-        for (Node node : deploy.getNodeTypes().values()) {
+        for (Node node : deploy.getNodeTypes()) {
             net.cloudml.core.Node kNode = factory.createNode();
             initProperties(node, kNode, factory);
             kNode.setName(node.getName());

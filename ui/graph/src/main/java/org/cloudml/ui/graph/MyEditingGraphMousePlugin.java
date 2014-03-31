@@ -133,7 +133,7 @@ MouseListener, MouseMotionListener {
 							}
 						}
 					}
-					for(Node a:dm.getNodeTypes().values()){
+					for(Node a:dm.getNodeTypes()){
 						if(a.getName().equals(nodeType)){
 							NodeInstance ai= a.instanciates(nodeType+cnt);
 							dm.getNodeInstances().add(ai);

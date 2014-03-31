@@ -82,7 +82,7 @@ public class DeploymentModelTest extends TestCase {
         model.addProvider(provider);
 
         final Node node = new Node("my node", provider);
-        model.addNode(node);
+        model.getNodeTypes().add(node);
 
         assertThat("node is contained", model.contains(node), is(true));
     }
@@ -92,7 +92,7 @@ public class DeploymentModelTest extends TestCase {
         DeploymentModel model = new DeploymentModel();
         Node node = new Node("my node", new Provider("ec2"));
 
-        model.addNode(node);
+        model.getNodeTypes().add(node);
     }
 
     @Test
@@ -104,8 +104,8 @@ public class DeploymentModelTest extends TestCase {
                 .providedBy("ec2"))
                 .build();
 
-        final Node node = model.findNodeByName("My Node");
-        model.removeNode(node);
+        final Node node = model.getNodeTypes().named("My Node");
+        model.getNodeTypes().remove(node);
 
         assertFalse(model.contains(node));
     }
@@ -122,8 +122,8 @@ public class DeploymentModelTest extends TestCase {
                 .ofType("Linux"))
                 .build();
 
-        Node node = model.findNodeByName("Linux");
-        model.removeNode(node);
+        Node node = model.getNodeTypes().named("Linux");
+        model.getNodeTypes().remove(node);
     }
 
     @Test
@@ -140,7 +140,7 @@ public class DeploymentModelTest extends TestCase {
     @Test
     public void removedArtefactAreNotContained() {
         DeploymentModel model = new DeploymentModel();
-        final Artefact artefact = new Artefact("my artefact");
+        final Artefact artefact = new Artefact("my artefact"); 
         model.addArtefact(artefact);
         assertTrue(model.contains(artefact));
 

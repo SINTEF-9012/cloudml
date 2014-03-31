@@ -308,7 +308,7 @@ public class Visu {
 
 	public DefaultListModel fillList(){
 		DefaultListModel lm=new DefaultListModel();
-		for(Node n:dmodel.getNodeTypes().values()){
+		for(Node n:dmodel.getNodeTypes()){
 			lm.addElement(n.getName());
 		}
 		for(Artefact n:dmodel.getArtefactTypes().values()){

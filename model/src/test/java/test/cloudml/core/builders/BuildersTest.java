@@ -111,7 +111,7 @@ public class BuildersTest extends TestCase {
                 .build();
 
         Provider provider = model.findProviderByName(PROVIDER_NAME);
-        Node node = model.findNodeByName(NODE_TYPE_NAME);
+        Node node = model.getNodeTypes().named(NODE_TYPE_NAME);
         assertThat("no node produced", node, is(not(nullValue())));
         assertThat("node's name", node.getName(), is(equalTo(NODE_TYPE_NAME)));
         assertThat("node's provider", node.getProvider(), is(sameInstance(provider)));
@@ -299,7 +299,7 @@ public class BuildersTest extends TestCase {
         assertNotNull("no node instance", instance);
         assertEquals("node instance name", NODE_INSTANCE_NAME, instance
                 .getName());
-        assertNotNull("node type", model.findNodeByName(NODE_TYPE_NAME));
+        assertNotNull("node type", model.getNodeTypes().named(NODE_TYPE_NAME));
         assertEquals("node intstance type name", NODE_TYPE_NAME, instance
                 .getType()
                 .getName());

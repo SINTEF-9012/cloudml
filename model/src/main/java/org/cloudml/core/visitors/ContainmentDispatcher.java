@@ -47,7 +47,7 @@ public class ContainmentDispatcher implements Dispatcher {
         for (Provider provider : model.getProviders()) {
             provider.accept(visitor);
         }
-        for (Node node : model.getNodeTypes().values()) {
+        for (Node node : model.getNodeTypes()) {
             node.accept(visitor);
         }
         for (Binding binding : model.getBindingTypes().values()) {

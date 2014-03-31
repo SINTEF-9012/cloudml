@@ -37,11 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- *
- * @author Franck Chauvel
- * @since 0.1
- */
+
 @RunWith(JUnit4.class)
 public class NodeTest extends TestCase {
 
@@ -64,9 +60,11 @@ public class NodeTest extends TestCase {
     public void testFindingNodeInAModel() {
         DeploymentModel model = new DeploymentModel();
         final String nodeName = "My Node Type";
-        Node node = new Node(nodeName);
-        model.getNodeTypes().put(nodeName, node);
-        assertTrue(model.getNodeTypes().values().contains(node));
+        final Provider provider = new Provider("EC2");
+        model.addProvider(provider);
+        Node node = new Node(nodeName, provider);
+        model.getNodeTypes().add(node);
+        assertTrue(model.getNodeTypes().contains(node));
     }
 
     @Test

@@ -60,6 +60,6 @@ public class NodeBuilder {
         Node result = new Node();
         result.setName(name);
         result.setProvider(context.findProviderByName(providerName));
-        context.addNode(result);
+        context.getNodeTypes().add(result);
     }
 }

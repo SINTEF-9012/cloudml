@@ -38,17 +38,19 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
     private Map<String, Artefact> artefactTypes = new HashMap<String, Artefact>();
     private List<ArtefactInstance> artefactInstances = new LinkedList<ArtefactInstance>();
-    private Map<String, Node> nodeTypes = new HashMap<String, Node>();
+    private final NodeTypes nodeTypes;
     private List<NodeInstance> nodeInstances = new LinkedList<NodeInstance>();
     private List<Provider> providers = new LinkedList<Provider>();
-    private Map<String, Binding> bindingTypes = new HashMap<String, Binding>();
+    private Map<String, Binding> bindingTypes = new HashMap<String, Binding>(); 
     private List<BindingInstance> bindingInstances = new LinkedList<BindingInstance>();
 
     public DeploymentModel() {
+        this.nodeTypes = new NodeTypes(this);
     }
 
     public DeploymentModel(String name) {
         super(name);
+        this.nodeTypes = new NodeTypes(this);
     }
 
     @Deprecated
@@ -56,10 +58,10 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                            Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers) {
         super(name, properties);
+        this.nodeTypes = new NodeTypes(this);
         this.artefactTypes = artefactTypes;
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
-        this.nodeTypes = nodeTypes;
         this.providers = providers;
     }
 
@@ -68,10 +70,10 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                            Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers, Map<String, Binding> bindingTypes, List<BindingInstance> bindingInstances) {
         super(name, properties);
+            this.nodeTypes = new NodeTypes(this);
         this.artefactTypes = artefactTypes;
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
-        this.nodeTypes = nodeTypes;
         this.providers = providers;
         this.bindingInstances = bindingInstances;
         this.bindingTypes = bindingTypes;
@@ -134,42 +136,16 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     }
 
     public boolean isUsed(Provider provider) {
-        return !findNodesByProvider(provider).isEmpty();
+        return !getNodeTypes().providedBy(provider).isEmpty();
     }
 
     public Provider findProviderByName(String providerName) {
         return findByName(providerName, this.providers);
     }
 
-    // Node Types
-    @Deprecated
-    public void setNodeTypes(Map<String, Node> nodeTypes) {
-        this.nodeTypes = nodeTypes;
-    }
 
-    @Deprecated
-    public Map<String, Node> getNodeTypes() {
-        return nodeTypes;
-    }
-
-    public List<Node> getNodes() {
-        return Collections.unmodifiableList(new ArrayList<Node>(this.nodeTypes.values()));
-    }
-
-    public void addNode(Node node) {
-        if (!contains(node.getProvider())) {
-            String message = String.format("The provider '%s' (used by node '%s') is not part of the model", node.getProvider().getName(), node.getName());
-            throw new IllegalStateException(message);
-        }
-        this.nodeTypes.put(node.getName(), node);
-    }
-
-    public void removeNode(Node node) {
-        if (isUsed(node)) {
-            final String message = String.format("Unable to remove node type '%s' as there are still some related instances", node.getName());
-            throw new IllegalStateException(message);
-        }
-        this.nodeTypes.remove(node.getName());
+    public NodeTypes getNodeTypes() {
+        return this.nodeTypes;
     }
 
     public boolean isUsed(Node node) {
@@ -183,25 +159,11 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 selectedInstances.add(nodeInstance);
             }
         }
-        return selectedInstances;
-    }
-
-    public Node findNodeByName(String nodeName) {
-        return this.nodeTypes.get(nodeName);
-    }
-
-    public List<Node> findNodesByProvider(Provider provider) {
-        ArrayList<Node> selectedNodes = new ArrayList<Node>();
-        for (Node node : this.nodeTypes.values()) {
-            if (node.isProvidedBy(provider)) {
-                selectedNodes.add(node);
-            }
-        }
-        return selectedNodes;
+        return selectedInstances; 
     }
 
     public boolean contains(Node nodeType) {
-        return this.nodeTypes.values().contains(nodeType);
+        return this.nodeTypes.contains(nodeType);
     }
 
     // Artefacts types
@@ -472,7 +434,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         }
         builder.append("}\n");
         builder.append("- Node types: {\n");
-        for (Node nt : nodeTypes.values()) {
+        for (Node nt : nodeTypes) {
             builder.append("  - " + nt + "\n");
         }
         builder.append("}\n");

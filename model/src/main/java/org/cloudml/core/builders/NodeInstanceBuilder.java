@@ -41,7 +41,7 @@ public class NodeInstanceBuilder {
     }
 
     public NodeInstanceBuilder named(String instanceName) {
-        this.instanceName = instanceName;
+        this.instanceName = instanceName; 
         return this;
     }
 
@@ -60,7 +60,7 @@ public class NodeInstanceBuilder {
     public void integrateIn(DeploymentModel model) {
         final NodeInstance nodeInstance = new NodeInstance();
         nodeInstance.setName(instanceName);
-        nodeInstance.setType(model.findNodeByName(typeName));
+        nodeInstance.setType(model.getNodeTypes().named(typeName));
         model.addNodeInstance(nodeInstance);
     }
 }
