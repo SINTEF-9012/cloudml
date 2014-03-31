@@ -167,15 +167,16 @@ public class DeploymentModelComparator {
 		addedBindings =  new ArrayList<BindingInstance>(targetDM.getBindingInstances()); 
 		addedBindings.removeAll(matchingBindings.values());
 		for(BindingInstance ni : addedBindings){
-			int i=currentDM.getArtefactInstances().indexOf(ni.getClient().getOwner());
+                    final List<ArtefactInstance> artefactInstances = currentDM.getArtefactInstances().toList();
+			int i=artefactInstances.indexOf(ni.getClient().getOwner());
 			if(i >= 0){
-				ArtefactInstance a=currentDM.getArtefactInstances().get(i);
+				ArtefactInstance a=artefactInstances.get(i);
 				int j=a.getRequired().indexOf(ni.getClient());
 				ni.setClient(a.getRequired().get(j));
 			}
-			i=currentDM.getArtefactInstances().indexOf(ni.getServer().getOwner());
+			i=currentDM.getArtefactInstances().toList().indexOf(ni.getServer().getOwner());
 			if(i >= 0){
-				ArtefactInstance a=currentDM.getArtefactInstances().get(i);
+				ArtefactInstance a=artefactInstances.get(i);
 				int j=a.getProvided().indexOf(ni.getServer());
 				ni.setServer(a.getProvided().get(j));
 			}

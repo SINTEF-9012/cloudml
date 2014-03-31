@@ -113,6 +113,6 @@ public class ArtefactInstanceTest extends TestCase {
                     .hostedBy("host 1"))
                 .build();
                 
-        return model.findArtefactInstanceByName("app 1");
+        return model.getArtefactInstances().named("app 1");
     }
 }

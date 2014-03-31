@@ -83,6 +83,6 @@ public class ArtefactInstanceBuilder {
                     .integrateIn(result);
         }
         result.setDestination(model.getNodeInstances().named(hostName));
-        model.addArtefactInstance(result);
+        model.getArtefactInstances().add(result);
     }
 }

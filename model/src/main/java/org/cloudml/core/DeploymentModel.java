@@ -34,12 +34,12 @@ import org.cloudml.core.visitors.Visitor;
 
 public class DeploymentModel extends WithProperties implements Visitable, CanBeValidated {
 
-    private final ArtefactTypeGroup artefactTypes;
-    private List<ArtefactInstance> artefactInstances = new LinkedList<ArtefactInstance>();
-    private final NodeTypeGroup nodeTypes;
     private final ProviderGroup providers;
+    private final NodeTypeGroup nodeTypes;
+    private final ArtefactTypeGroup artefactTypes;
+    private final BindingTypeGroup bindingTypes;
     private final NodeInstanceGroup nodeInstances;
-    private BindingTypeGroup bindingTypes;
+    private final ArtefactInstanceGroup artefactInstances;
     private List<BindingInstance> bindingInstances = new LinkedList<BindingInstance>();
 
     public DeploymentModel() {
@@ -48,6 +48,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.artefactTypes = new ArtefactTypeGroup(this);
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
+        this.artefactInstances = new ArtefactInstanceGroup(this);
     }
 
     public DeploymentModel(String name) {
@@ -57,6 +58,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.artefactTypes = new ArtefactTypeGroup(this);
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
+        this.artefactInstances = new ArtefactInstanceGroup(this);
     }
 
     @Deprecated
@@ -69,7 +71,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.artefactTypes = new ArtefactTypeGroup(this);
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
-        this.artefactInstances = artefactInstances;
+        this.artefactInstances = new ArtefactInstanceGroup(this);
     }
 
     @Deprecated
@@ -82,7 +84,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.artefactTypes = new ArtefactTypeGroup(this);
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
-        this.artefactInstances = artefactInstances;
+        this.artefactInstances = new ArtefactInstanceGroup(this);
         this.bindingInstances = bindingInstances;
     }
 
@@ -110,9 +112,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 && this.bindingInstances.isEmpty();
     }
 
-    /*
-     * ProviderGroup
-     */
+   // Providers
     public ProviderGroup getProviders() {
         return providers;
     }
@@ -121,6 +121,8 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return !getNodeTypes().providedBy(provider).isEmpty();
     }
 
+    
+    // Node types
     public NodeTypeGroup getNodeTypes() {
         return this.nodeTypes;
     }
@@ -129,27 +131,17 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return !getNodeInstances().ofType(node).isEmpty();
     }
 
-    public boolean contains(Node nodeType) {
-        return this.nodeTypes.contains(nodeType);
-    }
-
+    // Artefact types
     public ArtefactTypeGroup getArtefactTypes() {
         return artefactTypes;
     }
 
     public boolean isUsed(Artefact artefact) {
-        return !findArtefactInstancesByType(artefact).isEmpty();
+        return !getArtefactInstances().ofType(artefact).isEmpty();
     }
 
-    public boolean isUsed(ArtefactInstance server) {
-        boolean found = false;
-        final Iterator<ServerPortInstance> iterator = server.getProvided().iterator();
-        while (iterator.hasNext() && !found) {
-            found = isBound(iterator.next());
-        }
-        return found;
-    }
-
+    
+    // Binding Types
     public BindingTypeGroup getBindingTypes() {
         return bindingTypes;
     }
@@ -160,54 +152,21 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     }
 
 
-    // Artefact instances
-    public void setArtefactInstances(List<ArtefactInstance> artefactInstances) {
-        this.artefactInstances = artefactInstances;
-    }
-
-    public List<ArtefactInstance> getArtefactInstances() {
+    // Artefact Instances
+    public ArtefactInstanceGroup getArtefactInstances() {
         return artefactInstances;
     }
 
-    public void addArtefactInstance(ArtefactInstance instance) {
-        if (!getArtefactTypes().contains(instance.getType())) {
-            String message = String.format("artefact type '%s' associated with instance '%s' is not part of the model", instance.getType().getName(), instance.getName());
-            throw new IllegalArgumentException(message);
+    
+    public boolean isUsed(ArtefactInstance server) {
+        boolean found = false;
+        final Iterator<ServerPortInstance> iterator = server.getProvided().iterator();
+        while (iterator.hasNext() && !found) {
+            found = isBound(iterator.next());
         }
-        if (instance.hasDestination() && !getNodeInstances().contains(instance.getDestination())) {
-            String message = String.format("destination '%s' of artefact instance '%s' is not part of the model", instance.getDestination().getName(), instance.getName());
-            throw new IllegalArgumentException(message);
-        }
-        this.artefactInstances.add(instance);
+        return found;
     }
-
-    public boolean contains(ArtefactInstance artefactInstance) {
-        return this.artefactInstances.contains(artefactInstance);
-    }
-
-    public ArtefactInstance findArtefactInstanceByName(String instanceName) {
-        return findByName(instanceName, this.artefactInstances);
-    }
-
-    public List<ArtefactInstance> findArtefactInstancesByType(Artefact type) {
-        ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
-        for (ArtefactInstance instance : this.artefactInstances) {
-            if (instance.getType().equals(type)) {
-                selection.add(instance);
-            }
-        }
-        return selection;
-    }
-
-    public List<ArtefactInstance> findArtefactInstancesByDestination(NodeInstance destination) {
-        final ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
-        for (ArtefactInstance artefact : artefactInstances) {
-            if (artefact.getDestination().equals(destination)) {
-                selection.add(artefact);
-            }
-        }
-        return selection;
-    }
+    
 
     // Bindings instances
     public void setBindingInstances(List<BindingInstance> bindingInstances) {

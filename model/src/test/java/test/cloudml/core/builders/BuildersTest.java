@@ -350,7 +350,7 @@ public class BuildersTest extends TestCase {
                     .hostedBy(NODE_INSTANCE_NAME))
                 .build();
 
-        ArtefactInstance instance = model.findArtefactInstanceByName(CLIENT_ARTEFACT_INSTANCE_NAME);
+        ArtefactInstance instance = model.getArtefactInstances().named(CLIENT_ARTEFACT_INSTANCE_NAME);
         assertThat("artefact instance", instance, is(not(nullValue())));
 
         Artefact type = model.getArtefactTypes().named(CLIENT_ARTEFACT_NAME);
@@ -468,8 +468,8 @@ public class BuildersTest extends TestCase {
         BindingInstance instance = model.findBindingInstanceByName(BINDING_INSTANCE_NAME);
         assertThat("binding instance", instance, is(not(nullValue())));
 
-        ArtefactInstance client = model.findArtefactInstanceByName(CLIENT_ARTEFACT_INSTANCE_NAME);
-        ArtefactInstance server = model.findArtefactInstanceByName(SERVER_ARTEFACT_INSTANCE_NAME);
+        ArtefactInstance client = model.getArtefactInstances().named(CLIENT_ARTEFACT_INSTANCE_NAME);
+        ArtefactInstance server = model.getArtefactInstances().named(SERVER_ARTEFACT_INSTANCE_NAME);
                 
         Binding bindingType = model.getBindingTypes().named(BINDING_NAME);
         assertThat("binding's type", instance.getType(), is(sameInstance(bindingType)));

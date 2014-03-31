@@ -84,7 +84,7 @@ public class DeploymentModelTest extends TestCase {
         final Node node = new Node("my node", provider);
         model.getNodeTypes().add(node);
 
-        assertThat("node is contained", model.contains(node), is(true));
+        assertThat("node is contained", model.getNodeTypes().contains(node), is(true));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -107,7 +107,7 @@ public class DeploymentModelTest extends TestCase {
         final Node node = model.getNodeTypes().named("My Node");
         model.getNodeTypes().remove(node);
 
-        assertFalse(model.contains(node));
+        assertFalse(model.getNodeTypes().contains(node));
     }
 
     @Test(expected = IllegalStateException.class)

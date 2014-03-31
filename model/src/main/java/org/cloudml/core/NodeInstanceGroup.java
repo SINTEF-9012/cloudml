@@ -40,7 +40,7 @@ public class NodeInstanceGroup extends NamedElementGroup<NodeInstance> {
 
     @Override
     protected void abortIfCannotBeAdded(NodeInstance instance) {
-         if (!getContext().contains(instance.getType())) {
+         if (!getContext().getNodeTypes().contains(instance.getType())) {
             final String message = String.format("The node type '%s', associated with instance '%s' is not part of this model", instance.getType().getName(), instance.getName());
             throw new IllegalArgumentException(message);
         }
