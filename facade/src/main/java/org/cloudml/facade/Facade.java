@@ -264,7 +264,7 @@ class Facade implements CloudML, CommandHandler {
 			final Message message = new Message(command, Category.ERROR, text);
 			dispatch(message);
 		} else {
-			final NodeInstance instance = findNodeInstanceById(command.getInstanceId());
+   			final NodeInstance instance = deploy.getNodeInstances().named(command.getInstanceId());
 			if (instance == null) {
 				final String text = String.format("No node with ID=\"%s\"", command.getInstanceId());
 				final Message message = new Message(command, Category.ERROR, text);
@@ -398,7 +398,7 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			Artefact type = findArtefactTypeById(command.getArtefactTypeId());
+			Artefact type = deploy.getArtefactTypes().named(command.getArtefactTypeId());
 			if (type == null) {
 				final String text = String.format("No artefact type with ID \"%s\"", command.getArtefactTypeId());
 				final Message message = new Message(command, Category.ERROR, text);
@@ -420,7 +420,7 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			ArtefactInstance instance = findArtefactInstanceById(command.getArtefactId());
+			ArtefactInstance instance = deploy.getArtefactInstances().named(command.getArtefactId());
 			if (instance == null) {
 				final String text = String.format("No artefact instance with ID \"%s\"", command.getArtefactId());
 				final Message message = new Message(command, Category.ERROR, text);
@@ -503,48 +503,5 @@ class Facade implements CloudML, CommandHandler {
 		return Codec.extensions.get(extension);
 	}
 
-	/**
-	 * Search for an artefact instance whose name matches the given id. If no
-	 * such instance matches, it returns null.
-	 *
-	 * @param id the id of the needed instance
-	 * @return the instance associated with the given id or null by default.
-	 */
-	private ArtefactInstance findArtefactInstanceById(final String id) {
-		ArtefactInstance result = null;
-		final Iterator<ArtefactInstance> instances = deploy.getArtefactInstances().iterator();
-		while (result == null && instances.hasNext()) {
-			final ArtefactInstance instance = instances.next();
-			if (instance.getName().equals(id)) {
-				result = instance;
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Search for an artefact instance whose name matches the given id. If no
-	 * such instance matches, it returns null.
-	 *
-	 * @param id the id of the needed instance
-	 * @return the instance associated with the given id or null by default.
-	 */
-	private Artefact findArtefactTypeById(final String id) {
-		return deploy.getArtefactTypes().named(id);
-	}
-
-	/**
-	 * Search for a node instance whose name matches a given id
-	 *
-	 * @param id of the Node instance
-	 * @return the node instance with the given id or null
-	 */
-	private NodeInstance findNodeInstanceById(final String id) {
-		for (NodeInstance ni : deploy.getNodeInstances()) {
-			if (ni.getName().equals(id)) {
-				return ni;
-			}
-		}
-		return null;
-	}
+	
 }
