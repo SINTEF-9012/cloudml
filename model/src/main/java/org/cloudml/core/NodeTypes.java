@@ -48,7 +48,7 @@ public class NodeTypes implements Iterable<Node> {
     }
 
     public void add(Node node) {
-        if (!context.contains(node.getProvider())) {
+        if (!context.getProviders().contains(node.getProvider())) {
             String message = String.format("The provider '%s' (used by node '%s') is not part of the model", node.getProvider().getName(), node.getName());
             throw new IllegalStateException(message);
         }
@@ -62,7 +62,7 @@ public class NodeTypes implements Iterable<Node> {
         }
         return this.nodes.remove(node.getName());
     }
-
+ 
     public Node named(String nodeName) {
         return this.nodes.get(nodeName);
     }

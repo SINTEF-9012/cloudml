@@ -57,6 +57,6 @@ public class ProviderBuilder {
     public void integrateIn(DeploymentModel model) {
         final Provider result = new Provider();
         result.setName(name);
-        model.addProvider(result); 
+        model.getProviders().add(result);   
     }
 }

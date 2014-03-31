@@ -44,20 +44,20 @@ public class DeploymentModelTest extends TestCase {
         DeploymentModel model = new DeploymentModel();
         final Provider provider = new Provider("ec2");
 
-        model.addProvider(provider);
+        model.getProviders().add(provider);
 
-        assertThat("provider included", model.contains(provider), is(true));
+        assertThat("provider included", model.getProviders().contains(provider), is(true));
     }
 
     @Test
     public void removedProviderAreNotContainedAnymore() {
         DeploymentModel model = new DeploymentModel();
         final Provider provider = new Provider("ec2");
-        model.addProvider(provider);
+        model.getProviders().add(provider);
 
-        model.removeProvider(provider);
+        model.getProviders().remove(provider);
 
-        assertThat("provider not contained", model.contains(provider), is(false));
+        assertThat("provider not contained", model.getProviders().contains(provider), is(false));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -68,8 +68,8 @@ public class DeploymentModelTest extends TestCase {
                 .named("Large Linux")
                 .providedBy("ec2"))
                 .build();
-        Provider provider = model.findProviderByName("ec2");
-        model.removeProvider(provider);
+        Provider provider = model.getProviders().named("ec2");
+        model.getProviders().remove(provider);
     }
 
     /*
@@ -79,7 +79,7 @@ public class DeploymentModelTest extends TestCase {
     public void addedNodeAreContained() {
         DeploymentModel model = new DeploymentModel();
         final Provider provider = new Provider("ec2");
-        model.addProvider(provider);
+        model.getProviders().add(provider);
 
         final Node node = new Node("my node", provider);
         model.getNodeTypes().add(node);
@@ -101,7 +101,7 @@ public class DeploymentModelTest extends TestCase {
                 .withProvider(aProvider().named("ec2"))
                 .withNodeType(aNode()
                 .named("My Node")
-                .providedBy("ec2"))
+                .providedBy("ec2")) 
                 .build();
 
         final Node node = model.getNodeTypes().named("My Node");
@@ -181,7 +181,7 @@ public class DeploymentModelTest extends TestCase {
     }
 
     @Test
-    public void validationReportsEmptyModel() {
+    public void validationReportsEmptyModel() { 
         DeploymentModel model = new DeploymentModel();
 
         Report validation = model.validate();

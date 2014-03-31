@@ -61,7 +61,7 @@ public class NodeTest extends TestCase {
         DeploymentModel model = new DeploymentModel();
         final String nodeName = "My Node Type";
         final Provider provider = new Provider("EC2");
-        model.addProvider(provider);
+        model.getProviders().add(provider);
         Node node = new Node(nodeName, provider);
         model.getNodeTypes().add(node);
         assertTrue(model.getNodeTypes().contains(node));

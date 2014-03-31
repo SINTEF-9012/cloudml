@@ -79,7 +79,7 @@ public class BuildersTest extends TestCase {
                 .build();
 
 
-        Provider provider = model.findProviderByName(providerName);
+        Provider provider = model.getProviders().named(providerName);
 
         assertThat("no provider", provider, is(not(nullValue())));
         assertThat("provider name", providerName, is(equalTo(provider.getName())));
@@ -110,7 +110,7 @@ public class BuildersTest extends TestCase {
                 .providedBy(PROVIDER_NAME))
                 .build();
 
-        Provider provider = model.findProviderByName(PROVIDER_NAME);
+        Provider provider = model.getProviders().named(PROVIDER_NAME);
         Node node = model.getNodeTypes().named(NODE_TYPE_NAME);
         assertThat("no node produced", node, is(not(nullValue())));
         assertThat("node's name", node.getName(), is(equalTo(NODE_TYPE_NAME)));

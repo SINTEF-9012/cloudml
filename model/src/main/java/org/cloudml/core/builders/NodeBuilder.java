@@ -59,7 +59,7 @@ public class NodeBuilder {
     public void integrateIn(DeploymentModel context) {
         Node result = new Node();
         result.setName(name);
-        result.setProvider(context.findProviderByName(providerName));
+        result.setProvider(context.getProviders().named(providerName));
         context.getNodeTypes().add(result);
     }
 }
