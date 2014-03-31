@@ -83,8 +83,8 @@ public class BindingBuilder {
         Artefact client = container.getArtefactTypes().named(clientOwnerName);
         result.setClient(client.findRequiredPortByName(clientPortName));
         Artefact server = container.getArtefactTypes().named(serverOwnerName);
-        result.setServer(server.findProvidedPortByName(serverPortName));
-        container.addBinding(result);
+        result.setServer(server.findProvidedPortByName(serverPortName)); 
+        container.getBindingTypes().add(result);
     }
 
 }

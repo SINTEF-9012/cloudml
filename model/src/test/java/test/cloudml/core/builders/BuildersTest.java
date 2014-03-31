@@ -247,7 +247,7 @@ public class BuildersTest extends TestCase {
                 .to(SERVER_ARTEFACT_NAME, PROVIDED_PORT_NAME))
                 .build();
 
-        Binding binding = model.findBindingByName(BINDING_NAME);
+        Binding binding = model.getBindingTypes().named(BINDING_NAME);
 
         assertThat("no binding", binding, is(not(nullValue())));
         assertThat("binding name", binding.getName(), is(equalTo(BINDING_NAME)));
@@ -471,7 +471,7 @@ public class BuildersTest extends TestCase {
         ArtefactInstance client = model.findArtefactInstanceByName(CLIENT_ARTEFACT_INSTANCE_NAME);
         ArtefactInstance server = model.findArtefactInstanceByName(SERVER_ARTEFACT_INSTANCE_NAME);
                 
-        Binding bindingType = model.findBindingByName(BINDING_NAME);
+        Binding bindingType = model.getBindingTypes().named(BINDING_NAME);
         assertThat("binding's type", instance.getType(), is(sameInstance(bindingType)));
         
         ClientPortInstance clientEnd = client.findRequiredPortByName(REQUIRED_PORT_NAME);

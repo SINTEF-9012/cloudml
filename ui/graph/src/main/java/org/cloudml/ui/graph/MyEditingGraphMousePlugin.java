@@ -138,7 +138,7 @@ public class MyEditingGraphMousePlugin extends AbstractGraphMousePlugin implemen
                             vv.getModel().getGraphLayout().setLocation(v, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
                         }
                     }
-                    for (Binding b : dm.getBindingTypes().values()) {
+                    for (Binding b : dm.getBindingTypes()) {
                         if (b.getName().equals(nodeType)) {
                             BindingInstance bi = b.instanciates(nodeType + cnt);
                             dm.getBindingInstances().add(bi);

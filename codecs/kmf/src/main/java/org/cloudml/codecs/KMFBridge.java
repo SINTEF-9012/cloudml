@@ -170,7 +170,7 @@ public class KMFBridge {
                 }
                 b.setServerResource(cr);
             }
-            model.getBindingTypes().put(b.getName(), b);
+            model.getBindingTypes().add(b);
             bindings.put(b.getName(), b);
         }
 
@@ -370,7 +370,7 @@ public class KMFBridge {
             }
         }
 
-        for (Binding b : deploy.getBindingTypes().values()) {
+        for (Binding b : deploy.getBindingTypes()) {
             net.cloudml.core.Binding kb = factory.createBinding();
             kb.setName(b.getName());
             kb.setClient(clientPorts.get(b.getClient().getOwner().getName() + "_" + b.getClient().getName()));

@@ -547,19 +547,4 @@ class Facade implements CloudML, CommandHandler {
 		}
 		return null;
 	}
-
-	/**
-	 * Search for a binding type whose name matches a given id
-	 *
-	 * @param id of a binding type
-	 * @return the binding type with the given id or null
-	 */
-	private Binding findBindingTypeById(final String id) {
-		for (Binding t : deploy.getBindingTypes().values()) {
-			if (t.getName().equals(id)) {
-				return t;
-			}
-		}
-		return null;
-	}
 }

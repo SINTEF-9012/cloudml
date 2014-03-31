@@ -42,13 +42,14 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     private final NodeTypeGroup nodeTypes;
     private final ProviderGroup providers;
     private List<NodeInstance> nodeInstances = new LinkedList<NodeInstance>();
-    private Map<String, Binding> bindingTypes = new HashMap<String, Binding>();
+    private BindingTypeGroup bindingTypes;
     private List<BindingInstance> bindingInstances = new LinkedList<BindingInstance>();
 
     public DeploymentModel() {
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
+        this.bindingTypes = new BindingTypeGroup(this);
     }
 
     public DeploymentModel(String name) {
@@ -56,6 +57,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
+        this.bindingTypes = new BindingTypeGroup(this);
     }
 
     @Deprecated
@@ -66,6 +68,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
+        this.bindingTypes = new BindingTypeGroup(this);
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
     }
@@ -78,10 +81,10 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
+        this.bindingTypes = new BindingTypeGroup(this);
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
         this.bindingInstances = bindingInstances;
-        this.bindingTypes = bindingTypes;
     }
 
     @Override
@@ -148,36 +151,10 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return found;
     }
 
-    // Bindings Types
-    @Deprecated
-    public void setBindingTypes(Map<String, Binding> bindingTypes) {
-        this.bindingTypes = bindingTypes;
-    }
-
-    @Deprecated
-    public Map<String, Binding> getBindingTypes() {
+    public BindingTypeGroup getBindingTypes() {
         return bindingTypes;
     }
 
-    public List<Binding> getBindings() {
-        return Collections.unmodifiableList(new ArrayList<Binding>(this.bindingTypes.values()));
-    }
-
-    public Binding addBinding(Binding binding) {
-        return this.bindingTypes.put(binding.getName(), binding);
-    }
-
-    public void removeBinding(Binding binding) {
-        this.bindingTypes.remove(binding.getName());
-    }
-
-    public Binding findBindingByName(String bindingName) {
-        return this.bindingTypes.get(bindingName);
-    }
-
-    public boolean contains(Binding bindingType) {
-        return this.bindingTypes.values().contains(bindingType);
-    }
 
     // Node Instances
     public List<NodeInstance> getNodeInstances() {
@@ -364,7 +341,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         }
         builder.append("}\n");
         builder.append("- Binding types: {\n");
-        for (Binding b : bindingTypes.values()) {
+        for (Binding b : bindingTypes) {
             builder.append("  - " + b + "\n");
         }
         builder.append("}\n");

@@ -314,7 +314,7 @@ public class Visu {
 		for(Artefact n:dmodel.getArtefactTypes()){
 			lm.addElement(n.getName());
 		}
-		for(Binding b:dmodel.getBindingTypes().values()){
+		for(Binding b:dmodel.getBindingTypes()){
 			lm.addElement(b.getName());
 		}
 		return lm;

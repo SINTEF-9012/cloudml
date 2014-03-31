@@ -91,7 +91,7 @@ public class BindingInstanceBuilder {
     public void integrateIn(DeploymentModel container) {
         BindingInstance result = new BindingInstance();
         result.setName(name);
-        result.setType(container.findBindingByName(this.typeName));
+        result.setType(container.getBindingTypes().named(this.typeName));
         result.setClient(container
                 .findArtefactInstanceByName(this.clientArtefactInstanceName)
                 .findRequiredPortByName(this.clientPortName));

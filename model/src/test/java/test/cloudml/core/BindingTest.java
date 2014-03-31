@@ -39,7 +39,7 @@ public class BindingTest extends TestCase {
     public void validationPassWhenValid() {
         DeploymentModel model = createTestModel();
 
-        Binding binding = model.findBindingByName("SSH connection");
+        Binding binding = model.getBindingTypes().named("SSH connection");
 
         assertTrue(binding.validate().pass(Report.WITHOUT_WARNING));
     }
@@ -47,7 +47,7 @@ public class BindingTest extends TestCase {
     @Test
     public void validationReportsMissingClientEnd() {
         DeploymentModel model = createTestModel();
-        Binding binding = model.findBindingByName("SSH connection");
+        Binding binding = model.getBindingTypes().named("SSH connection");
         binding.setClient(null);
         
         assertTrue(binding.validate().hasErrorAbout("client end"));
@@ -56,7 +56,7 @@ public class BindingTest extends TestCase {
     @Test
     public void validationReportsMissingServerEnd() {
         DeploymentModel model = createTestModel();
-        Binding binding = model.findBindingByName("SSH connection");
+        Binding binding = model.getBindingTypes().named("SSH connection");
         binding.setServer(null);
 
         assertTrue(binding.validate().hasErrorAbout("server end"));
@@ -67,7 +67,7 @@ public class BindingTest extends TestCase {
         DeploymentModel model = createTestModel();
         model.getArtefactTypes().named("Client").findRequiredPortByName("ssh").setRemote(false);
           
-        Binding binding = model.findBindingByName("SSH connection");
+        Binding binding = model.getBindingTypes().named("SSH connection");
         assertTrue(binding.validate().hasErrorAbout("local client", "remote server"));
     }
 
@@ -76,7 +76,7 @@ public class BindingTest extends TestCase {
         DeploymentModel model = createTestModel();
         model.getArtefactTypes().named("Server").findProvidedPortByName("ssh").setRemote(false);
   
-        Binding binding = model.findBindingByName("SSH connection");
+        Binding binding = model.getBindingTypes().named("SSH connection");
         assertTrue(binding.validate().hasErrorAbout("remote client", "local server"));
     }
     

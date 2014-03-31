@@ -50,7 +50,7 @@ public class ContainmentDispatcher implements Dispatcher {
         for (Node node : model.getNodeTypes()) {
             node.accept(visitor);
         }
-        for (Binding binding : model.getBindingTypes().values()) {
+        for (Binding binding : model.getBindingTypes()) {
             binding.accept(visitor);
         }
         for (NodeInstance nodeInstance : model.getNodeInstances()) {
