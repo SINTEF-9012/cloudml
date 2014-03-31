@@ -55,7 +55,7 @@ public class NodeTypeGroup extends NamedElementGroup<Node> {
 
     public NodeTypeGroup providedBy(Provider provider) {
         final ArrayList<Node> selectedNodes = new ArrayList<Node>();
-        for (Node node : getContent()) {
+        for (Node node : this) {
             if (node.isProvidedBy(provider)) {
                 selectedNodes.add(node);
             }

@@ -61,6 +61,6 @@ public class NodeInstanceBuilder {
         final NodeInstance nodeInstance = new NodeInstance();
         nodeInstance.setName(instanceName);
         nodeInstance.setType(model.getNodeTypes().named(typeName));
-        model.addNodeInstance(nodeInstance);
+        model.getNodeInstances().add(nodeInstance);
     }
 }

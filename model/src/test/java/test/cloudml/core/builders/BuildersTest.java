@@ -294,7 +294,7 @@ public class BuildersTest extends TestCase {
                 .build();
 
         NodeInstance instance = model
-                .findNodeInstanceByName(NODE_INSTANCE_NAME);
+                .getNodeInstances().named(NODE_INSTANCE_NAME);
 
         assertNotNull("no node instance", instance);
         assertEquals("node instance name", NODE_INSTANCE_NAME, instance
@@ -368,7 +368,7 @@ public class BuildersTest extends TestCase {
         ServerPort serverPortType = type.findProvidedPortByName(PROVIDED_PORT_NAME);
         assertThat("server port type", serverPort.getType(), is(sameInstance(serverPortType)));
         
-        NodeInstance destination = model.findNodeInstanceByName(NODE_INSTANCE_NAME);
+        NodeInstance destination = model.getNodeInstances().named(NODE_INSTANCE_NAME);
         assertThat("artefact destination", instance.getDestination(), is(sameInstance(destination)));
     }
 

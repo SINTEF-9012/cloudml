@@ -66,7 +66,7 @@ public class CloudAppDeployer {
 			this.currentModel=targetModel;
 
 			// Provisioning nodes
-			provisioning(targetModel.getNodeInstances());
+			provisioning(targetModel.getNodeInstances().toList()); 
 
 			// Deploying on nodes
 			// TODO: need to be recursive

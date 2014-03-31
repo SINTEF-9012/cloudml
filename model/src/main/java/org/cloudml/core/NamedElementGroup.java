@@ -22,11 +22,13 @@
  */
 package org.cloudml.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
-public abstract class NamedElementGroup<T extends NamedElement> implements Iterable<T> {
+public abstract class NamedElementGroup<T extends NamedElement> implements Collection<T> {
 
     private final DeploymentModel context;
     private final HashMap<String, T> content;
@@ -39,7 +41,7 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Itera
     public NamedElementGroup(DeploymentModel context, Collection<T> content) {
         this.context = context;
         this.content = new HashMap<String, T>();
-        for(T element: content) {
+        for (T element : content) {
             this.content.put(element.getName(), element);
         }
     }
@@ -47,11 +49,8 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Itera
     protected DeploymentModel getContext() {
         return context;
     }
-
-    public Collection<T> getContent() {
-        return content.values();
-    }
-
+    
+    @Override
     public boolean add(T element) {
         abortIfCannotBeAdded(element);
         this.content.put(element.getName(), element);
@@ -62,9 +61,10 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Itera
         // by default we do nothing
     }
 
-    public T remove(T element) {
+    public boolean remove(T element) {
         abortIfCannotBeRemoved(element);
-        return this.content.remove(element.getName());
+        this.content.remove(element.getName());
+        return true;
     }
 
     protected void abortIfCannotBeRemoved(T element) {
@@ -75,6 +75,7 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Itera
         return content.containsKey(element.getName());
     }
 
+    @Override
     public boolean isEmpty() {
         return content.isEmpty();
     }
@@ -86,6 +87,87 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Itera
     @Override
     public Iterator<T> iterator() {
         return this.content.values().iterator();
+    }
+
+    @Override
+    public int size() {
+        return this.content.size();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (this.getClass().isAssignableFrom(o.getClass())) {
+            T element = (T) o;
+            return contains(element);
+        }
+        return false;
+    }
+
+    @Override
+    public Object[] toArray() {
+        return this.content.values().toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return this.content.values().toArray(a);
+    }
+    
+    public List<T> toList() {
+        return new ArrayList<T>(this.content.values());
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (this.getClass().isAssignableFrom(o.getClass())) {
+            return remove((T) o);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return this.content.values().containsAll(c);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> c) {
+        boolean overall = true;
+        for (T element : c) {
+            overall &= add(element);
+        }
+        return overall;
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        boolean overall = true;
+        for (Object element : c) {
+            overall &= remove(element);
+        }
+        return overall;
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        boolean overall = true;
+        for (T element : this) {
+            if (!c.contains(element)) {
+                overall &= remove(element);
+            }
+        }
+        return overall;
+    }
+
+    @Override
+    public void clear() {
+        this.content.clear();
     }
     
     

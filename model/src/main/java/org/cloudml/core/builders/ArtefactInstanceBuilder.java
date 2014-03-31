@@ -82,7 +82,7 @@ public class ArtefactInstanceBuilder {
                     .ofType(clientPort.getName())
                     .integrateIn(result);
         }
-        result.setDestination(model.findNodeInstanceByName(hostName));
+        result.setDestination(model.getNodeInstances().named(hostName));
         model.addArtefactInstance(result);
     }
 }

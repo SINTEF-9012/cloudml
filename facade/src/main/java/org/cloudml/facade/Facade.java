@@ -369,7 +369,7 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			final ArtefactTypeList data = new ArtefactTypeList(command, deploy.getArtefactTypes().getContent());
+			final ArtefactTypeList data = new ArtefactTypeList(command, deploy.getArtefactTypes());
 			dispatch(data);
 
 		}

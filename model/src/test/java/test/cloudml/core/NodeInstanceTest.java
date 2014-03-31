@@ -58,7 +58,7 @@ public class NodeInstanceTest extends TestCase {
                     .named("My Instance")
                     .ofType("Linux"))
                 .build();
-        return model.findNodeInstanceByName("My Instance");
+        return model.getNodeInstances().named("My Instance");
     }
     
     
