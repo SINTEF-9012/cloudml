@@ -26,67 +26,42 @@ package org.cloudml.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 
-public class NodeTypes implements Iterable<Node> {
-
-    private final DeploymentModel context;
-    private final HashMap<String, Node> nodes;
+public class NodeTypes extends NamedElementGroup<Node> {
 
     public NodeTypes(DeploymentModel context) {
-        this.context = context;
-        this.nodes = new HashMap<String, Node>();
+        super(context);
     }
-    
+     
     private NodeTypes(DeploymentModel context, Collection<Node> nodes) {
-        this.context = context;
-        this.nodes = new HashMap<String, Node>();
-        for(Node node: nodes) {
-            this.nodes.put(node.getName(), node);
-        }
+       super(context, nodes);
     }
 
-    public void add(Node node) {
-        if (!context.getProviders().contains(node.getProvider())) {
+    @Override
+    protected final void abortIfCannotBeAdded(Node node) {
+         if (!getContext().getProviders().contains(node.getProvider())) {
             String message = String.format("The provider '%s' (used by node '%s') is not part of the model", node.getProvider().getName(), node.getName());
             throw new IllegalStateException(message);
         }
-        this.nodes.put(node.getName(), node);
     }
 
-    public Node remove(Node node) {
-        if (context.isUsed(node)) {
+    @Override
+    protected final void abortIfCannotBeRemoved(Node node) {
+        if (getContext().isUsed(node)) {
             final String message = String.format("Unable to remove node type '%s' as there are still some related instances", node.getName());
             throw new IllegalStateException(message);
         }
-        return this.nodes.remove(node.getName());
     }
- 
-    public Node named(String nodeName) {
-        return this.nodes.get(nodeName);
-    }
+    
 
     public NodeTypes providedBy(Provider provider) {
-        ArrayList<Node> selectedNodes = new ArrayList<Node>();
-        for (Node node : this.nodes.values()) {
+        final ArrayList<Node> selectedNodes = new ArrayList<Node>();
+        for (Node node : getContent()) {
             if (node.isProvidedBy(provider)) {
                 selectedNodes.add(node);
             }
         }
-        return new NodeTypes(context, selectedNodes);
+        return new NodeTypes(getContext(), selectedNodes);
     }
     
-    public boolean contains(Node node) {
-        return this.nodes.containsKey(node.getName());
-    }
-    
-    public boolean isEmpty() {
-        return this.nodes.isEmpty();
-    }
-
-    @Override
-    public Iterator<Node> iterator() {
-        return nodes.values().iterator();
-    }
 }

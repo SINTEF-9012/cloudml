@@ -20,6 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 package org.cloudml.core;
 
 import java.util.ArrayList;
@@ -39,19 +40,19 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     private Map<String, Artefact> artefactTypes = new HashMap<String, Artefact>();
     private List<ArtefactInstance> artefactInstances = new LinkedList<ArtefactInstance>();
     private final NodeTypes nodeTypes;
-    private final Providers providers;
+    private final ProviderGroup providers;
     private List<NodeInstance> nodeInstances = new LinkedList<NodeInstance>();
     private Map<String, Binding> bindingTypes = new HashMap<String, Binding>();
     private List<BindingInstance> bindingInstances = new LinkedList<BindingInstance>();
 
     public DeploymentModel() {
-        this.providers = new Providers(this);
+        this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
     }
 
     public DeploymentModel(String name) {
         super(name);
-        this.providers = new Providers(this);
+        this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
     }
 
@@ -60,7 +61,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                            Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers) {
         super(name, properties);
-        this.providers = new Providers(this);
+        this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
         this.artefactTypes = artefactTypes;
         this.artefactInstances = artefactInstances;
@@ -72,7 +73,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                            Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers, Map<String, Binding> bindingTypes, List<BindingInstance> bindingInstances) {
         super(name, properties);
-        this.providers = new Providers(this);
+        this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
         this.artefactTypes = artefactTypes;
         this.artefactInstances = artefactInstances;
@@ -106,9 +107,9 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     }
 
     /*
-     * Providers
+     * ProviderGroup
      */
-    public Providers getProviders() {
+    public ProviderGroup getProviders() {
         return providers;
     }
 

@@ -25,52 +25,27 @@
 
 package org.cloudml.core;
 
-import java.util.HashMap;
-import java.util.Iterator;
 
-
-public class Providers implements Iterable<Provider> {
-
-    private final DeploymentModel context;
-    private final HashMap<String, Provider> providers;    
+public class ProviderGroup extends NamedElementGroup<Provider> {
     
-    public Providers(DeploymentModel context) {
-        this.context = context;
-        this.providers = new HashMap<String, Provider>();
-    }
-    
-    public void add(Provider provider) {
-        if (named(provider.getName()) != null) {
-            final String message = String.format("A provider named '%s' already exists", provider.getName());
-            throw new IllegalArgumentException(message);
-        }
-        this.providers.put(provider.getName(), provider);
-    }
-
-    public Provider remove(Provider provider) {
-        if (context.isUsed(provider)) {
-            String message = String.format("Unable to remove provider '%s' as it still provides nodes", provider.getName());
-            throw new IllegalStateException(message);
-        }
-        return providers.remove(provider.getName());
-    }
-    
-    public Provider named(String providerName) {
-        return providers.get(providerName);
-    }
-    
-    
-    public boolean isEmpty() {
-        return providers.isEmpty();
-    }
-    
-    public boolean contains(Provider provider) {
-        return providers.containsKey(provider.getName());
+    public ProviderGroup(DeploymentModel context) {
+        super(context);
     }
 
     @Override
-    public Iterator<Provider> iterator() {
-        return providers.values().iterator();
+    protected void abortIfCannotBeAdded(Provider provider) {
+       if (named(provider.getName()) != null) {
+            final String message = String.format("A provider named '%s' already exists", provider.getName());
+            throw new IllegalArgumentException(message);
+        }
     }
+
+    @Override
+    protected void abortIfCannotBeRemoved(Provider provider) {
+         if (getContext().isUsed(provider)) {
+            String message = String.format("Unable to remove provider '%s' as it still provides nodes", provider.getName());
+            throw new IllegalStateException(message);
+        }
+   }
     
 }
