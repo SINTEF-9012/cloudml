@@ -100,6 +100,6 @@ public class BindingInstanceTest extends TestCase {
                 .getOneClientConnectedToOneServer()
                 .build();
         
-        return model.findBindingInstanceByName(SshClientServer.BINDING_NO_1);
+        return model.getBindingInstances().named(SshClientServer.BINDING_NO_1);
     }
 }

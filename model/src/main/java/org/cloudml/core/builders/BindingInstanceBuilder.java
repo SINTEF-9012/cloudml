@@ -98,7 +98,7 @@ public class BindingInstanceBuilder {
         result.setServer(container
                 .getArtefactInstances().named(this.serverArtefactInstanceName)
                 .findProvidedPortByName(this.serverPortName));
-        container.addBindingInstance(result); 
+        container.getBindingInstances().add(result); 
     }
     
 }

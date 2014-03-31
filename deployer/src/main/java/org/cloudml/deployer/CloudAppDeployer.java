@@ -70,10 +70,10 @@ public class CloudAppDeployer {
 
 			// Deploying on nodes
 			// TODO: need to be recursive
-			prepareArtefacts(targetModel.getArtefactInstances().toList(),targetModel.getBindingInstances());
+			prepareArtefacts(targetModel.getArtefactInstances().toList(),targetModel.getBindingInstances().toList());
 
 			//Configure the artefacts with the bindings
-			configureWithBindings(targetModel.getBindingInstances());
+			configureWithBindings(targetModel.getBindingInstances().toList());
 
 			//configuration process at SaaS level
 			configureSaas(targetModel.getArtefactInstances().toList());
@@ -85,7 +85,7 @@ public class CloudAppDeployer {
 
 			//Added stuff
 			provisioning(diff.getAddedNodes());
-			prepareArtefacts(diff.getAddedArtefacts(), targetModel.getBindingInstances());
+			prepareArtefacts(diff.getAddedArtefacts(), targetModel.getBindingInstances().toList());
 			configureWithBindings(diff.getAddedBindings());
 			configureSaas(diff.getAddedArtefacts());
 

@@ -465,7 +465,7 @@ public class BuildersTest extends TestCase {
                     .to(SERVER_ARTEFACT_INSTANCE_NAME, PROVIDED_PORT_NAME))
                 .build();
 
-        BindingInstance instance = model.findBindingInstanceByName(BINDING_INSTANCE_NAME);
+        BindingInstance instance = model.getBindingInstances().named(BINDING_INSTANCE_NAME);
         assertThat("binding instance", instance, is(not(nullValue())));
 
         ArtefactInstance client = model.getArtefactInstances().named(CLIENT_ARTEFACT_INSTANCE_NAME);

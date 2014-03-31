@@ -24,7 +24,6 @@ package org.cloudml.core;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.cloudml.core.validation.CanBeValidated;
@@ -40,15 +39,16 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     private final BindingTypeGroup bindingTypes;
     private final NodeInstanceGroup nodeInstances;
     private final ArtefactInstanceGroup artefactInstances;
-    private List<BindingInstance> bindingInstances = new LinkedList<BindingInstance>();
+    private final BindingInstanceGroup bindingInstances;
 
     public DeploymentModel() {
         this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypeGroup(this);
+        this.nodeTypes = new NodeTypeGroup(this); 
         this.artefactTypes = new ArtefactTypeGroup(this);
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
         this.artefactInstances = new ArtefactInstanceGroup(this);
+        this.bindingInstances = new BindingInstanceGroup(this);
     }
 
     public DeploymentModel(String name) {
@@ -59,6 +59,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
         this.artefactInstances = new ArtefactInstanceGroup(this);
+        this.bindingInstances = new BindingInstanceGroup(this);
     }
 
     @Deprecated
@@ -72,6 +73,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
         this.artefactInstances = new ArtefactInstanceGroup(this);
+        this.bindingInstances = new BindingInstanceGroup(this);
     }
 
     @Deprecated
@@ -85,7 +87,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         this.bindingTypes = new BindingTypeGroup(this);
         this.nodeInstances = new NodeInstanceGroup(this);
         this.artefactInstances = new ArtefactInstanceGroup(this);
-        this.bindingInstances = bindingInstances;
+        this.bindingInstances = new BindingInstanceGroup(this);
     }
 
     @Override
@@ -169,59 +171,26 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     
 
     // Bindings instances
-    public void setBindingInstances(List<BindingInstance> bindingInstances) {
-        this.bindingInstances = bindingInstances;
-    }
-
-    public List<BindingInstance> getBindingInstances() {
+    public BindingInstanceGroup getBindingInstances() {
         return bindingInstances;
     }
 
-    public void addBindingInstance(BindingInstance bindingToAdd) {
-        this.bindingInstances.add(bindingToAdd);
-    }
-
-    public void removeBindingInstance(BindingInstance bindingToRemove) {
-        this.bindingInstances.remove(bindingToRemove);
-    }
-
-    public BindingInstance findBindingInstanceByName(String bindingInstanceName) {
-        return findByName(bindingInstanceName, this.bindingInstances);
-    }
-
-    public List<BindingInstance> findBindingInstancesByPort(ArtefactPortInstance<? extends ArtefactPort> port) {
-        final ArrayList<BindingInstance> selection = new ArrayList<BindingInstance>();
-        for (BindingInstance binding : bindingInstances) {
-            if (binding.eitherEndIs(port)) {
-                selection.add(binding);
-            }
-        }
-        return selection;
-    }
-
-    public List<BindingInstance> findBindingInstancesByClientEnd(ClientPortInstance cpi) {
-        return findBindingInstancesByPort(cpi);
-    }
-
-    public List<BindingInstance> findBindingInstancesByServerEnd(ServerPortInstance cpi) {
-        return findBindingInstancesByPort(cpi);
-    }
 
     public boolean isBound(ArtefactPortInstance<? extends ArtefactPort> port) {
-        return !findBindingInstancesByPort(port).isEmpty();
+        return !getBindingInstances().withPort(port).isEmpty();
     }
 
     public ServerPortInstance findServerPort(ClientPortInstance clientPort) {
-        final List<BindingInstance> bindings = findBindingInstancesByPort(clientPort);
+        final BindingInstanceGroup bindings = getBindingInstances().withPort(clientPort);
         if (bindings.isEmpty()) {
             final String message = String.format("client port '%s' is not yet bound to any server", clientPort.getName());
             throw new IllegalArgumentException(message);
         }
-        return bindings.get(0).getServer();
+        return bindings.toList().get(0).getServer();
     }
 
     public List<ClientPortInstance> findClientPorts(ServerPortInstance serverPort) {
-        final List<BindingInstance> bindings = findBindingInstancesByPort(serverPort);
+        final BindingInstanceGroup bindings = getBindingInstances().withPort(serverPort);
         if (bindings.isEmpty()) {
             final String message = String.format("server port '%s' is not yet bound to any server", serverPort.getName());
             throw new IllegalArgumentException(message);
