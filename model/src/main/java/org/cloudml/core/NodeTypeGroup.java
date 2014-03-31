@@ -27,13 +27,13 @@ package org.cloudml.core;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class NodeTypes extends NamedElementGroup<Node> {
+public class NodeTypeGroup extends NamedElementGroup<Node> {
 
-    public NodeTypes(DeploymentModel context) {
+    public NodeTypeGroup(DeploymentModel context) {
         super(context);
     }
      
-    private NodeTypes(DeploymentModel context, Collection<Node> nodes) {
+    private NodeTypeGroup(DeploymentModel context, Collection<Node> nodes) {
        super(context, nodes);
     }
 
@@ -54,14 +54,14 @@ public class NodeTypes extends NamedElementGroup<Node> {
     }
     
 
-    public NodeTypes providedBy(Provider provider) {
+    public NodeTypeGroup providedBy(Provider provider) {
         final ArrayList<Node> selectedNodes = new ArrayList<Node>();
         for (Node node : getContent()) {
             if (node.isProvidedBy(provider)) {
                 selectedNodes.add(node);
             }
         }
-        return new NodeTypes(getContext(), selectedNodes);
+        return new NodeTypeGroup(getContext(), selectedNodes);
     }
     
 }

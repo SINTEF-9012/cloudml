@@ -39,7 +39,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
     private final ArtefactTypeGroup artefactTypes;
     private List<ArtefactInstance> artefactInstances = new LinkedList<ArtefactInstance>();
-    private final NodeTypes nodeTypes;
+    private final NodeTypeGroup nodeTypes;
     private final ProviderGroup providers;
     private List<NodeInstance> nodeInstances = new LinkedList<NodeInstance>();
     private Map<String, Binding> bindingTypes = new HashMap<String, Binding>();
@@ -47,14 +47,14 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
     public DeploymentModel() {
         this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypes(this);
+        this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
     }
 
     public DeploymentModel(String name) {
         super(name);
         this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypes(this);
+        this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
     }
 
@@ -64,7 +64,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers) {
         super(name, properties);
         this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypes(this);
+        this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
@@ -76,7 +76,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                            Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers, Map<String, Binding> bindingTypes, List<BindingInstance> bindingInstances) {
         super(name, properties);
         this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypes(this);
+        this.nodeTypes = new NodeTypeGroup(this);
         this.artefactTypes = new ArtefactTypeGroup(this);
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
@@ -119,7 +119,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return !getNodeTypes().providedBy(provider).isEmpty();
     }
 
-    public NodeTypes getNodeTypes() {
+    public NodeTypeGroup getNodeTypes() {
         return this.nodeTypes;
     }
 
