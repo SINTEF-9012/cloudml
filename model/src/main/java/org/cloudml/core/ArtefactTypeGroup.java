@@ -20,32 +20,24 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
+
 
 package org.cloudml.core;
 
-import java.util.HashMap;
-import java.util.Iterator;
 
+public class ArtefactTypeGroup extends NamedElementGroup<Artefact> {
 
-public class ArtefactTypes implements Iterable<Artefact> {
-
-    private final DeploymentModel context;
-    private final HashMap<String, Artefact> artefacts;
-    
-    
-    public ArtefactTypes(DeploymentModel context) {
-        this.context = context;
-        this.artefacts = new HashMap<String, Artefact>();
+    public ArtefactTypeGroup(DeploymentModel context) {
+        super(context);
     }
 
     @Override
-    public Iterator<Artefact> iterator() {
-        return artefacts.values().iterator();
-    }
-    
-    
+    protected void abortIfCannotBeRemoved(Artefact artefact) {
+        if (getContext().isUsed(artefact)) {
+            String message = String.format("Cannot remove artefact '%s' as it still has instances", artefact.getName());
+            throw new IllegalStateException(message);
+        }
+    }   
     
     
 }

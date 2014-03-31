@@ -118,7 +118,7 @@ public class KMFBridge {
             a.setResource(r);
 
 
-            model.getArtefactTypes().put(a.getName(), a);
+            model.getArtefactTypes().add(a);
         }
 
         for (net.cloudml.core.Artefact ka : kDeploy.getArtefactTypes()) {//second pass on the referenced elements
@@ -313,7 +313,7 @@ public class KMFBridge {
         }
 
 
-        for (Artefact a : deploy.getArtefactTypes().values()) {//first pass on the contained elements
+        for (Artefact a : deploy.getArtefactTypes()) {//first pass on the contained elements
             net.cloudml.core.Artefact ka = factory.createArtefact();
             ka.setName(a.getName());
             initProperties(a, ka, factory);
@@ -363,7 +363,7 @@ public class KMFBridge {
             kDeploy.addArtefactTypes(ka);
         }
 
-        for (Artefact a : deploy.getArtefactTypes().values()) {//second pass on the referenced elements
+        for (Artefact a : deploy.getArtefactTypes()) {//second pass on the referenced elements
             net.cloudml.core.Artefact ka = artefacts.get(a.getName());
             if (a.getDestination() != null) {
                 ka.setDestination(serverPorts.get(a.getDestination().getOwner() + "_" + a.getDestination().getName()));

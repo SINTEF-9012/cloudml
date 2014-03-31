@@ -65,7 +65,7 @@ public class BindingTest extends TestCase {
     @Test
     public void validationReportsLocalClientsConnectedToRemoteServers() {
         DeploymentModel model = createTestModel();
-        model.findArtefactByName("Client").findRequiredPortByName("ssh").setRemote(false);
+        model.getArtefactTypes().named("Client").findRequiredPortByName("ssh").setRemote(false);
           
         Binding binding = model.findBindingByName("SSH connection");
         assertTrue(binding.validate().hasErrorAbout("local client", "remote server"));
@@ -74,7 +74,7 @@ public class BindingTest extends TestCase {
     @Test
     public void validationReportsRemoteClientsConnectedToLocalServers() {
         DeploymentModel model = createTestModel();
-        model.findArtefactByName("Server").findProvidedPortByName("ssh").setRemote(false);
+        model.getArtefactTypes().named("Server").findProvidedPortByName("ssh").setRemote(false);
   
         Binding binding = model.findBindingByName("SSH connection");
         assertTrue(binding.validate().hasErrorAbout("remote client", "local server"));

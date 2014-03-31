@@ -68,7 +68,7 @@ public class ArtefactInstanceBuilder {
     public void integrateIn(DeploymentModel model) {
         final ArtefactInstance result = new ArtefactInstance();
         result.setName(instanceName);
-        final Artefact type = model.findArtefactByName(typeName);
+        final Artefact type = model.getArtefactTypes().named(typeName);
         result.setType(type);
         for (ServerPort serverPort : type.getProvided()) {
             aServerPortInstance()

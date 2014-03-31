@@ -80,9 +80,9 @@ public class BindingBuilder {
     public void integrateIn(DeploymentModel container) {
         Binding result = new Binding();
         result.setName(name);
-        Artefact client = container.findArtefactByName(clientOwnerName);
+        Artefact client = container.getArtefactTypes().named(clientOwnerName);
         result.setClient(client.findRequiredPortByName(clientPortName));
-        Artefact server = container.findArtefactByName(serverOwnerName);
+        Artefact server = container.getArtefactTypes().named(serverOwnerName);
         result.setServer(server.findProvidedPortByName(serverPortName));
         container.addBinding(result);
     }

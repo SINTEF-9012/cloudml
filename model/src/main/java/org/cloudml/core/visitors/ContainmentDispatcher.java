@@ -56,7 +56,7 @@ public class ContainmentDispatcher implements Dispatcher {
         for (NodeInstance nodeInstance : model.getNodeInstances()) {
             nodeInstance.accept(visitor);
         }
-        for (Artefact artefact : model.getArtefactTypes().values()) {
+        for (Artefact artefact : model.getArtefactTypes()) {
             artefact.accept(visitor);
         }
         for (ArtefactInstance artefactInstance : model.getArtefactInstances()) {

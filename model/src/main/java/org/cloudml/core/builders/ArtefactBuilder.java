@@ -59,7 +59,7 @@ public class ArtefactBuilder {
         return this;
     }
 
-    public Artefact build() {
+    public Artefact build() { 
         Artefact result = new Artefact();
         prepareArtefact(result);
         return result;
@@ -68,7 +68,7 @@ public class ArtefactBuilder {
     public void integrateIn(DeploymentModel model) {
         Artefact result = new Artefact();
         prepareArtefact(result);
-        model.addArtefact(result);
+        model.getArtefactTypes().add(result);
     }
 
     private void prepareArtefact(Artefact result) {

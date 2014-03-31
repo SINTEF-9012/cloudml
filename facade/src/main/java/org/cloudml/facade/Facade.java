@@ -369,7 +369,7 @@ class Facade implements CloudML, CommandHandler {
 			dispatch(message);
 
 		} else {
-			final ArtefactTypeList data = new ArtefactTypeList(command, deploy.getArtefactTypes().values());
+			final ArtefactTypeList data = new ArtefactTypeList(command, deploy.getArtefactTypes().getContent());
 			dispatch(data);
 
 		}
@@ -530,7 +530,7 @@ class Facade implements CloudML, CommandHandler {
 	 * @return the instance associated with the given id or null by default.
 	 */
 	private Artefact findArtefactTypeById(final String id) {
-		return deploy.getArtefactTypes().get(id);
+		return deploy.getArtefactTypes().named(id);
 	}
 
 	/**

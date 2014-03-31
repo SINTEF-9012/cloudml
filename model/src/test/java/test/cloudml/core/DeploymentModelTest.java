@@ -132,21 +132,21 @@ public class DeploymentModelTest extends TestCase {
         assertTrue(model.isEmpty());
 
         final Artefact artefact = new Artefact("my artefact");
-        model.addArtefact(artefact);
+        model.getArtefactTypes().add(artefact);
 
-        assertTrue(model.contains(artefact));
+        assertTrue(model.getArtefactTypes().contains(artefact));
     }
 
     @Test
     public void removedArtefactAreNotContained() {
         DeploymentModel model = new DeploymentModel();
         final Artefact artefact = new Artefact("my artefact"); 
-        model.addArtefact(artefact);
-        assertTrue(model.contains(artefact));
+        model.getArtefactTypes().add(artefact);
+        assertTrue(model.getArtefactTypes().contains(artefact));
 
-        model.removeArtefact(artefact);
+        model.getArtefactTypes().remove(artefact);
 
-        assertFalse(model.contains(artefact));
+        assertFalse(model.getArtefactTypes().contains(artefact));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -167,8 +167,8 @@ public class DeploymentModelTest extends TestCase {
                     .hostedBy("host no. 1"))
                 .build();
         
-        Artefact artefact = model.findArtefactByName("My Artefact");
-        model.removeArtefact(artefact);
+        Artefact artefact = model.getArtefactTypes().named("My Artefact");
+        model.getArtefactTypes().remove(artefact);
     }
 
     @Test

@@ -187,7 +187,7 @@ public class BuildersTest extends TestCase {
 
 
         Artefact artefact = model.
-                findArtefactByName(CLIENT_ARTEFACT_NAME);
+                getArtefactTypes().named(CLIENT_ARTEFACT_NAME);
         assertThat("no artefact",
                    artefact,
                    is(not(nullValue())));
@@ -253,13 +253,13 @@ public class BuildersTest extends TestCase {
         assertThat("binding name", binding.getName(), is(equalTo(BINDING_NAME)));
 
         ClientPort client = model
-                .findArtefactByName(CLIENT_ARTEFACT_NAME)
+                .getArtefactTypes().named(CLIENT_ARTEFACT_NAME)
                 .findRequiredPortByName(REQUIRED_PORT_NAME);
         assertThat("no client", client, is(not(nullValue())));
         assertThat("client end", binding.getClient(), is(sameInstance(client)));
 
         ServerPort server = model
-                .findArtefactByName(SERVER_ARTEFACT_NAME)
+                .getArtefactTypes().named(SERVER_ARTEFACT_NAME)
                 .findProvidedPortByName(PROVIDED_PORT_NAME);
         assertThat("no server", server, is(not(nullValue())));
         assertThat("server end", binding.getServer(), is(sameInstance(server)));
@@ -353,7 +353,7 @@ public class BuildersTest extends TestCase {
         ArtefactInstance instance = model.findArtefactInstanceByName(CLIENT_ARTEFACT_INSTANCE_NAME);
         assertThat("artefact instance", instance, is(not(nullValue())));
 
-        Artefact type = model.findArtefactByName(CLIENT_ARTEFACT_NAME);
+        Artefact type = model.getArtefactTypes().named(CLIENT_ARTEFACT_NAME);
         assertThat("client's type", instance.getType(), is(sameInstance(type)));
         
         ClientPortInstance clientPort = instance.findRequiredPortByName(REQUIRED_PORT_NAME);

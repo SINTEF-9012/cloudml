@@ -48,23 +48,28 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Itera
         return context;
     }
 
-    protected Collection<T> getContent() {
+    public Collection<T> getContent() {
         return content.values();
     }
 
-    public void add(T element) {
+    public boolean add(T element) {
         abortIfCannotBeAdded(element);
         this.content.put(element.getName(), element);
+        return true;
     }
 
-    protected abstract void abortIfCannotBeAdded(T element);
+    protected void abortIfCannotBeAdded(T element) {
+        // by default we do nothing
+    }
 
     public T remove(T element) {
         abortIfCannotBeRemoved(element);
         return this.content.remove(element.getName());
     }
 
-    protected abstract void abortIfCannotBeRemoved(T element);
+    protected void abortIfCannotBeRemoved(T element) {
+        // By default we do nothing
+    }
 
     public boolean contains(T element) {
         return content.containsKey(element.getName());
@@ -82,4 +87,6 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Itera
     public Iterator<T> iterator() {
         return this.content.values().iterator();
     }
+    
+    
 }

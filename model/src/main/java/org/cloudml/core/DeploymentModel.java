@@ -37,7 +37,7 @@ import org.cloudml.core.visitors.Visitor;
 
 public class DeploymentModel extends WithProperties implements Visitable, CanBeValidated {
 
-    private Map<String, Artefact> artefactTypes = new HashMap<String, Artefact>();
+    private final ArtefactTypeGroup artefactTypes;
     private List<ArtefactInstance> artefactInstances = new LinkedList<ArtefactInstance>();
     private final NodeTypes nodeTypes;
     private final ProviderGroup providers;
@@ -48,12 +48,14 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     public DeploymentModel() {
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
+        this.artefactTypes = new ArtefactTypeGroup(this);
     }
 
     public DeploymentModel(String name) {
         super(name);
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
+        this.artefactTypes = new ArtefactTypeGroup(this);
     }
 
     @Deprecated
@@ -63,7 +65,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         super(name, properties);
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
-        this.artefactTypes = artefactTypes;
+        this.artefactTypes = new ArtefactTypeGroup(this);
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
     }
@@ -75,7 +77,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         super(name, properties);
         this.providers = new ProviderGroup(this);
         this.nodeTypes = new NodeTypes(this);
-        this.artefactTypes = artefactTypes;
+        this.artefactTypes = new ArtefactTypeGroup(this);
         this.artefactInstances = artefactInstances;
         this.nodeInstances = nodeInstances;
         this.bindingInstances = bindingInstances;
@@ -125,53 +127,12 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return !findInstancesOf(node).isEmpty();
     }
 
-    public List<NodeInstance> findInstancesOf(Node node) {
-        ArrayList<NodeInstance> selectedInstances = new ArrayList<NodeInstance>();
-        for (NodeInstance nodeInstance : this.nodeInstances) {
-            if (nodeInstance.getType().equals(node)) {
-                selectedInstances.add(nodeInstance);
-            }
-        }
-        return selectedInstances;
-    }
-
     public boolean contains(Node nodeType) {
         return this.nodeTypes.contains(nodeType);
     }
 
-    // Artefacts types
-    @Deprecated
-    public void setArtefactTypes(Map<String, Artefact> artefactTypes) {
-        this.artefactTypes = artefactTypes;
-    }
-
-    @Deprecated
-    public Map<String, Artefact> getArtefactTypes() {
+    public ArtefactTypeGroup getArtefactTypes() {
         return artefactTypes;
-    }
-
-    public List<Artefact> getArtefacts() {
-        return Collections.unmodifiableList(new ArrayList<Artefact>(this.artefactTypes.values()));
-    }
-
-    public void addArtefact(Artefact artefact) {
-        this.artefactTypes.put(artefact.getName(), artefact);
-    }
-
-    public void removeArtefact(Artefact artefact) {
-        if (isUsed(artefact)) {
-            String message = String.format("Cannot remove artefact '%s' as it still has instances", artefact.getName());
-            throw new IllegalStateException(message);
-        }
-        this.artefactTypes.remove(artefact.getName());
-    }
-
-    public Artefact findArtefactByName(String artefactName) {
-        return this.artefactTypes.get(artefactName);
-    }
-
-    public boolean contains(Artefact artefactType) {
-        return this.artefactTypes.values().contains(artefactType);
     }
 
     public boolean isUsed(Artefact artefact) {
@@ -239,6 +200,18 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     public NodeInstance findNodeInstanceByName(String nodeInstanceName) {
         return findByName(nodeInstanceName, this.nodeInstances);
     }
+    
+    
+    public List<NodeInstance> findInstancesOf(Node node) {
+        ArrayList<NodeInstance> selectedInstances = new ArrayList<NodeInstance>();
+        for (NodeInstance nodeInstance : this.nodeInstances) {
+            if (nodeInstance.getType().equals(node)) {
+                selectedInstances.add(nodeInstance);
+            }
+        }
+        return selectedInstances;
+    }
+
 
     public List<NodeInstance> findNodeInstancesByType(Node nodeType) {
         final ArrayList<NodeInstance> selection = new ArrayList<NodeInstance>();
@@ -264,7 +237,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     }
 
     public void addArtefactInstance(ArtefactInstance instance) {
-        if (!contains(instance.getType())) {
+        if (!getArtefactTypes().contains(instance.getType())) {
             String message = String.format("artefact type '%s' associated with instance '%s' is not part of the model", instance.getType().getName(), instance.getName());
             throw new IllegalArgumentException(message);
         }
@@ -386,7 +359,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         StringBuilder builder = new StringBuilder();
         builder.append("Deployment model " + getName() + "{\n");
         builder.append("- Artefact types: {\n");
-        for (Artefact t : artefactTypes.values()) {
+        for (Artefact t : artefactTypes) {
             builder.append("  - " + t + "\n");
         }
         builder.append("}\n");
