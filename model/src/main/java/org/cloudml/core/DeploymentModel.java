@@ -22,6 +22,13 @@
  */
 package org.cloudml.core;
 
+import org.cloudml.core.collections.BindingInstanceGroup;
+import org.cloudml.core.collections.BindingTypeGroup;
+import org.cloudml.core.collections.NodeTypeGroup;
+import org.cloudml.core.collections.ProviderGroup;
+import org.cloudml.core.collections.ArtefactTypeGroup;
+import org.cloudml.core.collections.NodeInstanceGroup;
+import org.cloudml.core.collections.ArtefactInstanceGroup;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,52 +49,25 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     private final BindingInstanceGroup bindingInstances;
 
     public DeploymentModel() {
-        this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypeGroup(this); 
-        this.artefactTypes = new ArtefactTypeGroup(this);
-        this.bindingTypes = new BindingTypeGroup(this);
-        this.nodeInstances = new NodeInstanceGroup(this);
-        this.artefactInstances = new ArtefactInstanceGroup(this);
-        this.bindingInstances = new BindingInstanceGroup(this);
+        super();
+        this.providers = new LocalProviderGroup();
+        this.nodeTypes = new LocalNodeTypeGroup();
+        this.artefactTypes = new LocalArtefactTypeGroup();
+        this.bindingTypes = new LocalBindingTypeGroup();
+        this.nodeInstances = new LocalNodeInstanceGroup();
+        this.artefactInstances = new LocalArtefactInstanceGroup();
+        this.bindingInstances = new LocalBindingInstanceGroup();
     }
 
     public DeploymentModel(String name) {
         super(name);
-        this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypeGroup(this);
-        this.artefactTypes = new ArtefactTypeGroup(this);
-        this.bindingTypes = new BindingTypeGroup(this);
-        this.nodeInstances = new NodeInstanceGroup(this);
-        this.artefactInstances = new ArtefactInstanceGroup(this);
-        this.bindingInstances = new BindingInstanceGroup(this);
-    }
-
-    @Deprecated
-    public DeploymentModel(String name, List<Property> properties,
-                           Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
-                           Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers) {
-        super(name, properties);
-        this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypeGroup(this);
-        this.artefactTypes = new ArtefactTypeGroup(this);
-        this.bindingTypes = new BindingTypeGroup(this);
-        this.nodeInstances = new NodeInstanceGroup(this);
-        this.artefactInstances = new ArtefactInstanceGroup(this);
-        this.bindingInstances = new BindingInstanceGroup(this);
-    }
-
-    @Deprecated
-    public DeploymentModel(String name, List<Property> properties,
-                           Map<String, Artefact> artefactTypes, List<ArtefactInstance> artefactInstances,
-                           Map<String, Node> nodeTypes, List<NodeInstance> nodeInstances, List<Provider> providers, Map<String, Binding> bindingTypes, List<BindingInstance> bindingInstances) {
-        super(name, properties);
-        this.providers = new ProviderGroup(this);
-        this.nodeTypes = new NodeTypeGroup(this);
-        this.artefactTypes = new ArtefactTypeGroup(this);
-        this.bindingTypes = new BindingTypeGroup(this);
-        this.nodeInstances = new NodeInstanceGroup(this);
-        this.artefactInstances = new ArtefactInstanceGroup(this);
-        this.bindingInstances = new BindingInstanceGroup(this);
+        this.providers = new LocalProviderGroup();
+        this.nodeTypes = new LocalNodeTypeGroup();
+        this.artefactTypes = new LocalArtefactTypeGroup();
+        this.bindingTypes = new LocalBindingTypeGroup();
+        this.nodeInstances = new LocalNodeInstanceGroup();
+        this.artefactInstances = new LocalArtefactInstanceGroup();
+        this.bindingInstances = new LocalBindingInstanceGroup();
     }
 
     @Override
@@ -114,7 +94,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 && this.bindingInstances.isEmpty();
     }
 
-   // Providers
+    // Providers
     public ProviderGroup getProviders() {
         return providers;
     }
@@ -123,7 +103,6 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return !getNodeTypes().providedBy(provider).isEmpty();
     }
 
-    
     // Node types
     public NodeTypeGroup getNodeTypes() {
         return this.nodeTypes;
@@ -142,7 +121,6 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return !getArtefactInstances().ofType(artefact).isEmpty();
     }
 
-    
     // Binding Types
     public BindingTypeGroup getBindingTypes() {
         return bindingTypes;
@@ -153,13 +131,11 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return nodeInstances;
     }
 
-
     // Artefact Instances
     public ArtefactInstanceGroup getArtefactInstances() {
         return artefactInstances;
     }
 
-    
     public boolean isUsed(ArtefactInstance server) {
         boolean found = false;
         final Iterator<ServerPortInstance> iterator = server.getProvided().iterator();
@@ -168,13 +144,11 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         }
         return found;
     }
-    
 
     // Bindings instances
     public BindingInstanceGroup getBindingInstances() {
         return bindingInstances;
     }
-
 
     public boolean isBound(ArtefactPortInstance<? extends ArtefactPort> port) {
         return !getBindingInstances().withPort(port).isEmpty();
@@ -250,5 +224,116 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         }
         builder.append("}\n");
         return builder.toString();
+    }
+
+    private class LocalProviderGroup extends ProviderGroup {
+
+        public LocalProviderGroup() {
+            super();
+        }
+
+        @Override
+        protected void abortIfCannotBeAdded(Provider provider) {
+            if (named(provider.getName()) != null) {
+                final String message = String.format("A provider named '%s' already exists", provider.getName());
+                throw new IllegalArgumentException(message);
+            }
+        }
+
+        @Override
+        protected void abortIfCannotBeRemoved(Provider provider) {
+            if (isUsed(provider)) {
+                String message = String.format("Unable to remove provider '%s' as it still provides nodes", provider.getName());
+                throw new IllegalStateException(message);
+            }
+        }
+    }
+
+    private class LocalNodeTypeGroup extends NodeTypeGroup {
+
+        public LocalNodeTypeGroup() {
+            super();
+        }
+
+        @Override
+        protected final void abortIfCannotBeAdded(Node node) {
+            if (!getProviders().contains(node.getProvider())) {
+                String message = String.format("The provider '%s' (used by node '%s') is not part of the model", node.getProvider().getName(), node.getName());
+                throw new IllegalStateException(message);
+            }
+        }
+
+        @Override
+        protected final void abortIfCannotBeRemoved(Node node) {
+            if (isUsed(node)) {
+                final String message = String.format("Unable to remove node type '%s' as there are still some related instances", node.getName());
+                throw new IllegalStateException(message);
+            }
+        }
+    }
+
+    private class LocalArtefactTypeGroup extends ArtefactTypeGroup {
+
+        public LocalArtefactTypeGroup() {
+            super();
+        }
+
+        @Override
+        protected void abortIfCannotBeRemoved(Artefact artefact) {
+            if (isUsed(artefact)) {
+                String message = String.format("Cannot remove artefact '%s' as it still has instances", artefact.getName());
+                throw new IllegalStateException(message);
+            }
+        }
+    }
+
+    private class LocalBindingTypeGroup extends BindingTypeGroup {
+
+        public LocalBindingTypeGroup() {
+            super();
+        }
+    }
+
+    private class LocalNodeInstanceGroup extends NodeInstanceGroup {
+
+        public LocalNodeInstanceGroup() {
+            super();
+        }
+
+        @Override
+        protected void abortIfCannotBeAdded(NodeInstance instance) {
+            if (!getNodeTypes().contains(instance.getType())) {
+                final String message = String.format("The node type '%s', associated with instance '%s' is not part of this model", instance.getType().getName(), instance.getName());
+                throw new IllegalArgumentException(message);
+            }
+        }
+    }
+
+    private class LocalArtefactInstanceGroup extends ArtefactInstanceGroup {
+
+        public LocalArtefactInstanceGroup() {
+            super();
+        }
+
+        @Override
+        protected void abortIfCannotBeAdded(ArtefactInstance instance) {
+            if (!getArtefactTypes().contains(instance.getType())) {
+                String message = String.format("artefact type '%s' associated with instance '%s' is not part of the model", instance.getType().getName(), instance.getName());
+                throw new IllegalArgumentException(message);
+            }
+            if (instance.hasDestination() && !getNodeInstances().contains(instance.getDestination())) {
+                String message = String.format("destination '%s' of artefact instance '%s' is not part of the model", instance.getDestination().getName(), instance.getName());
+                throw new IllegalArgumentException(message);
+            }
+        }
+
+ 
+    }
+
+    private class LocalBindingInstanceGroup extends BindingInstanceGroup {
+
+        public LocalBindingInstanceGroup() {
+            super();
+        }
     }
 }

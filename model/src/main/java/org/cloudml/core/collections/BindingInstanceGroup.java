@@ -20,45 +20,46 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.core;
+package org.cloudml.core.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.cloudml.core.ArtefactPort;
+import org.cloudml.core.ArtefactPortInstance;
+import org.cloudml.core.Binding;
+import org.cloudml.core.BindingInstance;
+import org.cloudml.core.ClientPortInstance;
+import org.cloudml.core.ServerPortInstance;
 
 public class BindingInstanceGroup extends NamedElementGroup<BindingInstance> {
 
-    public BindingInstanceGroup(DeploymentModel context) {
-        super(context);
+    public BindingInstanceGroup() {
+        super();
     }
 
-    public BindingInstanceGroup(DeploymentModel context, Collection<BindingInstance> content) {
-        super(context, content);
-    }
-
-    @Override
-    protected void abortIfCannotBeAdded(BindingInstance element) {
-        super.abortIfCannotBeAdded(element); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    protected void abortIfCannotBeRemoved(BindingInstance element) {
-        super.abortIfCannotBeRemoved(element); //To change body of generated methods, choose Tools | Templates.
+    public BindingInstanceGroup(Collection<BindingInstance> content) {
+        super(content);
     }
 
     public BindingInstanceGroup ofType(Binding type) {
-        List<BindingInstance> selection = new ArrayList<BindingInstance>();
+        final ArrayList<BindingInstance> selection = new ArrayList<BindingInstance>();
         for (BindingInstance binding : this) {
             if (binding.getType().equals(type)) {
                 selection.add(binding);
             }
         }
-        return new BindingInstanceGroup(getContext(), selection);
+        return new BindingInstanceGroup(selection);
     }
     
     public BindingInstanceGroup ofType(String typeName) {
-        final Binding type = getContext().getBindingTypes().named(typeName);
-        return ofType(type);
+       final ArrayList<BindingInstance> selection = new ArrayList<BindingInstance>();
+        for (BindingInstance binding : this) {
+            if (binding.getType().getName().equals(typeName)) {
+                selection.add(binding);
+            }
+        }
+        return new BindingInstanceGroup(selection);
     }
 
     public BindingInstanceGroup withPort(ArtefactPortInstance<? extends ArtefactPort> port) {
@@ -68,7 +69,7 @@ public class BindingInstanceGroup extends NamedElementGroup<BindingInstance> {
                 selection.add(binding);
             }
         }
-        return new BindingInstanceGroup(getContext(), selection);
+        return new BindingInstanceGroup(selection);
     }
 
     public BindingInstanceGroup from(ClientPortInstance cpi) {

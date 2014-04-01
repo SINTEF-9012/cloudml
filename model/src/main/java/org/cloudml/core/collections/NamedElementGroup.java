@@ -20,36 +20,30 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.core;
+package org.cloudml.core.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import org.cloudml.core.NamedElement;
 
 public abstract class NamedElementGroup<T extends NamedElement> implements Collection<T> {
 
-    private final DeploymentModel context;
     private final HashMap<String, T> content;
 
-    public NamedElementGroup(DeploymentModel context) {
-        this.context = context;
+    public NamedElementGroup() {
         this.content = new HashMap<String, T>();
     }
 
-    public NamedElementGroup(DeploymentModel context, Collection<T> content) {
-        this.context = context;
+    public NamedElementGroup(Collection<T> content) {
         this.content = new HashMap<String, T>();
         for (T element : content) {
             this.content.put(element.getName(), element);
         }
     }
 
-    protected DeploymentModel getContext() {
-        return context;
-    }
-    
     @Override
     public boolean add(T element) {
         abortIfCannotBeAdded(element);

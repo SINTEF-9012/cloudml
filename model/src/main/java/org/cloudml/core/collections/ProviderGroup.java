@@ -20,15 +20,18 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+/*
+ */
+
+package org.cloudml.core.collections;
+
+import org.cloudml.core.Provider;
 
 
-package org.cloudml.core;
-
-
-public class BindingTypeGroup extends NamedElementGroup<Binding> {
-
-    public BindingTypeGroup(DeploymentModel context) {
-        super(context);
-    }    
+public class ProviderGroup extends NamedElementGroup<Provider> {
+    
+    public ProviderGroup() {
+        super();
+    }
     
 }

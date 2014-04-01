@@ -20,38 +20,22 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
-package org.cloudml.core;
+package org.cloudml.core.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.cloudml.core.Node;
+import org.cloudml.core.Provider;
 
 public class NodeTypeGroup extends NamedElementGroup<Node> {
 
-    public NodeTypeGroup(DeploymentModel context) {
-        super(context);
-    }
-     
-    private NodeTypeGroup(DeploymentModel context, Collection<Node> nodes) {
-       super(context, nodes);
+    public NodeTypeGroup() {
+        super();
     }
 
-    @Override
-    protected final void abortIfCannotBeAdded(Node node) {
-         if (!getContext().getProviders().contains(node.getProvider())) {
-            String message = String.format("The provider '%s' (used by node '%s') is not part of the model", node.getProvider().getName(), node.getName());
-            throw new IllegalStateException(message);
-        }
+    private NodeTypeGroup(Collection<Node> nodes) {
+        super(nodes);
     }
-
-    @Override
-    protected final void abortIfCannotBeRemoved(Node node) {
-        if (getContext().isUsed(node)) {
-            final String message = String.format("Unable to remove node type '%s' as there are still some related instances", node.getName());
-            throw new IllegalStateException(message);
-        }
-    }
-    
 
     public NodeTypeGroup providedBy(Provider provider) {
         final ArrayList<Node> selectedNodes = new ArrayList<Node>();
@@ -60,7 +44,6 @@ public class NodeTypeGroup extends NamedElementGroup<Node> {
                 selectedNodes.add(node);
             }
         }
-        return new NodeTypeGroup(getContext(), selectedNodes);
+        return new NodeTypeGroup(selectedNodes);
     }
-    
 }

@@ -22,54 +22,42 @@
  */
 /*
  */
-package org.cloudml.core;
+package org.cloudml.core.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import org.cloudml.core.Artefact;
+import org.cloudml.core.ArtefactInstance;
+import org.cloudml.core.NodeInstance;
 
 public class ArtefactInstanceGroup extends NamedElementGroup<ArtefactInstance> {
 
-    public ArtefactInstanceGroup(DeploymentModel context) {
-        super(context);
+    public ArtefactInstanceGroup() {
+        super();
     }
 
-    public ArtefactInstanceGroup(DeploymentModel context, Collection<ArtefactInstance> content) {
-        super(context, content);
-    }
-    
-    
-
-    @Override
-    protected void abortIfCannotBeAdded(ArtefactInstance instance) {
-        if (!getContext().getArtefactTypes().contains(instance.getType())) {
-            String message = String.format("artefact type '%s' associated with instance '%s' is not part of the model", instance.getType().getName(), instance.getName());
-            throw new IllegalArgumentException(message);
-        }
-        if (instance.hasDestination() && !getContext().getNodeInstances().contains(instance.getDestination())) {
-            String message = String.format("destination '%s' of artefact instance '%s' is not part of the model", instance.getDestination().getName(), instance.getName());
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-    @Override
-    protected void abortIfCannotBeRemoved(ArtefactInstance element) {
-        super.abortIfCannotBeRemoved(element); //To change body of generated methods, choose Tools | Templates.
+    public ArtefactInstanceGroup(Collection<ArtefactInstance> content) {
+        super(content);
     }
 
     public ArtefactInstanceGroup ofType(Artefact type) {
-        ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
+        final ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
         for (ArtefactInstance instance : this) {
             if (instance.getType().equals(type)) {
                 selection.add(instance);
             }
         }
-        return new ArtefactInstanceGroup(getContext(), selection);
+        return new ArtefactInstanceGroup(selection);
     }
-    
+
     public ArtefactInstanceGroup ofType(String typeName) {
-        final Artefact type = getContext().getArtefactTypes().named(typeName);
-        return ofType(type);
+        final ArrayList<ArtefactInstance> selection = new ArrayList<ArtefactInstance>();
+        for (ArtefactInstance instance : this) {
+            if (instance.getType().getName().equals(typeName)) {
+                selection.add(instance);
+            }
+        }
+        return new ArtefactInstanceGroup(selection);
     }
 
     public ArtefactInstanceGroup hostedBy(NodeInstance destination) {
@@ -79,6 +67,6 @@ public class ArtefactInstanceGroup extends NamedElementGroup<ArtefactInstance> {
                 selection.add(artefact);
             }
         }
-        return new ArtefactInstanceGroup(getContext(), selection);
+        return new ArtefactInstanceGroup(selection);
     }
 }

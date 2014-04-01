@@ -22,22 +22,15 @@
  */
 
 
-package org.cloudml.core;
+package org.cloudml.core.collections;
+
+import org.cloudml.core.Binding;
 
 
-public class ArtefactTypeGroup extends NamedElementGroup<Artefact> {
+public class BindingTypeGroup extends NamedElementGroup<Binding> {
 
-    public ArtefactTypeGroup(DeploymentModel context) {
-        super(context);
-    }
-
-    @Override
-    protected void abortIfCannotBeRemoved(Artefact artefact) {
-        if (getContext().isUsed(artefact)) {
-            String message = String.format("Cannot remove artefact '%s' as it still has instances", artefact.getName());
-            throw new IllegalStateException(message);
-        }
-    }   
-    
+    public BindingTypeGroup() {
+        super();
+    }    
     
 }

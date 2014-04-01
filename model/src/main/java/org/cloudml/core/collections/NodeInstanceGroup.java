@@ -22,30 +22,23 @@
  */
 
 
-package org.cloudml.core;
+package org.cloudml.core.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.cloudml.core.Node;
+import org.cloudml.core.NodeInstance;
 
 
 public class NodeInstanceGroup extends NamedElementGroup<NodeInstance> {
 
-    public NodeInstanceGroup(DeploymentModel context) {
-        super(context);
+    public NodeInstanceGroup() {
+        super();
     }
 
-    public NodeInstanceGroup(DeploymentModel context, Collection<NodeInstance> content) {
-        super(context, content);
+    public NodeInstanceGroup(Collection<NodeInstance> content) {
+        super(content);
     }    
-
-    @Override
-    protected void abortIfCannotBeAdded(NodeInstance instance) {
-         if (!getContext().getNodeTypes().contains(instance.getType())) {
-            final String message = String.format("The node type '%s', associated with instance '%s' is not part of this model", instance.getType().getName(), instance.getName());
-            throw new IllegalArgumentException(message);
-        }
-    }
-    
     
     public NodeInstanceGroup ofType(Node node) {
         final ArrayList<NodeInstance> selectedInstances = new ArrayList<NodeInstance>();
@@ -54,13 +47,18 @@ public class NodeInstanceGroup extends NamedElementGroup<NodeInstance> {
                 selectedInstances.add(nodeInstance);
             }
         }
-        return new NodeInstanceGroup(getContext(), selectedInstances);
+        return new NodeInstanceGroup(selectedInstances);
     }
     
     
     public NodeInstanceGroup ofType(String typeName) {
-        final Node type = getContext().getNodeTypes().named(typeName);
-        return ofType(type);
+        final ArrayList<NodeInstance> selectedInstances = new ArrayList<NodeInstance>();
+        for (NodeInstance nodeInstance : this) {
+            if (nodeInstance.getType().getName().equals(typeName)) {
+                selectedInstances.add(nodeInstance);
+            }
+        }
+        return new NodeInstanceGroup(selectedInstances);
     }
     
     

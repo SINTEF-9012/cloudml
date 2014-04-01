@@ -20,32 +20,17 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
-
-package org.cloudml.core;
 
 
-public class ProviderGroup extends NamedElementGroup<Provider> {
-    
-    public ProviderGroup(DeploymentModel context) {
-        super(context);
+package org.cloudml.core.collections;
+
+import org.cloudml.core.Artefact;
+
+
+public class ArtefactTypeGroup extends NamedElementGroup<Artefact> {
+
+    public ArtefactTypeGroup() {
+        super();
     }
-
-    @Override
-    protected void abortIfCannotBeAdded(Provider provider) {
-       if (named(provider.getName()) != null) {
-            final String message = String.format("A provider named '%s' already exists", provider.getName());
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-    @Override
-    protected void abortIfCannotBeRemoved(Provider provider) {
-         if (getContext().isUsed(provider)) {
-            String message = String.format("Unable to remove provider '%s' as it still provides nodes", provider.getName());
-            throw new IllegalStateException(message);
-        }
-   }
     
 }
