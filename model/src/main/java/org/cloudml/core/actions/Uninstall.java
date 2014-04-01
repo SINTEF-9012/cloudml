@@ -52,7 +52,7 @@ public class Uninstall extends AbstractAction<Void> {
             if (deployment.isBound(clientPort)) {
                 final ArtefactInstance server = deployment.findServerPort(clientPort).getOwner();
                 getLibrary().unbind(deployment, clientPort);
-                if (!deployment.isUsed(server)) {
+                if (!server.isUsed()) {
                     getLibrary().uninstall(deployment, server);
                 }
             }

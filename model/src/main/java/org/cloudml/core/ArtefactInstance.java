@@ -39,13 +39,14 @@ import org.cloudml.core.visitors.Visitor;
  * node. It contains properties, communications channels and dependencies.
  *
  */
-public class ArtefactInstance extends WithProperties implements Visitable, CanBeValidated {
+public class ArtefactInstance extends DeploymentPart implements Visitable, CanBeValidated {
 
     private Artefact type;
     private NodeInstance destination = null;
     private State status;
 
     public enum State {
+
         uninstalled,
         installed,
         configured,
@@ -145,10 +146,21 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
         }
     }
 
+    public boolean isUsed() {
+        if (!isAttachedToADeployment()) {
+            return false;
+        }
+        boolean found = false;
+        final Iterator<ServerPortInstance> iterator = getProvided().iterator();
+        while (iterator.hasNext() && !found) {
+            found = getDeployment().isBound(iterator.next());
+        }
+        return found;
+    }
+
     /*
      * Provided ports
      */
-    
     public List<ServerPortInstance> getProvided() {
         return this.provided;
     }
@@ -160,15 +172,14 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
     public ServerPortInstance findProvidedPortByName(String serverPortName) {
         return findByName(serverPortName, this.provided);
     }
-    
+
     /*
      * Required Ports
      */
-    
     public List<ClientPortInstance> getRequired() {
         return this.required;
     }
-    
+
     public void addRequiredPort(ClientPortInstance required) {
         this.required.add(required);
     }
@@ -177,8 +188,6 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
         return findByName(clientPortName, this.required);
     }
 
-    
-    
     @Override
     public String toString() {
         return "Instance " + getName() + " : " + getType().getName();
@@ -211,9 +220,6 @@ public class ArtefactInstance extends WithProperties implements Visitable, CanBe
     /*
      * Getters
      */
-
-
-    
     public Artefact getType() {
         return this.type;
     }

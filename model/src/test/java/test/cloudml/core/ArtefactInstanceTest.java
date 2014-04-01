@@ -34,11 +34,27 @@ import org.cloudml.core.validation.Report;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
 import static org.cloudml.core.builders.Commons.*;
+import org.cloudml.core.samples.SshClientServer;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(JUnit4.class)
 public class ArtefactInstanceTest extends TestCase {
 
+    
+      @Test
+    public void testBidirectionalAssociationWithDeploymentModel() {
+            final DeploymentModel deployment = new SshClientServer()
+                    .getOneClientConnectedToOneServer()
+                    .build();
+            
+            final ArtefactInstance server = deployment.getArtefactInstances().named(SshClientServer.SERVER_NO_1);  
+            assertThat("containment", server, is(not(nullValue())));
+            assertThat("app instances", server.isUsed());
+    }
+    
     @Test
     public void validationPassWithoutWarningWhenValid() {
         ArtefactInstance instance = prepareInstance();

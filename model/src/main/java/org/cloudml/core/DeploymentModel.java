@@ -117,15 +117,6 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return artefactInstances;
     }
 
-    public boolean isUsed(ArtefactInstance server) {
-        boolean found = false;
-        final Iterator<ServerPortInstance> iterator = server.getProvided().iterator();
-        while (iterator.hasNext() && !found) {
-            found = isBound(iterator.next());
-        }
-        return found;
-    }
-
     // Bindings instances
     public BindingInstanceGroup getBindingInstances() {
         return bindingInstances;
@@ -287,6 +278,8 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
             }
         }
 
+        
+        
         @Override
         protected void setReferenceToContainer(Artefact element) {
             element.attachTo(DeploymentModel.this);
@@ -339,6 +332,19 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 throw new IllegalArgumentException(message);
             }
         }
+
+        @Override
+        protected void setReferenceToContainer(ArtefactInstance element) {
+            element.attachTo(DeploymentModel.this); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        protected void clearReferenceToContainer(ArtefactInstance element) {
+            element.detach();
+        }
+        
+        
+        
     }
 
     private class LocalBindingInstanceGroup extends BindingInstanceGroup {
