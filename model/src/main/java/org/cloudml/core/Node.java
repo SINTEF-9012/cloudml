@@ -88,8 +88,8 @@ public class Node extends DeploymentPart implements Visitable, CanBeValidated {
     }
 
     public NodeInstanceGroup getInstances() {
-        if (isAttachedToADeployment()) {
-            return getDeployment().getNodeInstances().ofType(this);
+        if (hasOwner()) {
+            return getOwner().getNodeInstances().ofType(this);
         }
         else {
             return new NodeInstanceGroup();

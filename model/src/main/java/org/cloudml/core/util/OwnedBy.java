@@ -20,31 +20,32 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.core;
+/*
+ */
+package org.cloudml.core.util;
 
-import java.util.List;
-import org.cloudml.core.visitors.Visitor;
 
-public class ServerPort extends ArtefactPort {
+public interface OwnedBy<T> {
 
-    public ServerPort() {
-    }
+    /**
+     * Remove the existing owner
+     */
+    void discardOwner();
 
-    public ServerPort(String name, Artefact owner, boolean isRemote) {
-        super(name, owner, isRemote);
-    }
+    /**
+     * @return the owner of this object
+     */
+    T getOwner();
 
-    public ServerPort(String name, List<Property> properties, Artefact owner, boolean isRemote) {
-        super(name, properties, owner, isRemote);
-    }
+    /**
+     * @return true if there is a owner for this object
+     */
+    boolean hasOwner();
 
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visitServerPort(this);
-    }
-
-    @Override
-    public String toString() {
-        return "ServerPortType " + getName() + " ownerType" + getOwner().getName();
-    }
+    /**
+     * Update the owner. Does not assign the other end of the association
+     * @param owner the new owner of this object
+     */
+    void setOwner(T owner);
+    
 }

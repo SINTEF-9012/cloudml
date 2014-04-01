@@ -23,13 +23,14 @@
 package org.cloudml.core;
 
 import java.util.List;
+import org.cloudml.core.util.OwnedBy;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.visitors.Visitable;
 
-public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithProperties implements Visitable, CanBeValidated {
+public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithProperties implements OwnedBy<ArtefactInstance>, DeploymentElement, Visitable, CanBeValidated {
 
     protected T type;
-    protected ArtefactInstance owner;
+    private ArtefactInstance owner;
 
     public ArtefactPortInstance() {
     }
@@ -38,41 +39,47 @@ public abstract class ArtefactPortInstance<T extends ArtefactPort> extends WithP
         super(name);
         this.type = type;
         this.owner = owner;
-        // If we define the owner of the port, then we can add it in the provided port list
-        /*
-         * owner.getProvided().add(this);
-        owner.getType().getProvided().add(type);
-         */
     }
 
     public ArtefactPortInstance(String name, T type, List<Property> properties, ArtefactInstance owner) {
         super(name, properties);
         this.type = type;
         this.owner = owner;
-        //If we define the owner of the port, then we can add it in the provided port list
-        /*
-         * owner.getProvided().add(this);
-        owner.getType().getProvided().add(type);
-         */
     }
 
     public ArtefactPortInstance(String name, T type, List<Property> properties, ArtefactInstance owner, boolean isRemote) {
         super(name, properties);
         this.type = type;
         this.owner = owner;
-        //If we define the owner of the port, then we can add it in the provided port list
-        /*
-         * owner.getProvided().add(this);
-        owner.getType().getProvided().add(type);
-         */
     }
 
+    @Override
     public ArtefactInstance getOwner() {
         return this.owner;
     }
-    
+
+    @Override
     public void setOwner(ArtefactInstance newOwner) {
         this.owner = newOwner;
+    }
+
+    @Override
+    public void discardOwner() {
+        this.owner = null;
+    }
+
+    @Override
+    public boolean hasOwner() {
+        return this.owner != null;
+    }
+
+    @Override
+    public DeploymentModel getDeployment() {
+        return getOwner().getOwner();
+    }
+
+    public boolean isBound() {
+        return !getDeployment().getBindingInstances().withPort(this).isEmpty();
     }
 
     public void setType(T type) {

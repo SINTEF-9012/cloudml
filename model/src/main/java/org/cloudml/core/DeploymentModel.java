@@ -29,9 +29,6 @@ import org.cloudml.core.collections.ProviderGroup;
 import org.cloudml.core.collections.ArtefactTypeGroup;
 import org.cloudml.core.collections.NodeInstanceGroup;
 import org.cloudml.core.collections.ArtefactInstanceGroup;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
@@ -122,31 +119,6 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return bindingInstances;
     }
 
-    public boolean isBound(ArtefactPortInstance<? extends ArtefactPort> port) {
-        return !getBindingInstances().withPort(port).isEmpty();
-    }
-
-    public ServerPortInstance findServerPort(ClientPortInstance clientPort) {
-        final BindingInstanceGroup bindings = getBindingInstances().withPort(clientPort);
-        if (bindings.isEmpty()) {
-            final String message = String.format("client port '%s' is not yet bound to any server", clientPort.getName());
-            throw new IllegalArgumentException(message);
-        }
-        return bindings.toList().get(0).getServer();
-    }
-
-    public List<ClientPortInstance> findClientPorts(ServerPortInstance serverPort) {
-        final BindingInstanceGroup bindings = getBindingInstances().withPort(serverPort);
-        if (bindings.isEmpty()) {
-            final String message = String.format("server port '%s' is not yet bound to any server", serverPort.getName());
-            throw new IllegalArgumentException(message);
-        }
-        final List<ClientPortInstance> clients = new ArrayList<ClientPortInstance>();
-        for (BindingInstance binding : bindings) {
-            clients.add(binding.getClient());
-        }
-        return clients;
-    }
 
     @Override
     public boolean equals(Object other) {
@@ -214,7 +186,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected void setReferenceToContainer(Provider element) {
-            element.attachTo(DeploymentModel.this);
+            element.setOwner(DeploymentModel.this);
         }
 
         @Override
@@ -227,7 +199,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected void clearReferenceToContainer(Provider element) {
-            element.detach();
+            element.discardOwner();
         }
     }
 
@@ -247,12 +219,12 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected void clearReferenceToContainer(Node element) {
-            element.detach();
+            element.discardOwner();
         }
 
         @Override
         protected void setReferenceToContainer(Node element) {
-            element.attachTo(DeploymentModel.this);
+            element.setOwner(DeploymentModel.this);
         }
 
         @Override
@@ -282,12 +254,12 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         
         @Override
         protected void setReferenceToContainer(Artefact element) {
-            element.attachTo(DeploymentModel.this);
+            element.setOwner(DeploymentModel.this);
         }
 
         @Override
         protected void clearReferenceToContainer(Artefact element) {
-            element.detach();
+            element.discardOwner();
         }
         
         
@@ -335,12 +307,12 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected void setReferenceToContainer(ArtefactInstance element) {
-            element.attachTo(DeploymentModel.this); //To change body of generated methods, choose Tools | Templates.
+            element.setOwner(DeploymentModel.this); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         protected void clearReferenceToContainer(ArtefactInstance element) {
-            element.detach();
+            element.discardOwner();
         }
         
         

@@ -25,10 +25,11 @@
 
 package org.cloudml.core;
 
+import org.cloudml.core.util.OwnedBy;
 import java.util.List;
 
 
-public abstract class DeploymentPart extends WithProperties {
+public abstract class DeploymentPart extends WithProperties implements OwnedBy<DeploymentModel> {
 
     private DeploymentModel deployment;
 
@@ -43,23 +44,27 @@ public abstract class DeploymentPart extends WithProperties {
         super(name, properties);
     }
     
-    public DeploymentModel getDeployment() {
-        if (!isAttachedToADeployment()) {
+    @Override
+    public DeploymentModel getOwner() {
+        if (!hasOwner()) {
             final String message = String.format("The element '%s' (of type '%s') is not attached to any deployment model", getName(), this.getClass().getName());
             throw new IllegalStateException(message);
         }
         return deployment;
     }
         
-    public boolean isAttachedToADeployment() {
+    @Override
+    public boolean hasOwner() {
         return deployment != null;
     }
      
-    public void attachTo(DeploymentModel deployment) {
+    @Override
+    public void setOwner(DeploymentModel deployment) {
        this.deployment = deployment; 
     }
     
-    public void detach() {
+    @Override
+    public void discardOwner() {
         this.deployment = null;
     }
     

@@ -20,31 +20,15 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 package org.cloudml.core;
 
-import java.util.List;
-import org.cloudml.core.visitors.Visitor;
 
-public class ServerPort extends ArtefactPort {
+public interface DeploymentElement {
 
-    public ServerPort() {
-    }
-
-    public ServerPort(String name, Artefact owner, boolean isRemote) {
-        super(name, owner, isRemote);
-    }
-
-    public ServerPort(String name, List<Property> properties, Artefact owner, boolean isRemote) {
-        super(name, properties, owner, isRemote);
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visitServerPort(this);
-    }
-
-    @Override
-    public String toString() {
-        return "ServerPortType " + getName() + " ownerType" + getOwner().getName();
-    }
+    /**
+     * @return the containing deployment model
+     */
+    DeploymentModel getDeployment();
+    
 }

@@ -44,7 +44,7 @@ public class Artefact extends DeploymentPart implements Visitable, CanBeValidate
      */
     private List<ClientPort> required = new LinkedList<ClientPort>();
     private List<ServerPort> provided = new LinkedList<ServerPort>();
-
+ 
     public Artefact() {
     }
 
@@ -116,8 +116,8 @@ public class Artefact extends DeploymentPart implements Visitable, CanBeValidate
     }
 
     public ArtefactInstanceGroup getInstances() {
-        if (isAttachedToADeployment()) {
-            return getDeployment().getArtefactInstances().ofType(this);
+        if (hasOwner()) {
+            return getOwner().getArtefactInstances().ofType(this);
         } else {
             return new ArtefactInstanceGroup();
         }

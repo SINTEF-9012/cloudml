@@ -41,7 +41,7 @@ public class Bind extends AbstractAction<Void> {
 
     @Override
     public Void applyTo(DeploymentModel deployment) {
-        if (!deployment.isBound(clientPort)) {
+        if (!clientPort.isBound()) {
             Binding bindingType = getLibrary().findBindingFor(deployment, clientPort);
             String name = getLibrary().createUniqueBindingInstanceName(deployment, bindingType);
             ServerPortInstance serverPort = getLibrary().findServerPortFor(deployment, bindingType); 

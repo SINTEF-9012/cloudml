@@ -23,7 +23,7 @@
 package org.cloudml.core.actions;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.List; 
 import org.cloudml.core.ArtefactInstance;
 import org.cloudml.core.ClientPortInstance;
 import org.cloudml.core.DeploymentModel;
@@ -49,8 +49,8 @@ public class Uninstall extends AbstractAction<Void> {
 
     private void disconnectRequiredPorts(DeploymentModel deployment) {
         for (ClientPortInstance clientPort: artefactInstance.getRequired()) {
-            if (deployment.isBound(clientPort)) {
-                final ArtefactInstance server = deployment.findServerPort(clientPort).getOwner();
+            if (clientPort.isBound()) {
+                final ArtefactInstance server = clientPort.findServerPort().getOwner();
                 getLibrary().unbind(deployment, clientPort);
                 if (!server.isUsed()) {
                     getLibrary().uninstall(deployment, server);
@@ -62,8 +62,8 @@ public class Uninstall extends AbstractAction<Void> {
     private List<ClientPortInstance> disconnectProvidedPorts(DeploymentModel deployment) {
         final List<ClientPortInstance> customerToBeRebound = new ArrayList<ClientPortInstance>();
         for (ServerPortInstance serverPort : artefactInstance.getProvided()) {
-            if (deployment.isBound(serverPort)) {
-                customerToBeRebound.addAll(deployment.findClientPorts(serverPort));
+            if (serverPort.isBound()) {
+                customerToBeRebound.addAll(serverPort.findClients());
                 getLibrary().unbind(deployment, serverPort);
             }
         }

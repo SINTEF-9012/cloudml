@@ -66,15 +66,15 @@ public class Provider extends DeploymentPart implements Visitable, CanBeValidate
     }
 
     public boolean isUsed() {
-        if (!isAttachedToADeployment()) {
+        if (!hasOwner()) {
             return false;
         }
         return !providedNodeTypes().isEmpty();
     }
 
     public NodeTypeGroup providedNodeTypes() {
-        if (isAttachedToADeployment()) {
-            return getDeployment().getNodeTypes().providedBy(this);
+        if (hasOwner()) {
+            return getOwner().getNodeTypes().providedBy(this);
         }
         else {
             return new NodeTypeGroup();

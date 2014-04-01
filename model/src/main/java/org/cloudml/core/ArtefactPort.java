@@ -23,18 +23,18 @@
 package org.cloudml.core;
 
 import java.util.List;
+import org.cloudml.core.util.OwnedBy;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 
-public abstract class ArtefactPort extends WithProperties implements Visitable, CanBeValidated {
+public abstract class ArtefactPort extends WithProperties implements OwnedBy<Artefact>, DeploymentElement, Visitable, CanBeValidated {
 
     public static final boolean LOCAL = false;
     public static final boolean REMOTE = true;
     public static final boolean DEFAULT_IS_REMOTE = REMOTE;
-    
-    protected boolean remote = false;
-    protected Artefact owner;
+    private boolean remote = false;
+    private Artefact owner;
     protected int portNumber = 0;
 
     public ArtefactPort() {
@@ -62,14 +62,34 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
         }
         return report;
     }
-   
 
+    @Override
     public Artefact getOwner() {
+        if (!hasOwner()) {
+            final String message = String.format("Port '%s' (of type '%s') has no owner", getName(), getClass().getName());
+            throw new IllegalStateException(message);
+        }
         return owner;
     }
 
+    @Override
     public void setOwner(Artefact owner) {
         this.owner = owner;
+    }
+
+    @Override
+    public void discardOwner() {
+        this.owner = null;
+    }
+
+    @Override
+    public boolean hasOwner() {
+        return this.owner != null;
+    }
+
+    @Override
+    public DeploymentModel getDeployment() {
+        return getOwner().getOwner();
     }
 
     public int getPortNumber() {
@@ -84,7 +104,7 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
     public void setIsRemote(boolean isRemote) {
         this.remote = isRemote;
     }
-    
+
     public void setRemote(boolean isRemote) {
         this.remote = isRemote;
     }
@@ -93,14 +113,14 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
     public boolean getIsRemote() {
         return this.remote;
     }
-    
+
     public boolean isRemote() {
         return this.remote;
     }
-    
+
     public boolean isLocal() {
         return !isRemote();
-    }  
+    }
 
     @Override
     public String toString() {
@@ -109,7 +129,9 @@ public abstract class ArtefactPort extends WithProperties implements Visitable, 
 
     @Override
     public boolean equals(Object other) {
-        if (other == null) { return false; }
+        if (other == null) {
+            return false;
+        }
         if (other instanceof ArtefactPort) {
             ArtefactPort otherArt = (ArtefactPort) other;
             return getName().equals(otherArt.getName()) && owner.equals(otherArt.getOwner());

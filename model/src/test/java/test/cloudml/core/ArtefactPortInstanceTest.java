@@ -42,7 +42,7 @@ public abstract class ArtefactPortInstanceTest extends TestCase {
         ArtefactPortInstance instance = getValidInstance();
 
         Report validation = instance.validate();
-
+        System.out.println(validation);
         assertTrue(validation.pass(Report.WITHOUT_WARNING));
     }
 

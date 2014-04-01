@@ -77,7 +77,7 @@ public class ClientPort extends ArtefactPort {
     
     @Override
     public String toString() {
-        return "ClientTypePort " + getName() + " ownerType" + owner.getName();
+        return "ClientTypePort " + getName() + " ownerType" + getOwner().getName();
     }
 
     

@@ -71,7 +71,7 @@ public class ProviderTest extends TestCase {
         final Node linux = deployment.getNodeTypes().named("Linux");
         deployment.getNodeTypes().remove(linux);
         deployment.getProviders().remove(ec2);
-        assertThat("attached to model", !ec2.isAttachedToADeployment()); 
+        assertThat("attached to model", !ec2.hasOwner()); 
         assertThat("contained in model", deployment.getProviders().named("EC2"), is(nullValue()));
     }
 

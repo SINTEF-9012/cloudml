@@ -120,7 +120,7 @@ public class ArtefactInstance extends DeploymentPart implements Visitable, CanBe
             }
         }
     }
-
+ 
     private boolean hasPortWithType(ArtefactPort portType) {
         Collection<ArtefactPortInstance> allPortsInstances = new ArrayList<ArtefactPortInstance>();
         allPortsInstances.addAll(this.getProvided());
@@ -147,13 +147,13 @@ public class ArtefactInstance extends DeploymentPart implements Visitable, CanBe
     }
 
     public boolean isUsed() {
-        if (!isAttachedToADeployment()) {
+        if (!hasOwner()) {
             return false;
         }
         boolean found = false;
         final Iterator<ServerPortInstance> iterator = getProvided().iterator();
         while (iterator.hasNext() && !found) {
-            found = getDeployment().isBound(iterator.next());
+            found = iterator.next().isBound();
         }
         return found;
     }
