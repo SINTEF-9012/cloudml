@@ -38,6 +38,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 
+import static org.cloudml.core.builders.Commons.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
+
 @RunWith(JUnit4.class)
 public class NodeTest extends TestCase {
 
@@ -65,6 +70,24 @@ public class NodeTest extends TestCase {
         Node node = new Node(nodeName, provider);
         model.getNodeTypes().add(node);
         assertTrue(model.getNodeTypes().contains(node));
+    }
+    
+    
+    @Test
+    public void testBidirectionalAssociationWithDeployment(){
+        final DeploymentModel deployment = aDeployment()
+                .withProvider(aProvider().named("EC2"))
+                .withNodeType(aNode()
+                    .named("Linux")
+                    .providedBy("EC2"))
+                .withNodeInstance(aNodeInstance()
+                    .named("vm1")
+                    .ofType("Linux"))
+                .build();
+        
+        final Node linux = deployment.getNodeTypes().named("Linux");
+        assertThat("node is contained", linux, is(not(nullValue())));
+        assertThat("node instances", linux.getInstances().size(), is(equalTo(1)));
     }
 
     @Test

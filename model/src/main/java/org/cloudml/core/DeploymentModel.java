@@ -1,23 +1,23 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
+ * <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
+ * CloudML is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.core;
@@ -93,21 +93,14 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 && this.bindingInstances.isEmpty();
     }
 
-    // Providers
     public ProviderGroup getProviders() {
         return providers;
     }
 
-    // Node types
     public NodeTypeGroup getNodeTypes() {
         return this.nodeTypes;
     }
 
-    public boolean isUsed(Node node) {
-        return !getNodeInstances().ofType(node).isEmpty();
-    }
-
-    // Artefact types
     public ArtefactTypeGroup getArtefactTypes() {
         return artefactTypes;
     }
@@ -116,17 +109,14 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         return !getArtefactInstances().ofType(artefact).isEmpty();
     }
 
-    // Binding Types
     public BindingTypeGroup getBindingTypes() {
         return bindingTypes;
     }
 
-    // Node Instances
     public NodeInstanceGroup getNodeInstances() {
         return nodeInstances;
     }
 
-    // Artefact Instances
     public ArtefactInstanceGroup getArtefactInstances() {
         return artefactInstances;
     }
@@ -237,7 +227,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected void setReferenceToContainer(Provider element) {
-            element.setModel(DeploymentModel.this);
+            element.attachTo(DeploymentModel.this);
         }
 
         @Override
@@ -250,7 +240,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected void clearReferenceToContainer(Provider element) {
-            element.setModel(null);
+            element.detach();
         }
     }
 
@@ -269,8 +259,18 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         }
 
         @Override
+        protected void clearReferenceToContainer(Node element) {
+            element.detach();
+        }
+
+        @Override
+        protected void setReferenceToContainer(Node element) {
+            element.attachTo(DeploymentModel.this);
+        }
+
+        @Override
         protected final void abortIfCannotBeRemoved(Node node) {
-            if (isUsed(node)) {
+            if (node.isUsed()) {
                 final String message = String.format("Unable to remove node type '%s' as there are still some related instances", node.getName());
                 throw new IllegalStateException(message);
             }

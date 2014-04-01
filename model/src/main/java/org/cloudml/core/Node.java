@@ -1,34 +1,35 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
+ * <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
+ * CloudML is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.core;
 
 import java.util.List;
+import org.cloudml.core.collections.NodeInstanceGroup;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
-public class Node extends WithProperties implements Visitable, CanBeValidated {
+public class Node extends DeploymentPart implements Visitable, CanBeValidated {
 
     private Provider cloudProvider;
 
@@ -57,8 +58,6 @@ public class Node extends WithProperties implements Visitable, CanBeValidated {
     public void accept(Visitor visitor) {
         visitor.visitorNode(this);
     }
-    
-    
 
     @Override
     public Report validate() {
@@ -79,10 +78,23 @@ public class Node extends WithProperties implements Visitable, CanBeValidated {
     public void setProvider(Provider p) {
         cloudProvider = p;
     }
-    
+
     public boolean isProvidedBy(Provider provider) {
         return this.cloudProvider.equals(provider);
-    } 
+    }
+
+    public boolean isUsed() {
+        return !getInstances().isEmpty();
+    }
+
+    public NodeInstanceGroup getInstances() {
+        if (isAttachedToADeployment()) {
+            return getDeployment().getNodeInstances().ofType(this);
+        }
+        else {
+            return new NodeInstanceGroup();
+        }
+    }
 
     @Override
     public boolean equals(Object other) {
