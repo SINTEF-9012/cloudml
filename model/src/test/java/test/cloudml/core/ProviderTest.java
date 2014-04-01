@@ -20,22 +20,24 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
+
+
 package test.cloudml.core;
 
 import junit.framework.TestCase;
 import static junit.framework.TestCase.assertTrue;
+import org.cloudml.core.DeploymentModel;
+import org.cloudml.core.Node;
 import org.cloudml.core.Provider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- *
- * @author Franck Chauvel
- * @since 0.1
- */
+import static org.cloudml.core.builders.Commons.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
+
 @RunWith(JUnit4.class)
 public class ProviderTest extends TestCase {
 
@@ -51,6 +53,26 @@ public class ProviderTest extends TestCase {
     public void detectMissingCredentials() {
         Provider provider = new Provider("Amazon EC2", "a_file_which_is_not_on_disk.properties");
         assertTrue(provider.validate().hasWarningAbout("credentials"));
+    }
+    
+    @Test
+    public void testBidirectionalAssocationWithDeployment() {
+        final DeploymentModel deployment = aDeployment()
+                .withProvider(aProvider().named("EC2"))
+                .withNodeType(aNode()
+                    .named("Linux")
+                    .providedBy("EC2"))
+                .build();
+        
+        final Provider ec2 = deployment.getProviders().named("EC2");
+        assertThat("contained in model", ec2, is(not(nullValue()))); 
+        assertThat("provided node types", ec2.providedNodeTypes().size(), is(equalTo(1)));
+        
+        final Node linux = deployment.getNodeTypes().named("Linux");
+        deployment.getNodeTypes().remove(linux);
+        deployment.getProviders().remove(ec2);
+        assertThat("attached to model", !ec2.isAttachedToADeployment()); 
+        assertThat("contained in model", deployment.getProviders().named("EC2"), is(nullValue()));
     }
 
 }

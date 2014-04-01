@@ -48,23 +48,26 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Colle
     public boolean add(T element) {
         abortIfCannotBeAdded(element);
         this.content.put(element.getName(), element);
+        setReferenceToContainer(element);
         return true;
     }
 
-    protected void abortIfCannotBeAdded(T element) {
-        // by default we do nothing
-    }
+    protected void setReferenceToContainer(T element) { }
+
+    protected void abortIfCannotBeAdded(T element) { }
 
     public boolean remove(T element) {
         abortIfCannotBeRemoved(element);
         this.content.remove(element.getName());
+        clearReferenceToContainer(element);
         return true;
     }
+    
+ 
+    protected void abortIfCannotBeRemoved(T element) { }
 
-    protected void abortIfCannotBeRemoved(T element) {
-        // By default we do nothing
-    }
-
+    protected void clearReferenceToContainer(T element) { }
+   
     public boolean contains(T element) {
         return content.containsKey(element.getName());
     }
@@ -109,7 +112,7 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Colle
     public <T> T[] toArray(T[] a) {
         return this.content.values().toArray(a);
     }
-    
+
     public List<T> toList() {
         return new ArrayList<T>(this.content.values());
     }
@@ -163,6 +166,4 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Colle
     public void clear() {
         this.content.clear();
     }
-    
-    
 }

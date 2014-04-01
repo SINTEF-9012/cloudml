@@ -32,7 +32,6 @@ import org.cloudml.core.collections.ArtefactInstanceGroup;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
@@ -97,10 +96,6 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
     // Providers
     public ProviderGroup getProviders() {
         return providers;
-    }
-
-    public boolean isUsed(Provider provider) {
-        return !getNodeTypes().providedBy(provider).isEmpty();
     }
 
     // Node types
@@ -241,11 +236,21 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
         }
 
         @Override
+        protected void setReferenceToContainer(Provider element) {
+            element.setModel(DeploymentModel.this);
+        }
+
+        @Override
         protected void abortIfCannotBeRemoved(Provider provider) {
-            if (isUsed(provider)) {
+            if (provider.isUsed()) {
                 String message = String.format("Unable to remove provider '%s' as it still provides nodes", provider.getName());
                 throw new IllegalStateException(message);
             }
+        }
+
+        @Override
+        protected void clearReferenceToContainer(Provider element) {
+            element.setModel(null);
         }
     }
 
@@ -326,8 +331,6 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
                 throw new IllegalArgumentException(message);
             }
         }
-
- 
     }
 
     private class LocalBindingInstanceGroup extends BindingInstanceGroup {

@@ -29,14 +29,16 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.cloudml.core.collections.NodeTypeGroup;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
 
-public class Provider extends WithProperties implements Visitable, CanBeValidated {
-    public static String DEFAULT_CREDENTIALS = "credentials.properties";
+public class Provider extends WithProperties implements DeploymentElement, Visitable, CanBeValidated {
 
+    public static String DEFAULT_CREDENTIALS = "credentials.properties";
+    private DeploymentModel context;
     private String login = "";
     private String passwd = "";
     private String credentials;
@@ -64,6 +66,32 @@ public class Provider extends WithProperties implements Visitable, CanBeValidate
     }
 
     @Override
+    public DeploymentModel getModel() {
+        return context;
+    }
+
+    @Override
+    public boolean isAttachedToADeployment() {
+        return context != null;
+    }
+
+    @Override
+    public void setModel(DeploymentModel model) {
+        this.context = model;
+    }
+
+    public boolean isUsed() {
+        if (!isAttachedToADeployment()) {
+            return false;
+        }
+        return !providedNodeTypes().isEmpty();
+    }
+
+    public NodeTypeGroup providedNodeTypes() {
+        return getModel().getNodeTypes().providedBy(this);
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         visitor.visitProvider(this);
     }
@@ -71,19 +99,19 @@ public class Provider extends WithProperties implements Visitable, CanBeValidate
     @Override
     public Report validate() {
         final Report report = new Report();
-       
+
         if (credentials == null) {
             final String message = String.format("No credentials for provider '%s'", getName());
             report.addWarning(message);
-        } 
+        }
         else if (!credentialsExist()) {
             final String message = String.format("Unable to retreive credentials from  '%s' (provider '%s')", credentials, getName());
             report.addWarning(message);
         }
-        
+
         return report;
     }
-    
+
     /*
      * public Provider(String name, String login, String passwd) { this.name =
      * name; this.login = login; this.passwd = passwd; }
