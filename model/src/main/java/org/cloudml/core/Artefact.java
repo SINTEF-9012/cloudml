@@ -24,6 +24,7 @@ package org.cloudml.core;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.cloudml.core.collections.ArtefactInstanceGroup;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
@@ -33,7 +34,7 @@ import org.cloudml.core.visitors.Visitor;
  * Artefact describes the type of an Artefact instance. It also contains
  * communication channels and dependencies between Port Types
  */
-public class Artefact extends WithProperties implements Visitable, CanBeValidated {
+public class Artefact extends DeploymentPart implements Visitable, CanBeValidated {
 
     private ArtefactPort destination;
     private Resource resource;
@@ -109,7 +110,19 @@ public class Artefact extends WithProperties implements Visitable, CanBeValidate
     public ArtefactInstance instanciates(String name, NodeInstance destination) {
         return new ArtefactInstance(name, this, destination);
     }
+    
+    public boolean hasAnyInstance() {
+        return !getInstances().isEmpty();
+    }
 
+    public ArtefactInstanceGroup getInstances() {
+        if (isAttachedToADeployment()) {
+            return getDeployment().getArtefactInstances().ofType(this);
+        } else {
+            return new ArtefactInstanceGroup();
+        }
+    }
+    
     /*
      * Getters & Setters
      */

@@ -1,23 +1,23 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
- * <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT
+ * Contact: Franck Chauvel <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * CloudML is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
  *
- * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
+ * CloudML is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.core;
@@ -103,10 +103,6 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
     public ArtefactTypeGroup getArtefactTypes() {
         return artefactTypes;
-    }
-
-    public boolean isUsed(Artefact artefact) {
-        return !getArtefactInstances().ofType(artefact).isEmpty();
     }
 
     public BindingTypeGroup getBindingTypes() {
@@ -270,7 +266,7 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected final void abortIfCannotBeRemoved(Node node) {
-            if (node.isUsed()) {
+            if (node.hasAnyInstance()) { 
                 final String message = String.format("Unable to remove node type '%s' as there are still some related instances", node.getName());
                 throw new IllegalStateException(message);
             }
@@ -285,11 +281,23 @@ public class DeploymentModel extends WithProperties implements Visitable, CanBeV
 
         @Override
         protected void abortIfCannotBeRemoved(Artefact artefact) {
-            if (isUsed(artefact)) {
+            if (artefact.hasAnyInstance()) { 
                 String message = String.format("Cannot remove artefact '%s' as it still has instances", artefact.getName());
-                throw new IllegalStateException(message);
+                throw new IllegalStateException(message); 
             }
         }
+
+        @Override
+        protected void setReferenceToContainer(Artefact element) {
+            element.attachTo(DeploymentModel.this);
+        }
+
+        @Override
+        protected void clearReferenceToContainer(Artefact element) {
+            element.detach();
+        }
+        
+        
     }
 
     private class LocalBindingTypeGroup extends BindingTypeGroup {

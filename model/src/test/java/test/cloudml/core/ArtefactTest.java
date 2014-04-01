@@ -25,11 +25,14 @@ package test.cloudml.core;
 import junit.framework.TestCase;
 import static junit.framework.TestCase.assertTrue;
 import org.cloudml.core.Artefact;
+import org.cloudml.core.DeploymentModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import static org.cloudml.core.builders.Commons.*;
 
+import static org.cloudml.core.builders.Commons.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(JUnit4.class)
 public class ArtefactTest extends TestCase {
@@ -44,13 +47,38 @@ public class ArtefactTest extends TestCase {
                     .mandatory())
                 .build();
                 
-        assertTrue(artefact.validate().pass(false));
-    }
-
+        assertThat("is artefact", artefact.validate().pass(false));
+    }   
     
     @Test
     public void validationReportsNoPorts() {
         Artefact artefact = new Artefact("my Artefact");
         assertTrue(artefact.validate().hasWarningAbout("port"));
     }
+    
+    
+    @Test
+    public void testBidirectionalAssociationWithDeploymentModel() {
+            final DeploymentModel deployment = aDeployment()
+                .withProvider(aProvider().named("EC2"))
+                .withNodeType(aNode()
+                    .named("Linux")
+                    .providedBy("EC2"))
+                .withNodeInstance(aNodeInstance()
+                    .named("vm1")
+                    .ofType("Linux"))
+                .withArtefact(anArtefact()
+                    .named("App")
+                    .withServerPort(aServerPort().named("service").remote()))
+                .withArtefactInstance(anArtefactInstance()
+                    .named("app")
+                    .ofType("App")
+                    .hostedBy("vm1"))
+                .build();
+            
+            final Artefact app = deployment.getArtefactTypes().named("App");  
+            assertThat("containment", app, is(not(nullValue())));
+            assertThat("app instances", app.getInstances().size(), is(equalTo(1)) );
+    }
+    
 }

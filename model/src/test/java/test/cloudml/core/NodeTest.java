@@ -93,7 +93,8 @@ public class NodeTest extends TestCase {
     @Test
     public void testNodeEqualityWithNull() {
         Node node1 = new Node();
-        assertFalse(node1.equals(null));
+        final Node nullNode = null;
+        assertFalse(node1.equals(nullNode));
     }
 
     @Test
