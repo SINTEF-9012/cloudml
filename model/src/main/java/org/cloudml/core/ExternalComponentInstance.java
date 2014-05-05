@@ -24,83 +24,83 @@ package org.cloudml.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.cloudml.core.visitors.Visitor;
 
-/**
- * Created by Nicolas Ferry on 19.02.14.
- */
-public class ExternalComponentInstance<T extends ExternalComponent> extends ComponentInstance<T>{
-
-
+public class ExternalComponentInstance<T extends ExternalComponent> extends ComponentInstance<T> {
+    
+    public static final String DEFAULT_PUBLIC_ADDRESS = "no address given";
     private State status;
-    private List<String> ips=new ArrayList<String>();
-    protected String publicAddress="";
-
-    private enum State{
-        stopped,
-        running,
-        error,
+    private List<String> ips = new ArrayList<String>();
+    private String publicAddress;
+    
+    public ExternalComponentInstance(String name, T type) {
+        super(name, type);
+        this.status = State.STOPPED;
+        this.publicAddress = DEFAULT_PUBLIC_ADDRESS;
     }
-
-    public ExternalComponentInstance(){}
-
-    public ExternalComponentInstance(String name, T type){
-        super(name,type);
-        this.status=State.stopped;
+    
+    public final boolean isVM() {
+        return getType().isVM();
     }
-
-    public ExternalComponentInstance(String name, T type, List<Property> properties){
-        super(name, properties, type);
-        this.status=State.stopped;
+    
+    public VMInstance asVM() {
+        if (!isVM()) {
+            throw new IllegalStateException("Unable to cast an plain external component instance to a VM instance");
+        }
+        return (VMInstance) this;
     }
-
-
-
-    public void setPublicAddress(String publicAddress){
-        this.publicAddress=publicAddress;
+    
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitExternalComponentInstance(this);
     }
-
-    public String getPublicAddress(){
+    
+    public void setPublicAddress(String publicAddress) {
+        this.publicAddress = publicAddress;
+    }
+    
+    public String getPublicAddress() {
         return this.publicAddress;
     }
-
-    public List<String> getIps(){
+    
+    public List<String> getIps() {
         return this.ips;
     }
-
-    public void setIps(List<String> ips){
-        this.ips=ips;
+    
+    public void setIps(List<String> ips) {
+        this.ips = ips;
     }
-
-    public State getStatus(){
+    
+    public State getStatus() {
         return this.status;
     }
-
-    public void setStatusAsStopped(){
-        this.status=State.stopped;
+    
+    public void setStatusAsStopped() {
+        this.status = State.STOPPED;
     }
-
-    public void setStatusAsError(){
-        this.status=State.error;
+    
+    public void setStatusAsError() {
+        this.status = State.ERROR;
     }
-
-    public void setStatusAsRunning(){
-        this.status=State.running;
+    
+    public void setStatusAsRunning() {
+        this.status = State.RUNNING;
     }
-
+    
     @Override
     public String toString() {
-        return "Instance " + name + " : " + getType().getName();
+        return "Instance " + getQualifiedName();
     }
-
+    
     @Override
     public boolean equals(Object other) {
         if (other instanceof InternalComponentInstance) {
             ExternalComponentInstance otherCompInst = (ExternalComponentInstance) other;
-            Boolean match= name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
+            Boolean match = getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType());
             return match;
-        } else {
+        }
+        else {
             return false;
         }
     }
-
 }

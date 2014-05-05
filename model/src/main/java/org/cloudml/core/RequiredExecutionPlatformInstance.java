@@ -22,40 +22,37 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
-/**
- * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
- */
 public class RequiredExecutionPlatformInstance extends ExecutionPlatformInstance<RequiredExecutionPlatform> {
 
-
-    public RequiredExecutionPlatformInstance(){}
-
-    public RequiredExecutionPlatformInstance(String name, RequiredExecutionPlatform type){
-        super(name,type);
-    }
-
-    public RequiredExecutionPlatformInstance(String name, List<Property> properties, RequiredExecutionPlatform type){
-        super(name, properties, type);
+    public RequiredExecutionPlatformInstance(String name, RequiredExecutionPlatform type) { 
+        super(name, type);
     }
 
     @Override
+    public void accept(Visitor visitor) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    } 
+
+    @Override
     public String toString() {
-        return "RequiredExecutionPlatformInstance " + name + " component:" + this.getOwner().getName();
+        return "RequiredExecutionPlatformInstance " + getQualifiedName();
     }
 
     @Override
     public boolean equals(Object other) {
-        if(other == null)
+        if (other == null) {
             return false;
+        }
 
         if (other instanceof RequiredExecutionPlatformInstance) {
             RequiredExecutionPlatformInstance otherNode = (RequiredExecutionPlatformInstance) other;
-            return name.equals(otherNode.getName()) && this.getOwner().equals(otherNode.getOwner());
-        } else {
+            return getName().equals(otherNode.getName()) && this.getOwner().equals(otherNode.getOwner());
+        }
+        else {
             return false;
         }
     }
-
 }

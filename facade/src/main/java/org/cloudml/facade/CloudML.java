@@ -22,7 +22,7 @@
  */
 package org.cloudml.facade;
 
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.CommandHandler;
 import org.cloudml.facade.events.EventHandler;
@@ -67,6 +67,6 @@ public interface CloudML extends CommandHandler{
      * In order to monitor the changes from outside
      * @return 
      */
-    public CloudMLModel getDeploymentModel();
+    public Deployment getDeploymentModel();
     
 }

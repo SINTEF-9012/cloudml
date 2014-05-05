@@ -22,98 +22,115 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.visitors.Visitor;
 
-/**
- * Created by Nicolas Ferry on 19.02.14.
- */
-
-public class ExternalComponent extends Component{
+public class ExternalComponent extends Component {
 
     private String login;
     private String passwd;
     private String endPoint;
     private String credentials;
-
     protected Provider provider;
 
-    public ExternalComponent(){}
-
-    public ExternalComponent(String name){
+    public ExternalComponent(String name) {
         super(name);
     }
 
-    public ExternalComponent(String name, Provider provider){
+    public ExternalComponent(String name, Provider provider) {
         super(name);
-        this.provider=provider;
+        rejectInvalidProvider(provider);
+        this.provider = provider;
+    }
+    
+    private void rejectInvalidProvider(Provider provider) {
+        if (provider == null) {
+            final String error = String.format("'null' is not a valid provider! (ext. component '%s')", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+    }   
+  
+    
+    @Override
+    public final boolean isInternal() {
+        return false;
+    }
+    
+    public boolean isVM() {
+        return false; 
+    }
+    
+    public VM asVM() {
+        if (!isVM()) {
+            throw new IllegalStateException("Unable to cast a regular external component type into a VM type");
+        }
+        return (VM) this;
     }
 
-    public ExternalComponent(String name, List<Property> properties) {
-        super(name, properties);
-    }
-
-    public ExternalComponent(String name, List<Property> properties, Provider provider) {
-        super(name, properties);
-        this.provider=provider;
-    }
-
-    public String getLogin(){
+    public String getLogin() {
         return this.login;
     }
 
-    public String getPasswd(){
+    public String getPasswd() {
         return this.passwd;
+    }
+
+    public boolean isProvidedBy(Provider provider) {
+        return this.provider.equals(provider);
     }
 
     public Provider getProvider() {
         return provider;
     }
 
-    public void setProvider(Provider p) {
-        provider = p;
+    public void setProvider(Provider provider) {
+        rejectInvalidProvider(provider);
+        this.provider = provider;
     }
 
-
-    public String getEndPoint(){
+    public String getEndPoint() {
         return this.endPoint;
     }
 
-    public String getCredentials(){
-        return this.credentials;
+  
+    public void setLogin(String login) {
+        this.login = login;
     }
 
-    public void setLogin(String login){
-        this.login=login;
+    public void setPasswd(String passwd) {
+        this.passwd = passwd;
     }
 
-    public void setPasswd(String passwd){
-        this.passwd=passwd;
+    public void setEndPoint(String endPoint) {
+        this.endPoint = endPoint;
     }
 
-    public void setEndPoint(String endPoint){
-        this.endPoint=endPoint;
-    }
-
-    public void setCredentials(String credentials){
-        this.credentials=credentials;
+    public void setCredentials(String credentials) {
+        this.credentials = credentials;
     }
 
     @Override
     public String toString() {
-        return "Type " + name;
+        return "Type " + getName();
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof ExternalComponent) {
             ExternalComponent otherComp = (ExternalComponent) other;
-            return name.equals(otherComp.getName());
-        } else {
+            return isNamed(otherComp.getName());
+        }
+        else {
             return false;
         }
     }
 
-    public ExternalComponentInstance instantiates(String name) {
-        return new ExternalComponentInstance(name, this);
+    public ExternalComponentInstance<? extends ExternalComponent> instantiates(String name) {
+        return new ExternalComponentInstance<ExternalComponent>(name, this);
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

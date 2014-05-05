@@ -29,7 +29,7 @@ import org.cloudml.core.*;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import org.cloudml.core.credentials.FileCredentials;
 
 /**
  * Create sample CloudML objects used during testing
@@ -45,133 +45,114 @@ class CloudMLSamplesBuilder {
     }
 
     private Provider createProvider(String name) {
-        Provider provider = new Provider();
-        provider.setName(name);
+        Provider provider = new Provider(name, new FileCredentials("./credentials"));
         return provider;
     }
 
-    public VM getVMA(){
+    public VM getVMA() {
         return createVM(VM_A_NAME, ENDPOINT_A_NAME, getProviderA());
     }
 
-    public VM getSampleVMB(){
+    public VM getSampleVMB() {
         return createVM(VM_B_NAME, ENDPOINT_B_NAME, getSampleProviderB());
     }
 
-
-    private VM createVM(String name,String endPoint, Provider p){
-        VM vm=new VM();
-        vm.setName(name);
+    private VM createVM(String name, String endPoint, Provider p) {
+        VM vm = new VM(name, p);
         vm.setEndPoint(endPoint);
-        vm.setProvider(p);
         return vm;
     }
 
-    public VMInstance getVMInstanceA(){
+    public VMInstance getVMInstanceA() {
         return createVMInstance(VM_INSTANCE_A, IP_ADDRESS_A, getVMA());
     }
 
-    public VMInstance getSampleVMInstanceB(){
+    public VMInstance getSampleVMInstanceB() {
         return createVMInstance(VM_INSTANCE_B, IP_ADDRESS_B, getSampleVMB());
     }
 
-    private VMInstance createVMInstance(String name, String ip, VM type){
-        VMInstance vmi=new VMInstance();
-        vmi.setType(type);
+    private VMInstance createVMInstance(String name, String ip, VM type) {
+        VMInstance vmi = new VMInstance(name, type);
         vmi.setPublicAddress(ip);
-        vmi.setName(name);
         return vmi;
     }
 
-    public InternalComponent getInternalComponentA(){
-        InternalComponent ic=createInternalComponent(INTERNAL_COMPONENT_A_NAME);
-        RequiredExecutionPlatform rep=getRequiredExecutionPlatformA();
-        rep.setOwner(ic);
-        ic.setRequiredExecutionPlatform(rep);
-        ProvidedExecutionPlatform pep=getProvidedExecutionPlatformA();
-        pep.setOwner(ic);
-        List<ProvidedExecutionPlatform> peps=new ArrayList<ProvidedExecutionPlatform>();
+    public InternalComponent getInternalComponentA() {
+        InternalComponent ic = createInternalComponent(INTERNAL_COMPONENT_A_NAME, getRequiredExecutionPlatformA());
+        ProvidedExecutionPlatform pep = getProvidedExecutionPlatformA();
+        pep.getOwner().set(ic);
+        List<ProvidedExecutionPlatform> peps = new ArrayList<ProvidedExecutionPlatform>();
         peps.add(pep);
         ic.setProvidedExecutionPlatforms(peps);
         return ic;
     }
 
-    public InternalComponent getInternalComponentB(){
-        InternalComponent ic=createInternalComponent(INTERNAL_COMPONENT_B_NAME);
-        RequiredExecutionPlatform rep=getRequiredExecutionPlatformB();
-        rep.setOwner(ic);
-        ic.setRequiredExecutionPlatform(rep);
-        ProvidedExecutionPlatform pep=getProvidedExecutionPlatformB();
-        pep.setOwner(ic);
-        List<ProvidedExecutionPlatform> peps=new ArrayList<ProvidedExecutionPlatform>();
-        peps.add(pep);
-        ic.setProvidedExecutionPlatforms(peps);
+    public InternalComponent getInternalComponentB() {
+        InternalComponent ic = createInternalComponent(INTERNAL_COMPONENT_B_NAME, getRequiredExecutionPlatformB());
+        ProvidedExecutionPlatform pep = getProvidedExecutionPlatformB();
+        ic.getProvidedExecutionPlatforms().add(pep);
+        pep.getOwner().set(ic);
         return ic;
     }
 
-    private InternalComponent createInternalComponent(String name){
-        InternalComponent ic=new InternalComponent();
-        ic.setName(name);
+    private InternalComponent createInternalComponent(String name, RequiredExecutionPlatform platform) {
+        InternalComponent ic = new InternalComponent(name, platform);
+        RequiredPort requiredPort = new RequiredPort(name + REQUIRED_PORT_NAME);
+        ic.getRequiredPorts().add(requiredPort);
+
+        ProvidedPort providedPort = new ProvidedPort(name + PROVIDED_PORT_NAME);
+        ic.getProvidedPorts().add(providedPort);
+
         return ic;
     }
 
-    public RequiredExecutionPlatform getRequiredExecutionPlatformA(){
+    public RequiredExecutionPlatform getRequiredExecutionPlatformA() {
         return createRequiredExecutionPlatform(REQUIRED_EXECUTION_PLATFORM_A_NAME);
     }
 
-
-    public RequiredExecutionPlatform getRequiredExecutionPlatformB(){
+    public RequiredExecutionPlatform getRequiredExecutionPlatformB() {
         return createRequiredExecutionPlatform(REQUIRED_EXECUTION_PLATFORM_B_NAME);
     }
 
-    private RequiredExecutionPlatform createRequiredExecutionPlatform(String name){
-        RequiredExecutionPlatform rep=new RequiredExecutionPlatform(name);
+    private RequiredExecutionPlatform createRequiredExecutionPlatform(String name) {
+        RequiredExecutionPlatform rep = new RequiredExecutionPlatform(name);
         return rep;
     }
 
-    public ProvidedExecutionPlatform getProvidedExecutionPlatformA(){
+    public ProvidedExecutionPlatform getProvidedExecutionPlatformA() {
         return createProvidedExecutionPlatform(PROVIDED_EXECUTION_PLATFORM_A_NAME);
     }
 
-
-    public ProvidedExecutionPlatform getProvidedExecutionPlatformB(){
+    public ProvidedExecutionPlatform getProvidedExecutionPlatformB() {
         return createProvidedExecutionPlatform(PROVIDED_EXECUTION_PLATFORM_B_NAME);
     }
 
-    private ProvidedExecutionPlatform createProvidedExecutionPlatform(String name){
-        ProvidedExecutionPlatform pep=new ProvidedExecutionPlatform(name);
+    private ProvidedExecutionPlatform createProvidedExecutionPlatform(String name) {
+        ProvidedExecutionPlatform pep = new ProvidedExecutionPlatform(name);
         return pep;
     }
 
-    public InternalComponentInstance getInternalComponentInstanceA(){
-        InternalComponent icA=getInternalComponentA();
+    public InternalComponentInstance getInternalComponentInstanceA() {
+        InternalComponent icA = getInternalComponentA();
         return createInternalComponentInstance(INTERNAL_COMPONENT_INSTANCE_A_NAME, getRequiredExecutionPlatformInstanceA(icA), getProvidedExecutionPlatformInstanceA(icA), icA);
     }
 
-    public InternalComponentInstance getInternalComponentInstanceB(){
-        InternalComponent icB= getInternalComponentB();
-        return createInternalComponentInstance(INTERNAL_COMPONENT_INSTANCE_B_NAME, getRequiredExecutionPlatformInstanceB(icB),getProvidedExecutionPlatformInstanceB(icB), icB);
+    public InternalComponentInstance getInternalComponentInstanceB() {
+        InternalComponent icB = getInternalComponentB();
+        return createInternalComponentInstance(INTERNAL_COMPONENT_INSTANCE_B_NAME, getRequiredExecutionPlatformInstanceB(icB), getProvidedExecutionPlatformInstanceB(icB), icB);
     }
 
-    public InternalComponentInstance getInternalComponentInstanceAWithType( InternalComponent icA){
+    public InternalComponentInstance getInternalComponentInstanceAWithType(InternalComponent icA) {
         return createInternalComponentInstance(INTERNAL_COMPONENT_INSTANCE_A_NAME, getRequiredExecutionPlatformInstanceA(icA), getProvidedExecutionPlatformInstanceA(icA), icA);
     }
 
-    public InternalComponentInstance getInternalComponentInstanceBWithType( InternalComponent icB){
+    public InternalComponentInstance getInternalComponentInstanceBWithType(InternalComponent icB) {
         return createInternalComponentInstance(INTERNAL_COMPONENT_INSTANCE_B_NAME, getRequiredExecutionPlatformInstanceB(icB), getProvidedExecutionPlatformInstanceB(icB), icB);
     }
 
     private InternalComponentInstance createInternalComponentInstance(String name, RequiredExecutionPlatformInstance requiredExecutionPlatformInstance,
-                                                                      ProvidedExecutionPlatformInstance providedExecutionPlatformInstance, InternalComponent type){
-        InternalComponentInstance ici=new InternalComponentInstance();
-        ici.setName(name);
-        ici.setRequiredExecutionPlatformInstance(requiredExecutionPlatformInstance);
-        requiredExecutionPlatformInstance.setOwner(ici);
-        providedExecutionPlatformInstance.setOwner(ici);
-        List<ProvidedExecutionPlatformInstance> pepis=new ArrayList<ProvidedExecutionPlatformInstance>();
-        pepis.add(providedExecutionPlatformInstance);
-        ici.setProvidedExecutionPlatformInstances(pepis);
-        ici.setType(type);
+                                                                      ProvidedExecutionPlatformInstance providedExecutionPlatformInstance, InternalComponent type) {
+        InternalComponentInstance ici = new InternalComponentInstance(name, type);
         return ici;
     }
 
@@ -188,16 +169,16 @@ class CloudMLSamplesBuilder {
         return repi;
     }
 
-    public ProvidedExecutionPlatformInstance getProvidedExecutionPlatformInstanceA(InternalComponent icA){
-        return createProvidedExecutionPlatformInstance(PROVIDED_EXECUTION_PLATFORM_INSTANCE_NAME_A, icA.getProvidedExecutionPlatforms().get(0));
+    public ProvidedExecutionPlatformInstance getProvidedExecutionPlatformInstanceA(InternalComponent icA) {
+        return createProvidedExecutionPlatformInstance(PROVIDED_EXECUTION_PLATFORM_INSTANCE_NAME_A, icA.getProvidedExecutionPlatforms().toList().get(0));
     }
 
-    public ProvidedExecutionPlatformInstance getProvidedExecutionPlatformInstanceB(InternalComponent icB){
-        return createProvidedExecutionPlatformInstance(PROVIDED_EXECUTION_PLATFORM_INSTANCE_NAME_A, icB.getProvidedExecutionPlatforms().get(0));
+    public ProvidedExecutionPlatformInstance getProvidedExecutionPlatformInstanceB(InternalComponent icB) {
+        return createProvidedExecutionPlatformInstance(PROVIDED_EXECUTION_PLATFORM_INSTANCE_NAME_A, icB.getProvidedExecutionPlatforms().toList().get(0));
     }
 
-    private ProvidedExecutionPlatformInstance createProvidedExecutionPlatformInstance(String name, ProvidedExecutionPlatform type){
-        ProvidedExecutionPlatformInstance pepi=new ProvidedExecutionPlatformInstance(name, type);
+    private ProvidedExecutionPlatformInstance createProvidedExecutionPlatformInstance(String name, ProvidedExecutionPlatform type) {
+        ProvidedExecutionPlatformInstance pepi = new ProvidedExecutionPlatformInstance(name, type);
         return pepi;
     }
 
@@ -209,25 +190,19 @@ class CloudMLSamplesBuilder {
         return createRelationship(RELATIONSHIP_B_NAME);
     }
 
-
     private Relationship createRelationship(String name) {
-        Relationship relationship = new Relationship();
-        relationship.setName(name);
 
-        ProvidedPort providedPort = new ProvidedPort();
-        providedPort.setName(name + PROVIDED_PORT_NAME);
+        ProvidedPort providedPort = new ProvidedPort(name + PROVIDED_PORT_NAME);
         Component ownerProvided = getInternalComponentA();
         ownerProvided.getProvidedPorts().add(providedPort);
-        providedPort.setComponent(ownerProvided);
-        relationship.setProvidedPort(providedPort);
+        providedPort.getOwner().set(ownerProvided);
 
-        RequiredPort requiredPort = new RequiredPort();
-        requiredPort.setName(name + REQUIRED_PORT_NAME);
+        RequiredPort requiredPort = new RequiredPort(name + REQUIRED_PORT_NAME);
         InternalComponent ownerRequired = getInternalComponentB();
         ownerRequired.getRequiredPorts().add(requiredPort);
-        requiredPort.setComponent(ownerRequired);
-        relationship.setRequiredPort(requiredPort);
+        requiredPort.getOwner().set(ownerRequired);
 
+        Relationship relationship = new Relationship(name, requiredPort, providedPort);
         return relationship;
     }
 
@@ -240,39 +215,32 @@ class CloudMLSamplesBuilder {
     }
 
     private RelationshipInstance createRelationshipInstance(String name, Relationship relationship) {
-        RelationshipInstance relationshipInstance = new RelationshipInstance(name, relationship);
+        InternalComponentInstance server = relationship.getServerComponent().asInternal().instantiate(INTERNAL_COMPONENT_INSTANCE_A_NAME);
+        ProvidedPortInstance serverPort = server.getProvidedPorts().firstNamed(server.getType().getName() + PROVIDED_PORT_NAME);
 
-        InternalComponentInstance ownerOfProvidedPort = getInternalComponentInstanceAWithType((InternalComponent) relationship.getProvidedPort().getComponent());
-        ProvidedPortInstance providedPortInstance = new ProvidedPortInstance(name + PROVIDED_PORT_INSTANCE_NAME, relationship.getProvidedPort(), ownerOfProvidedPort);
-        ownerOfProvidedPort.getProvidedPortInstances().add(providedPortInstance);
-        relationshipInstance.setProvidedPortInstance(providedPortInstance);
-
-        InternalComponentInstance ownerOfRequiredPort = getInternalComponentInstanceBWithType((InternalComponent) relationship.getRequiredPort().getComponent());
-
-        RequiredPortInstance requiredPortInstance = new RequiredPortInstance(name + REQUIRED_PORT_INSTANCE_NAME, relationship.getRequiredPort(), ownerOfRequiredPort);
-        ownerOfRequiredPort.getRequiredPortInstances().add(requiredPortInstance);
-        relationshipInstance.setRequiredPortInstance(requiredPortInstance);
+        InternalComponentInstance client = relationship.getClientComponent().instantiate(INTERNAL_COMPONENT_B_NAME);
+        RequiredPortInstance clientPort = client.getRequiredPorts().firstNamed(client.getType().getName() + REQUIRED_PORT_NAME);
+        
+        RelationshipInstance relationshipInstance = new RelationshipInstance(name, clientPort, serverPort, relationship);
 
         return relationshipInstance;
     }
- 
-    public ExecuteInstance getExecuteInstanceA(){
+
+    public ExecuteInstance getExecuteInstanceA() {
         return createExecuteInstance(EXECUTE_INSTANCE_NAME_A);
     }
 
-    public ExecuteInstance getExecuteInstanceB(){
+    public ExecuteInstance getExecuteInstanceB() {
         return createExecuteInstance(EXECUTE_INSTANCE_NAME_B);
     }
 
-    private ExecuteInstance createExecuteInstance(String name){
+    private ExecuteInstance createExecuteInstance(String name) {
         InternalComponentInstance requiredOwner = getInternalComponentInstanceA();
         InternalComponentInstance providedOwner = getInternalComponentInstanceB();
 
         getInternalComponentInstanceB();
-        ExecuteInstance ei=new ExecuteInstance(name, providedOwner.getProvidedExecutionPlatformInstances().get(0), requiredOwner.getRequiredExecutionPlatformInstance());
+        ExecuteInstance ei = new ExecuteInstance(name, requiredOwner.getRequiredExecutionPlatform(), providedOwner.getProvidedExecutionPlatforms().toList().get(0));
 
         return ei;
     }
-
-
 }

@@ -22,84 +22,138 @@
  */
 package org.cloudml.core;
 
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
 /**
  * Relationship between two InternalComponents
- * @author Nicolas Ferry
- *
  */
-public class Relationship extends CloudMLElementWithProperties {
-	
-	private RequiredPort requiredPort;
-	private ProvidedPort providedPort;
+public class Relationship extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
 
-	private Resource clientResource;
-	private Resource serverResource;
-	
-	public Relationship(){}
+    private final OptionalOwner<Deployment> owner;
+    private RequiredPort requiredEnd;
+    private ProvidedPort providedEnd;
+    private Resource clientResource;
+    private Resource serverResource;
 
-    public Relationship(String name){
+    public Relationship(String name, RequiredPort requiredPort, ProvidedPort providedPort) {
         super(name);
+        this.owner = new OptionalOwner<Deployment>();
+        setRequiredEnd(requiredPort);
+        setProvidedEnd(providedPort); 
     }
-	
-	public Relationship(RequiredPort requiredPort, ProvidedPort providedPort){
-		this.requiredPort = requiredPort;
-		this.providedPort = providedPort;
-	}
-	
-	public RelationshipInstance instantiates(String name) {
-        return new RelationshipInstance(name, this);
+
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get();
+    }
+
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", getOwner().getName(), CONTAINED, getName());
+    }
+
+    @Override
+    public OptionalOwner<Deployment> getOwner() {
+        return owner;
+    }
+
+    public RelationshipInstance instantiates(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitRelationship(this);
+    }
+
+    @Override
+    public void validate(Report report) {
+        if (requiredEnd != null && providedEnd != null) {
+            if (requiredEnd.isLocal() && providedEnd.isRemote()) {
+                report.addError("Illegal binding between a local client and a remote server");
+            }
+            if (requiredEnd.isRemote() && providedEnd.isLocal()) {
+                report.addError("Illegal binding between a remote client and a local server");
+            }
+        }
     }
 
     public RelationshipInstance instantiates(RequiredPortInstance client, ProvidedPortInstance server) {
-        return new RelationshipInstance(client, server, this);
+        throw new UnsupportedOperationException();
     }
-	
-	public void setRequiredPort(RequiredPort p){
-		this.requiredPort =p;
-	}
-	
-	public void setProvidedPort(ProvidedPort p){
-		this.providedPort =p;
-	}
-	
-	public RequiredPort getRequiredPort(){
-		return this.requiredPort;
-	}
-	
-	public ProvidedPort getProvidedPort(){
-		return this.providedPort;
-	}
-	
-	public void setClientResource(Resource clientResource){
-		this.clientResource=clientResource;
-	}
-	
-	public Resource getClientResource(){
-		return clientResource;
-	}
-	
-	public void setServerResource(Resource serverResource){
-		this.serverResource=serverResource;
-	}
-	
-	public Resource getServerResource(){
-		return serverResource;
-	}
-	
-	@Override
+
+    public final void setRequiredEnd(RequiredPort port) {
+        rejectIfInvalid(port);
+        this.requiredEnd = port;
+    }
+
+    private void rejectIfInvalid(RequiredPort port) {
+        if (port == null) {
+            final String error = String.format("'null' is not a valid required end for relationship '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+    }
+
+    public final void setProvidedEnd(ProvidedPort port) {
+        rejectIfInvalid(port);
+        this.providedEnd = port;
+    }
+
+    private void rejectIfInvalid(ProvidedPort port) {
+        if (port == null) {
+            final String error = String.format("'null' is not a valid provided end for relationship '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+    }
+
+    public RequiredPort getRequiredEnd() {
+        return this.requiredEnd;
+    }
+    
+    public InternalComponent getClientComponent() {
+        return this.requiredEnd.getOwner().get().asInternal();
+    }
+
+    public ProvidedPort getProvidedEnd() {
+        return this.providedEnd;
+    }
+    
+    public Component getServerComponent() {
+        return this.providedEnd.getOwner().get();
+    }
+
+    public void setClientResource(Resource clientResource) {
+        this.clientResource = clientResource;
+    }
+
+    public Resource getClientResource() {
+        return clientResource;
+    }
+
+    public void setServerResource(Resource serverResource) {
+        this.serverResource = serverResource;
+    }
+
+    public Resource getServerResource() {
+        return serverResource;
+    }
+
+    @Override
     public String toString() {
-        return requiredPort + "->"+ providedPort;
+        return requiredEnd + "->" + providedEnd;
     }
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof Relationship) {
-        	Relationship otherRelationship = (Relationship) other;
-            return (requiredPort.getName().equals(otherRelationship.getRequiredPort().getName()) && providedPort.getName().equals(otherRelationship.getProvidedPort().getName()));
-        } else {
+        if (other == null) {
             return false;
         }
+        if (other instanceof Relationship) {
+            Relationship relationship = (Relationship) other;
+            return (requiredEnd.getName().equals(relationship.getRequiredEnd().getName()) && providedEnd.getName().equals(relationship.getProvidedEnd().getName()));
+        }
+        return false;
     }
-
 }

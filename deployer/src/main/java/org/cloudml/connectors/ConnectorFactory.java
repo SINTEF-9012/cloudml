@@ -31,9 +31,9 @@ public class ConnectorFactory {
 	public static Connector createIaaSConnector(Provider p){
 		try {
 			if(p.getName().equals("aws-ec2"))
-				return new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd());
+				return new JCloudsConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
 			if(p.getName().equals("flexiant"))
-				return new FlexiantConnector(p.getProperty("endPoint"), p.getLogin(), p.getPasswd());
+				return new FlexiantConnector(p.getProperties().valueOf("endPoint"), p.getCredentials().getLogin(), p.getCredentials().getPassword());
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -43,7 +43,7 @@ public class ConnectorFactory {
 
     public static PaaSConnector createPaaSConnector(Provider p){
         if(p.getName().equals("beanstalk"))
-            return new BeanstalkConnector(p.getLogin(), p.getPasswd(), "");
+            return new BeanstalkConnector(p.getCredentials().getLogin(), p.getCredentials().getPassword(), "");
         if(p.getName().equals("cloudbees"))
             return new Cloud4soaConnector(p);
 

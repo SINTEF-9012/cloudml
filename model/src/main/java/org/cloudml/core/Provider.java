@@ -22,105 +22,88 @@
  */
 package org.cloudml.core;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.collections.ExternalComponentGroup;
+import org.cloudml.core.credentials.Credentials;
+import org.cloudml.core.credentials.NoCredentials;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
-public class Provider extends CloudMLElementWithProperties {
+public class Provider extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
 
-    private String login = "";
-    private String passwd = "";
-    private String credentials;
+    private final OptionalOwner<Deployment> owner;
+    private Credentials credentials;
 
     public Provider() {
+        this(DEFAULT_NAME);
     }
 
     public Provider(String name) {
-        this.name = name;
+        this(name, NoCredentials.getInstance());
     }
 
-    /**
-     *
-     * @param name
-     * @param credentials defines the path to the property file declaring the
-     * credentials (login and passwd properties) according to the Java way of
-     * formatting property files See
-     * http://docs.oracle.com/javase/tutorial/essential/environment/properties.html
-     */
-    public Provider(String name, String credentials) {
-        this(name);
+    public Provider(String name, Credentials credentials) {
+        super(name);
+        this.owner = new OptionalOwner<Deployment>();
         this.credentials = credentials;
-        initCredentials();
     }
 
-    /*
-     * public Provider(String name, String login, String passwd) { this.name =
-     * name; this.login = login; this.passwd = passwd;
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get();
     }
-     */
-    private void initCredentials() {
-        FileInputStream in = null;
-        try {
-            Properties props = new Properties();
-            in = new FileInputStream(this.credentials);
-            props.load(in);
 
-            login = props.getProperty("login");
-            passwd = props.getProperty("passwd");
+    @Override
+    public OptionalOwner<Deployment> getOwner() {
+        return owner;
+    }
 
-        } catch (IOException ex) {
-            Logger.getLogger(Provider.class.getName()).log(Level.SEVERE, "Missing credentials", new Object[]{});
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(Provider.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    @Override
+    public String getQualifiedName() {
+        return getOwner().getName() + "::" + getName();
+    }
+
+    public boolean isUsed() {
+        if (getOwner().isUndefined()) {
+            return false;
         }
+        return !providedComponents().isEmpty();
     }
 
-    /*
-     * public void setLogin(String login) { this.login = login;
-    }
-     */
-    public String getLogin() {
-        return login;
-    }
-
-    /*
-     * public void setPasswd(String passwd) { this.passwd = passwd;
-    }
-     */
-    public String getPasswd() {
-        return passwd;
+    public ExternalComponentGroup providedComponents() {
+        if (getOwner().isUndefined()) {
+            return new ExternalComponentGroup();
+        }
+        return getDeployment().getComponents().onlyExternals().providedBy(this);
     }
 
-    public String getCredentials() {
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitProvider(this);
+    }
+
+    public Credentials getCredentials() {
         return credentials;
     }
 
-    public void setCredentials(String credentials) {
+    public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
-        initCredentials();
     }
 
     @Override
     public String toString() {
-        return "Name: " + name + ", login: " + login;
+        return "Name: " + getName();
     }
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof Provider) {
-            Provider otherProvider = (Provider) other;
-            return name.equals(otherProvider.getName());
-        } else {
+        if (other == null) {
             return false;
         }
+        if (other instanceof Provider) {
+            Provider otherProvider = (Provider) other;
+            return otherProvider.isNamed(getName());
+        }
+        return false;
     }
 }

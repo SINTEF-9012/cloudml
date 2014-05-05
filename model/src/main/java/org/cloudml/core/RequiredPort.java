@@ -22,39 +22,53 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.visitors.Visitor;
 
 public class RequiredPort extends Port {
 
-	private boolean isMandatory =true;
+    public static final boolean OPTIONAL = true;
+    public static final boolean MANDATORY = false;
+    
+    private boolean optional;
 
-    public RequiredPort() {
+    public RequiredPort(String name) {
+        this(name, REMOTE, MANDATORY);
+    }
+    
+    public RequiredPort(String name, boolean isRemote) {
+        this(name, isRemote, MANDATORY);
     }
 
-	public RequiredPort(String name, InternalComponent owner, boolean isLocal) {
-        super(name, owner, isLocal);
+    public RequiredPort(String name, boolean isRemote, boolean isOptional) {
+        super(name, isRemote);
+        this.optional = isOptional;
     }
-	
-	public RequiredPort(String name, InternalComponent owner, boolean isLocal, boolean isMandatory) {
-        super(name, owner, isLocal);
-        this.isMandatory = isMandatory;
+
+    @Override
+    public RequiredPortInstance instantiate() {
+        return new RequiredPortInstance(getName(), this); 
+    }    
+    
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitRequiredPort(this);
     }
-	
-	public RequiredPort(String name, List<Property> properties, InternalComponent owner, boolean isLocal, boolean isMandatory){
-		super(name,properties,owner,isLocal);
-		this.isMandatory = isMandatory;
-	}
 
-	public void setIsMandatory(boolean isMandatory){
-		this.isMandatory =isMandatory;
-	}
+    public final void setOptional(boolean isOptional) {
+        this.optional = isOptional;
+    }
 
-	public boolean getIsMandatory(){
-		return isMandatory;
-	}
+    public final boolean isOptional() {
+        return optional;
+    }
 
-	@Override
-	public String toString() {
-		return "RequiredPort " + name + " ownerType" + component.getName();
-	}
+    public final boolean isMandatory() {
+        return !this.optional;
+    }
+
+    @Override
+    public String toString() {
+        return "ClientTypePort " + getQualifiedName();
+    }
 }

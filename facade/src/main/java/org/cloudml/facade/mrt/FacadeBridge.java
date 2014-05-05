@@ -20,17 +20,13 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 
 package org.cloudml.facade.mrt;
 
 import java.util.Collection;
 
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 import org.cloudml.facade.CloudML;
 import org.cloudml.facade.Factory;
 import org.cloudml.facade.commands.CloudMlCommand;
@@ -51,9 +47,9 @@ public class FacadeBridge implements ModelRepo{
     }
 
     @Override
-    public CloudMLModel getRoot() {
-        return facade.getDeploymentModel();
-    }
+    public Deployment getRoot() {
+        return facade.getDeploymentModel(); 
+    } 
     
     public void handle(String name, Collection<String> params){
         CloudMlCommand command = null;

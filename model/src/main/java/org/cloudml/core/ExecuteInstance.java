@@ -22,58 +22,125 @@
  */
 package org.cloudml.core;
 
-/**
- * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
- */
-public class ExecuteInstance extends CloudMLElementWithProperties {
+import org.cloudml.core.collections.PropertyGroup;
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
-    private ProvidedExecutionPlatformInstance providedExecutionPlatformInstance;
-    private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance;
+public class ExecuteInstance extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
 
-    public ExecuteInstance(String name, ProvidedExecutionPlatformInstance providedExecutionPlatformInstance, RequiredExecutionPlatformInstance requiredExecutionPlatformInstance){
-        super(name);
+    private final OptionalOwner<Deployment> owner;
+    private ProvidedExecutionPlatformInstance providedEnd;
+    private RequiredExecutionPlatformInstance requiredEnd;
 
-        unlessNotNull(providedExecutionPlatformInstance, "An Execute instance requires a Provided Execution Platform instance");
-        unlessNotNull(requiredExecutionPlatformInstance, "An Execute instance requires a Required Execution Platform instance");
-        unlessExpectationsAreMet(providedExecutionPlatformInstance, requiredExecutionPlatformInstance);
-        this.providedExecutionPlatformInstance=providedExecutionPlatformInstance;
-        this.requiredExecutionPlatformInstance=requiredExecutionPlatformInstance;
+    public ExecuteInstance(InternalComponentInstance instance, ProvidedExecutionPlatformInstance platform) {
+        this(DEFAULT_NAME, instance.getRequiredExecutionPlatform(), platform);
     }
 
-    private void unlessNotNull(Object o, String msg){
-        if(o == null)
-            throw new IllegalArgumentException(msg);
+    public ExecuteInstance(String name, RequiredExecutionPlatformInstance requiredEnd, ProvidedExecutionPlatformInstance providedEnd) {
+        super(name);
+        this.owner = new OptionalOwner<Deployment>();
+        unlessExpectationsAreMet(providedEnd, requiredEnd);
+        setProvidedEnd(providedEnd);
+        setRequiredEnd(requiredEnd);
+    }
+
+    @Override
+    public void validate(Report report) {
+        final PropertyGroup demands = getRequiredEnd().getType().getDemands();
+        for (Property demand : demands) {
+            final PropertyGroup offers = getProvidedEnd().getType().getOffers();
+            if (!offers.isDefined(demand.getName())) {
+                final String error = String.format("Mismatch between demands and offers! Demanded: %s, but %s is not offered", demand, demand.getName());
+                report.addError(error);
+            }
+            else {
+                if (!offers.contains(demand)) {
+                    final Property offer = offers.get(demand.getName());
+                    final String error = String.format("Mismatch between demands and offers!! Demanded: %s, but offered %s", demand, offer);
+                    report.addError(error);
+                }
+            }
+        }
+    }
+
+    public boolean hasSubject(InternalComponentInstance component) {
+        return getRequiredEnd().getOwner().get().equals(component);
+    }
+
+    public boolean isHostedBy(ComponentInstance<? extends Component> host) {
+        return getProvidedEnd().getOwner().get().equals(host);
+    }
+
+    public ComponentInstance<? extends Component> getHost() {
+        return getProvidedEnd().getOwner().get();
+    }
+
+    public InternalComponentInstance getSubject() {
+        return (InternalComponentInstance) getRequiredEnd().getOwner().get();
+    }
+
+    public boolean isBetween(String demanderName, String demandName, String providerName, String providedName) {
+        return this.getRequiredEnd().getOwner().get().isNamed(demanderName)
+                && this.getRequiredEnd().isNamed(demandName)
+                && this.getProvidedEnd().getOwner().get().isNamed(providerName)
+                && this.getProvidedEnd().isNamed(providedName);
     }
 
     //TODO: to be refined (we should not only match if values are strictly equals)
     private void unlessExpectationsAreMet(ProvidedExecutionPlatformInstance provided, RequiredExecutionPlatformInstance required) {
         for (Property demand : required.getType().getDemands()) {
-            Property offer = provided.getType().getOfferByKey(demand.getName());
+            Property offer = provided.getType().getOffers().get(demand.getName());
             if (offer == null) {
                 throw new IllegalArgumentException("Missing expectations: " + demand.getName());
             }
             if (!demand.getValue().equals(offer.getValue())) {
-                throw new IllegalArgumentException("Unmet expectation '" + demand.getName() + "' (expected + '" +  demand.getValue() + "' but found: '" + offer.getValue() + "')");
+                throw new IllegalArgumentException("Unmet expectation '" + demand.getName() + "' (expected + '" + demand.getValue() + "' but found: '" + offer.getValue() + "')");
             }
         }
     }
 
-    public RequiredExecutionPlatformInstance getRequiredExecutionPlatformInstance() {
-        return requiredExecutionPlatformInstance;
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get();
     }
 
-    public void setRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
-        unlessNotNull(requiredExecutionPlatformInstance, "An Execute instance requires a Required Execution Platform instance");
-        this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitExecuteInstance(this);
     }
 
-    public ProvidedExecutionPlatformInstance getProvidedExecutionPlatformInstance() {
-        return providedExecutionPlatformInstance;
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", getOwner().getName(), CONTAINED, getName());
     }
 
-    public void setProvidedExecutionPlatformInstance(ProvidedExecutionPlatformInstance providedExecutionPlatformInstance) {
-        unlessNotNull(providedExecutionPlatformInstance, "An Execute instance requires a Provided Execution Platform instance");
-        this.providedExecutionPlatformInstance = providedExecutionPlatformInstance;
+    @Override
+    public OptionalOwner<Deployment> getOwner() {
+        return owner;
     }
 
+    public RequiredExecutionPlatformInstance getRequiredEnd() {
+        return requiredEnd;
+    }
+
+    public final void setRequiredEnd(RequiredExecutionPlatformInstance end) {
+        if (end == null) {
+            final String error = String.format("'null' is not a valid required end for '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        this.requiredEnd = end;
+    }
+
+    public ProvidedExecutionPlatformInstance getProvidedEnd() {
+        return providedEnd;
+    }
+
+    public final void setProvidedEnd(ProvidedExecutionPlatformInstance end) {
+        if (end == null) {
+            final String error = String.format("'null' is not a valid provided end for '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        this.providedEnd = end;
+    }
 }

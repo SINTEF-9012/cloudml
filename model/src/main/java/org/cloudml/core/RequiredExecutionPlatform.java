@@ -23,70 +23,36 @@
 package org.cloudml.core;
 
 import java.util.*;
+import org.cloudml.core.collections.PropertyGroup;
+import org.cloudml.core.visitors.Visitor;
 
-/**
- * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
- */
-public class RequiredExecutionPlatform extends ExecutionPlatform{
+public class RequiredExecutionPlatform extends ExecutionPlatform {
 
-    //TODO: provide abstract class
-    private final ArrayList<Property> demands;
+    public static final Collection<Property> NO_DEMAND = new LinkedList<Property>();
+    
+    private final PropertyGroup demands;
 
-    public RequiredExecutionPlatform(){
-        demands =new ArrayList<Property>();
+    
+    public RequiredExecutionPlatform(String name) {
+        this(name, NO_DEMAND); 
     }
 
-    public RequiredExecutionPlatform(String name){
+    public RequiredExecutionPlatform(String name, Collection<Property> demands) {
         super(name);
-        demands =new ArrayList<Property>();
+        this.demands = new PropertyGroup(demands);
     }
 
-    public RequiredExecutionPlatform(String name, List<Property> properties){
-        super(name,properties);
-        demands =new ArrayList<Property>();
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitRequiredExecutionPlatform(this);
     }
 
-    public RequiredExecutionPlatform(String name, List<Property> properties, Component owner){
-        super(name,properties, owner);
-        demands = new ArrayList<Property>();
-    }
-
-    public RequiredExecutionPlatform(String name, List<Property> properties, Component owner, Collection<Property> demands){
-        super(name, properties, owner);
-        this.demands = new ArrayList<Property>();
-        this.demands.addAll(demands);
-    }
-
-
-    public List<Property> getDemands(){
+    public PropertyGroup getDemands() {
         return this.demands;
     }
 
-    public void setDemands(Collection<Property> demands){
-        this.demands.clear();
-        this.demands.addAll(demands);
+    @Override 
+    public RequiredExecutionPlatformInstance instantiate() {
+        return new RequiredExecutionPlatformInstance(getName(), this);
     }
-
-    public void addDemand(String key, String value) {
-        unlessNewKey(key);
-        this.demands.add(new Property(key, value));
-    }
-
-    private void unlessNewKey(String key){
-        for(Property p : this.demands){
-            if(p.getName().equals(key))
-                throw new IllegalArgumentException("Duplicated key for demand (" +key+ ")");
-        }
-    }
-
-    public RequiredExecutionPlatformInstance instantiates(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Illegal: null name");
-        }
-        if (name.equals("")) {
-            throw new IllegalArgumentException("Illegal: empty name");
-        }
-        return new RequiredExecutionPlatformInstance(name, this);
-    }
-
 }

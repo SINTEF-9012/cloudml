@@ -45,92 +45,86 @@ import eu.cloud4soa.governance.ems.IExecutionManagementService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class Cloud4soaConnector implements PaaSConnector {
-	
+
     private ApplicationInstance ai;
     private PaasInstance pi;
     private Provider provider;
     private Credentials credentials;
-    private IExecutionManagementService ems; 
+    private IExecutionManagementService ems;
     private String platform;
-    
     private static final Logger journal = Logger.getLogger(Cloud4soaConnector.class.getName());
-	
-    public Cloud4soaConnector(Provider provider){
-    	ems = new ExecutionManagementServiceModule();
-    	this.provider=provider;
-    	this.credentials=new Credentials(provider.getLogin(),provider.getPasswd());
-    	pi = new PaasInstance();
+
+    public Cloud4soaConnector(Provider provider) {
+        ems = new ExecutionManagementServiceModule();
+        this.provider = provider;
+        this.credentials = new Credentials(provider.getCredentials().getLogin(), provider.getCredentials().getPassword());
+        pi = new PaasInstance();
         pi.setName(provider.getName());
     }
-    
-    public Cloud4soaConnector(String apiKey, String securityKey, String account, String platform){
+
+    public Cloud4soaConnector(String apiKey, String securityKey, String account, String platform) {
         credentials = new Credentials(apiKey, securityKey, account);
         this.platform = platform;
     }
-    
-    public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel){
+
+    public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
         try {
-            String tmp2=Adapter.uploadAndDeployToEnv(platform, warFile,
-                    credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),	
-                    applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml");
+            String tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
+                                                       credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
+                                                       applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml");
             journal.log(Level.INFO, ">> Created application:" + tmp2);
-            
+
         } catch (Cloud4SoaException ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
-    
+
 //    private Application[] listApplications() throws Cloud4SoaException {
-//    	String adapterUrl=provider.getProperty("enPoint");
+//    	String adapterUrl=provider.findProperty("enPoint");
 //        return ems.listApplications("adapterUrl", credentials, pi);
 //    }
-    
     private void deploy(String name, File warFile) throws Cloud4SoaException {
         DeployApplicationParameters parameters = new DeployApplicationParameters();
-        String adapterUrl=provider.getProperty("enPoint");
+        String adapterUrl = provider.getProperties().valueOf("enPoint");
         ai = new ApplicationInstance();
         ai.setAppName(name);
         ai.setAdapterUrl("adapterURL");
         parameters.setApplicationArchive(warFile);
         ems.deployApplication(adapterUrl, credentials, pi, ai, parameters);
     }
-    
+
     private void undeploy(String name) throws Cloud4SoaException {
-    	String adapterUrl=provider.getProperty("enPoint");
-    	ai = new ApplicationInstance();
+        String adapterUrl = provider.getProperties().valueOf("enPoint");
+        ai = new ApplicationInstance();
         ai.setAppName(name);
         ai.setAdapterUrl("adapterURL");
         ems.undeployApplication(adapterUrl, credentials, pi, ai);
     }
-    
+
     public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout) {
-        
+
         System.out.print("uploadWar:");
-        while(timeout-- > 0){
+        while (timeout-- > 0) {
             System.out.print("-");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(BeanstalkConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
-            try{
-                String tmp2=Adapter.uploadAndDeployToEnv(platform, warFile,
-                    credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),	
-                    envName, versionLabel, "", "", "", "", "", "deployed by cloudml after db injection");
+            try {
+                String tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
+                                                           credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
+                                                           envName, versionLabel, "", "", "", "", "", "deployed by cloudml after db injection");
                 journal.log(Level.INFO, ">> Created application:" + tmp2);
                 break;
+            } catch (Exception e) {
             }
-            catch(Exception e){
-                
-            }
-            
+
         }
 
     }
-
 
 //    private void startStop(StartStopCommand command) throws Cloud4SoaException {
 //        ems.startStopApplication("adapterUrl", credentials, pi, ai, command);
@@ -146,42 +140,39 @@ public class Cloud4soaConnector implements PaaSConnector {
 //        
 ////        return ems.listDatabases(ai, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY);
 //    }
-    
 //    private void createDatabaseJob() throws Cloud4SoaException {
 //        ems.createDatabase(ai, pi, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName, dbuser,
 //                dbpassword, dbtype);
 //    }
-
 //    private void deleteDatabaseJob() throws Cloud4SoaException {
 //        ems.deleteDatabase(ai, pi, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName, dbuser,
 //                dbpassword, dbtype);
- //   }
-    
-      @Override
-      public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password, 
-            Integer allocatedSize, String dbInstanceClass){
+    //   }
+    @Override
+    public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
+                                 Integer allocatedSize, String dbInstanceClass) {
         try {
-            DatabaseInfo dbinfo = Adapter.createDB(platform, credentials.getPublicKey(), credentials.getPrivateKey(),credentials.getAccountName(),
-                    dbInstanceIdentifier, engine, version, "created by cloudml",
-                    dbName, username, password
-            );
-            
-            journal.log(Level.INFO, ">>DB created: "+dbinfo.toString()+": "+dbinfo.getDatabaseUrl()+dbinfo.getHost());
-            
+            DatabaseInfo dbinfo = Adapter.createDB(platform, credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
+                                                   dbInstanceIdentifier, engine, version, "created by cloudml",
+                                                   dbName, username, password);
+
+            journal.log(Level.INFO, ">>DB created: " + dbinfo.toString() + ": " + dbinfo.getDatabaseUrl() + dbinfo.getHost());
+
         } catch (Cloud4SoaException ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
         }
         //Adapter.
-      }
-    
-      /**
-       * Cloud4Soa does not work for Cloudbees
-       * @param dbInstanceId
-       * @param timeout
-       * @return 
-       */
+    }
+
+    /**
+     * Cloud4Soa does not work for Cloudbees
+     *
+     * @param dbInstanceId
+     * @param timeout
+     * @return
+     */
     public String getDBEndPoint(String dbInstanceId, int timeout) {
-        
+
         //return "ec2-23-21-211-172.compute-1.amazonaws.com:3306/dieaslefehik";
 //        String bees_server = "https://api.cloudbees.com/api";
 //        String type = "json";
@@ -196,7 +187,7 @@ public class Cloud4soaConnector implements PaaSConnector {
 //        }
 //        return "";
         System.out.print("Retriving DB endpoint:");
-        while(timeout-->0){
+        while (timeout-- > 0) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
@@ -204,21 +195,20 @@ public class Cloud4soaConnector implements PaaSConnector {
             }
             try {
                 DatabaseObject dbobject = Adapter.getDBInfo(platform,
-                        credentials.getPublicKey(),
-                        credentials.getPrivateKey(),
-                        credentials.getAccountName(),
-                        "mysql", "", "1.5.7", null, dbInstanceId, null, null);
-                if(dbobject.getDbhost()!=null && dbobject.getDbhost().length()>0){
-                    System.out.println(dbobject.getDbhost()+":"+dbobject.getPort());
-                    return dbobject.getDbhost()+":"+dbobject.getPort();
+                                                            credentials.getPublicKey(),
+                                                            credentials.getPrivateKey(),
+                                                            credentials.getAccountName(),
+                                                            "mysql", "", "1.5.7", null, dbInstanceId, null, null);
+                if (dbobject.getDbhost() != null && dbobject.getDbhost().length() > 0) {
+                    System.out.println(dbobject.getDbhost() + ":" + dbobject.getPort());
+                    return dbobject.getDbhost() + ":" + dbobject.getPort();
                 }
             } catch (Cloud4SoaException ex) {
                 Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
-                
+
             }
-            
+
         }
         return "";
     }
-
 }

@@ -22,37 +22,56 @@
  */
 package org.cloudml.core;
 
+import java.util.ArrayList;
 import java.util.List;
-
+import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
 public class ProvidedPortInstance extends PortInstance<ProvidedPort> {
-	
-	
-	public ProvidedPortInstance(String name, ProvidedPort type, InternalComponentInstance owner) {
-		super(name, type, owner);
-	}
-	
-	public ProvidedPortInstance(String name, ProvidedPort type, List<Property> properties, InternalComponentInstance owner) {
-        super(name, type, properties, owner);
+
+
+    public ProvidedPortInstance(String name, ProvidedPort type) {
+        super(name, type);
     }
-	
-	public ProvidedPortInstance(String name, ProvidedPort type, List<Property> properties, InternalComponentInstance owner, boolean isRemote){
-		super(name, type, properties, owner, isRemote);
-	}
-	
-	@Override
-    public String toString() {
-        return "ProvidedPortInstance " + name + " component:" + owner.getName();
+
+    public List<RequiredPortInstance> findClients() {
+        final RelationshipInstanceGroup relationships = getDeployment().getRelationshipInstances().whereEitherEndIs(this);
+        if (relationships.isEmpty()) {
+            final String message = String.format("provided port '%s' is not yet bound to any client", getQualifiedName());
+            throw new IllegalArgumentException(message);
+        }
+        final List<RequiredPortInstance> clients = new ArrayList<RequiredPortInstance>();
+        for (RelationshipInstance relationship : relationships) {
+            clients.add(relationship.getRequiredEnd());
+        }
+        return clients;
     }
-	
-	@Override
-    public boolean equals(Object other) {
-        if (other instanceof ProvidedPortInstance) {
-        	ProvidedPortInstance otherNode = (ProvidedPortInstance) other;
-            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
-        } else {
-            return false;
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitProvidedPortInstance(this);
+    }
+
+    @Override
+    public void validate(Report report) {
+        if (getOwner().isUndefined()) {
+            report.addError("Server port instance has no owner ('null' found)");
         }
     }
-	
+
+    @Override
+    public String toString() {
+        return "ServerPortInstance " + getQualifiedName();
+
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof ProvidedPortInstance) {
+            ProvidedPortInstance otherNode = (ProvidedPortInstance) other;
+            return getName().equals(otherNode.getName()) && getOwner().equals(otherNode.getOwner());
+        }
+        return false;
+    }
 }

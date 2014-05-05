@@ -22,51 +22,63 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.collections.CloudGroup;
+import org.cloudml.core.visitors.Visitor;
 
 public class VMInstance extends ExternalComponentInstance<VM> {
 
-    private String id="";
+    private String id = "";
+    private final CloudGroup clouds;
 
-    public VMInstance() {
+    public VMInstance(VM type) {
+        this(NamedElement.DEFAULT_NAME, type);
     }
 
     public VMInstance(String name, VM type) {
         super(name, type);
+        this.clouds = new CloudGroup();
     }
 
-    public VMInstance(String name, VM type, List<Property> properties) {
-        super(name, type, properties);
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitVMInstance(this);
     }
-    
 
-    public void setId(String id){
-    	this.id=id;
+    public void setId(String id) {
+        this.id = id;
     }
-    
-    public String getId(){
-    	return this.id;
+
+    public String getId() {
+        return this.id;
     }
-    
-    //we should introduce genericity
+
+    public CloudGroup clouds() {
+        return this.clouds;
+    }
+
+    public boolean belongsTo(Cloud cloud) {
+        return clouds.contains(cloud);
+    }
+
     @Override
     public String toString() {
-        return "VMInstance: "+name+" Type:"+type.getName()+"{\n" +
-        		"minRam:" + ((VM)type).getMinRam()+"\n"+
-        		"minCore" + ((VM)type).getMinCores()+"\n"+
-        		"minDisk" + ((VM)type).getMinStorage()+"\n"+
-        		"OS" + ((VM)type).getOs()+"\n"+
-        		"location" + ((VM)type).getLocation()+"\n"+
-        		"publicAdress" + publicAddress+"\n"+
-        		"groupName" + ((VM)type).getGroupName();
+        return "VMInstance: " + getName() + " Type:" + getType().getName() + "{\n"
+                + "minRam:" + (getType()).getMinRam() + "\n"
+                + "minCore" + (getType()).getMinCores() + "\n"
+                + "minDisk" + (getType()).getMinStorage() + "\n"
+                + "OS" + (getType()).getOs() + "\n"
+                + "location" + (getType()).getLocation() + "\n"
+                + "publicAdress" + getPublicAddress() + "\n"
+                + "groupName" + (getType()).getGroupName();
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof VMInstance) {
             VMInstance otherNode = (VMInstance) other;
-            return name.equals(otherNode.getName()) && type.equals(otherNode.getType());
-        } else {
+            return getName().equals(otherNode.getName()) && getType().equals(otherNode.getType());
+        }
+        else {
             return false;
         }
     }

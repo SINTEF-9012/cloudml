@@ -22,33 +22,60 @@
  */
 package org.cloudml.core;
 
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
+import org.cloudml.core.collections.VMInstanceGroup;
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
-/**
- * Created by Nicolas Ferry on 13.02.14.
- */
-public class Cloud extends CloudMLElementWithProperties {
+public class Cloud extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
 
-    private List<VMInstance> vmInstances = new LinkedList<VMInstance>();
+    private final OptionalOwner<Deployment> owner;
+    
+    public Cloud(String name) {
+        this(name, new LinkedList<VMInstance>());   
+    }
 
-    public Cloud(){}
-
-    public Cloud(String name){
+    public Cloud(String name, Collection<VMInstance> vmInstances) {
         super(name);
+        this.owner = new OptionalOwner<Deployment>();
     }
 
-    public Cloud(String name, List<VMInstance> vmInstances){
-        super(name);
-        this.vmInstances=vmInstances;
+    @Override
+    public void validate(Report report) {
+        if (owner.isUndefined()) {
+            final String message = String.format("The cloud '%s' has no owner", getName());
+            report.addWarning(message);
+        }
+    }
+    
+    
+    
+
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get();
+    } 
+
+    @Override
+    public void accept(Visitor visitor) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public List<VMInstance> getVmInstances(){
-        return vmInstances;
+
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", getOwner().getName(), CONTAINED, getName());
     }
 
-    public void setVmInstances(List<VMInstance> vmInstances){
-        this.vmInstances=vmInstances;
+    @Override
+    public OptionalOwner<Deployment> getOwner() {
+        return owner;
+    }
+    
+    public VMInstanceGroup getVmInstances() {
+        return getDeployment().getComponentInstances().onlyVMs().whichBelongsTo(this);
     }
 
 }

@@ -22,64 +22,133 @@
  */
 package org.cloudml.core;
 
-/**
- * Bindings between ArtefactPortInstances
- * @author Nicolas Ferry
- *
- */
-public class RelationshipInstance extends CloudMLElementWithProperties {
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
-	private RequiredPortInstance requiredPortInstance;
-	private ProvidedPortInstance providedPortInstance;
-	
-	private Relationship type;
-	
-	public RelationshipInstance(){}
-	
-	public RelationshipInstance(String name, Relationship type){
-		this.name=name;
-		this.type=type;
-	}
-	
-	public RelationshipInstance(RequiredPortInstance requiredPortInstance, ProvidedPortInstance providedPortInstance, Relationship type){
-		this.requiredPortInstance = requiredPortInstance;
-		this.providedPortInstance = providedPortInstance;
-		this.type=type;
-	}
-	
-	public void setRequiredPortInstance(RequiredPortInstance p){
-		this.requiredPortInstance =p;
-	}
-	
-	public void setProvidedPortInstance(ProvidedPortInstance p){
-		this.providedPortInstance =p;
-	}
-	
-	public RequiredPortInstance getRequiredPortInstance(){
-		return this.requiredPortInstance;
-	}
-	
-	public ProvidedPortInstance getProvidedPortInstance(){
-		return this.providedPortInstance;
-	}
-	
-	public Relationship getType(){
-		return type;
-	}
-	
-	@Override
+public class RelationshipInstance extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
+
+    private final OptionalOwner<Deployment> owner;
+    private RequiredPortInstance requiredEnd;
+    private ProvidedPortInstance providedEnd;
+    private Relationship type;
+
+    public RelationshipInstance(String name, RequiredPortInstance requiredEnd, ProvidedPortInstance providedEnd, Relationship type) {
+        super(name);
+        this.owner = new OptionalOwner<Deployment>();
+        setRequiredEnd(requiredEnd);
+        setProvidedEnd(providedEnd);
+        setType(type);
+    }
+
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get();
+    }
+
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", getOwner().getName(), CONTAINED, getName());
+    }
+
+    @Override
+    public OptionalOwner<Deployment> getOwner() {
+        return owner;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitRelationshipInstance(this);
+    }
+
+    @Override
+    public void validate(Report report) {
+        validateRequiredEnd(report); 
+        validateProvidedEnd(report);
+    }
+
+    private void validateRequiredEnd(Report report) {
+        if (!requiredEnd.getType().equals(type.getRequiredEnd())) {
+            final String message = String.format(
+                    "illegal relationship instance that does not match its type (required port found '%s' but expected '%s')",
+                    requiredEnd.getType().getName(),
+                    type.getRequiredEnd().getName());
+            report.addError(message);
+        }
+    }
+
+    private void validateProvidedEnd(Report report) {
+        if (!providedEnd.getType().equals(type.getProvidedEnd())) {
+            final String message = String.format("illegal relationship instance that does not match its type (provided port found '%s' but expected '%s')", providedEnd.getType().getQualifiedName(), type.getProvidedEnd().getQualifiedName());
+            report.addError(message);
+        }
+    }
+
+    public final void setRequiredEnd(RequiredPortInstance port) {
+        if (port == null) {
+            final String error = String.format("'null' is not a valid required port end for relationship '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        this.requiredEnd = port;
+    }
+
+    public final void setProvidedEnd(ProvidedPortInstance port) {
+        if (port == null) {
+            final String error = String.format("'null' is not a valid provided port end for relationship '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        this.providedEnd = port;
+    }
+
+    public RequiredPortInstance getRequiredEnd() {
+        return this.requiredEnd;
+    }
+    
+    public InternalComponentInstance getClientComponent() {
+        return (InternalComponentInstance) getRequiredEnd().getOwner().get();
+    }
+
+    public ProvidedPortInstance getProvidedEnd() {
+        return this.providedEnd;
+    }
+    
+    public ComponentInstance<? extends Component> getServerComponent() {
+        return getProvidedEnd().getOwner().get();
+    }
+    
+    public boolean isProvidedBy(ComponentInstance<? extends Component> candidateServer) {
+        return getServerComponent().equals(candidateServer);
+    }
+
+    public boolean eitherEndIs(PortInstance<? extends Port> port) {
+        return getProvidedEnd().equals(port) || getRequiredEnd().equals(port);
+    }
+
+    public Relationship getType() {
+        return type;
+    }
+
+    private void setType(Relationship type) {
+        if (type == null) {
+            final String error = String.format("'null' is not a valid relationship type for '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        this.type = type;
+    }
+
+    @Override
     public String toString() {
-        return requiredPortInstance + "->"+ providedPortInstance;
+        return requiredEnd + "->" + providedEnd;
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof RelationshipInstance) {
-        	RelationshipInstance otherBinding = (RelationshipInstance) other;
-            return (requiredPortInstance.equals(otherBinding.getRequiredPortInstance()) && providedPortInstance.equals(otherBinding.getProvidedPortInstance()));
-        } else {
+            RelationshipInstance otherBinding = (RelationshipInstance) other;
+            return (requiredEnd.equals(otherBinding.getRequiredEnd()) && providedEnd.equals(otherBinding.getProvidedEnd()));
+        }
+        else {
             return false;
         }
     }
-	
 }

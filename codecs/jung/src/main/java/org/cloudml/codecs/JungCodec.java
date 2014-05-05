@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.commons.Codec;
-import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.NamedElement;
+import org.cloudml.core.Deployment;
 
 /*
  * An coder to visualize CloudML models
@@ -41,18 +41,18 @@ public class JungCodec implements Codec {
     public JungCodec() {
     }
 
-    public CloudMLElement load(InputStream content) {
+    public NamedElement load(InputStream content) {
         throw new UnsupportedOperationException("Jung codec is actually just a coder (i.e. a visulizer)");
     }
 
-    public void save(CloudMLElement model, OutputStream content) {
-        if (model instanceof CloudMLModel) {
+    public void save(NamedElement model, OutputStream content) {
+        if (model instanceof Deployment) {
             ObjectOutputStream serializer = null;
             try {
                 //Display model
-                DrawnIconVertexDemo g = new DrawnIconVertexDemo((CloudMLModel)model);
-                ArrayList<Vertex> v = g.drawVerticesFromDeploymentModel((CloudMLModel) model);
-                g.drawEdgesFromDeploymentModel((CloudMLModel) model, v);
+                DrawnIconVertexDemo g = new DrawnIconVertexDemo((Deployment)model);
+                ArrayList<Vertex> v = g.drawVerticesFromDeploymentModel((Deployment) model);
+                g.drawEdgesFromDeploymentModel((Deployment) model, v);
                 
                 //Serializes it
                 serializer = new ObjectOutputStream(content);

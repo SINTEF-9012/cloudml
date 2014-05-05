@@ -22,67 +22,65 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.util.OwnedBy;
 
-public abstract class PortInstance<T extends Port> extends CloudMLElementWithProperties {
+public abstract class PortInstance<T extends Port> extends WithResources implements DeploymentElement, OwnedBy<ComponentInstance<? extends Component>> {
 
-    protected T type;
-    protected ComponentInstance owner;
+    private T type;
+    private final OptionalOwner<ComponentInstance<? extends Component>> owner;
 
-    public PortInstance() {
-    }
-
-    public PortInstance(String name, T type, ComponentInstance owner) {
+    public PortInstance(String name, T type) {
         super(name);
-        this.type = type;
-        this.owner = owner;
-        // If we define the component of the port, then we can add it in the provided port list
-        /*component.getProvidedPorts().add(this);
-        component.getType().getProvidedPorts().add(type);*/
-    }
-    
-    public PortInstance(String name, T type, List<Property> properties, ComponentInstance owner) {
-        super(name, properties);
-        this.type = type;
-        this.owner = owner;
-        //If we define the component of the port, then we can add it in the provided port list
-        /*component.getProvidedPorts().add(this);
-        component.getType().getProvidedPorts().add(type);*/
-    }
-    
-    public PortInstance(String name, T type, List<Property> properties, ComponentInstance owner, boolean isRemote) {
-        super(name, properties);
-        this.type = type;
-        this.owner = owner;
-        //If we define the component of the port, then we can add it in the provided port list
-        /*component.getProvidedPorts().add(this);
-        component.getType().getProvidedPorts().add(type);*/
+        this.owner = new OptionalOwner<ComponentInstance<? extends Component>>();
+        setType(type);
     }
 
-    public ComponentInstance getOwner() {
+    @Override
+    public OptionalOwner<ComponentInstance<? extends Component>> getOwner() {
         return this.owner;
     }
 
-    public void setType(T type) {
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", getOwner().getName(), CONTAINED, getName());
+    }
+
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get().getDeployment();
+    }
+
+    public boolean isBound() {
+        return !getDeployment().getRelationshipInstances().whereEitherEndIs(this).isEmpty();
+    }
+
+    public boolean isInstanceOf(T type) {
+        return this.type.equals(type);
+    }
+
+    public final void setType(T type) {
+        if (type == null) {
+            final String error = String.format("'null' is not a valid port type for port instance '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
         this.type = type;
     }
 
     public T getType() {
         return this.type;
     }
-    
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof PortInstance) {
-        	PortInstance otherNode = (PortInstance) other;
-            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
-        } else {
-            return false;
+            PortInstance otherNode = (PortInstance) other;
+            return getName().equals(otherNode.getName()) && getOwner().equals(otherNode.getOwner());
         }
+        return false;
     }
-   
+
     @Override
     public String toString() {
-        return "PortInstance " + name + " component:" + owner.getName();
+        return "PortInstance " + getQualifiedName();
     }
 }

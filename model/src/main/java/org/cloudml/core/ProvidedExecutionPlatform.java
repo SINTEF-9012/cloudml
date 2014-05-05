@@ -23,75 +23,52 @@
 package org.cloudml.core;
 
 import java.util.*;
+import org.cloudml.core.collections.PropertyGroup;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
-/**
- * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
- */
-public class ProvidedExecutionPlatform extends ExecutionPlatform{
+public class ProvidedExecutionPlatform extends ExecutionPlatform {
 
-    private final List<Property> offers;
+    public static final Collection<Property> NO_OFFER = new LinkedList<Property>();
+    private final PropertyGroup offers;
 
-    public ProvidedExecutionPlatform(){
-        offers =new ArrayList<Property>();
+    public ProvidedExecutionPlatform(String name) {
+        this(name, NO_OFFER);
     }
 
-    public ProvidedExecutionPlatform(String name){
+    public ProvidedExecutionPlatform(String name, Collection<Property> offers) {
         super(name);
-        offers =new ArrayList<Property>();
+        this.offers = new PropertyGroup(offers);
+    }    
+    
+    
+    public boolean canHost(InternalComponent component) {
+        return offers.containsAll(component.getRequiredExecutionPlatform().getDemands());
     }
 
-    public ProvidedExecutionPlatform(String name, List<Property> properties){
-        super(name,properties);
-        offers =new ArrayList<Property>();
+    @Override
+    public void validate(Report report) {
+        super.validate(report);
+        if (offers.isEmpty()) {
+            report.addWarning("Provided execution platform with no offer (will always match any required execution platform)");
+        }
     }
 
-    public ProvidedExecutionPlatform(String name, List<Property> properties, Component owner){
-        super(name,properties, owner);
-        offers =new ArrayList<Property>();
+    @Override
+    public ProvidedExecutionPlatformInstance instantiate() {
+        return new ProvidedExecutionPlatformInstance(getName(), this);
     }
 
-    public ProvidedExecutionPlatform(String name, List<Property> properties, Component owner, Collection<Property> offers){
-        super(name,properties, owner);
-        this.offers =new  ArrayList<Property>();
-        this.offers.addAll(offers);
-    }
-
-    public List<Property> getOffers(){
+    public PropertyGroup getOffers() { 
         return this.offers;
     }
 
-    public void setOffers(Collection<Property> offers){
-        this.offers.clear();
-        this.offers.addAll(offers);
+    public boolean match(RequiredExecutionPlatform platform) {
+        return getOffers().containsAll(platform.getDemands());
     }
 
-    public void addOffer(String key, String value) {
-        unlessNewKey(key);
-        this.offers.add(new Property(key, value));
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitProvidedExecutionPlatform(this);
     }
-
-    private void unlessNewKey(String key){
-        if(getOfferByKey(key) != null){
-            throw new IllegalArgumentException("Duplicated Offer Id (" + key + ")");
-        }
-    }
-
-    public Property getOfferByKey(String key){
-        for(Property p : this.offers){
-            if(p.getName().equals(key))
-                return p;
-        }
-        return null;
-    }
-
-    public ProvidedExecutionPlatformInstance instantiates(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Illegal: null name");
-        }
-        if (name.equals("")) {
-            throw new IllegalArgumentException("Illegal: empty name");
-        }
-        return new ProvidedExecutionPlatformInstance(name, this);
-    }
-
 }

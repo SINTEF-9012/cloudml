@@ -30,7 +30,7 @@ import java.net.URISyntaxException;
 
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 import org.cloudml.deployer.CloudMLModelComparator;
 
 import junit.framework.Test;

@@ -23,12 +23,11 @@
 package test.cloudml.codecs.library;
 
 import org.cloudml.codecs.library.CodecsLibrary;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import junit.framework.TestCase;
 import org.junit.runners.Parameterized;
 
@@ -37,29 +36,27 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static org.cloudml.core.samples.SensApp.completeSensApp;
 
 /**
  * Created by Nicolas Ferry & Franck Chauvel on 25.02.14.
  */
-
 //TODO: Active !!!!!!!!!!!!
-
 @Ignore
 @RunWith(value = Parameterized.class)
 public class AcceptanceTest extends TestCase {
 
-
     private String extension;
 
-    public AcceptanceTest(String extension){
-        this.extension=extension;
+    public AcceptanceTest(String extension) {
+        this.extension = extension;
     }
 
     @Parameterized.Parameters
     public static Collection<String[]> data() {
-        Collection<String[]> result=new ArrayList<String[]>();
-        CodecsLibrary lib=new CodecsLibrary();
-        for(String s : lib.getExtensions()){
+        Collection<String[]> result = new ArrayList<String[]>();
+        CodecsLibrary lib = new CodecsLibrary();
+        for (String s : lib.getExtensions()) {
             result.add(new String[]{s});
         }
         return result;
@@ -68,17 +65,16 @@ public class AcceptanceTest extends TestCase {
     @Test
     public void testSaveAsAndLoadForEachCodec() throws FileNotFoundException {
         CodecsLibrary library = new CodecsLibrary();
-        CloudMLModel reference = new SampleModels().buildSensApp();
-        String fileName = "sensapp"+extension;
-        library.saveAs(reference,fileName);
-        CloudMLModel sensapp = library.load(fileName);
+        Deployment reference = completeSensApp().build();
+        String fileName = "sensapp" + extension;
+        library.saveAs(reference, fileName);
+        Deployment sensapp = library.load(fileName);
         assertEquals(reference, sensapp);
     }
 
     @After
     public void cleanDirectory() {
-        File sensapp = new File("sensapp"+extension);
+        File sensapp = new File("sensapp" + extension);
         sensapp.delete();
     }
-
 }

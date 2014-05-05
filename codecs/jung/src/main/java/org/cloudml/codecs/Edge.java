@@ -24,7 +24,7 @@ package org.cloudml.codecs;
 
 import java.io.Serializable;
 
-import org.cloudml.core.CloudMLElementWithProperties;
+import org.cloudml.core.WithProperties;
 import org.cloudml.core.RelationshipInstance;
 
 public class Edge implements Serializable {
@@ -58,7 +58,7 @@ public class Edge implements Serializable {
 		this.instance=instance;
 	}
 	
-	public CloudMLElementWithProperties getInstance(){
+	public WithProperties getInstance(){
 		return instance;
 	}
 

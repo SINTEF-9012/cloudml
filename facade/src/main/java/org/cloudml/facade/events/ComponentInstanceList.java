@@ -30,15 +30,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.cloudml.core.Component;
 
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.facade.commands.CloudMlCommand;
 
 /**
  * Data object to convey a list of artefact instances
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
 public class ComponentInstanceList extends Data {
 
@@ -49,7 +47,7 @@ public class ComponentInstanceList extends Data {
      *
      * @param components the list of components
      */
-    public ComponentInstanceList(CloudMlCommand command, final Collection<ComponentInstance> components) {
+    public ComponentInstanceList(CloudMlCommand command, final Collection<ComponentInstance<? extends Component>> components) {
         super(command);
         this.components = new ArrayList<ComponentInstance>(components.size());
         this.components.addAll(components);

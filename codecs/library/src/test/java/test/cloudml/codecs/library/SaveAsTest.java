@@ -30,18 +30,22 @@ import junit.framework.TestCase;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import org.cloudml.codecs.library.CodecsLibrary;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.cloudml.core.samples.SensApp.*;
+
+@Ignore
 @RunWith(JUnit4.class)
 public class SaveAsTest extends TestCase {
 
     @Test(expected = IllegalArgumentException.class)
     public void testSaveAsWithNullAsModel() throws FileNotFoundException {
         String fileName = "test.json";
-        CloudMLModel model = null;
+        Deployment model = null;
         CodecsLibrary library = new CodecsLibrary();
         library.saveAs(model, fileName);
     }
@@ -49,7 +53,7 @@ public class SaveAsTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     public void testSaveAsWithEmptyStringAsFileName() throws FileNotFoundException {
         String fileName = "";
-        CloudMLModel model = new CloudMLModel();
+        Deployment model = new Deployment();
         CodecsLibrary library = new CodecsLibrary();
         library.saveAs(model, fileName);
     }
@@ -57,7 +61,7 @@ public class SaveAsTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     public void testSaveAsWithNullAsFileName() throws FileNotFoundException {
         String fileName = null;
-        CloudMLModel model = new CloudMLModel();
+        Deployment model = new Deployment();
         CodecsLibrary library = new CodecsLibrary();
         library.saveAs(model, fileName);
     }
@@ -66,7 +70,7 @@ public class SaveAsTest extends TestCase {
     @Test
     public void testSaveAsWithEmptyDeploymentModel() throws FileNotFoundException {
         String fileName = "test.json";
-        CloudMLModel model = new CloudMLModel();
+        Deployment model = new Deployment();
         CodecsLibrary library = new CodecsLibrary();
         library.saveAs(model, fileName);
         File file = new File(fileName);
@@ -78,7 +82,7 @@ public class SaveAsTest extends TestCase {
     @Test
     public void testSaveAsWithSensApp() throws FileNotFoundException {
         String fileName = "sensapp.json";
-        CloudMLModel model = new SampleModels().buildSensApp();
+        Deployment model = completeSensApp().build();
         CodecsLibrary library = new CodecsLibrary();
         library.saveAs(model, fileName);
         File file = new File(fileName);
@@ -90,7 +94,7 @@ public class SaveAsTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     public void testSaveAsWithUnknownException() throws FileNotFoundException {
         String fileName = "test.pouet";
-        CloudMLModel model = new CloudMLModel();
+        Deployment model = new Deployment();
         CodecsLibrary library = new CodecsLibrary();
         library.saveAs(model, fileName);
     }
@@ -98,7 +102,7 @@ public class SaveAsTest extends TestCase {
     @Test
     public void testSaveAsWithUpperCase() throws FileNotFoundException {
         String fileName = "test.JSON";
-        CloudMLModel model = new CloudMLModel();
+        Deployment model = new Deployment();
         CodecsLibrary library = new CodecsLibrary();
         library.saveAs(model, fileName);
         File file = new File(fileName);

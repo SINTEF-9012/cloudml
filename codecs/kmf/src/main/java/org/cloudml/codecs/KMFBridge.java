@@ -44,14 +44,13 @@ public class KMFBridge {
         toKmf=new BridgeToKmf();
     }
 
-    public CloudMLElement toPOJO(net.cloudml.core.CloudMLModel kDeploy) {
+    public NamedElement toPOJO(net.cloudml.core.CloudMLModel kDeploy) {
         return toPojo.toPOJO(kDeploy);
     }
 
-    public net.cloudml.core.CloudMLModel toKMF(CloudMLModel deploy) {
+    public net.cloudml.core.CloudMLModel toKMF(Deployment deploy) {
         return toKmf.toKMF(deploy);
     }
-
 
     /**
      * Convenience procedure to convert JSON into XMI. Should be removed (or
@@ -69,8 +68,8 @@ public class KMFBridge {
      * name.endsWith(".json"); } }; File inputDirectory = new
      * File(xmiCodec.getClass().getResources("/").toURI()); for (File input :
      * inputDirectory.listFiles(filter)) { System.out.println("loading " +
-     * input.getAbsolutePath() + ", " + jsonCodec); CloudMLModel model =
-     * (CloudMLModel) jsonCodec.load(new FileInputStream(input));
+     * input.getAbsolutePath() + ", " + jsonCodec); Deployment model =
+     * (Deployment) jsonCodec.load(new FileInputStream(input));
      * xmiCodec.save(model, new FileOutputStream(new File(input.getParentFile(),
      * input.getName() + ".xmi"))); } } catch (FileNotFoundException ex) {
      * Logger.getLogger(KMFBridge.class.getName()).log(Level.SEVERE, null, ex);

@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.XmiCodec;
 import org.cloudml.codecs.commons.Codec;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 
 /**
  * Created by Nicolas Ferry & Franck Chauvel on 25.02.14.
@@ -58,7 +58,7 @@ public class CodecsLibrary {
      * @param pathToFile the path to the file
      * @throws FileNotFoundException if the path is not valid on disc
      */
-    public void saveAs(CloudMLModel model, String pathToFile) throws FileNotFoundException {
+    public void saveAs(Deployment model, String pathToFile) throws FileNotFoundException {
         checkModel(model);
         checkPath(pathToFile);
         String extension = getFileExtension(pathToFile);
@@ -80,7 +80,7 @@ public class CodecsLibrary {
         return extension.toLowerCase();
     }
 
-    private void checkModel(CloudMLModel model) throws IllegalArgumentException {
+    private void checkModel(Deployment model) throws IllegalArgumentException {
         if (model == null) {
             throw new IllegalArgumentException("Cannot serialize a 'null' model");
         }
@@ -91,17 +91,17 @@ public class CodecsLibrary {
      * based on the file extension.
      *
      * @param pathToFile the path to the file
-     * @return the related CloudMLModel object
+     * @return the related Deployment object
      * @throws FileNotFoundException if the given path is invalid
      */
-    public CloudMLModel load(String pathToFile) throws FileNotFoundException {
+    public Deployment load(String pathToFile) throws FileNotFoundException {
         checkPath(pathToFile);
         String extension = getFileExtension(pathToFile);
         Codec codec = this.codecsByExtension.get(extension);
         checkCodec(codec, extension);
-        CloudMLModel model = (CloudMLModel) codec.load(new FileInputStream(pathToFile));
+        Deployment model = (Deployment) codec.load(new FileInputStream(pathToFile));
         if (model == null) {
-            model = new CloudMLModel();
+            model = new Deployment();
         }
         return model;
     }

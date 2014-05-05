@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.cloudml.core.CloudMLElement;
+import org.cloudml.core.NamedElement;
 
 /**
  * Codec provides service to serialize/deserialize models into/from streams,
@@ -50,11 +50,11 @@ public interface Codec {
      * of the model
      * @return the in-memory version of the model
      */
-    public CloudMLElement load(InputStream content);
+    public NamedElement load(InputStream content);
 
     /**
      * @param model, the in-memory version of the model
      * @param content, the stream where the serialized model will be pushed
      */
-    public void save(CloudMLElement model, OutputStream content);
+    public void save(NamedElement model, OutputStream content);
 }

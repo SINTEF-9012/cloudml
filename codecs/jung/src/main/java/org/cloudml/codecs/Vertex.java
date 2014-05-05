@@ -24,12 +24,12 @@ package org.cloudml.codecs;
 
 import java.io.Serializable;
 
-import org.cloudml.core.CloudMLElementWithProperties;
+import org.cloudml.core.WithProperties;
 
 public class Vertex implements Serializable {
 	private String name;
 	private String type;
-	private CloudMLElementWithProperties instance;
+	private WithProperties instance;
 
     private Vertex(){}
         
@@ -38,7 +38,7 @@ public class Vertex implements Serializable {
 		this.type=type;
 	}
 	
-	public Vertex(String name,String type, CloudMLElementWithProperties instance){
+	public Vertex(String name,String type, WithProperties instance){
 		this.name=name;
 		this.type=type;
 		this.instance=instance;
@@ -52,11 +52,11 @@ public class Vertex implements Serializable {
 		return type;
 	}
 	
-	public void setInstance(CloudMLElementWithProperties instance){
+	public void setInstance(WithProperties instance){
 		this.instance=instance;
 	}
 	
-	public CloudMLElementWithProperties getInstance(){
+	public WithProperties getInstance(){
 		return instance;
 	}
 }

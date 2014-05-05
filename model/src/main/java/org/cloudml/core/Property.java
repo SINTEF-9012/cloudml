@@ -22,27 +22,30 @@
  */
 package org.cloudml.core;
 
-public class Property {
-    String name;
-    String value;
-    
-    public Property(){}
-    
-    public Property(String name, String value) {
-        this.name = name;
-        this.value = value;
+public class Property extends NamedElement {
+
+    public static final String UNDEFINED = null;
+    private String value;
+
+    public Property(String name) {
+        this(name, UNDEFINED);
     }
 
-    public String getName() {
-        return name;
+    public Property(String name, String value) {
+        super(name);
+        this.value = value;
     }
 
     public String getValue() {
         return value;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public boolean hasValue() {
+        return value != UNDEFINED;
+    }
+
+    public boolean hasValue(String value) {
+        return this.value.equals(value);
     }
 
     public void setValue(String value) {
@@ -50,11 +53,19 @@ public class Property {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (! (obj instanceof Property))
+    public boolean equals(Object other) {
+        if (other == null) {
             return false;
-        return (((Property)obj).getName().equals(getName()) && ((Property)obj).getValue().equals(getValue()));
+        }
+        if (other instanceof Property) {
+            Property p = (Property) other;
+            return isNamed(p.getName()) && (p.hasValue() && hasValue(p.getValue()));
+        }
+        return false;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return String.format("(%s = %s)", getName(), getValue());
+    }
 }

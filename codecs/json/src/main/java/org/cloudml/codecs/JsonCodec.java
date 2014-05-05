@@ -31,8 +31,8 @@ import net.cloudml.loader.ModelLoader;
 import net.cloudml.serializer.JSONModelSerializer;
 import net.cloudml.serializer.ModelSerializer;
 import org.cloudml.codecs.commons.Codec;
-import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.NamedElement;
+import org.cloudml.core.Deployment;
 
 
 /*
@@ -54,7 +54,7 @@ public class JsonCodec implements Codec {
     
     public static void init(){};
 
-    public CloudMLElement load(InputStream content) {
+    public NamedElement load(InputStream content) {
         ModelLoader loader = new JSONModelLoader();
         try {
             net.cloudml.core.CloudMLModel kDeploy = (net.cloudml.core.CloudMLModel) loader.loadModelFromStream(content).get(0);//beware of this cast...
@@ -67,10 +67,10 @@ public class JsonCodec implements Codec {
         return null;
     }
 
-    public void save(CloudMLElement model, OutputStream content) {
+    public void save(NamedElement model, OutputStream content) {
         ModelSerializer serializer = new JSONModelSerializer();
         try {
-            serializer.serialize(bridge.toKMF((CloudMLModel)model), content);
+            serializer.serialize(bridge.toKMF((Deployment)model), content);
         } catch (Exception e) {
             System.err.println(e.getLocalizedMessage());
             journal.log(Level.SEVERE, e.getLocalizedMessage());

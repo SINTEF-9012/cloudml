@@ -20,11 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 
 package org.cloudml.facade.mrt;
 
@@ -36,7 +32,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 import org.cloudml.facade.mrt.cmd.abstracts.Change;
 import org.cloudml.facade.mrt.cmd.abstracts.Instruction;
 import org.cloudml.facade.mrt.cmd.abstracts.Listener;
@@ -110,10 +106,10 @@ public class Coordinator {
     }
     
     public String codec(Object object){
-        if(object instanceof CloudMLModel){
+        if(object instanceof Deployment){
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                jsonCodec.save((CloudMLModel)object, baos);
+                jsonCodec.save((Deployment)object, baos);
                 return baos.toString("UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(Coordinator.class.getName()).log(Level.SEVERE, null, ex);

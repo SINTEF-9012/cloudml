@@ -22,36 +22,40 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.validation.Report;
+import static org.cloudml.core.util.OwnedBy.CONTAINED;
 
-/**
- * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
- */
-public abstract class ExecutionPlatform extends CloudMLElementWithProperties{
-
-    private Component owner;
-
-    public ExecutionPlatform(){}
-
-    public ExecutionPlatform(String name){
+public abstract class ExecutionPlatform extends WithResources implements DeploymentElement, OwnedBy<Component> {
+    
+    private final OptionalOwner<Component> owner;
+    
+    public ExecutionPlatform(String name) {
         super(name);
+        this.owner = new OptionalOwner<Component>();
     }
-
-    public ExecutionPlatform(String name, List<Property> properties){
-        super(name, properties);
+    
+    public abstract ExecutionPlatformInstance<? extends ExecutionPlatform> instantiate();
+    
+    @Override
+    public void validate(Report report) {
+        if (owner.isUndefined()) {
+            final String error = String.format("no owner for execution platform '%s'", getQualifiedName());
+            report.addError(error);
+        }
     }
-
-    public ExecutionPlatform(String name, List<Property> properties, Component owner){
-        super(name, properties);
-        this.owner=owner;
+    
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get().getDeployment();
+    }    
+    
+    public OptionalOwner<Component> getOwner() {
+        return owner;
     }
-
-    public Component getOwner(){
-        return this.owner;
+    
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", owner.getName(), CONTAINED, getName());
     }
-
-    public void setOwner(Component owner){
-        this.owner=owner;
-    }
-
 }

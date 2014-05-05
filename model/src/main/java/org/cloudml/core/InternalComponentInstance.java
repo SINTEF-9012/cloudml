@@ -22,63 +22,87 @@
  */
 package org.cloudml.core;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import org.cloudml.core.collections.RequiredPortInstanceGroup;
+import org.cloudml.core.visitors.Visitor;
 
 /*
  * An instance of artefact is an elementary unit to be deployed on a single
  * node. It contains properties, communications channels and dependencies.
- *
  */
 public class InternalComponentInstance extends ComponentInstance<InternalComponent> {
 
-		/*
-	 * Dependencies <PortName,PortInstance Reference>
-	 */
-	private List<RequiredPortInstance> requiredPortInstances = new LinkedList<RequiredPortInstance>();
-    private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance = null;
+    public static enum State {
+
+        UNINSTALLED,
+        INSTALLED,
+        CONFIGURED,
+        RUNNING,
+        ERROR,
+    }
+    private final RequiredPortInstanceGroup requiredPortInstances;
+    private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance;
     protected State status;
 
-    public enum State{
-        uninstalled,
-        installed,
-        configured,
-        running,
-        error,
+    public InternalComponentInstance(InternalComponent type) {
+        this(NamedElement.DEFAULT_NAME, type);
     }
 
-	public InternalComponentInstance() {
-	}
+    public InternalComponentInstance(String name, InternalComponent type) {
+        super(name, type);
+        requiredPortInstances = instantiateAllRequiredPorts(type);
+        requiredExecutionPlatformInstance = type.getRequiredExecutionPlatform().instantiate();
+        requiredExecutionPlatformInstance.getOwner().set(this);
+    }
 
-	public InternalComponentInstance(String name, InternalComponent type) {
-		super(name,type);
-		this.status=State.uninstalled;
-	}
+    private LocalRequiredPortInstanceGroup instantiateAllRequiredPorts(InternalComponent type) {
+        final RequiredPortInstanceGroup instances = new RequiredPortInstanceGroup();
+        for (RequiredPort port : type.getRequiredPorts()) {
+            final RequiredPortInstance instance = port.instantiate();
+            instance.getOwner().set(this);
+            instances.add(instance);
+        }
+        return new LocalRequiredPortInstanceGroup(instances);
+    }
 
-	public InternalComponentInstance(String name, InternalComponent type, RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
-		super(name,type);
-        this.status=State.uninstalled;
-        this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
-	}
+    public RequiredPortInstanceGroup getRequiredPorts() {
+        return this.requiredPortInstances;
+    }
 
-	public InternalComponentInstance(String name, List<Property> properties, InternalComponent type) {
-		super(name, properties, type);
-        this.status=State.uninstalled;
-	}
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitInternalComponentInstance(this);
+    }
 
-	public InternalComponentInstance(String name, List<Property> properties, InternalComponent type, RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
-		super(name, properties, type);
-        this.status=State.uninstalled;
-        this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
-	}
+    public ComponentInstance<? extends Component> getHost() {
+        if (getOwner().isUndefined()) {
+            return null;
+        }
+        return getDeployment().getExecuteInstances().hostOf(this);
+    }
 
-	public InternalComponentInstance(String name, List<Property> properties, List<RequiredPortInstance> requiredPortInstances, List<ProvidedPortInstance> providedPortInstances) {
-		super(name, properties, providedPortInstances);
-		this.requiredPortInstances = requiredPortInstances;
-	}
+    public boolean isHostedBy(ComponentInstance<? extends Component> host) {
+        if (getOwner().isUndefined()) {
+            return false;
+        }
+        return getHost().equals(host);
+    }
 
+    /**
+     * @return the external component at the bottom of the underlying software
+     * stack. For instance, if an application, is running on the top of a war
+     * container, itself running on linux virtual machine, externalHost will
+     * return the linux VM.
+     */
+    public ExternalComponentInstance<? extends ExternalComponent> externalHost() {
+        final ComponentInstance<? extends Component> directHost = getHost();
+        if (directHost.isInternal()) {
+            return directHost.asInternal().externalHost(); 
+        }
+        return directHost.asExternal();
+    }
 
-    public State getStatus(){
+    public State getStatus() {
         return this.status;
     }
 
@@ -90,44 +114,71 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         this.status = State.valueOf(s);
     }
 
-
-    public void setRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance requiredExecutionPlatformInstance) {
-        this.requiredExecutionPlatformInstance = requiredExecutionPlatformInstance;
-    }
-
-    public RequiredExecutionPlatformInstance getRequiredExecutionPlatformInstance() {
+    public RequiredExecutionPlatformInstance getRequiredExecutionPlatform() {
         return requiredExecutionPlatformInstance;
     }
 
-	@Override
-	public String toString() {
-		return "Instance " + name + " : " + getType().getName();
-	}
+    public void setRequiredExecutionPlatform(RequiredExecutionPlatformInstance platform) {
+        this.requiredExecutionPlatformInstance = rejectIfInvalid(platform);
+    }
 
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof InternalComponentInstance) {
-			InternalComponentInstance otherCompInst = (InternalComponentInstance) other;
-			Boolean match= name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
-			if(requiredExecutionPlatformInstance != null)
-				return name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType()) && requiredExecutionPlatformInstance.equals(otherCompInst.getRequiredExecutionPlatformInstance());
-			else return match && (otherCompInst.getRequiredExecutionPlatformInstance() == null);
-		} else {
-			return false;
-		}
-	}
+    private RequiredExecutionPlatformInstance rejectIfInvalid(RequiredExecutionPlatformInstance platform) {
+        if (platform == null) {
+            final String error = String.format("Error in internal component instance '%s'! ('null' cannot be the required execution platform)", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        if (!platform.getType().equals(this.getType().getRequiredExecutionPlatform())) {
+            final String error = String.format("Error in internal component instance '%s'! Required execution platform has a wrong type (expected: '%s' but found '%s')", getQualifiedName(), getType().getRequiredExecutionPlatform().getQualifiedName(), platform.getType().getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        return platform;
+    }
 
-	/*
-	 * Getters
-	 */
+    @Override
+    public String toString() {
+        return "Instance " + getName() + " : " + getType().getName();
+    }
 
-	public List<RequiredPortInstance> getRequiredPortInstances() {
-		return this.requiredPortInstances;
-	}
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof InternalComponentInstance) {
+            InternalComponentInstance otherCompInst = (InternalComponentInstance) other;
+            Boolean match = getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType());
+            if (requiredExecutionPlatformInstance != null) {
+                return getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType()) && requiredExecutionPlatformInstance.equals(otherCompInst.getRequiredExecutionPlatform());
+            }
+            else {
+                return match && (otherCompInst.getRequiredExecutionPlatform() == null);
+            }
+        }
+        else {
+            return false;
+        }
+    }
 
-	public void setRequiredPortInstances(List<RequiredPortInstance> requiredPortInstances) {
-		this.requiredPortInstances = requiredPortInstances;
-	}
+    private class LocalRequiredPortInstanceGroup extends RequiredPortInstanceGroup {
 
-    
+        public LocalRequiredPortInstanceGroup(Collection<RequiredPortInstance> content) {
+            super();
+            for (RequiredPortInstance instance : content) {
+                super.add(instance);
+                instance.getOwner().set(InternalComponentInstance.this);
+            }
+        }
+
+        @Override
+        public boolean add(RequiredPortInstance e) {
+            throw new UnsupportedOperationException("Required ports of an internal component instance cannot be changed");
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException("Required ports of an internal component instance cannot be changed");
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException("Required ports of an internal component instance cannot be changed");
+        }
+    }
 }

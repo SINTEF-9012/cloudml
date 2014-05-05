@@ -25,88 +25,87 @@ package org.cloudml.core;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Resource extends CloudMLElementWithProperties {
-	private String installCommand ="";
-	private String retrieveCommand ="";
-	private String configureCommand ="";
-	private String startCommand ="";
-	private String stopCommand ="";
-	private Map<String,String> uploadCommand=new HashMap<String, String>();
-	
-	
-	public Resource(){}
-	
-	public Resource(String name){
-		super(name);
-	}
-	
-	public Resource(String name, String deployingCommand,String retrievingCommand){
-		super(name);
-		this.installCommand =deployingCommand;
-		this.retrieveCommand =retrievingCommand;
-	}
-	
-	public Resource(String name, String deployingCommand,String retrievingCommand, String configurationCommand, String startCommand, String stopCommand){
-		super(name);
-		this.installCommand =deployingCommand;
-		this.retrieveCommand =retrievingCommand;
-		this.configureCommand =configurationCommand;
-		this.startCommand =startCommand;
-		this.stopCommand =stopCommand;
-	}
-	
-	public String getInstallCommand(){
-		return installCommand;
-	}
-	
-	public String getRetrieveCommand(){
-		return retrieveCommand;
-	}
-	
-	public String getConfigureCommand(){
-		return configureCommand;
-	}
-	
-	public String getStartCommand(){
-		return startCommand;
-	}
-	
-	public String getStopCommand(){
-		return stopCommand;
-	}
-	
-	public Map<String,String> getUploadCommand(){
-		return uploadCommand;
-	}
+public class Resource extends WithProperties {
 
-	public void setInstallCommand(String deployingCommand){
-		this.installCommand =deployingCommand;
-	}
-	
-	public void setRetrieveCommand(String retrievingCommand){
-		this.retrieveCommand =retrievingCommand;
-	}
-	
-	public void setConfigureCommand(String configurationCommand){
-		this.configureCommand =configurationCommand;
-	}
-	
-	public void setStartCommand(String startCommand){
-		this.startCommand =startCommand;
-	}
-	
-	public void setStopCommand(String stopCommand){
-		this.stopCommand =stopCommand;
-	}
-	
-	public void setUploadCommand(Map<String,String> paths){
-		this.uploadCommand=paths;
-	}
-	
-	
-	@Override
-	public String toString(){
-		return "Resource: "+name;
-	}
-	
+    private String installCommand = "";
+    private String retrieveCommand = "";
+    private String configureCommand = "";
+    private String startCommand = "";
+    private String stopCommand = "";
+    private Map<String, String> uploadCommand = new HashMap<String, String>();
+
+    public Resource() {
+    }
+
+    public Resource(String name) {
+        super(name);
+    }
+
+    public Resource(String name, String deployingCommand, String retrievingCommand) {
+        super(name);
+        this.installCommand = deployingCommand;
+        this.retrieveCommand = retrievingCommand;
+    }
+
+    public Resource(String name, String deployingCommand, String retrievingCommand, String configurationCommand, String startCommand, String stopCommand) {
+        super(name);
+        this.installCommand = deployingCommand;
+        this.retrieveCommand = retrievingCommand;
+        this.configureCommand = configurationCommand;
+        this.startCommand = startCommand;
+        this.stopCommand = stopCommand;
+    }
+
+    public String getInstallCommand() {
+        return installCommand;
+    }
+
+    public String getRetrieveCommand() {
+        return retrieveCommand;
+    }
+
+    public String getConfigureCommand() {
+        return configureCommand;
+    }
+
+    public String getStartCommand() {
+        return startCommand;
+    }
+
+    public String getStopCommand() {
+        return stopCommand;
+    }
+
+    public Map<String, String> getUploadCommand() {
+        return uploadCommand;
+    }
+
+    public void setInstallCommand(String deployingCommand) {
+        this.installCommand = deployingCommand;
+    }
+
+    public void setRetrieveCommand(String retrievingCommand) {
+        this.retrieveCommand = retrievingCommand;
+    }
+
+    public void setConfigureCommand(String configurationCommand) {
+        this.configureCommand = configurationCommand;
+    }
+
+    public void setStartCommand(String startCommand) {
+        this.startCommand = startCommand;
+    }
+
+    public void setStopCommand(String stopCommand) {
+        this.stopCommand = stopCommand;
+    } 
+
+    public void setUploadCommand(Map<String, String> paths) {
+        this.uploadCommand = paths;
+    }
+
+    @Override
+    public String toString() {
+        return "Resource: " + getName();
+    }
 }

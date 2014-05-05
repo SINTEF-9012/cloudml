@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>ui</artifactId>
 		<groupId>org.cloudml</groupId>
-		<version>1.4-SNAPSHOT</version>
+		<version>2.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ui.shell</artifactId>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>org.cloudml</groupId>
 			<artifactId>facade</artifactId>
-			<version>1.4-SNAPSHOT</version>
+			<version>2.0-SNAPSHOT</version>
 
 		</dependency>
 

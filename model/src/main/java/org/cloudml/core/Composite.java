@@ -28,7 +28,7 @@ import java.util.List;
 /*
  * A composite contains a HashMap of instances of InternalComponent
  */
-public class Composite extends CloudMLElement {
+public class Composite extends NamedElement {
 
     /*
      * <ArtefactName,InternalComponent reference>

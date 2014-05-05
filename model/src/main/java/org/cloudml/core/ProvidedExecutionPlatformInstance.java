@@ -22,39 +22,45 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.visitors.Visitor;
 
-/**
- * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
- */
 public class ProvidedExecutionPlatformInstance extends ExecutionPlatformInstance<ProvidedExecutionPlatform> {
 
-    public ProvidedExecutionPlatformInstance(){}
-
-    public ProvidedExecutionPlatformInstance(String name, ProvidedExecutionPlatform type){
-        super(name,type);
+    public ProvidedExecutionPlatformInstance(String name, ProvidedExecutionPlatform type) {
+        super(name, type);
     }
 
-    public ProvidedExecutionPlatformInstance(String name, List<Property> properties, ProvidedExecutionPlatform type){
-        super(name, properties, type);
+    public boolean match(InternalComponent component) {
+        return getType().match(component.getRequiredExecutionPlatform());
+    }
+
+    public boolean match(InternalComponentInstance component) {
+        return match(component.getType());
+    }
+
+    public boolean match(RequiredExecutionPlatformInstance platform) {
+        return getType().match(platform.getType());
     }
 
     @Override
     public String toString() {
-        return "ProvidedExecutionPlatformInstance " + name + " component:" + this.getOwner().getName();
+        return "ProvidedExecutionPlatformInstance " + getQualifiedName();
     }
 
     @Override
     public boolean equals(Object other) {
-        if(other == null)
-            return false;
-
-        if (other instanceof ProvidedExecutionPlatformInstance) {
-            ProvidedExecutionPlatformInstance otherNode = (ProvidedExecutionPlatformInstance) other;
-            return name.equals(otherNode.getName()) && this.getOwner().equals(otherNode.getOwner());
-        } else {
+        if (other == null) {
             return false;
         }
+        if (other instanceof ProvidedExecutionPlatformInstance) {
+            ProvidedExecutionPlatformInstance otherNode = (ProvidedExecutionPlatformInstance) other;
+            return getName().equals(otherNode.getName()) && this.getOwner().equals(otherNode.getOwner());
+        }
+        return false;
     }
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitProvidedExecutionPlatformInstance(this);
+    }
 }

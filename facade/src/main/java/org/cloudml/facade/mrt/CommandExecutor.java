@@ -25,69 +25,73 @@ package org.cloudml.facade.mrt;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.Provider;
 import org.cloudml.core.VM;
 import org.cloudml.facade.mrt.cmd.abstracts.Change;
 import org.cloudml.facade.mrt.cmd.abstracts.Instruction;
 import org.cloudml.facade.mrt.cmd.gen.Extended;
 
 /**
- * This is the one who finally execute the command, one by one.
- * It is also the only one who knows what exactly each command means.
- * But in the same, it only knows the behavioural meaning of a command, without
- * any knowledge about where it is from, how it is scheduled, etc.
- * 
+ * This is the one who finally execute the command, one by one. It is also the
+ * only one who knows what exactly each command means. But in the same, it only
+ * knows the behavioural meaning of a command, without any knowledge about where
+ * it is from, how it is scheduled, etc.
+ *
  * @author Hui Song
  */
 public class CommandExecutor {
-    
+
     ModelRepo repo = null;
-    public CommandExecutor(ModelRepo repo){
+
+    public CommandExecutor(ModelRepo repo) {
         this.repo = repo;
     }
 
-    
-    public synchronized String getSnapshotInJson(){
+    public synchronized String getSnapshotInJson() {
         JsonCodec jsonCodec = new JsonCodec();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         jsonCodec.save(repo.getRoot(), baos);
-        return baos.toString();   
+        return baos.toString();
     }
-    
-    public synchronized String getSnapshotInString(){
+
+    public synchronized String getSnapshotInString() {
         return repo.getRoot().toString();
     }
-    
-    public synchronized void commitModifications(List<String> modifications){
-        for(String modi : modifications){
+
+    public synchronized void commitModifications(List<String> modifications) {
+        for (String modi : modifications) {
             String[] parsed = modi.split("\\s+");
-            if("add".equals(parsed[0])){
-               if("in".equals(parsed[4]) && "root".equals(parsed[5]) && "nodeTypes".equals(parsed[6]))
-                   repo.getRoot().getComponents().put(parsed[3], new VM(parsed[3]));
+            if ("add".equals(parsed[0])) {
+                if ("in".equals(parsed[4]) && "root".equals(parsed[5]) && "nodeTypes".equals(parsed[6])) {
+                    // FIXME: We should know which provider is responsible for the new VM we add!
+                    final Provider provider = new Provider("Missing Provider");
+                    repo.getRoot().getProviders().add(provider);
+                    repo.getRoot().getComponents().add(new VM(parsed[3], provider));
+                }
             }
         }
     }
-    
+
     /**
-     * The thing that really matters to this method is its "synchronized" keywork
+     * The thing that really matters to this method is its "synchronized"
+     * keywork
+     *
      * @param inst
-     * @return 
+     * @return
      */
-    public synchronized Object execute(Instruction inst, List<Change> changes){
+    public synchronized Object execute(Instruction inst, List<Change> changes) {
         int curr = changes.size();
-        
-        if(inst instanceof Extended){
+
+        if (inst instanceof Extended) {
             inst.execute(repo, changes);
             return null;
         }
-        
-        
+
+
         Object obj = inst.execute(repo.getRoot(), changes);
-        for(;curr<changes.size();curr++){
+        for (; curr < changes.size(); curr++) {
             changes.get(curr).fromPeer = inst.fromPeer;
         }
         return obj;
     }
-    
-    
-    
 }

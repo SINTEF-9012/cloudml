@@ -20,23 +20,22 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.core;
 
-public abstract class CloudMLElement {
 
-    protected String name;
+package test.cloudml.core.builders;
 
-    public CloudMLElement(){}
-    
-    public CloudMLElement(String name) {
-        this.name = name;
+import org.cloudml.core.Port;
+import org.cloudml.core.builders.PortBuilder;
+
+import static org.cloudml.core.builders.Commons.*;
+
+
+
+public class ProvidedPortBuilderTest extends PortBuilderTest {
+
+    @Override
+    public final PortBuilder<? extends Port, ? extends PortBuilder<?, ?>> aSamplePortBuilder() {
+        return aProvidedPort();
     }
     
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

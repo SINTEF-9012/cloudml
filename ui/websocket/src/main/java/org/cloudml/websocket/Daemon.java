@@ -27,7 +27,7 @@ import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 import org.cloudml.facade.mrt.Coordinator;
 
 /**
@@ -51,11 +51,11 @@ public class Daemon
         coord.start();
     }
     
-    public static CloudMLModel initWithSenseApp(){
-        CloudMLModel root = null;
+    public static Deployment initWithSenseApp(){
+        Deployment root = null;
         JsonCodec jsonCodec = new JsonCodec();
         try {
-            root = (CloudMLModel) jsonCodec.load(new FileInputStream("sensappAdmin.json"));
+            root = (Deployment) jsonCodec.load(new FileInputStream("sensappAdmin.json"));
             
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Daemon.class.getName()).log(Level.SEVERE, null, ex);

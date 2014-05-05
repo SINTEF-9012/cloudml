@@ -27,8 +27,8 @@ import java.io.OutputStream;
 import net.cloudml.loader.XMIModelLoader;
 import net.cloudml.serializer.XMIModelSerializer;
 import org.cloudml.codecs.commons.Codec;
-import org.cloudml.core.CloudMLElement;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.NamedElement;
+import org.cloudml.core.Deployment;
 
 /*
  * An XMI codec, as its name might suggest... @author Brice MORIN
@@ -49,7 +49,7 @@ public class XmiCodec implements Codec {
 
     ;
 
-    public CloudMLElement load(InputStream content) {
+    public NamedElement load(InputStream content) {
         XMIModelLoader loader = new XMIModelLoader();
         net.cloudml.core.CloudMLModel kDeploy = (net.cloudml.core.CloudMLModel) loader.loadModelFromStream(content).get(0);
 
@@ -66,8 +66,8 @@ public class XmiCodec implements Codec {
         return bridge.toPOJO(kDeploy);
     }
 
-    public void save(CloudMLElement model, OutputStream content) {
+    public void save(NamedElement model, OutputStream content) {
         XMIModelSerializer serializer = new XMIModelSerializer();
-        serializer.serialize(bridge.toKMF((CloudMLModel) model), content);
+        serializer.serialize(bridge.toKMF((Deployment) model), content);
     }
 }

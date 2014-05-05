@@ -22,43 +22,60 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.util.OwnedBy;
+import static org.cloudml.core.util.OwnedBy.CONTAINED;
 
-/**
- * Created by Nicolas Ferry & Franck Chauvel on 03.03.14.
- */
-public abstract class ExecutionPlatformInstance<T extends ExecutionPlatform> extends CloudMLElementWithProperties {
+public abstract class ExecutionPlatformInstance<T extends ExecutionPlatform> extends WithResources implements DeploymentElement, OwnedBy<ComponentInstance<? extends Component>> {
 
+    private final OptionalOwner<ComponentInstance<? extends Component>> owner;
     private T type;
-    private ComponentInstance owner;
 
-
-    public ExecutionPlatformInstance(){}
-
-    public ExecutionPlatformInstance(String name, T type){
+    public ExecutionPlatformInstance(String name, T type) {
+        this(name, type, null);
+    }
+    
+    public ExecutionPlatformInstance(String name, T type, ComponentInstance<? extends Component> owner) {
         super(name);
-        this.type=type;
+        this.type = onlyIfValid(type);
+        this.owner = new OptionalOwner<ComponentInstance<? extends Component>>();
+        if (owner != null) {
+            this.owner.set(owner);
+        }
+    }
+    
+     private T onlyIfValid(T type) {
+        if (type == null) {
+            final String error = String.format("'null' is not a valid platform execution type for platform '%s'", getQualifiedName());
+            throw new IllegalArgumentException(error);
+        }
+        return type;
     }
 
-    public ExecutionPlatformInstance(String name, List<Property> properties, T type){
-        super(name, properties);
-        this.type=type;
+    @Override
+    public OptionalOwner<ComponentInstance<? extends Component>> getOwner() {
+        return owner;
     }
 
-    public T getType(){
+    @Override
+    public Deployment getDeployment() {
+        return getOwner().get().getDeployment();
+    }
+        
+
+    public T getType() {
         return this.type;
     }
 
-    public void setType(T type){
-        this.type=type;
+    public void setType(T type) {
+        this.type = onlyIfValid(type);
+    }
+    
+    public boolean isInstanceOf(T type) {
+        return this.type.equals(type);
     }
 
-    public ComponentInstance getOwner(){
-        return this.owner;
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", getOwner().getName(), CONTAINED, getName());
     }
-
-    public void setOwner(ComponentInstance owner){
-        this.owner=owner;
-    }
-
 }

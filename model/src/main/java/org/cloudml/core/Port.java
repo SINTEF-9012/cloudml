@@ -22,65 +22,90 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.validation.CanBeValidated;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitable;
 
-public abstract class Port extends CloudMLElementWithProperties {
+public abstract class Port extends WithResources implements DeploymentElement, OwnedBy<Component>, Visitable, CanBeValidated {
 
-	protected boolean isLocal = false;
-    protected Component component;
-    protected int portNumber = 0;
+    public static final int DEFAULT_PORT_NUMBER = 0;
+    public static final boolean LOCAL = false;
+    public static final boolean REMOTE = true;
+    private final OptionalOwner<Component> owner;
+    private boolean remote;
+    private int portNumber;
 
-    public Port() {
+    public Port(String name) {
+        this(name, REMOTE);
     }
 
-    public Port(String name, Component component, boolean isLocal) {
+    public Port(String name, boolean isRemote) {
         super(name);
-        this.component = component;
-        this.isLocal = isLocal;
+        this.owner = new OptionalOwner<Component>();
+        this.remote = isRemote;
+        this.portNumber = DEFAULT_PORT_NUMBER;
     }
 
-    public Port(String name, List<Property> properties, Component component, boolean isLocal) {
-        super(name, properties);
-        this.component = component;
-        this.isLocal = isLocal;
+    @Override
+    public void validate(Report report) {
+        if (owner.isUndefined()) {
+            final String message = String.format("The port '%s' has no owner", getQualifiedName());
+            report.addError(message);
+        }
+    }
+    
+    public abstract PortInstance<? extends Port> instantiate();
+
+    @Override
+    public final Deployment getDeployment() {
+        return getOwner().get().getDeployment();
     }
 
-    public Component getComponent() {
-        return component;
+    @Override
+    public OptionalOwner<Component> getOwner() {
+        return owner;
     }
 
-    public void setComponent(Component component) {
-        this.component = component;
+    @Override
+    public String getQualifiedName() {
+        return String.format("%s%s%s", getOwner().getName(), CONTAINED, getName());
     }
 
-    public int getPortNumber() {
+    public final int getPortNumber() {
         return portNumber;
     }
 
-    public void setPortNumber(int n) {
-        this.portNumber = n;
+    public final void setPortNumber(int portNumber) {
+        this.portNumber = portNumber;
     }
-    
-    public void setIsLocal(boolean isLocal){
-    	this.isLocal =isLocal;
+
+    public final void setRemote(boolean isRemote) {
+        this.remote = isRemote;
     }
-    
-    public boolean getIsLocal(){
-    	return this.isLocal;
+
+    public final boolean isRemote() {
+        return this.remote;
+    }
+
+    public final boolean isLocal() {
+        return !isRemote();
     }
 
     @Override
     public String toString() {
-        return "PortType " + name + " ownerType" + component.getName();
+        return "PortType: " + getQualifiedName();
     }
-    
+
     @Override
     public boolean equals(Object other) {
-        if (other instanceof Port) {
-        	Port otherArt = (Port) other;
-            return name.equals(otherArt.getName()) && component.equals(otherArt.getComponent());
-        } else {
+        if (other == null) {
             return false;
         }
+        if (other instanceof Port) {
+            Port otherArt = (Port) other;
+            return getName().equals(otherArt.getName()) && owner.equals(otherArt.getOwner());
+        }
+        return false;
     }
 }

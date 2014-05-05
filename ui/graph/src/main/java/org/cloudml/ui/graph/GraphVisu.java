@@ -27,7 +27,7 @@ import java.util.ArrayList;
 
 import org.cloudml.codecs.DrawnIconVertexDemo;
 import org.cloudml.codecs.Vertex;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 
 public class GraphVisu {
 
@@ -36,7 +36,7 @@ public class GraphVisu {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		CloudMLModel model=new CloudMLModel();
+		Deployment model=new Deployment();
 		DrawnIconVertexDemo g = new DrawnIconVertexDemo(model);
 		Visu gui= new Visu(model,g);
 		gui.createFrame();

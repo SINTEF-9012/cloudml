@@ -73,11 +73,11 @@ public class Visu {
 	private JTable runtimeProperties;
 	private JList nodeTypes;
 
-	private CloudMLModel dmodel;
+	private Deployment dmodel;
 	private DrawnIconVertexDemo v;
 	private CloudML cml;
 
-	public Visu(CloudMLModel model, DrawnIconVertexDemo v){
+	public Visu(Deployment model, DrawnIconVertexDemo v){
 		this.dmodel=model;
 		this.v=v;
 		cml=Factory.getInstance().getCloudML();
@@ -189,7 +189,7 @@ public class Visu {
 				JsonCodec codec=new JsonCodec();
 				try {
 					InputStream stream = new FileInputStream(result);
-					CloudMLModel model = (CloudMLModel)codec.load(stream);
+					Deployment model = (Deployment)codec.load(stream);
 					dmodel=model;
 					v.setDeploymentModel(dmodel);
 					ArrayList<Vertex> V=v.drawFromDeploymentModel();
@@ -296,15 +296,15 @@ public class Visu {
 		frame.setVisible(true);
 	}
 
-	public DefaultListModel fillList(){
+	public DefaultListModel fillList(){ 
 		DefaultListModel lm=new DefaultListModel();
-		for(ExternalComponent n:dmodel.getExternalComponents()){
+		for(ExternalComponent n:dmodel.getComponents().onlyExternals()){
 			lm.addElement(n.getName());
 		}
-		for(Component n:dmodel.getComponents().values()){
+		for(Component n:dmodel.getComponents()){
 			lm.addElement(n.getName());
 		}
-		for(Relationship b:dmodel.getRelationships().values()){
+		for(Relationship b:dmodel.getRelationships()){
 			lm.addElement(b.getName());
 		}
 		return lm;

@@ -22,180 +22,230 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.collections.VMInstanceGroup;
+import org.cloudml.core.validation.CanBeValidated;
+import org.cloudml.core.visitors.Visitable;
+import org.cloudml.core.visitors.Visitor;
 
-public class VM extends ExternalComponent {
+public class VM extends ExternalComponent implements Visitable, CanBeValidated {
+    public static final int DEFAULT_MIN_RAM = 1000;
+    public static final int DEFAULT_MIN_CORES = 1;
+    public static final int DEFAULT_MIN_STORAGE = 25;
+    public static final String DEFAULT_LOCATION = "";
+    public static final String DEFAULT_OS = "";
+    public static final String DEFAULT_GROUP_NAME = "";
+    public static final String DEFAULT_SSH_KEY = "";
+    public static final String DEFAULT_SECURITY_GROUP = "";
+    public static final boolean DEFAULT_64_OS = true;
+    public static final String DEFAULT_IMAGE_ID = "";
 
-	public VM() {
-	}
+    public VM(String name, Provider provider) {
+        super(name, provider);
+        minRam = DEFAULT_MIN_RAM;
+        minCores = DEFAULT_MIN_CORES;
+        minStorage = DEFAULT_MIN_STORAGE;
+        location = DEFAULT_LOCATION;
+        os = DEFAULT_OS;
+        groupName = DEFAULT_GROUP_NAME;
+        sshKey = DEFAULT_SSH_KEY;
+        securityGroup = DEFAULT_SECURITY_GROUP;
+        is64os = DEFAULT_64_OS;
+        imageId = DEFAULT_IMAGE_ID;
+    }
 
-	public VM(String name) {
-		super(name);
-	}
+    @Override
+    public final boolean isVM() {
+        return true;
+    }
+       
 
-	public VM(String name, Provider provider) {
-		super(name,provider);
-	}
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitVM(this);
+    }
 
-	public VM(String name, List<Property> properties) {
-		super(name, properties);
-	}
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (other instanceof VM) {
+            VM otherNode = (VM) other;
+            return super.equals(other);
+        }
+        return false;
+    }
 
-	public VM(String name, List<Property> properties, Provider provider) {
-		super(name, properties,provider);
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof VM) {
-			VM otherVM = (VM) other;
-			return name.equals(otherVM.getName()) && this.provider.equals(otherVM.getProvider());
-		} else {
-			return false;
-		}
-	}
-
-	@Override
-	public String toString() {
-		return "VM " + name + "(minRam: " + minRam + ", minCores: " + minCores + ", minStorage: " + minStorage + ")";
-	}
-	/*
-	 * NODE Configuration
-	 */
-	private int minRam = 0;
+    @Override
+    public String toString() {
+        return "VM " + getName() + "(minRam: " + minRam + ", minCores: " + minCores + ", minStorage: " + minStorage + ")";
+    }
+    /*
+     * NODE Configuration
+     */
+    private int minRam;
     private int maxRam = 0;
-	private int minCores = 0;
+    private int minCores;
     private int maxCores = 0;
-	private int minStorage = 0;
+    private int minStorage;
     private int maxStorage = 0;
-	private String location = "";
-	private String os = "";
-	private String sshKey = "";
-	private String securityGroup = "";
-	private String groupName = "";
-	private String privateKey = "";
-	private Boolean is64os = true;
-	private String imageId = "";
+    private String location;
+    private String os;
+    private String sshKey;
+    private String securityGroup;
+    private String groupName;
+    private String privateKey = "";
+    private Boolean is64os;
+    private String imageId;
 
-	/*
-	 * getters
-	 */
-	public int getMinRam() {
-		return minRam;
-	}
+    /*
+     * getters
+     */
+    public int getMinRam() {
+        return minRam;
+    }
 
     public int getMaxRam() {
         return maxRam;
     }
 
-	public int getMinCores() {
-		return minCores;
-	}
+    public int getMinCores() {
+        return minCores;
+    }
 
     public int getMaxCores() {
         return maxCores;
     }
 
-	public int getMinStorage() {
-		return minStorage;
-	}
+    public int getMinStorage() {
+        return minStorage;
+    }
 
     public int getMaxStorage() {
         return maxStorage;
     }
 
-	public String getLocation() {
-		return location;
-	}
+    public String getLocation() {
+        return location;
+    }
 
-	public String getOs() {
-		return os;
-	}
+    public String getOs() {
+        return os;
+    }
 
-	public String getSshKey() {
-		return sshKey;
-	}
+    public String getSshKey() {
+        return sshKey;
+    }
 
-	public String getSecurityGroup() {
-		return securityGroup;
-	}
+    public String getSecurityGroup() {
+        return securityGroup;
+    }
 
-	public String getGroupName() {
-		return groupName;
-	}
+    public String getGroupName() {
+        return groupName;
+    }
 
-	public String getPrivateKey() {
-		return privateKey;
-	}
+    public String getPrivateKey() {
+        return privateKey;
+    }
 
-	public Boolean getIs64os() {
-		return is64os;
-	}
+    public Boolean getIs64os() {
+        return is64os;
+    }
 
-	public String getImageId() {
-		return imageId;
-	}
+    public String getImageId() {
+        return imageId;
+    }
 
-	/*
-	 * Setters
-	 */
-	public void setMinRam(int minRam) { this.minRam = minRam;	}
+    /*
+     * Setters
+     */
+    public void setMinRam(int minRam) {
+        this.minRam = minRam;
+    }
 
-    public void setMaxRam(int maxRam) { this.minRam = maxRam;	}
+    public void setMaxRam(int maxRam) {
+        this.minRam = maxRam;
+    }
 
-	public void setMinCores(int minCores) {
-		this.minCores = minCores;
-	}
+    public void setMinCores(int minCores) {
+        this.minCores = minCores;
+    }
 
     public void setMaxCores(int maxCores) {
         this.maxCores = maxCores;
     }
 
-	public void setMinStorage(int minStorage) {
-		this.minStorage = minStorage;
-	}
+    public void setMinStorage(int minStorage) {
+        this.minStorage = minStorage;
+    }
 
     public void setMaxStorage(int maxStorage) {
         this.maxStorage = maxStorage;
     }
 
-	public void setLocation(String location) {
-		this.location = location;
-	}
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-	public void setOs(String os) {
-		this.os = os;
-	}
+    public void setOs(String os) {
+        this.os = os;
+    }
 
-	public void setSshKey(String sshKey) {
-		this.sshKey = sshKey;//if we cannot access the file, we assume the key is directly passed
-	} 
+    public void setSshKey(String sshKey) {
+        this.sshKey = sshKey;//if we cannot access the file, we assume the key is directly passed
+    }
 
-	public void setSecurityGroup(String securityGroup) {
-		this.securityGroup = securityGroup;
-	}
+    public void setSecurityGroup(String securityGroup) {
+        this.securityGroup = securityGroup;
+    }
 
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
-	}
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
 
-	public void setPrivateKey(String privateKey) {
-		this.privateKey = privateKey;
-	}
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
 
-	public void setIs64os(Boolean is64os) {
-		this.is64os = is64os;
-	}
+    public void setIs64os(Boolean is64os) {
+        this.is64os = is64os;
+    }
 
-	public void setImageId(String id) {
-		imageId = id;
-	}
+    public void setImageId(String id) {
+        imageId = id;
+    }
 
-	public VMInstance instantiates(String name) {
-		return new VMInstance(name, this);
-	}
+    @Override
+    public VMInstance instantiates(String name) {
+        return new VMInstance(name, this);
+    }
 
-	public VMInstance instantiates() {
-		return new VMInstance("", this);
-	}
+    public VMInstance instantiates() {
+        return new VMInstance(this);
+    }
+
+    @Override
+    public boolean isProvidedBy(Provider provider) {
+        return getProvider().equals(provider);
+    }
+
+    public boolean hasAnyInstance() {
+        return !getInstances().isEmpty();
+    }
+
+    public VMInstanceGroup getInstances() {
+        if (getOwner().isDefined()) {
+            return getDeployment().getComponentInstances().onlyVMs().ofType(this);
+        }
+        else {
+            return new VMInstanceGroup();
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
 }

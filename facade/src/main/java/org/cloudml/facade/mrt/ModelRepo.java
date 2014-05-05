@@ -23,7 +23,7 @@
 package org.cloudml.facade.mrt;
 
 import java.util.Collection;
-import org.cloudml.core.CloudMLModel;
+import org.cloudml.core.Deployment;
 
 /**
  *
@@ -31,7 +31,7 @@ import org.cloudml.core.CloudMLModel;
  */
 public interface ModelRepo {
      
-    public CloudMLModel getRoot();
+    public Deployment getRoot();
     
     public void handle(String name, Collection<String> parameter);
  

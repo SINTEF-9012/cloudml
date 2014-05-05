@@ -22,24 +22,31 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.visitors.Visitor;
 
 public class ProvidedPort extends Port {
 
-	public ProvidedPort() {
+    public ProvidedPort(String name) {
+        this(name, REMOTE);
     }
 
-    public ProvidedPort(String name, InternalComponent owner, boolean isRemote) {
-        super(name, owner, isRemote);
+    public ProvidedPort(String name, boolean isRemote) {
+        super(name, isRemote);
     }
 
-    public ProvidedPort(String name, List<Property> properties, InternalComponent owner, boolean isRemote) {
-        super(name, properties, owner, isRemote);
+    @Override
+    public ProvidedPortInstance instantiate() {
+        return new ProvidedPortInstance(getName(), this);
     }
-	
-	@Override
-	public String toString() {
-		return "ProvidedPort " + name + " ownerType" + component.getName();
-	}
+    
+    @Override
+    public String toString() {
+        return "ProvidedPort " + getQualifiedName();
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitProvidedPort(this);
+    }
 
 }

@@ -22,30 +22,52 @@
  */
 package org.cloudml.core;
 
-import java.util.List;
+import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.core.validation.Report;
+import org.cloudml.core.visitors.Visitor;
 
 public class RequiredPortInstance extends PortInstance<RequiredPort> {
 
-    public RequiredPortInstance(String name, RequiredPort type, InternalComponentInstance owner) {
-        super(name, type, owner);
+    public RequiredPortInstance(String name, RequiredPort type) {
+        super(name, type);
     }
 
-    public RequiredPortInstance(String name, RequiredPort type, List<Property> properties, InternalComponentInstance owner) {
-        super(name, type, properties, owner);
+    public ProvidedPortInstance findServerPort() {
+        final RelationshipInstanceGroup relationships = getDeployment().getRelationshipInstances().whereEitherEndIs(this);
+        if (relationships.isEmpty()) {
+            final String message = String.format("client port '%s' is not yet bound to any server", getName());
+            throw new IllegalArgumentException(message);
+        }
+        return relationships.toList().get(0).getProvidedEnd();
+    }
+
+    public ComponentInstance<? extends Component> findProvider() {
+        return findServerPort().getOwner().get();
     }
 
     @Override
     public String toString() {
-        return "RequiredPortInstance " + name + " component:" + owner.getName();
+        return "RequiredPortInstance " + getQualifiedName();
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitRequiredPortInstance(this);
+    }
+
+    @Override
+    public void validate(Report report) {
+        if (getOwner().isUndefined()) {
+            report.addError("Client port instance has no owner");
+        }
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof RequiredPortInstance) {
             RequiredPortInstance otherNode = (RequiredPortInstance) other;
-            return name.equals(otherNode.getName()) && owner.equals(otherNode.getOwner());
-        } else {
-            return false;
+            return getName().equals(otherNode.getName()) && getOwner().equals(otherNode.getOwner());
         }
+        return false;
     }
 }

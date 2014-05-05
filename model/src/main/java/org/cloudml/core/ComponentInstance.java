@@ -22,80 +22,217 @@
  */
 package org.cloudml.core;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import org.cloudml.core.collections.ComponentInstanceGroup;
+import org.cloudml.core.collections.InternalComponentInstanceGroup;
+import org.cloudml.core.util.OwnedBy;
+import org.cloudml.core.collections.ProvidedExecutionPlatformInstanceGroup;
+import org.cloudml.core.collections.ProvidedPortInstanceGroup;
+import org.cloudml.core.validation.Report;
 
-/**
- * Created by Nicolas Ferry on 13.02.14.
- */
-public abstract class ComponentInstance<T extends Component> extends CloudMLElementWithProperties{
+public abstract class ComponentInstance<T extends Component> extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
 
-    protected T type;
-    private List<ProvidedPortInstance> providedPortInstances = new LinkedList<ProvidedPortInstance>();
+    public static enum State {
 
-
-    private List<ProvidedExecutionPlatformInstance> providedExecutionPlatformInstances= new LinkedList<ProvidedExecutionPlatformInstance>();
-
-
-    public ComponentInstance(){}
+        STOPPED,
+        RUNNING,
+        ERROR,
+    }
+    private final OptionalOwner<Deployment> owner;
+    private T type;
+    private final ProvidedPortInstanceGroup providedPorts;
+    private final ProvidedExecutionPlatformInstanceGroup providedExecutionPlatforms;
 
     public ComponentInstance(String name, T type) {
         super(name);
-        this.type=type;
+        this.owner = new OptionalOwner<Deployment>();
+        setType(type);
+        this.providedPorts = instantiateAllProvidedPorts(type);
+        this.providedExecutionPlatforms = instantiateAllExecutionPlatforms(type);
     }
 
-    public ComponentInstance(String name, List<Property> properties, T type) {
-        super(name,properties);
-        this.type=type;
+    private ProvidedPortInstanceGroup instantiateAllProvidedPorts(T type) {
+        final ProvidedPortInstanceGroup instances = new ProvidedPortInstanceGroup();
+        for (ProvidedPort port : type.getProvidedPorts()) {
+            instances.add(port.instantiate());
+        }
+        return new LocalProvidedPortInstanceGroup(instances);
     }
 
-    public ComponentInstance(String name, List<Property> properties, List<ProvidedPortInstance> providedPortInstances) {
-        super(name,properties);
-        this.providedPortInstances=providedPortInstances;
+    private LocalProvidedExecutionPlatformInstanceGroup instantiateAllExecutionPlatforms(T type) {
+        final ProvidedExecutionPlatformInstanceGroup group = new ProvidedExecutionPlatformInstanceGroup();
+        for (ProvidedExecutionPlatform platform : type.getProvidedExecutionPlatforms()) {
+            group.add(platform.instantiate());
+        }
+        return new LocalProvidedExecutionPlatformInstanceGroup(group);
+    }
+    
+    public boolean canHost(InternalComponent componentType) {
+        return getProvidedExecutionPlatforms().firstMatchFor(componentType) != null;
+    }
+    
+    public boolean isHosting(InternalComponentInstance component) {
+        return hostedComponents().contains(component); 
+    }
+    
+    public InternalComponentInstanceGroup clientComponents() {
+        if (getOwner().isUndefined()) {
+            return new InternalComponentInstanceGroup();
+        }
+        return getDeployment().getRelationshipInstances().clientsOf(this); 
+    }
+    
+    public InternalComponentInstanceGroup hostedComponents() {
+        if (getOwner().isUndefined()) {
+            return new InternalComponentInstanceGroup();
+        }
+        return getDeployment().getExecuteInstances().componentsHostedBy(this); 
     }
 
+    @Override
+    public void validate(Report report) {
+        if (owner.isUndefined()) {
+            final String error = String.format("Component instance '%s' has no owner", getQualifiedName());
+            report.addError(error);
+        }
+    }
+    
+    public boolean canBeUninstalled() {
+        return !isUsed() && isInternal();
+    }
 
-    public List<ProvidedPortInstance> getProvidedPortInstances() {
-        return this.providedPortInstances;
+    public boolean isUsed() {
+        return !hostedComponents().isEmpty() || !clientComponents().isEmpty();
+    }
+
+    public final boolean isInternal() {
+        return type.isInternal();
+    }
+
+    @SuppressWarnings("unchecked")
+    public final InternalComponentInstance asInternal() {
+        if (isExternal()) {
+            throw new IllegalStateException("Unable to convert an external component instance into an internal one");
+        }
+        return (InternalComponentInstance) this;
+    }
+
+    public final boolean isExternal() {
+        return !isInternal();
+    }
+
+    @SuppressWarnings("unchecked")
+    public final ExternalComponentInstance<ExternalComponent> asExternal() {
+        if (isInternal()) {
+            throw new IllegalStateException("Unable to convert an internal component instance into an external one");
+        }
+        return (ExternalComponentInstance<ExternalComponent>) this;
+    }
+
+    @Override
+    public Deployment getDeployment() {
+        return owner.get();
+    }
+
+    @Override
+    public String getQualifiedName() {
+        return getOwner().getName() + "::" + getName();
+    }
+
+    @Override
+    public OptionalOwner<Deployment> getOwner() {
+        return this.owner;
+    }
+
+    public ProvidedPortInstanceGroup getProvidedPorts() {
+        return this.providedPorts;
     }
 
     public T getType() {
         return this.type;
     }
 
-    public void setProvidedPortInstances(List<ProvidedPortInstance> providedPortInstances) {
-        this.providedPortInstances = providedPortInstances;
-    }
-
-    public void setType(T type) {
+    public final void setType(T type) {
+        if (type == null) {
+            throw new IllegalArgumentException("'null' is not a valid type for a component instance");
+        }
         this.type = type;
     }
 
-    public List<ProvidedExecutionPlatformInstance> getProvidedExecutionPlatformInstances() {
-        return providedExecutionPlatformInstances;
+    public ProvidedExecutionPlatformInstanceGroup getProvidedExecutionPlatforms() {
+        return providedExecutionPlatforms;
     }
-
-    public void setProvidedExecutionPlatformInstances(List<ProvidedExecutionPlatformInstance> providedExecutionPlatformInstances) {
-        this.providedExecutionPlatformInstances = providedExecutionPlatformInstances;
-    }
-
 
     @Override
     public String toString() {
-        return "Instance " + name + " : " + getType().getName();
+        return "Instance " + getName() + " : " + getType().getName();
     }
 
     @Override
     public boolean equals(Object other) {
-        if(other == null)
+        if (other == null) {
             return false;
+        }
 
         if (other instanceof ComponentInstance) {
             ComponentInstance otherCompInst = (ComponentInstance) other;
-            Boolean match= name.equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
+            Boolean match = getName().equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
             return match;
-        } else {
+        }
+        else {
             return false;
+        }
+    }
+
+    private class LocalProvidedPortInstanceGroup extends ProvidedPortInstanceGroup {
+
+        public LocalProvidedPortInstanceGroup(Collection<ProvidedPortInstance> content) {
+            super();
+            for (ProvidedPortInstance port : content) {
+                super.add(port);
+                port.getOwner().set(ComponentInstance.this);
+            }
+        }
+
+        @Override
+        public boolean add(ProvidedPortInstance e) {
+            throw new UnsupportedOperationException("The provided ports of a component instance cannot be changed");
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException("The provided ports of a component instance cannot be changed");
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException("The provided ports of a component instance cannot be changed");
+        }
+    }
+
+    private class LocalProvidedExecutionPlatformInstanceGroup extends ProvidedExecutionPlatformInstanceGroup {
+
+        public LocalProvidedExecutionPlatformInstanceGroup(Collection<ProvidedExecutionPlatformInstance> content) {
+            super();
+            for (ProvidedExecutionPlatformInstance platform: content) {
+                super.add(platform);
+                platform.getOwner().set(ComponentInstance.this);
+            }
+        }
+
+        @Override
+        public boolean add(ProvidedExecutionPlatformInstance e) {
+            throw new UnsupportedOperationException("The provided execution platforms of a component instance cannot be changed");
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException("The provided execution platforms of a component instance cannot be changed");
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException("The provided execution platforms of a component instance cannot be changed");
         }
     }
 }
