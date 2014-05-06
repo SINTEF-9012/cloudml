@@ -27,21 +27,20 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.XmiCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.Deployment;
 
 /**
- * Created by Nicolas Ferry & Franck Chauvel on 25.02.14.
+ * Hold a set of preloaded codecs, and select the relevant one according to the
+ * file extension.
  */
 public class CodecsLibrary {
 
     private final HashMap<String, Codec> codecsByExtension;
 
-    public Set<String> getExtensions(){
+    public Set<String> getExtensions() {
         return codecsByExtension.keySet();
     }
 
@@ -59,31 +58,24 @@ public class CodecsLibrary {
      * @throws FileNotFoundException if the path is not valid on disc
      */
     public void saveAs(Deployment model, String pathToFile) throws FileNotFoundException {
-        checkModel(model);
-        checkPath(pathToFile);
-        String extension = getFileExtension(pathToFile);
-        Codec codec = this.codecsByExtension.get(extension);
-        checkCodec(codec, extension);
+        failIfNotValid(model);
+        failIfNotValid(pathToFile);
+        final Codec codec = getCodec(Utils.getFileExtension(pathToFile));
         codec.save(model, new FileOutputStream(pathToFile));
     }
 
-    public String getFileExtension(String fileName) {
-        String extension = "";
-        Pattern pattern = Pattern.compile("(\\.\\w+)$");
-        Matcher matcher = pattern.matcher(fileName);
-        if (matcher.find()) {
-            extension = matcher.group(1);
-        }
-        else {
-            throw new IllegalArgumentException("Cannot select codec on file without extension");
-        }
-        return extension.toLowerCase();
-    }
-
-    private void checkModel(Deployment model) throws IllegalArgumentException {
+    private void failIfNotValid(Deployment model) throws IllegalArgumentException {
         if (model == null) {
             throw new IllegalArgumentException("Cannot serialize a 'null' model");
         }
+    }
+
+    private Codec getCodec(String extension) throws IllegalArgumentException {
+        final Codec codec = this.codecsByExtension.get(extension);
+        if (codec == null) {
+            throw new IllegalArgumentException("Unsupported file format '*" + extension + "' (supported formats are " + getExtensions() + ")");
+        }
+        return codec;
     }
 
     /**
@@ -95,10 +87,8 @@ public class CodecsLibrary {
      * @throws FileNotFoundException if the given path is invalid
      */
     public Deployment load(String pathToFile) throws FileNotFoundException {
-        checkPath(pathToFile);
-        String extension = getFileExtension(pathToFile);
-        Codec codec = this.codecsByExtension.get(extension);
-        checkCodec(codec, extension);
+        failIfNotValid(pathToFile);
+        final Codec codec = getCodec(Utils.getFileExtension(pathToFile));
         Deployment model = (Deployment) codec.load(new FileInputStream(pathToFile));
         if (model == null) {
             model = new Deployment();
@@ -106,13 +96,7 @@ public class CodecsLibrary {
         return model;
     }
 
-    private void checkCodec(Codec codec, String extension) throws IllegalArgumentException {
-        if (codec == null) {
-            throw new IllegalArgumentException("Unknown file extension '" + extension + "'");
-        }
-    }
-
-    private void checkPath(String fileName) {
+    private void failIfNotValid(String fileName) {
         if (fileName == null) {
             throw new IllegalArgumentException("Cannot serialize in a non-existing file");
         }

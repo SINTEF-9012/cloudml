@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.cloudml.core.credentials.FileCredentials;
+import org.cloudml.core.credentials.NoCredentials;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
@@ -78,7 +79,7 @@ public class BridgeToKmf {
     }
 
     private void convertProperties(WithProperties element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory) {
-        for (Property p : element.getProperties()) {
+        for (Property p: element.getProperties()) {
             net.cloudml.core.Property kp = factory.createProperty();
             kp.setName(p.getName());
             kp.setValue(p.getValue());
@@ -87,7 +88,7 @@ public class BridgeToKmf {
     }
 
     private void convertResources(WithResources element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory) {
-        for (Resource r : element.getResources()) {
+        for (Resource r: element.getResources()) {
             net.cloudml.core.Resource kr = factory.createResource();
             kr.setName(r.getName());
             kr.setInstallCommand(r.getInstallCommand());
@@ -98,7 +99,7 @@ public class BridgeToKmf {
             kElement.addResources(kr);
 
             String kup = "";
-            for (Map.Entry<String, String> up : r.getUploadCommand().entrySet()) {
+            for (Map.Entry<String, String> up: r.getUploadCommand().entrySet()) {
                 kup += up.getKey() + " " + up.getValue() + ";";
             }
             kr.setUploadCommand(kup);
@@ -113,11 +114,17 @@ public class BridgeToKmf {
 
     public void providersToKmf(List<Provider> providers) {
         checkNull(providers, "Cannot iterate on null!");
-        for (Provider p : providers) {
+        for (Provider p: providers) {
             net.cloudml.core.Provider kProvider = factory.createProvider();
             convertProperties(p, kProvider, factory);
             kProvider.setName(p.getName());
-            kProvider.setCredentials(((FileCredentials) p.getCredentials()).getPathToCredentials());
+            if (p.getCredentials() instanceof NoCredentials) { // FIXME: Remove this dirty type conditional
+                kProvider.setCredentials("no given credentials");
+            }
+            else {
+                kProvider.setCredentials(((FileCredentials) p.getCredentials()).getPathToCredentials());
+
+            }
             kDeploy.addProviders(kProvider);
 
             this.providers.put(kProvider.getName(), kProvider);
@@ -126,7 +133,7 @@ public class BridgeToKmf {
 
     public void executesToKmf(List<ExecuteInstance> executeInstances) {
         checkNull(executeInstances, "Cannot iterate on null!");
-        for (ExecuteInstance ei : executeInstances) {
+        for (ExecuteInstance ei: executeInstances) {
             executeToKmf(ei);
         }
     }
@@ -146,7 +153,7 @@ public class BridgeToKmf {
 
     public void externalComponentToKmf(List<ExternalComponent> externalComponents) {
         checkNull(externalComponents, "Cannot iterate on null!");
-        for (ExternalComponent ec : externalComponents) {
+        for (ExternalComponent ec: externalComponents) {
             if (ec instanceof org.cloudml.core.VM) {
                 org.cloudml.core.VM vm = (org.cloudml.core.VM) ec;
                 net.cloudml.core.VM kNode = factory.createVM();
@@ -177,14 +184,14 @@ public class BridgeToKmf {
 
     public void internalComponentsToKmf(List<InternalComponent> internalComponents) {
         checkNull(internalComponents, "Cannot iterate on null!");
-        for (InternalComponent ic : internalComponents) {//first pass on the contained elements
+        for (InternalComponent ic: internalComponents) {//first pass on the contained elements
             internalComponentToKmf(ic);
         }
     }
 
     public void convertAndAddProvidedPorts(List<ProvidedPort> ports, net.cloudml.core.Component kc) {
         checkNull(ports, "cannot iterate on null!");
-        for (ProvidedPort pp : ports) {
+        for (ProvidedPort pp: ports) {
             checkNull(pp, "cannot convert null!");
             net.cloudml.core.ProvidedPort kpp = factory.createProvidedPort();
             kpp.setName(pp.getName());
@@ -202,7 +209,7 @@ public class BridgeToKmf {
 
     public void convertAndAddRequiredPorts(List<RequiredPort> ports, net.cloudml.core.InternalComponent kic) {
         checkNull(ports, "Cannot iterate on null!");
-        for (RequiredPort rp : ports) {
+        for (RequiredPort rp: ports) {
             checkNull(rp, "cannot convert null!");
             net.cloudml.core.RequiredPort krp = factory.createRequiredPort();
             krp.setName(rp.getName());
@@ -250,7 +257,7 @@ public class BridgeToKmf {
         List<ProvidedExecutionPlatform> providedExecutionPlatforms = c.getProvidedExecutionPlatforms().toList();
         if (providedExecutionPlatforms != null) {
             List<net.cloudml.core.ProvidedExecutionPlatform> temp = new ArrayList<net.cloudml.core.ProvidedExecutionPlatform>();
-            for (ProvidedExecutionPlatform pep : providedExecutionPlatforms) {
+            for (ProvidedExecutionPlatform pep: providedExecutionPlatforms) {
                 if (pep != null) {
                     net.cloudml.core.ProvidedExecutionPlatform kpep = initProvidedExecutionPlatform(pep, kc);
                     temp.add(kpep);
@@ -275,7 +282,7 @@ public class BridgeToKmf {
 
     public void relationshipsToKmf(Iterable<Relationship> relationships) {
         checkNull(relationships, "cannot iterate on null!");
-        for (Relationship relationship : relationships) {
+        for (Relationship relationship: relationships) {
             relationshipToKmf(relationship);
         }
     }
@@ -358,14 +365,13 @@ public class BridgeToKmf {
             krelationship.setProvidedPortResource(cr);
         }
 
-
         kDeploy.addRelationships(krelationship);
         this.relationships.put(krelationship.getName(), krelationship);
     }
 
     public void externalComponentInstanceToKmf(List<ExternalComponentInstance<? extends ExternalComponent>> externalComponentInstances) {
         checkNull(externalComponentInstances, "Cannot iterate on null");
-        for (ExternalComponentInstance eni : externalComponentInstances) {
+        for (ExternalComponentInstance eni: externalComponentInstances) {
             checkNull(eni, "Cannot convert null");
             if (eni instanceof VMInstance) {
                 VMInstance ni = (VMInstance) eni;
@@ -409,7 +415,7 @@ public class BridgeToKmf {
         List<ProvidedExecutionPlatformInstance> providedExecutionPlatforms = ci.getProvidedExecutionPlatforms().toList();
         if (providedExecutionPlatforms != null) {
             List<net.cloudml.core.ProvidedExecutionPlatformInstance> temp = new ArrayList<net.cloudml.core.ProvidedExecutionPlatformInstance>();
-            for (ProvidedExecutionPlatformInstance pepi : providedExecutionPlatforms) {
+            for (ProvidedExecutionPlatformInstance pepi: providedExecutionPlatforms) {
                 if (pepi != null) {
                     temp.add(initProvidedExecutionPlatformInstance(pepi, kci));
                 }
@@ -453,7 +459,7 @@ public class BridgeToKmf {
 
     private void convertAndAddRequiredPortInstances(List<RequiredPortInstance> requiredPortInstances, net.cloudml.core.InternalComponentInstance kai) {
         checkNull(requiredPortInstances, "Cannot iterate on null");
-        for (RequiredPortInstance api : requiredPortInstances) {
+        for (RequiredPortInstance api: requiredPortInstances) {
             checkNull(api, "Cannot convert null");
             net.cloudml.core.RequiredPortInstance kapi = factory.createRequiredPortInstance();
             kapi.setName(api.getName());
@@ -467,7 +473,7 @@ public class BridgeToKmf {
 
     private void convertAndAddProvidedPortInstances(List<ProvidedPortInstance> ports, net.cloudml.core.InternalComponentInstance kai) {
         checkNull(ports, "Cannot iterate on null");
-        for (ProvidedPortInstance api : ports) {
+        for (ProvidedPortInstance api: ports) {
             checkNull(api, "Cannot convert null");
             net.cloudml.core.ProvidedPortInstance kapi = factory.createProvidedPortInstance();
             kapi.setName(api.getName());
@@ -486,14 +492,14 @@ public class BridgeToKmf {
 
     public void internalComponentInstancesToKmf(List<InternalComponentInstance> internalComponentInstances) {
         checkNull(internalComponentInstances, "Cannot iterate on null");
-        for (InternalComponentInstance bai : internalComponentInstances) {//pass 1
+        for (InternalComponentInstance bai: internalComponentInstances) {//pass 1
             internalComponentInstanceToKmf(bai);
         }
     }
 
     public void relationshipInstancesToKmf(List<RelationshipInstance> relationshipInstances) {
         checkNull(relationshipInstances, "CAnnot iterate on null");
-        for (RelationshipInstance b : relationshipInstances) {
+        for (RelationshipInstance b: relationshipInstances) {
             relationshipInstanceToKmf(b);
         }
     }

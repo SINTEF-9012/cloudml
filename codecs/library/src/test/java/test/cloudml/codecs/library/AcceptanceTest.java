@@ -41,7 +41,6 @@ import static org.cloudml.core.samples.SensApp.completeSensApp;
 /**
  * Created by Nicolas Ferry & Franck Chauvel on 25.02.14.
  */
-//TODO: Active !!!!!!!!!!!!
 @Ignore
 @RunWith(value = Parameterized.class)
 public class AcceptanceTest extends TestCase {
