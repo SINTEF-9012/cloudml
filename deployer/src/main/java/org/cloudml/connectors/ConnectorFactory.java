@@ -42,11 +42,10 @@ public class ConnectorFactory {
 	}
 
     public static PaaSConnector createPaaSConnector(Provider p){
-        if(p.getName().equals("beanstalk"))
+        if("beanstalk".equals(p.getName().toLowerCase()))
             return new BeanstalkConnector(p.getCredentials().getLogin(), p.getCredentials().getPassword(), "");
-        if(p.getName().equals("cloudbees"))
+        if("cloudbees".equals(p.getName().toLowerCase()))
             return new Cloud4soaConnector(p);
-
         throw new IllegalArgumentException("No such connector");
     }
 }

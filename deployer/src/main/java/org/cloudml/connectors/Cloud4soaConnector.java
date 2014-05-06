@@ -25,6 +25,7 @@ package org.cloudml.connectors;
 import cloudadapter.Adapter;
 import cloudadapter.DatabaseObject;
 import com.cloudbees.api.BeesClient;
+import com.google.common.collect.ImmutableMap;
 //import com.cloudbees.api.BeesClient;
 import java.io.File;
 
@@ -42,11 +43,14 @@ import eu.cloud4soa.api.util.exception.adapter.Cloud4SoaException;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule.Paas;
 import eu.cloud4soa.governance.ems.IExecutionManagementService;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Cloud4soaConnector implements PaaSConnector {
 
+    public final static String CLOUDBEES = "CloudBees";
+    
     private ApplicationInstance ai;
     private PaasInstance pi;
     private Provider provider;
@@ -54,13 +58,26 @@ public class Cloud4soaConnector implements PaaSConnector {
     private IExecutionManagementService ems;
     private String platform;
     private static final Logger journal = Logger.getLogger(Cloud4soaConnector.class.getName());
-
-    public Cloud4soaConnector(Provider provider) {
-        ems = new ExecutionManagementServiceModule();
-        this.provider = provider;
-        this.credentials = new Credentials(provider.getCredentials().getLogin(), provider.getCredentials().getPassword());
-        pi = new PaasInstance();
-        pi.setName(provider.getName());
+    
+    private static Map<String, Map<String,String>> defaultValues = ImmutableMap.of(
+            CLOUDBEES,
+            (Map<String,String>) ImmutableMap.of(
+                    "DB-Engine", "MySQL",
+                    "DB-Version", "1.5.7",
+                    "App-Version", "default"
+            )
+        );
+	
+    public Cloud4soaConnector(Provider provider){
+    	this.provider=provider;
+    	this.credentials=new Credentials(
+                provider.getCredentials().getLogin(),
+                provider.getCredentials().getPassword(),
+                provider.getProperties().get("account").getValue()
+        );
+        
+        if(provider.getName().toLowerCase().equals(CLOUDBEES.toLowerCase()))
+            this.platform = CLOUDBEES;
     }
 
     public Cloud4soaConnector(String apiKey, String securityKey, String account, String platform) {
@@ -71,8 +88,9 @@ public class Cloud4soaConnector implements PaaSConnector {
     public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
         try {
             String tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
-                                                       credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
-                                                       applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml");
+                             credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
+                             applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml"
+                            );
             journal.log(Level.INFO, ">> Created application:" + tmp2);
 
         } catch (Cloud4SoaException ex) {
@@ -114,54 +132,44 @@ public class Cloud4soaConnector implements PaaSConnector {
                 Logger.getLogger(BeanstalkConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
             try {
-                String tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
-                                                           credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
-                                                           envName, versionLabel, "", "", "", "", "", "deployed by cloudml after db injection");
+                String tmp2 = Adapter.uploadAndDeployToEnv(
+                        platform, warFile,
+                        credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
+                        applicationName, versionLabel, envName, "", "", "", "", 
+                        "deployed by cloudml after db injection");
                 journal.log(Level.INFO, ">> Created application:" + tmp2);
                 break;
-            } catch (Exception e) {
+            } catch (Exception ex) {
+                Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
 
     }
 
-//    private void startStop(StartStopCommand command) throws Cloud4SoaException {
-//        ems.startStopApplication("adapterUrl", credentials, pi, ai, command);
-//    }
-//    
-//    private Database getDatabaseJob() throws Cloud4SoaException {
-//    	return null;
-////        return ems.getDatabase(ai, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName);
-//    }
-//    
-//    private Database[] listDatabasesJob() throws Cloud4SoaException {
-//    	return null;
-//        
-////        return ems.listDatabases(ai, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY);
-//    }
-//    private void createDatabaseJob() throws Cloud4SoaException {
-//        ems.createDatabase(ai, pi, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName, dbuser,
-//                dbpassword, dbtype);
-//    }
-//    private void deleteDatabaseJob() throws Cloud4SoaException {
-//        ems.deleteDatabase(ai, pi, PUBLIC_KEY, PRIVATE_KEY, ACCOUNT_KEY, dbName, dbuser,
-//                dbpassword, dbtype);
-    //   }
+
     @Override
     public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
                                  Integer allocatedSize, String dbInstanceClass) {
+
         try {
-            DatabaseInfo dbinfo = Adapter.createDB(platform, credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
-                                                   dbInstanceIdentifier, engine, version, "created by cloudml",
-                                                   dbName, username, password);
-
-            journal.log(Level.INFO, ">>DB created: " + dbinfo.toString() + ": " + dbinfo.getDatabaseUrl() + dbinfo.getHost());
-
+            if(engine==null || engine.equals(""))
+                engine = defaultValues.get(platform).get("DB-Engine");
+            if(version == null || version.equals(""))
+                version = defaultValues.get(platform).get("DB-Version");
+            if(dbName==null || dbName.equals(""))
+                dbName = dbInstanceIdentifier;
+            DatabaseInfo dbinfo = Adapter.createDB(platform, credentials.getPublicKey(), credentials.getPrivateKey(),credentials.getAccountName(),
+                    dbInstanceIdentifier, engine, version, "created by cloudml",
+                    dbName, username, password
+            );
+            
+            journal.log(Level.INFO, ">>DB created: "+dbinfo.toString()+": "+dbinfo.getDatabaseUrl()+dbinfo.getHost());
+            
         } catch (Cloud4SoaException ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //Adapter.
+            
     }
 
     /**
@@ -173,19 +181,7 @@ public class Cloud4soaConnector implements PaaSConnector {
      */
     public String getDBEndPoint(String dbInstanceId, int timeout) {
 
-        //return "ec2-23-21-211-172.compute-1.amazonaws.com:3306/dieaslefehik";
-//        String bees_server = "https://api.cloudbees.com/api";
-//        String type = "json";
-//        String apiversion = "1.0";
-//        BeesClient bees = new BeesClient(bees_server, credentials.getPublicKey(), credentials.getPrivateKey(), type, apiversion);
-//        try {
-//            Object obj = bees.databaseInfo(dbInstanceId, false);
-//            if(obj)
-//            System.out.println(obj);
-//        } catch (Exception ex) {
-//            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return "";
+
         System.out.print("Retriving DB endpoint:");
         while (timeout-- > 0) {
             try {
@@ -194,18 +190,18 @@ public class Cloud4soaConnector implements PaaSConnector {
                 Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
             try {
-                DatabaseObject dbobject = Adapter.getDBInfo(platform,
-                                                            credentials.getPublicKey(),
-                                                            credentials.getPrivateKey(),
-                                                            credentials.getAccountName(),
-                                                            "mysql", "", "1.5.7", null, dbInstanceId, null, null);
+                DatabaseObject dbobject = Adapter.getDBInfo(
+                        platform,
+                        credentials.getPublicKey(),
+                        credentials.getPrivateKey(),
+                        credentials.getAccountName(),
+                        "mysql", "", "1.5.7", null, dbInstanceId, null, null);
                 if (dbobject.getDbhost() != null && dbobject.getDbhost().length() > 0) {
                     System.out.println(dbobject.getDbhost() + ":" + dbobject.getPort());
-                    return dbobject.getDbhost() + ":" + dbobject.getPort();
+                    return dbobject.getDbhost()+":"+dbobject.getPort()+"/"+dbobject.getDbname();
                 }
             } catch (Cloud4SoaException ex) {
                 Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
-
             }
 
         }

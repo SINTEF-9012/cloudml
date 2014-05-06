@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
 import org.cloudml.connectors.JCloudsConnector;
+import org.cloudml.connectors.PaaSConnector;
+import org.cloudml.connectors.util.ConfigValet;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.collections.ComponentInstanceGroup;
@@ -39,7 +41,9 @@ import org.cloudml.core.collections.RelationshipInstanceGroup;
 import org.cloudml.core.collections.VMInstanceGroup;
 
 /*
- * The deployment Engine author: Nicolas Ferry author: Hui Song
+ * The deployment Engine 
+ * author: Nicolas Ferry 
+ * author: Hui Song
  */
 public class CloudAppDeployer {
 
@@ -66,7 +70,7 @@ public class CloudAppDeployer {
             this.currentModel = targetModel;
 
             // Provisioning vms
-            setExternalServices(targetModel.getComponentInstances().onlyVMs());
+            setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
             // Deploying on vms
             // TODO: need to be recursive
@@ -85,7 +89,7 @@ public class CloudAppDeployer {
             diff.compareCloudMLModel();
 
             //Added stuff
-            setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedVMs()).onlyVMs()); 
+            setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedVMs()).onlyExternals()); 
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<ComponentInstance<? extends Component>>(diff.getAddedComponents()));
@@ -181,6 +185,19 @@ public class CloudAppDeployer {
 
                 instance.setStatus(State.INSTALLED);
                 jc.closeConnection();
+            }
+            else{ // If the destination is a PaaS platform
+                ExternalComponent ownerType = (ExternalComponent) host.getType();
+                Provider p = ownerType.getProvider();
+                PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
+                connector.createEnvironmentWithWar(
+                        instance.getName(), 
+                        instance.getName(), 
+                        host.getName(), 
+                        "", 
+                        instance.getType().getProperties().valueOf("warfile"), 
+                        instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : null
+                    );                
             }
         }
     }
@@ -383,12 +400,16 @@ public class CloudAppDeployer {
 
     /**
      * Provision the VMs and upload the model with informations about the VM
-     *
+     * 
+     * Added: Also deal with PaaS platforms
      * @param vms A list of vms
      */
-    private void setExternalServices(VMInstanceGroup vms) {
-        for (VMInstance n : vms) {
-            provisionAVM(n);
+    private void setExternalServices(ExternalComponentInstanceGroup ems) {
+        for (ExternalComponentInstance n : ems) {
+            if(n instanceof VMInstance)
+                provisionAVM((VMInstance)n);
+            else
+                provisionAPlatform(n);
         }
     }
 
@@ -405,6 +426,36 @@ public class CloudAppDeployer {
     }
 
     /**
+     * Provision a platform.
+     * So far (with only two examples of BeansTalk and CloudBees), the main PaaS
+     * platforms are not necessary to be provisioned before deployment, so this 
+     * method is basically used to launch a DB
+     * 
+     * @param n: an external component instance for the platform
+     */
+    private void provisionAPlatform(ExternalComponentInstance n) {
+        ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
+        ExternalComponent ec = eci.getType();
+        
+        if(!ec.getProvidedExecutionPlatforms().isEmpty())  //A simplified assumption: A platform that does not provide any execution platforms is a *DB*
+            return;
+        Provider p = eci.getType().getProvider();
+        
+        PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
+        connector.createDBInstance(
+                p.hasProperty("DB-Engine")?p.getProperties().valueOf("DB-Engine"):null, 
+                p.hasProperty("DB-Version")?p.getProperties().valueOf("DB-Version"):null, 
+                eci.getName(), 
+                p.hasProperty("DB-Name")?p.getProperties().valueOf("DB-Name"):null, 
+                ec.getLogin(),
+                ec.getPasswd(),
+                0, 
+                null);
+        eci.setPublicAddress(connector.getDBEndPoint(eci.getName(), 600));
+    }
+    
+    
+    /**
      * Configure components according to the relationships
      *
      * @param relationships a list of relationships
@@ -414,7 +465,22 @@ public class CloudAppDeployer {
         //Configure on the basis of the relationships
         //parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
         for (RelationshipInstance bi : relationships) {
-            if (!bi.getRequiredEnd().getType().isLocal()) {
+            if(bi.getProvidedEnd().getOwner().get() instanceof ExternalComponentInstance){  //For DB
+                for(Resource res : bi.getType().getResources()){
+                    ConfigValet valet = ConfigValet.createValet(bi, res);
+                    if(valet != null)
+                        valet.config();
+                }
+                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+                Component client = clienti.getType();
+                ComponentInstance pltfi = getDestination(clienti);
+                ExternalComponent pltf = (ExternalComponent)pltfi.getType();
+                
+                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+                connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                
+            }
+            else if (!bi.getRequiredEnd().getType().isLocal()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
                 ProvidedPortInstance server = bi.getProvidedEnd();
 
