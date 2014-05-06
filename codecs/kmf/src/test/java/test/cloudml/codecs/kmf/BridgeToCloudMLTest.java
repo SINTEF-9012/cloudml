@@ -101,7 +101,7 @@ public class BridgeToCloudMLTest extends TestCase {
         net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
         net.cloudml.core.CloudMLModel cm = factory.createCloudMLModel();
         cm.addProviders(input.getProvider());
-        cm.addComponents(input);
+        cm.addVms(input);
      
         KMFSamplesBuilder kmfSamples = new KMFSamplesBuilder();
 
@@ -159,8 +159,8 @@ public class BridgeToCloudMLTest extends TestCase {
         net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
         net.cloudml.core.CloudMLModel cm = factory.createCloudMLModel();
         cm.addRelationships(input);
-        cm.addComponents(input.getProvidedPort().getComponent());
-        cm.addComponents(input.getRequiredPort().getComponent());
+        cm.addInternalComponents((net.cloudml.core.InternalComponent)input.getProvidedPort().getComponent());
+        cm.addInternalComponents((net.cloudml.core.InternalComponent)input.getRequiredPort().getComponent());
         bridge.toPOJO(cm);
 
         Relationship output = bridge.getCloudMLModel().getRelationships().firstNamed(input.getName());
@@ -185,8 +185,8 @@ public class BridgeToCloudMLTest extends TestCase {
         net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
         net.cloudml.core.CloudMLModel cm = factory.createCloudMLModel();
         cm.addProviders(((net.cloudml.core.VM) input.getType()).getProvider());
-        cm.addComponents(input.getType());
-        cm.addComponentInstances(input);
+        cm.addVms((net.cloudml.core.VM)input.getType());
+        cm.addVmInstances(input);
         bridge.toPOJO(cm);
 
         assertFalse(bridge.getCloudMLModel().getComponentInstances().onlyExternals().isEmpty());
@@ -214,8 +214,8 @@ public class BridgeToCloudMLTest extends TestCase {
         net.cloudml.core.InternalComponentInstance input = new KMFSamplesBuilder().getInternalComponentInstanceA();
         net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
         net.cloudml.core.CloudMLModel cm = factory.createCloudMLModel();
-        cm.addComponents(input.getType());
-        cm.addComponentInstances(input);
+        cm.addInternalComponents((net.cloudml.core.InternalComponent)input.getType());
+        cm.addInternalComponentInstances(input);
         bridge.toPOJO(cm);
 
         List<InternalComponentInstance> ici = bridge.getCloudMLModel().getComponentInstances().onlyInternals().toList();
@@ -263,15 +263,15 @@ public class BridgeToCloudMLTest extends TestCase {
         net.cloudml.core.CloudMLModel cm = factory.createCloudMLModel();
 
         cm.addRelationships(input.getType());
-        cm.addComponents(input.getType().getProvidedPort().getComponent());
+        cm.addInternalComponents((net.cloudml.core.InternalComponent)input.getType().getProvidedPort().getComponent());
         //cm.addComponents(input.getProvidedPortInstance().getComponentInstance().getDestination().getType());
-        cm.addComponents(input.getType().getRequiredPort().getComponent());
+        cm.addInternalComponents((net.cloudml.core.InternalComponent)input.getType().getRequiredPort().getComponent());
         //cm.addComponents(input.getRequiredPortInstance().getComponentInstance().getDestination().getType());
 
         cm.addRelationshipInstances(input);
-        cm.addComponentInstances(input.getProvidedPortInstance().getComponentInstance());
+        cm.addInternalComponentInstances((net.cloudml.core.InternalComponentInstance)input.getProvidedPortInstance().getComponentInstance());
         //cm.addComponentInstances(input.getProvidedPortInstance().getComponentInstance().getDestination());
-        cm.addComponentInstances(input.getRequiredPortInstance().getComponentInstance());
+        cm.addInternalComponentInstances((net.cloudml.core.InternalComponentInstance)input.getRequiredPortInstance().getComponentInstance());
         //cm.addComponentInstances(input.getRequiredPortInstance().getComponentInstance().getDestination());
 
         bridge.toPOJO(cm);

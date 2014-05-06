@@ -71,8 +71,6 @@ public class CodecTest
             Codec jsonCodec=new JsonCodec();
             OutputStream streamResult=new java.io.FileOutputStream("sensappTEST.json");
             jsonCodec.save(model,streamResult);
-
-
         } catch (FileNotFoundException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();

@@ -177,7 +177,8 @@ public class BridgeToKmf {
                 vms.put(kNode.getName(), kNode);
                 initProvidedExecutionPlatforms(ec, kNode);
 
-                kDeploy.addComponents(kNode);
+                kDeploy.addVms(kNode);
+                //kDeploy.addComponents(kNode);
             }
         }
     }
@@ -239,7 +240,8 @@ public class BridgeToKmf {
         convertAndAddProvidedPorts(internalComponent.getProvidedPorts().toList(), kic);
         convertAndAddRequiredPorts(internalComponent.getRequiredPorts().toList(), kic);
 
-        kDeploy.addComponents(kic);
+        kDeploy.addInternalComponents(kic);
+        //kDeploy.addComponents(kic);
     }
 
     private void initRequiredExecutionPlatform(InternalComponent ic, net.cloudml.core.InternalComponent ka) {
@@ -385,7 +387,8 @@ public class BridgeToKmf {
 
                 initProvidedExecutionPlatformInstances(eni, kni);
 
-                kDeploy.addComponentInstances(kni);
+                kDeploy.addVmInstances(kni);
+                //kDeploy.addComponentInstances(kni);
             }
             else {
                 throw new IllegalArgumentException("Unknown subtype of ExternalComponentInstance: " + eni.getClass().getName());
@@ -408,7 +411,7 @@ public class BridgeToKmf {
         convertAndAddRequiredPortInstances(ici.getRequiredPorts().toList(), kai);
         convertAndAddProvidedPortInstances(ici.getProvidedPorts().toList(), kai);
 
-        kDeploy.addComponentInstances(kai);
+        kDeploy.addInternalComponentInstances(kai);
     }
 
     private void initProvidedExecutionPlatformInstances(ComponentInstance ci, net.cloudml.core.ComponentInstance kci) {

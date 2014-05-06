@@ -23,9 +23,14 @@
 package test.cloudml.codecs.library;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
 import junit.framework.TestCase;
+import org.cloudml.codecs.DotCodec;
+import org.cloudml.codecs.commons.Codec;
 import org.cloudml.codecs.library.CodecsLibrary;
 import org.cloudml.core.Deployment;
+import org.cloudml.core.samples.SensApp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -49,13 +54,16 @@ public class LoadTest extends TestCase {
 
     @Test
     public void loadShouldAcceptFilesWithUppercaseExtension() throws FileNotFoundException {
-        final Deployment model = aCodecLibrary().load(testFile("sensapp2.JSON"));
-        assertModelMatchesSensApp(model);
+        final Deployment model = aCodecLibrary().load(testFile("empty.JSON"));
+        assertModelIsEmpty(model);
     }
     
      @Test
     public void loadShouldAcceptSensapp() throws FileNotFoundException {
         final Deployment model = aCodecLibrary().load(testFile("sensapp.json"));
+         Codec c= new DotCodec();
+         c.save(SensApp.completeSensApp().build(), new FileOutputStream("sensapp2.dot"));
+         c.save(model, new FileOutputStream("sensapp.dot"));
         assertModelMatchesSensApp(model);
     }
 

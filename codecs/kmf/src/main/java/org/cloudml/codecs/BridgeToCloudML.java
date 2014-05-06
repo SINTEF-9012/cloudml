@@ -71,10 +71,12 @@ public class BridgeToCloudML {
         model.setName(kDeploy.getName() + " ");
 
         providersToPOJO(kDeploy.getProviders());
-        externalComponentsToPOJO(kDeploy.getComponents());
-        internalComponentsToPOJO(kDeploy.getComponents());
-        externalComponentInstancesToPOJO(kDeploy.getComponentInstances());
-        internalComponentInstancesToPOJO(kDeploy.getComponentInstances());
+        externalComponentsToPOJO(kDeploy.getExternalComponents());
+        internalComponentsToPOJO(kDeploy.getInternalComponents());
+        externalComponentInstancesToPOJO(kDeploy.getExternalComponentInstances());
+        internalComponentInstancesToPOJO(kDeploy.getInternalComponentInstances());
+        vmsToPOJO(kDeploy.getVms());
+        vmInstancesToPOJO(kDeploy.getVmInstances());
         relationshipsToPOJO(kDeploy.getRelationships());
         relationshipInstancesToPOJO(kDeploy.getRelationshipInstances());
         executeInstancesToPOJO(kDeploy.getExecutesInstances());
@@ -99,19 +101,45 @@ public class BridgeToCloudML {
         assert kproviders.isEmpty() == providers.isEmpty();
     }
 
-    public void externalComponentsToPOJO(List<net.cloudml.core.Component> components) {
+
+    public void vmsToPOJO(List<net.cloudml.core.VM> vms){
+        for (net.cloudml.core.VM c : vms) {
+            vmToPOJO(c);
+        }
+    }
+
+    public void vmToPOJO(net.cloudml.core.VM kvm){
+        net.cloudml.core.VM kVM = kvm;
+        VM vm = new VM(kVM.getName(), new Provider("Dummy provider"));
+        convertProperties(kVM, vm);
+        convertResources(kVM, vm);
+
+        Provider p = providers.get(kVM.getProvider().getName());
+        //TODO: extract this to function
+        vm.setProvider(p);
+        vm.setGroupName(kVM.getGroupName());
+        vm.setImageId(kVM.getImageId());
+        vm.setIs64os(kVM.getIs64os());
+        vm.setLocation(kVM.getLocation());
+        vm.setMinCores(kVM.getMinCores());
+        vm.setMinStorage(kVM.getMinStorage());
+        vm.setMinRam(kVM.getMinRam());
+        vm.setOs(kVM.getOs());
+        vm.setPrivateKey(kVM.getPrivateKey());
+        vm.setSecurityGroup(kVM.getSecurityGroup());
+        vm.setSshKey(kVM.getSshKey());
+
+        initProvidedExecutionPlatforms(kVM, vm);
+        externalComponents.put(vm.getName(), vm);
+
+        model.getComponents().add(vm);
+    }
+
+    public void externalComponentsToPOJO(List<net.cloudml.core.ExternalComponent> components) {
         int counter = 0;
-        for (net.cloudml.core.Component c : components) {
-            if (c instanceof net.cloudml.core.ExternalComponent) {
-                externalComponentToPOJO((net.cloudml.core.ExternalComponent) c);
+        for (net.cloudml.core.ExternalComponent c : components) {
+                externalComponentToPOJO(c);
                 counter++;
-            }
-            else if (c instanceof net.cloudml.core.InternalComponent) {
-                //Will be processed in the next pass
-            }
-            else {
-                throw new IllegalArgumentException("Unknown subtype of component: " + c.getClass().getName() + " (" + c.getName() + ")");
-            }
         }
         assert counter == model.getComponents().onlyExternals().size();
         assert counter == externalComponents.size();
@@ -120,31 +148,8 @@ public class BridgeToCloudML {
     public void externalComponentToPOJO(net.cloudml.core.ExternalComponent kExternalComponent) {
         checkForNull(kExternalComponent, "Cannot convert null!");
 
-        if (kExternalComponent instanceof net.cloudml.core.VM) {
-            net.cloudml.core.VM kVM = (net.cloudml.core.VM) kExternalComponent;
-            VM vm = new VM(kVM.getName(), new Provider("Dummy provider"));
-            convertProperties(kVM, vm);
-            convertResources(kVM, vm);
-
-            Provider p = providers.get(kVM.getProvider().getName());
-            //TODO: extract this to function
-            vm.setProvider(p);
-            vm.setGroupName(kVM.getGroupName());
-            vm.setImageId(kVM.getImageId());
-            vm.setIs64os(kVM.getIs64os());
-            vm.setLocation(kVM.getLocation());
-            vm.setMinCores(kVM.getMinCores());
-            vm.setMinStorage(kVM.getMinStorage());
-            vm.setMinRam(kVM.getMinRam());
-            vm.setOs(kVM.getOs());
-            vm.setPrivateKey(kVM.getPrivateKey());
-            vm.setSecurityGroup(kVM.getSecurityGroup());
-            vm.setSshKey(kVM.getSshKey());
-
-            initProvidedExecutionPlatforms(kVM, vm);
-            externalComponents.put(vm.getName(), vm);
-
-            model.getComponents().add(vm);
+        if (kExternalComponent instanceof net.cloudml.core.ExternalComponent) {
+           //TODO: to be defined
         }
         else {
             throw new IllegalArgumentException("Unknown subtype of ExternalComponent " + kExternalComponent.getClass().getName());
@@ -171,19 +176,11 @@ public class BridgeToCloudML {
         return null;
     }
 
-    public void internalComponentsToPOJO(List<net.cloudml.core.Component> components) {
+    public void internalComponentsToPOJO(List<net.cloudml.core.InternalComponent> components) {
         int counter = 0;
-        for (net.cloudml.core.Component c : components) {
-            if (c instanceof net.cloudml.core.InternalComponent) {
-                internalComponentToPOJO((net.cloudml.core.InternalComponent) c);
+        for (net.cloudml.core.InternalComponent c : components) {
+                internalComponentToPOJO(c);
                 counter++;
-            }
-            else if (c instanceof net.cloudml.core.ExternalComponent) {
-                //Should have been converted in the previous pass
-            }
-            else {
-                throw new IllegalArgumentException("Unknown subtype of component: " + c.getClass().getName());
-            }
         }
         assert counter == model.getComponents().onlyInternals().size();
         assert counter == internalComponents.size();
@@ -215,7 +212,9 @@ public class BridgeToCloudML {
             ic.getRequiredPorts().add(rp);
             requiredPorts.put(calculatePortIdentifier(krp), rp);
         }
-        assert requiredPorts.size() >= rps.size();
+        if(!(requiredPorts.size() >= rps.size())){
+            throw new IllegalArgumentException("All required ports have not been cloned!");
+        }
         assert ic.getRequiredPorts().size() == rps.size();
     }
 
@@ -279,7 +278,10 @@ public class BridgeToCloudML {
         checkValidPort(kRelationship.getRequiredPort());
         String requiredPortIdentifier = calculatePortIdentifier(kRelationship.getRequiredPort());
         RequiredPort rp = requiredPorts.get(requiredPortIdentifier);
-        assert rp != null;
+
+        if (rp == null) {
+            throw new IllegalArgumentException("Required port is null!"+ kRelationship.getName());
+        }
 
         Relationship b = new Relationship(kRelationship.getName(), rp, pp);
 
@@ -325,19 +327,32 @@ public class BridgeToCloudML {
         relationships.put(b.getName(), b);
     }
 
-    public void externalComponentInstancesToPOJO(List<net.cloudml.core.ComponentInstance> componentInstances) {
+
+    public void vmInstancesToPOJO(List<net.cloudml.core.VMInstance> vminstances){
+        for (net.cloudml.core.VMInstance kc : vminstances) {
+            vmInstanceToPOJO(kc);
+        }
+    }
+
+    public void vmInstanceToPOJO(net.cloudml.core.VMInstance kVmInstance){
+        net.cloudml.core.VMInstance kVM = (net.cloudml.core.VMInstance) kVmInstance;
+        assert externalComponents.containsKey(kVM.getType().getName());
+        VMInstance ni = new VMInstance(kVM.getName(), externalComponents.get(kVM.getType().getName()));
+        ni.setPublicAddress(kVM.getPublicAddress());
+        convertProperties(kVM, ni);
+
+        initProvidedExecutionPlatformInstances(kVmInstance, ni);
+
+        vmInstances.put(ni.getName(), ni);
+
+        model.getComponentInstances().add(ni);
+    }
+
+    public void externalComponentInstancesToPOJO(List<net.cloudml.core.ExternalComponentInstance> componentInstances) {
         int counter = 0;
-        for (net.cloudml.core.ComponentInstance kc : componentInstances) {
-            if (kc instanceof net.cloudml.core.ExternalComponentInstance) {
+        for (net.cloudml.core.ExternalComponentInstance kc : componentInstances) {
                 externalComponentInstanceToPOJO((net.cloudml.core.ExternalComponentInstance) kc);
                 counter++;
-            }
-            else if (kc instanceof net.cloudml.core.InternalComponentInstance) {
-                //Will be processed in the next pass
-            }
-            else {
-                throw new IllegalArgumentException("Unknown subtype of component: " + kc.getClass().getName());
-            }
         }
         assert counter == model.getComponentInstances().onlyExternals().size();
         assert vmInstances.size() == counter;
@@ -346,37 +361,19 @@ public class BridgeToCloudML {
     public void externalComponentInstanceToPOJO(net.cloudml.core.ExternalComponentInstance kExternalComponentInstance) {
         checkForNull(kExternalComponentInstance, "Cannot convert null!");
 
-        if (kExternalComponentInstance instanceof net.cloudml.core.VMInstance) {
-            net.cloudml.core.VMInstance kVM = (net.cloudml.core.VMInstance) kExternalComponentInstance;
-            assert externalComponents.containsKey(kVM.getType().getName());
-            VMInstance ni = new VMInstance(kVM.getName(), externalComponents.get(kVM.getType().getName()));
-            ni.setPublicAddress(kVM.getPublicAddress());
-            convertProperties(kVM, ni);
+        if (kExternalComponentInstance instanceof net.cloudml.core.ExternalComponentInstance) {
 
-            initProvidedExecutionPlatformInstances(kExternalComponentInstance, ni);
-
-            vmInstances.put(ni.getName(), ni);
-
-            model.getComponentInstances().add(ni);
         }
         else {
             throw new IllegalArgumentException("Unknown subtype of ExternalComponentInstance '" + kExternalComponentInstance.getClass().getName());
         }
     }
 
-    public void internalComponentInstancesToPOJO(List<net.cloudml.core.ComponentInstance> componentInstances) {
+    public void internalComponentInstancesToPOJO(List<net.cloudml.core.InternalComponentInstance> componentInstances) {
         int counter = 0;
-        for (net.cloudml.core.ComponentInstance ici : componentInstances) {
-            if (ici instanceof net.cloudml.core.InternalComponentInstance) {
+        for (net.cloudml.core.InternalComponentInstance ici : componentInstances) {
                 internalComponentInstanceToPOJO((net.cloudml.core.InternalComponentInstance) ici);
                 counter++;
-            }
-            else if (ici instanceof net.cloudml.core.ExternalComponentInstance) {
-                //Should have been processed in the previous pass
-            }
-            else {
-                throw new IllegalArgumentException("Unknown subtype of component" + ici.getClass().getName());
-            }
         }
         assert counter == model.getComponentInstances().onlyInternals().size();
         assert counter == internalComponentInstances.size();

@@ -93,9 +93,9 @@ public class BridgeToKmfTest extends TestCase {
         model.getComponents().add(input);
         bridge.toKMF(model);
 
-        List<net.cloudml.core.Component> output= bridge.getKmfModel().getComponents();
+        List<net.cloudml.core.VM> output= bridge.getKmfModel().getVms();
         assertFalse(output.isEmpty());
-        net.cloudml.core.VM actual = (net.cloudml.core.VM) output.get(0);
+        net.cloudml.core.VM actual = output.get(0);
 
         assertTrue(new Matcher().matchVM(actual, cloudMLSamples.getVMA()));
     }
@@ -117,7 +117,7 @@ public class BridgeToKmfTest extends TestCase {
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
 
         bridge.internalComponentToKmf(cloudMLSamples.getInternalComponentA());
-        net.cloudml.core.Component result = bridge.getKmfModel().getComponents().get(0);
+        net.cloudml.core.InternalComponent result = bridge.getKmfModel().getInternalComponents().get(0);
 
         assertTrue(new Matcher().matchIC(result, cloudMLSamples.getInternalComponentA()));
     }
@@ -181,8 +181,8 @@ public class BridgeToKmfTest extends TestCase {
         cm.getComponentInstances().add(input);
         bridge.toKMF(cm);
 
-        assertFalse(bridge.getKmfModel().getComponentInstances().isEmpty());
-        net.cloudml.core.VMInstance output = (net.cloudml.core.VMInstance) (bridge.getKmfModel().getComponentInstances().get(0));
+        assertFalse(bridge.getKmfModel().getVmInstances().isEmpty());
+        net.cloudml.core.VMInstance output = bridge.getKmfModel().getVmInstances().get(0);
         assertNotNull(output);
         assertNotNull(output.getName());
         assertNotNull(output.getType());
@@ -214,10 +214,10 @@ public class BridgeToKmfTest extends TestCase {
       
         bridge.toKMF(cm);
 
-        List<net.cloudml.core.ComponentInstance> ici= bridge.getKmfModel().getComponentInstances();
+        List<net.cloudml.core.InternalComponentInstance> ici= bridge.getKmfModel().getInternalComponentInstances();
         assertFalse(ici.isEmpty());
 
-        net.cloudml.core.ComponentInstance output = ici.get(0);
+        net.cloudml.core.InternalComponentInstance output = ici.get(0);
 
         assertNotNull(output);
         assertNotNull(output.getName());

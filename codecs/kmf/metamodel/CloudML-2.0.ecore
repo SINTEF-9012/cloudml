@@ -31,12 +31,24 @@
           eType="#//core/Provider" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
           eType="#//core/Component" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="relationships" upperBound="-1"
-          eType="#//core/Relationship" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="clouds" upperBound="-1"
           eType="#//core/Cloud" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="componentInstances" upperBound="-1"
           eType="#//core/ComponentInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="internalComponents" upperBound="-1"
+          eType="#//core/InternalComponent" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="externalComponents" upperBound="-1"
+          eType="#//core/ExternalComponent" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="internalComponentInstances"
+          upperBound="-1" eType="#//core/InternalComponentInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="externalComponentInstances"
+          upperBound="-1" eType="#//core/ExternalComponentInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="vms" upperBound="-1"
+          eType="#//core/VM" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="vmInstances" upperBound="-1"
+          eType="#//core/VMInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="relationships" upperBound="-1"
+          eType="#//core/Relationship" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="relationshipInstances"
           upperBound="-1" eType="#//core/RelationshipInstance" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="executesInstances" upperBound="-1"
