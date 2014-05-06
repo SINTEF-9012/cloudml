@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 
 import junit.framework.TestCase;
 import org.cloudml.codecs.DotCodec;
+import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.codecs.library.CodecsLibrary;
 import org.cloudml.core.Deployment;
@@ -57,13 +58,15 @@ public class LoadTest extends TestCase {
         final Deployment model = aCodecLibrary().load(testFile("empty.JSON"));
         assertModelIsEmpty(model);
     }
-    
-     @Test
+
+    @Test
     public void loadShouldAcceptSensapp() throws FileNotFoundException {
+        Codec json= new JsonCodec();
+        json.save(SensApp.completeSensApp().build(), new FileOutputStream(testFile("sensapp.json")));
         final Deployment model = aCodecLibrary().load(testFile("sensapp.json"));
-         Codec c= new DotCodec();
-         c.save(SensApp.completeSensApp().build(), new FileOutputStream("sensapp2.dot"));
-         c.save(model, new FileOutputStream("sensapp.dot"));
+        Codec c= new DotCodec();
+        //c.save(SensApp.completeSensApp().build(), new FileOutputStream("sensapp2.dot"));
+        c.save(model, new FileOutputStream("sensapp.dot"));
         assertModelMatchesSensApp(model);
     }
 
