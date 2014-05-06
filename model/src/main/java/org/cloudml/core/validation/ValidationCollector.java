@@ -43,13 +43,13 @@ import org.cloudml.core.RequiredPort;
 import org.cloudml.core.RequiredPortInstance;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
-import org.cloudml.core.visitors.VisitListener;
+import org.cloudml.core.visitors.AbstractVisitListener;
 
 /**
  * On any deployment model object, append the result of the local validation.
  */
-public class ValidationCollector implements VisitListener {
-
+public class ValidationCollector extends AbstractVisitListener {
+ 
     private final Report validation;
 
     public ValidationCollector() {
@@ -65,102 +65,102 @@ public class ValidationCollector implements VisitListener {
     }
 
     @Override
-    public void onDeployment(Deployment subject) {
+    public void onDeploymentEntry(Deployment subject) {
         collect(subject);
     }
 
     @Override
-    public void onProvider(Provider subject) {
+    public void onProviderEntry(Provider subject) {
         collect(subject);
     }
 
     @Override
-    public void onVM(VM subject) {
+    public void onVMEntry(VM subject) {
         collect(subject);
     }
 
     @Override
-    public void onExternalComponent(ExternalComponent subject) {
+    public void onExternalComponentEntry(ExternalComponent subject) {
         collect(subject);
     }
 
     @Override
-    public void onInternalComponent(InternalComponent subject) {
+    public void onInternalComponentEntry(InternalComponent subject) {
         collect(subject);
     }
 
     @Override
-    public void onRequiredPort(RequiredPort subject) {
+    public void onRequiredPortEntry(RequiredPort subject) {
         collect(subject);
     }
 
     @Override
-    public void onProvidedPort(ProvidedPort subject) {
+    public void onProvidedPortEntry(ProvidedPort subject) {
         collect(subject);
     }
 
     @Override
-    public void onProvidedExecutionPlatform(ProvidedExecutionPlatform subject) {
+    public void onProvidedExecutionPlatformEntry(ProvidedExecutionPlatform subject) {
         collect(subject);
     }
 
     @Override
-    public void onRequiredExecutionPlatform(RequiredExecutionPlatform subject) {
+    public void onRequiredExecutionPlatformEntry(RequiredExecutionPlatform subject) {
         collect(subject);
     }
 
     @Override
-    public void onRelationship(Relationship subject) {
+    public void onRelationshipEntry(Relationship subject) {
            collect(subject);
     }
 
     @Override
-    public void onVMInstance(VMInstance subject) {
+    public void onVMInstanceEntry(VMInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onExternalComponentInstance(ExternalComponentInstance subject) {
+    public void onExternalComponentInstanceEntry(ExternalComponentInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onInternalComponentInstance(InternalComponentInstance subject) {
+    public void onInternalComponentInstanceEntry(InternalComponentInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onRequiredPortInstance(RequiredPortInstance subject) {
+    public void onRequiredPortInstanceEntry(RequiredPortInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onProvidedPortInstance(ProvidedPortInstance subject) {
+    public void onProvidedPortInstanceEntry(ProvidedPortInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onProvidedExecutionPlatformInstance(ProvidedExecutionPlatformInstance subject) {
+    public void onProvidedExecutionPlatformInstanceEntry(ProvidedExecutionPlatformInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance subject) {
+    public void onRequiredExecutionPlatformInstanceEntry(RequiredExecutionPlatformInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onRelationshipInstance(RelationshipInstance subject) {
+    public void onRelationshipInstanceEntry(RelationshipInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onExecuteInstance(ExecuteInstance subject) {
+    public void onExecuteInstanceEntry(ExecuteInstance subject) {
         collect(subject);
     }
 
     @Override
-    public void onCloud(Cloud subject) {
+    public void onCloudEntry(Cloud subject) {
         collect(subject);
     }
    

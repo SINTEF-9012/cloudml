@@ -20,17 +20,15 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.cloudml.codecs;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.NamedElement;
-import org.cloudml.core.*;
+import org.cloudml.core.visitors.Visitable;
+import org.cloudml.core.visitors.Visitor;
 
 public class DotCodec implements Codec {
 
@@ -41,11 +39,32 @@ public class DotCodec implements Codec {
 
     @Override
     public void save(NamedElement model, OutputStream content) {
+        failIfInvalid(content);
+        Visitable visitable = failIfInvalid(model);
+        final DotPrinter printer = new DotPrinter();
+        visitable.accept(new Visitor(printer));
         try {
-            content.write(new DotPrinter().print((Deployment) model).getBytes());
-        
+            content.write(printer.getDotText().getBytes());
+       
         } catch (IOException ex) {
-            Logger.getLogger(DotCodec.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException("Unable to write the DOC code into the given output stream", ex);
         }
     }
+
+    private void failIfInvalid(OutputStream content) {
+        if (content == null) {
+            throw new IllegalArgumentException("'null' is not a valid output stream");
+        }
+    }
+
+    private Visitable failIfInvalid(NamedElement model) {
+        if (model == null) {
+            throw new IllegalArgumentException("'null' cannot be converted as a DOT file");
+        }
+        if (!(model instanceof Visitable)) {
+            throw new IllegalArgumentException("Only vistable model element can be converted to DOT (found '" + model.getClass().getName() + "')");
+        }
+        return (Visitable) model;
+    }
+
 }

@@ -48,43 +48,83 @@ import org.cloudml.core.VMInstance;
  */
 public interface VisitListener {
 
-    public void onDeployment(Deployment subject);
+    public void onDeploymentEntry(Deployment subject);
 
-    public void onProvider(Provider subject);
+    public void onDeploymentExit(Deployment subject);
 
-    public void onVM(VM subject);
+    public void onProviderEntry(Provider subject);
 
-    public void onExternalComponent(ExternalComponent subject);
+    public void onProviderExit(Provider subject);
 
-    public void onInternalComponent(InternalComponent subject);
+    public void onVMEntry(VM subject);
 
-    public void onRequiredPort(RequiredPort subject);
+    public void onVMExit(VM subject);
 
-    public void onProvidedPort(ProvidedPort subject);
+    public void onExternalComponentEntry(ExternalComponent subject);
 
-    public void onProvidedExecutionPlatform(ProvidedExecutionPlatform subject);
+    public void onExternalComponentExit(ExternalComponent subject);
 
-    public void onRequiredExecutionPlatform(RequiredExecutionPlatform subject);
+    public void onInternalComponentEntry(InternalComponent subject);
 
-    public void onRelationship(Relationship subject);
+    public void onInternalComponentExit(InternalComponent subject);
 
-    public void onVMInstance(VMInstance subject);
+    public void onRequiredPortEntry(RequiredPort subject);
 
-    public void onExternalComponentInstance(ExternalComponentInstance subject);
+    public void onRequiredPortExit(RequiredPort subject);
 
-    public void onInternalComponentInstance(InternalComponentInstance subject);
+    public void onProvidedPortEntry(ProvidedPort subject);
 
-    public void onRequiredPortInstance(RequiredPortInstance subject);
+    public void onProvidedPortExit(ProvidedPort subject);
 
-    public void onProvidedPortInstance(ProvidedPortInstance subject);
+    public void onProvidedExecutionPlatformEntry(ProvidedExecutionPlatform subject);
 
-    public void onProvidedExecutionPlatformInstance(ProvidedExecutionPlatformInstance subject);
+    public void onProvidedExecutionPlatformExit(ProvidedExecutionPlatform subject);
 
-    public void onRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance subject);
+    public void onRequiredExecutionPlatformEntry(RequiredExecutionPlatform subject);
 
-    public void onRelationshipInstance(RelationshipInstance subject);
+    public void onRequiredExecutionPlatformExit(RequiredExecutionPlatform subject);
 
-    public void onExecuteInstance(ExecuteInstance subject);
-    
-    public void onCloud(Cloud cloud);
+    public void onRelationshipEntry(Relationship subject);
+
+    public void onRelationshipExit(Relationship subject);
+
+    public void onVMInstanceEntry(VMInstance subject);
+
+    public void onVMInstanceExit(VMInstance subject);
+
+    public void onExternalComponentInstanceEntry(ExternalComponentInstance subject);
+
+    public void onExternalComponentInstanceExit(ExternalComponentInstance subject);
+
+    public void onInternalComponentInstanceEntry(InternalComponentInstance subject);
+
+    public void onInternalComponentInstanceExit(InternalComponentInstance subject);
+
+    public void onRequiredPortInstanceEntry(RequiredPortInstance subject);
+
+    public void onRequiredPortInstanceExit(RequiredPortInstance subject);
+
+    public void onProvidedPortInstanceEntry(ProvidedPortInstance subject);
+
+    public void onProvidedPortInstanceExit(ProvidedPortInstance subject);
+
+    public void onProvidedExecutionPlatformInstanceEntry(ProvidedExecutionPlatformInstance subject);
+
+    public void onProvidedExecutionPlatformInstanceExit(ProvidedExecutionPlatformInstance subject);
+
+    public void onRequiredExecutionPlatformInstanceEntry(RequiredExecutionPlatformInstance subject);
+
+    public void onRequiredExecutionPlatformInstanceExit(RequiredExecutionPlatformInstance subject);
+
+    public void onRelationshipInstanceEntry(RelationshipInstance subject);
+
+    public void onRelationshipInstanceExit(RelationshipInstance subject);
+
+    public void onExecuteInstanceEntry(ExecuteInstance subject);
+
+    public void onExecuteInstanceExit(ExecuteInstance subject);
+
+    public void onCloudEntry(Cloud cloud);
+
+    public void onCloudExit(Cloud cloud);
 }

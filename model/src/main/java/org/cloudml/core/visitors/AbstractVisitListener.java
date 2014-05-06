@@ -49,86 +49,187 @@ import org.cloudml.core.VMInstance;
 /**
  * Provides default empty implementation for each event handler
  */
-public abstract class AbstractVisitListener implements VisitListener {
+public abstract class AbstractVisitListener implements VisitListener { 
 
     @Override
-    public void onDeployment(Deployment subject) {
+    public void onDeploymentEntry(Deployment subject) {
     }
 
     @Override
-    public void onProvider(Provider subject) {
+    public void onProviderEntry(Provider subject) {
     }
 
     @Override
-    public void onVM(VM subject) {
+    public void onVMEntry(VM subject) {
     }
 
     @Override
-    public void onExternalComponent(ExternalComponent subject) {
+    public void onExternalComponentEntry(ExternalComponent subject) {
     }
 
     @Override
-    public void onInternalComponent(InternalComponent subject) {
+    public void onInternalComponentEntry(InternalComponent subject) {
     }
 
     @Override
-    public void onRequiredPort(RequiredPort subject) {
+    public void onRequiredPortEntry(RequiredPort subject) {
     }
 
     @Override
-    public void onProvidedPort(ProvidedPort subject) {
+    public void onProvidedPortEntry(ProvidedPort subject) {
     }
 
     @Override
-    public void onProvidedExecutionPlatform(ProvidedExecutionPlatform subject) {
+    public void onProvidedExecutionPlatformEntry(ProvidedExecutionPlatform subject) {
     }
 
     @Override
-    public void onRequiredExecutionPlatform(RequiredExecutionPlatform subject) {
+    public void onRequiredExecutionPlatformEntry(RequiredExecutionPlatform subject) {
     }
 
     @Override
-    public void onRelationship(Relationship subject) {
+    public void onRelationshipEntry(Relationship subject) {
     }
 
     @Override
-    public void onVMInstance(VMInstance subject) {
+    public void onVMInstanceEntry(VMInstance subject) {
     }
 
     @Override
-    public void onExternalComponentInstance(ExternalComponentInstance subject) {
+    public void onExternalComponentInstanceEntry(ExternalComponentInstance subject) {
     }
 
     @Override
-    public void onInternalComponentInstance(InternalComponentInstance subject) {
+    public void onInternalComponentInstanceEntry(InternalComponentInstance subject) {
     }
 
     @Override
-    public void onRequiredPortInstance(RequiredPortInstance subject) {
+    public void onRequiredPortInstanceEntry(RequiredPortInstance subject) {
     }
 
     @Override
-    public void onProvidedPortInstance(ProvidedPortInstance subject) {
+    public void onProvidedPortInstanceEntry(ProvidedPortInstance subject) {
     }
 
     @Override
-    public void onProvidedExecutionPlatformInstance(ProvidedExecutionPlatformInstance subject) {
+    public void onProvidedExecutionPlatformInstanceEntry(ProvidedExecutionPlatformInstance subject) {
     }
 
     @Override
-    public void onRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance subject) {
+    public void onRequiredExecutionPlatformInstanceEntry(RequiredExecutionPlatformInstance subject) {
     }
 
     @Override
-    public void onRelationshipInstance(RelationshipInstance subject) {
+    public void onRelationshipInstanceEntry(RelationshipInstance subject) {
     }
 
     @Override
-    public void onExecuteInstance(ExecuteInstance subject) {
+    public void onExecuteInstanceEntry(ExecuteInstance subject) {
     }
 
     @Override
-    public void onCloud(Cloud cloud) {
+    public void onCloudEntry(Cloud cloud) {
     }
+
+
+    @Override
+    public void onDeploymentExit(Deployment subject) {
+    }
+
+
+    @Override
+    public void onProviderExit(Provider subject) {
+    }
+
+
+    @Override
+    public void onVMExit(VM subject) {
+    }
+
+
+    @Override
+    public void onExternalComponentExit(ExternalComponent subject) {
+    }
+
+
+    @Override
+    public void onInternalComponentExit(InternalComponent subject) {
+    }
+
+
+    @Override
+    public void onRequiredPortExit(RequiredPort subject) {
+    }
+
+
+    @Override
+    public void onProvidedPortExit(ProvidedPort subject) {
+    }
+
+
+    @Override
+    public void onProvidedExecutionPlatformExit(ProvidedExecutionPlatform subject) {
+    }
+
+
+    @Override
+    public void onRequiredExecutionPlatformExit(RequiredExecutionPlatform subject) {
+    }
+
+
+    @Override
+    public void onRelationshipExit(Relationship subject) {
+    }
+
+
+    @Override
+    public void onVMInstanceExit(VMInstance subject) {
+    }
+
+
+    @Override
+    public void onExternalComponentInstanceExit(ExternalComponentInstance subject) {
+    }
+
+
+    @Override
+    public void onInternalComponentInstanceExit(InternalComponentInstance subject) {
+    }
+
+
+    @Override
+    public void onRequiredPortInstanceExit(RequiredPortInstance subject) {
+    }
+
+
+    @Override
+    public void onProvidedPortInstanceExit(ProvidedPortInstance subject) {
+    }
+
+
+    @Override
+    public void onProvidedExecutionPlatformInstanceExit(ProvidedExecutionPlatformInstance subject) {
+    }
+
+
+    @Override
+    public void onRequiredExecutionPlatformInstanceExit(RequiredExecutionPlatformInstance subject) {
+    }
+
+
+    @Override
+    public void onRelationshipInstanceExit(RelationshipInstance subject) {
+    }
+
+
+    @Override
+    public void onExecuteInstanceExit(ExecuteInstance subject) {
+    }
+
+
+    @Override
+    public void onCloudExit(Cloud cloud) {
+    }
+    
 
 }

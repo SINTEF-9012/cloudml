@@ -48,7 +48,7 @@ final class ListenerGroup {
     }
 
     public void addAll(Collection<VisitListener> listeners) {
-        for (VisitListener listener : listeners) {
+        for (VisitListener listener: listeners) {
             add(listener);
         }
     }
@@ -59,123 +59,243 @@ final class ListenerGroup {
         }
     }
 
-    public void publish(Deployment deployment) {
-        for (VisitListener listener : listeners) {
-            listener.onDeployment(deployment);
+    public void enter(Deployment deployment) {
+        for (VisitListener listener: listeners) {
+            listener.onDeploymentEntry(deployment);
         }
     }
 
-    public void publish(Provider provider) {
-        for (VisitListener listener : listeners) {
-            listener.onProvider(provider);
+    public void enter(Provider provider) {
+        for (VisitListener listener: listeners) {
+            listener.onProviderEntry(provider);
         }
     }
 
-    public void publish(VM vm) {
-        for (VisitListener listener : listeners) {
-            listener.onVM(vm);
+    public void enter(VM vm) {
+        for (VisitListener listener: listeners) {
+            listener.onVMEntry(vm);
         }
     }
 
-    public void publish(InternalComponent component) {
-        for (VisitListener listener : listeners) {
-            listener.onInternalComponent(component);
+    public void enter(InternalComponent component) {
+        for (VisitListener listener: listeners) {
+            listener.onInternalComponentEntry(component);
         }
     }
 
-    public void publish(ExternalComponent component) {
-        for (VisitListener listener : listeners) {
-            listener.onExternalComponent(component);
+    public void enter(ExternalComponent component) {
+        for (VisitListener listener: listeners) {
+            listener.onExternalComponentEntry(component);
         }
     }
 
-    public void publish(Relationship relationship) {
-        for (VisitListener listener : listeners) {
-            listener.onRelationship(relationship);
+    public void enter(Relationship relationship) {
+        for (VisitListener listener: listeners) {
+            listener.onRelationshipEntry(relationship);
         }
     }
 
-    public void publish(RequiredExecutionPlatform subject) {
-        for (VisitListener listener : listeners) {
-            listener.onRequiredExecutionPlatform(subject);
+    public void enter(RequiredExecutionPlatform subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredExecutionPlatformEntry(subject);
         }
     }
 
-    public void publish(ProvidedExecutionPlatform subject) {
-        for (VisitListener listener : listeners) {
-            listener.onProvidedExecutionPlatform(subject);
+    public void enter(ProvidedExecutionPlatform subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedExecutionPlatformEntry(subject);
         }
     }
 
-    public void publish(ProvidedPort subject) {
-        for (VisitListener listener : listeners) {
-            listener.onProvidedPort(subject);
+    public void enter(ProvidedPort subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedPortEntry(subject);
         }
     }
 
-    public void publish(RequiredPort subject) {
-        for (VisitListener listener : listeners) {
-            listener.onRequiredPort(subject);
+    public void enter(RequiredPort subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredPortEntry(subject);
         }
     }
 
-    public void publish(VMInstance vmInstance) {
-        for (VisitListener listener : listeners) {
-            listener.onVMInstance(vmInstance);
+    public void enter(VMInstance vmInstance) {
+        for (VisitListener listener: listeners) {
+            listener.onVMInstanceEntry(vmInstance);
         }
     }
 
-    public void publish(ExternalComponentInstance subject) {
-        for (VisitListener listener : listeners) {
-            listener.onExternalComponentInstance(subject);
+    public void enter(ExternalComponentInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onExternalComponentInstanceEntry(subject);
         }
     }
 
-    public void publish(InternalComponentInstance subject) {
-        for (VisitListener listener : listeners) {
-            listener.onInternalComponentInstance(subject);
+    public void enter(InternalComponentInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onInternalComponentInstanceEntry(subject);
         }
     }
 
-    public void publish(ProvidedPortInstance subject) {
-        for (VisitListener listener : listeners) {
-            listener.onProvidedPortInstance(subject);
+    public void enter(ProvidedPortInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedPortInstanceEntry(subject);
         }
     }
 
-    public void publish(RequiredPortInstance subject) {
-        for (VisitListener listener : listeners) {
-            listener.onRequiredPortInstance(subject);
+    public void enter(RequiredPortInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredPortInstanceEntry(subject);
         }
     }
 
-    public void publish(RequiredExecutionPlatformInstance subject) {
-        for (VisitListener listener : listeners) {
-            listener.onRequiredExecutionPlatformInstance(subject);
+    public void enter(RequiredExecutionPlatformInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredExecutionPlatformInstanceEntry(subject);
         }
     }
 
-    public void publish(ProvidedExecutionPlatformInstance subject) {
-        for (VisitListener listener : listeners) {
-            listener.onProvidedExecutionPlatformInstance(subject);
+    public void enter(ProvidedExecutionPlatformInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedExecutionPlatformInstanceEntry(subject);
         }
     }
 
-    public void publish(RelationshipInstance relationship) {
-        for (VisitListener listener : listeners) {
-            listener.onRelationshipInstance(relationship);
+    public void enter(RelationshipInstance relationship) {
+        for (VisitListener listener: listeners) {
+            listener.onRelationshipInstanceEntry(relationship);
         }
     }
 
-    public void publish(ExecuteInstance execute) {
-        for (VisitListener listener : listeners) {
-            listener.onExecuteInstance(execute);
+    public void enter(ExecuteInstance execute) {
+        for (VisitListener listener: listeners) {
+            listener.onExecuteInstanceEntry(execute);
         }
     }
-    
-    public void publish(Cloud cloud) {
-        for(VisitListener listener: listeners) {
-            listener.onCloud(cloud);
+
+    public void enter(Cloud cloud) {
+        for (VisitListener listener: listeners) {
+            listener.onCloudEntry(cloud);
+        }
+    }
+
+    public void exit(Deployment deployment) {
+        for (VisitListener listener: listeners) {
+            listener.onDeploymentExit(deployment);
+        }
+    }
+
+    public void exit(Provider subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProviderExit(subject);
+        }
+    }
+
+    public void exit(InternalComponent subject) {
+        for (VisitListener listener: listeners) {
+            listener.onInternalComponentExit(subject);
+        }
+    }
+
+    public void exit(ExternalComponent subject) {
+        for (VisitListener listener: listeners) {
+            listener.onExternalComponentExit(subject);
+        }
+    }
+
+    public void exit(VM subject) {
+        for (VisitListener listener: listeners) {
+            listener.onVMExit(subject);
+        }
+    }
+
+    public void exit(Relationship subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRelationshipExit(subject);
+        }
+    }
+
+    public void exit(RequiredPort subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredPortExit(subject);
+        }
+    }
+
+    public void exit(ProvidedPort subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedPortExit(subject);
+        }
+    }
+
+    public void exit(RequiredExecutionPlatform subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredExecutionPlatformExit(subject);
+        }
+    }
+
+    public void exit(ProvidedExecutionPlatform subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedExecutionPlatformExit(subject);
+        }
+    }
+
+    public void exit(VMInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onVMInstanceExit(subject);
+        }
+    }
+
+    public void exit(ExternalComponentInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onExternalComponentInstanceExit(subject);
+        }
+    }
+
+    public void exit(InternalComponentInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onInternalComponentInstanceExit(subject);
+        }
+    }
+
+    public void exit(RelationshipInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRelationshipInstanceExit(subject);
+        }
+    }
+
+    public void exit(RequiredPortInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredPortInstanceExit(subject);
+        }
+    }
+
+    public void exit(ProvidedPortInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedPortInstanceExit(subject);
+        }
+    }
+
+    public void exit(RequiredExecutionPlatformInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onRequiredExecutionPlatformInstanceExit(subject);
+        }
+    }
+
+    public void exit(ProvidedExecutionPlatformInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onProvidedExecutionPlatformInstanceExit(subject);
+        }
+    }
+
+    public void exit(ExecuteInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onExecuteInstanceExit(subject);
+        }
+    }
+
+    public void exit(Cloud subject) {
+        for (VisitListener listener: listeners) {
+            listener.onCloudExit(subject);
         }
     }
 }

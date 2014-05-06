@@ -40,6 +40,7 @@ public class VisitorTest extends TestCase {
 
     private final Mockery context = new JUnit4Mockery();
 
+    // TODO: Break this test in many smaller ones
     @Test
     public void testListenersAreInvoked() {
         final Deployment model = getOneClientConnectedToOneServer().build();
@@ -47,23 +48,57 @@ public class VisitorTest extends TestCase {
 
         context.checking(new Expectations() {
             {
-                oneOf(processor).onDeployment(with(any(Deployment.class)));
-                oneOf(processor).onProvider(with(any(Provider.class)));
-                exactly(2).of(processor).onVM(with(any(VM.class)));
-                exactly(2).of(processor).onInternalComponent(with(any(InternalComponent.class)));
-                oneOf(processor).onProvidedPort(with(any(ProvidedPort.class)));
-                exactly(2).of(processor).onProvidedExecutionPlatform(with(any(ProvidedExecutionPlatform.class)));
-                oneOf(processor).onRequiredPort(with(any(RequiredPort.class)));
-                exactly(2).of(processor).onRequiredExecutionPlatform(with(any(RequiredExecutionPlatform.class)));
-                oneOf(processor).onRelationship(with(any(Relationship.class)));
-                exactly(2).of(processor).onVMInstance(with(any(VMInstance.class)));
-                exactly(2).of(processor).onInternalComponentInstance(with(any(InternalComponentInstance.class)));
-                oneOf(processor).onRequiredPortInstance(with(any(RequiredPortInstance.class)));
-                exactly(2).of(processor).onRequiredExecutionPlatformInstance(with(any(RequiredExecutionPlatformInstance.class)));
-                oneOf(processor).onProvidedPortInstance(with(any(ProvidedPortInstance.class)));
-                exactly(2).of(processor).onProvidedExecutionPlatformInstance(with(any(ProvidedExecutionPlatformInstance.class)));
-                oneOf(processor).onRelationshipInstance(with(any(RelationshipInstance.class)));
-                exactly(2).of(processor).onExecuteInstance(with(any(ExecuteInstance.class)));
+                oneOf(processor).onDeploymentEntry(with(any(Deployment.class)));
+                oneOf(processor).onDeploymentExit(with(any(Deployment.class)));
+                
+                oneOf(processor).onProviderEntry(with(any(Provider.class)));
+                oneOf(processor).onProviderExit(with(any(Provider.class)));
+                
+                exactly(2).of(processor).onVMEntry(with(any(VM.class)));
+                exactly(2).of(processor).onVMExit(with(any(VM.class)));
+                
+                exactly(2).of(processor).onInternalComponentEntry(with(any(InternalComponent.class)));
+                exactly(2).of(processor).onInternalComponentExit(with(any(InternalComponent.class)));
+                
+                oneOf(processor).onProvidedPortEntry(with(any(ProvidedPort.class)));
+                oneOf(processor).onProvidedPortExit(with(any(ProvidedPort.class)));
+                
+                exactly(2).of(processor).onProvidedExecutionPlatformEntry(with(any(ProvidedExecutionPlatform.class)));
+                exactly(2).of(processor).onProvidedExecutionPlatformExit(with(any(ProvidedExecutionPlatform.class)));
+
+                oneOf(processor).onRequiredPortEntry(with(any(RequiredPort.class)));
+                oneOf(processor).onRequiredPortExit(with(any(RequiredPort.class)));
+                
+                exactly(2).of(processor).onRequiredExecutionPlatformEntry(with(any(RequiredExecutionPlatform.class)));
+                exactly(2).of(processor).onRequiredExecutionPlatformExit(with(any(RequiredExecutionPlatform.class)));
+                
+                oneOf(processor).onRelationshipEntry(with(any(Relationship.class)));
+                oneOf(processor).onRelationshipExit(with(any(Relationship.class)));
+                       
+                exactly(2).of(processor).onVMInstanceEntry(with(any(VMInstance.class)));
+                exactly(2).of(processor).onVMInstanceExit(with(any(VMInstance.class)));
+                
+                exactly(2).of(processor).onInternalComponentInstanceEntry(with(any(InternalComponentInstance.class)));
+                exactly(2).of(processor).onInternalComponentInstanceExit(with(any(InternalComponentInstance.class)));
+                
+                oneOf(processor).onRequiredPortInstanceEntry(with(any(RequiredPortInstance.class)));
+                oneOf(processor).onRequiredPortInstanceExit(with(any(RequiredPortInstance.class)));
+                
+                exactly(2).of(processor).onRequiredExecutionPlatformInstanceEntry(with(any(RequiredExecutionPlatformInstance.class)));
+                exactly(2).of(processor).onRequiredExecutionPlatformInstanceExit(with(any(RequiredExecutionPlatformInstance.class)));
+                
+                oneOf(processor).onProvidedPortInstanceEntry(with(any(ProvidedPortInstance.class)));
+                oneOf(processor).onProvidedPortInstanceExit(with(any(ProvidedPortInstance.class)));
+                
+                exactly(2).of(processor).onProvidedExecutionPlatformInstanceEntry(with(any(ProvidedExecutionPlatformInstance.class)));
+                exactly(2).of(processor).onProvidedExecutionPlatformInstanceExit(with(any(ProvidedExecutionPlatformInstance.class)));
+                
+                oneOf(processor).onRelationshipInstanceEntry(with(any(RelationshipInstance.class)));
+                oneOf(processor).onRelationshipInstanceExit(with(any(RelationshipInstance.class)));
+                
+                exactly(2).of(processor).onExecuteInstanceEntry(with(any(ExecuteInstance.class)));
+                exactly(2).of(processor).onExecuteInstanceExit(with(any(ExecuteInstance.class)));
+                
             }
         });
 

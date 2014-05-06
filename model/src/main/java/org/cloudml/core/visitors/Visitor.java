@@ -39,102 +39,122 @@ public class Visitor {
     }
 
     public void visitDeployment(Deployment deployment) {
-        listeners.publish(deployment);
+        listeners.enter(deployment);
         dispatcher.dispatchTo(this, deployment);
+        listeners.exit(deployment);
     }
 
     public void visitProvider(Provider subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
 
     public void visitInternalComponent(InternalComponent component) {
-        listeners.publish(component);
+        listeners.enter(component);
         dispatcher.dispatchTo(this, component);
+        listeners.exit(component);
     }
 
     public void visitExternalComponent(ExternalComponent component) {
-        listeners.publish(component);
+        listeners.enter(component);
         dispatcher.dispatchTo(this, component);
+        listeners.exit(component);
     }
 
     public void visitVM(VM subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
 
-    public void visitRelationship(Relationship binding) {
-        listeners.publish(binding);
-        dispatcher.dispatchTo(this, binding);
+    public void visitRelationship(Relationship relationship) {
+        listeners.enter(relationship);
+        dispatcher.dispatchTo(this, relationship);
+        listeners.exit(relationship); 
     }
 
     public void visitRequiredPort(RequiredPort subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
 
     public void visitProvidedPort(ProvidedPort subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject); 
     }
 
     public void visitRequiredExecutionPlatform(RequiredExecutionPlatform subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject); 
     }
 
     public void visitProvidedExecutionPlatform(ProvidedExecutionPlatform subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
 
     public void visitVMInstance(VMInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject); 
     }
 
     public void visitExternalComponentInstance(ExternalComponentInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
 
     public void visitInternalComponentInstance(InternalComponentInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject); 
     }
 
     public void visitRelationshipInstance(RelationshipInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
 
     public void visitRequiredPortInstance(RequiredPortInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);  
     }
 
     public void visitProvidedPortInstance(ProvidedPortInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
     
     public void visitRequiredExecutionPlatformInstance(RequiredExecutionPlatformInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);  
     }
 
     public void visitProvidedExecutionPlatformInstance(ProvidedExecutionPlatformInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
     
     public void visitExecuteInstance(ExecuteInstance subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject); 
+        listeners.exit(subject);
     }
 
     public void visitCloud(Cloud subject) {
-        listeners.publish(subject);
+        listeners.enter(subject);
         dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
     }
 }

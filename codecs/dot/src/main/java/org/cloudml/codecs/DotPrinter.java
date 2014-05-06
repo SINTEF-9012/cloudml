@@ -20,97 +20,103 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
-
+/*
+ */
 package org.cloudml.codecs;
 
-import java.util.Collection;
-import java.util.HashMap;
 import org.cloudml.core.*;
+import org.cloudml.core.visitors.AbstractVisitListener;
 
+/**
+ * Traverse the deployment model a output DOT code for visualisation
+ */
+public class DotPrinter extends AbstractVisitListener {
 
-public class DotPrinter {
-    
     private final SymbolTable symbols;
-    private final StringBuilder builder;
+    private StringBuilder dotText;
 
     public DotPrinter() {
-        this.builder = new StringBuilder();
         this.symbols = new SymbolTable();
     }
 
-    public String print(Deployment model) {
-        builder.append("digraph ");
-        builder.append("G");
-        builder.append(" {");
-        printClusters(model);
-        printEdges(model);
-        builder.append("}");
-        return builder.toString();
+    public DotPrinter(SymbolTable symbols) {
+        this.symbols = symbols;
     }
 
-    private void printClusters(Deployment model) {
-        int clusterIndex = 0;
-        for (VMInstance vmInstance : model.getComponentInstances().onlyVMs()) {
-            clusterIndex += 1;
-            builder.append("subgraph cluster_").append(clusterIndex).append(" {");
-            builder.append("style=filled;\n");
-            builder.append("color=lightgrey;\n");
-            builder.append("label=\"").append(escape(vmInstance.getName())).append("\";");
-            printDotNodes(clusterIndex, model.getComponentInstances().onlyInternals().hostedOn(vmInstance));
-            builder.append("}");
+    @Override
+    public void onDeploymentEntry(Deployment subject) {
+        ensureBufferIsReady();
+        dotText.append("digraph Deployment {\n");
+    }
+
+    @Override
+    public void onDeploymentExit(Deployment subject) {
+        dotText.append("}\n");
+    }
+    
+    @Override
+    public void onVMInstanceEntry(VMInstance subject) {
+        ensureBufferIsReady();
+        dotText.append("\t")
+                .append(symbols.initialise(subject))
+                .append(" [")
+                .append(componentFormatting(subject)).append("];\n");
+    }
+
+    private String componentFormatting(ComponentInstance<? extends Component> subject) {
+        return "label=\"" + subject.getName() + "\"";
+    }
+
+    @Override
+    public void onInternalComponentInstanceEntry(InternalComponentInstance subject) {
+        ensureBufferIsReady();
+        dotText.append("\t")
+                .append(symbols.initialise(subject))
+                .append(" [")
+                .append(componentFormatting(subject)).append("];\n");
+    }
+
+    @Override
+    public void onRelationshipInstanceEntry(RelationshipInstance subject) {
+        ensureBufferIsReady();
+        dotText.append("\t")
+                .append(symbols.get(subject.getClientComponent()))
+                .append(" -> ")
+                .append(symbols.get(subject.getServerComponent()))
+                .append(" [")
+                .append(relationshipFormating(subject))
+                .append(" ];\n");
+    }
+
+    private String relationshipFormating(RelationshipInstance subject) {
+        return "label=\"" + subject.getName() + "\"";
+    }
+
+    @Override
+    public void onExecuteInstanceEntry(ExecuteInstance subject) {
+        ensureBufferIsReady();
+        dotText.append("\t")
+                .append(symbols.get(subject.getSubject()))
+                .append(" -> ")
+                .append(symbols.get(subject.getHost()))
+                .append(" [")
+                .append(executeOnFormatting(subject))
+                .append(" ];\n");
+    }
+
+    private String executeOnFormatting(ExecuteInstance subject) {
+        return "label=\"" + "run on" + "\"";
+    }
+
+    private void ensureBufferIsReady() {
+        if (dotText == null) {
+            dotText = new StringBuilder();
         }
     }
 
-    private void printDotNodes(int clusterIndex, Collection<InternalComponentInstance> instances) {
-        int artefactIndex = 0;
-        for (InternalComponentInstance instance : instances) {
-            artefactIndex += 1;
-            final String dotNodeName = "node_" + clusterIndex + "_" + artefactIndex;
-            symbols.put(instance, dotNodeName);
-            builder.append("\t\t")
-                    .append(dotNodeName)
-                    .append(" [")
-                    .append("label=\"")
-                    .append(escape(instance.getName()))
-                    .append("\",color=black,style=filled,fillcolor=white];\n");
-        }
+    public String getDotText() {
+        ensureBufferIsReady();
+        return dotText.toString();
     }
 
-    private void printEdges(Deployment model) {
-        for (RelationshipInstance relationship : model.getRelationshipInstances()) {
-            printEdge(relationship);
-        }
-    }
-
-    private void printEdge(RelationshipInstance relationship) {
-        builder.append("\t");
-        builder.append(symbols.get(relationship.getRequiredEnd().getOwner().get()));
-        builder.append(" -> ");
-        builder.append(symbols.get(relationship.getProvidedEnd().getOwner().get()));
-        builder.append("[label=\"").append(escape(relationship.getType().getName())).append("\"]");
-        builder.append(";");
-    }
-
-    private String escape(String name) {
-        return name.trim().replace("[^\\]\"", "\\\"");
-    }
-
-    private static class SymbolTable {
-
-        private final HashMap<Object, String> table;
-
-        public SymbolTable() {
-            this.table = new HashMap<Object, String>();
-        }
-
-        private <T extends NamedElement> String get(T namedElement) {
-            return this.table.get(namedElement);
-        }
-
-        private <T extends NamedElement> void put(T namedElement, String dotName) {
-            this.table.put(namedElement, dotName);
-        }
-    }
 }
-
