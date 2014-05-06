@@ -20,74 +20,84 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package test.cloudml.codecs.library;
 
 import java.io.FileNotFoundException;
 import junit.framework.TestCase;
 import org.cloudml.codecs.library.CodecsLibrary;
 import org.cloudml.core.Deployment;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
-@Ignore 
 @RunWith(JUnit4.class)
 public class LoadTest extends TestCase {
 
-    private static final String TEST_RESOURCE_PATH="src/test/resources/";
+    private static final String TEST_RESOURCE_PATH = "src/test/resources/";
+
+    private static CodecsLibrary aCodecLibrary() {
+        return new CodecsLibrary();
+    }
 
     @Test(expected = FileNotFoundException.class)
-    public void testLoadUnexistingFile() throws FileNotFoundException {
-        CodecsLibrary library = new CodecsLibrary();
-        String fileName = "plop.json";
-        library.load(fileName);
+    public void loadShouldRejectFilesThatDoNotExist() throws FileNotFoundException {
+        aCodecLibrary().load("a/file/that/does/not/exist.json");
     }
 
     @Test
-    public void testLoadUpperCaseFileName() throws FileNotFoundException {
-        CodecsLibrary library = new CodecsLibrary();
-        String fileName = TEST_RESOURCE_PATH+"sensapp2.JSON";
-        Deployment model=library.load(fileName);
-        assertFalse(model.getComponentInstances().isEmpty());
-        assertFalse(model.getComponents().isEmpty());
-        assertFalse(model.getComponentInstances().onlyExternals().isEmpty());
-        assertFalse(model.getComponents().onlyExternals().isEmpty());
-        assertTrue(model.getClouds().isEmpty());
-        assertFalse(model.getRelationshipInstances().isEmpty());
-        assertFalse(model.getRelationships().isEmpty());
-        assertFalse(model.getProviders().isEmpty());
+    public void loadShouldAcceptFilesWithUppercaseExtension() throws FileNotFoundException {
+        final Deployment model = aCodecLibrary().load(testFile("sensapp2.JSON"));
+        assertModelMatchesSensApp(model);
+    }
+    
+     @Test
+    public void loadShouldAcceptSensapp() throws FileNotFoundException {
+        final Deployment model = aCodecLibrary().load(testFile("sensapp.json"));
+        assertModelMatchesSensApp(model);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testLoadEmptyFileName() throws FileNotFoundException {
-        CodecsLibrary library = new CodecsLibrary();
-        String fileName = "";
-        library.load(fileName);
+    public void loadShouldRejectEmptyFileNames() throws FileNotFoundException {
+        aCodecLibrary().load("");
     }
 
     @Test
-    public void testLoadEmptyFile() throws FileNotFoundException {
-        CodecsLibrary library = new CodecsLibrary();
-        String fileName = TEST_RESOURCE_PATH+"empty.json";
-        Deployment model = library.load(fileName);
-        assertTrue(model.getComponentInstances().isEmpty());
-        assertTrue(model.getComponents().isEmpty());
-        assertTrue(model.getComponentInstances().onlyExternals().isEmpty());
-        assertTrue(model.getComponents().onlyExternals().isEmpty());
-        assertTrue(model.getClouds().isEmpty());
-        assertTrue(model.getRelationshipInstances().isEmpty());
-        assertTrue(model.getRelationships().isEmpty());
-        assertTrue(model.getProviders().isEmpty());
+    public void loadShouldBuildAnEmptyModelWhenTheFileIsEmpty() throws FileNotFoundException {
+        final Deployment model = aCodecLibrary().load(testFile("empty.json"));
+        assertModelIsEmpty(model);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testLoadUnknownEnstension() throws FileNotFoundException {
-        CodecsLibrary library = new CodecsLibrary();
-        String fileName = "plop.cc";
-        library.load(fileName);
+    public void loadShouldRejectFilesWhoseFormatIsNotSupported() throws FileNotFoundException {
+        aCodecLibrary().load("a_file_with_unknown_extension.foo");
+    }
+
+    //
+    // ---- Helper methods
+    //
+    private String testFile(final String testFile) {
+        return TEST_RESOURCE_PATH + testFile;
+    }
+
+    private void assertModelIsEmpty(Deployment model) {
+        assertThat("no provider", model.getProviders(), is(empty()));
+        assertThat("no component instance", model.getComponentInstances(), is(empty()));
+        assertThat("no component type", model.getComponents(), is(empty()));
+        assertThat("no relationship type", model.getRelationships(), is(empty()));
+        assertThat("no relationship instance", model.getRelationshipInstances(), is(empty()));
+        assertThat("no cloud", model.getClouds(), is(empty()));
+    }
+
+    private void assertModelMatchesSensApp(Deployment model) {
+        assertThat("2 providers", model.getProviders(), hasSize(2));
+        assertThat("7 component instances", model.getComponentInstances(), hasSize(7));
+        assertThat("5 component types", model.getComponents(), hasSize(6));
+        assertThat("2 relationship types", model.getRelationships(), hasSize(2));
+        assertThat("2 relationship instances", model.getRelationshipInstances(), hasSize(2));
+        assertThat("0 cloud", model.getClouds(), is(empty()));
     }
 
 }

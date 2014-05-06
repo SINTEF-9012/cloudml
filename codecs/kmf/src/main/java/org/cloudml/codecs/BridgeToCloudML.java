@@ -447,7 +447,7 @@ public class BridgeToCloudML {
             convertProperties(kpepi, pepi);
             convertResources(kpepi, pepi);
             providedExecutionPlatformInstances.put(pepi.getName(), pepi);
-            ai.getProvidedExecutionPlatforms().add(pepi);
+            // ai.getProvidedExecutionPlatforms().add(pepi);
         }
     }
 

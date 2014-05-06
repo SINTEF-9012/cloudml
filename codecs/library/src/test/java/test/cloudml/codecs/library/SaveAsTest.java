@@ -22,119 +22,99 @@
  */
 package test.cloudml.codecs.library;
 
-/*
- */
 import java.io.File;
 import java.io.FileNotFoundException;
 import junit.framework.TestCase;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 import org.cloudml.codecs.library.CodecsLibrary;
 import org.cloudml.core.Deployment;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import static org.cloudml.core.samples.SensApp.*;
 
-@Ignore
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
 @RunWith(JUnit4.class)
 public class SaveAsTest extends TestCase {
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSaveAsWithNullAsModel() throws FileNotFoundException {
-        String fileName = "test.json";
-        Deployment model = null;
-        CodecsLibrary library = new CodecsLibrary();
-        library.saveAs(model, fileName);
+    public void saveAsShouldRejectNullAsDeploymentModel() throws FileNotFoundException {
+        aCodecLibrary().saveAs(null, "any_file.json");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSaveAsWithEmptyStringAsFileName() throws FileNotFoundException {
-        String fileName = "";
-        Deployment model = new Deployment();
-        CodecsLibrary library = new CodecsLibrary();
-        library.saveAs(model, fileName);
+    public void saveAsShouldRejectEmptyStringAsFileName() throws FileNotFoundException {
+        aCodecLibrary().saveAs(new Deployment(), "");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSaveAsWithNullAsFileName() throws FileNotFoundException {
-        String fileName = null;
-        Deployment model = new Deployment();
-        CodecsLibrary library = new CodecsLibrary();
-        library.saveAs(model, fileName);
+    public void saveAsShouldRejectNullAsFileName() throws FileNotFoundException {
+        aCodecLibrary().saveAs(new Deployment(), null);
     }
-    public static final long EMPTY_FILE_SIZE = 0L;
 
     @Test
-    public void testSaveAsWithEmptyDeploymentModel() throws FileNotFoundException {
-        String fileName = "test.json";
-        Deployment model = new Deployment();
-        CodecsLibrary library = new CodecsLibrary();
-        library.saveAs(model, fileName);
-        File file = new File(fileName);
-        assertTrue(file.exists());
-        assertEquals(EMPTY_FILE_SIZE, file.length());
+    public void saveAsShouldProduceASmallFileForAnEmptyDeployment() throws FileNotFoundException {
+        final String fileName = "test.json";
+
+        aCodecLibrary().saveAs(new Deployment(), fileName);
+
+        assertThatFileIsNearlyEmpty(fileName);
+
         cleanDirectory();
     }
 
     @Test
-    public void testSaveAsWithSensApp() throws FileNotFoundException {
-        String fileName = "sensapp.json";
-        Deployment model = completeSensApp().build();
-        CodecsLibrary library = new CodecsLibrary();
-        library.saveAs(model, fileName);
-        File file = new File(fileName);
-        assertTrue(file.exists());
-        assertTrue(1000L < file.length());
+    public void testSaveAsShouldProduceALargeFileForSensApp() throws FileNotFoundException {
+        final String fileName = "sensapp.json";
+ 
+        aCodecLibrary().saveAs(completeSensApp().build(), fileName);
+
+        final long sizeInBytes = 1000L;
+        assertThatFileSizeIsAtLeast(fileName, sizeInBytes);
+
         cleanDirectory();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSaveAsWithUnknownException() throws FileNotFoundException {
-        String fileName = "test.pouet";
-        Deployment model = new Deployment();
-        CodecsLibrary library = new CodecsLibrary();
-        library.saveAs(model, fileName);
+    public void saveAsShouldRejectFileWhoseFormatIsNotSupported() throws FileNotFoundException {
+        aCodecLibrary().saveAs(new Deployment(), "test.pouet");
     }
 
     @Test
-    public void testSaveAsWithUpperCase() throws FileNotFoundException {
-        String fileName = "test.JSON";
-        Deployment model = new Deployment();
-        CodecsLibrary library = new CodecsLibrary();
-        library.saveAs(model, fileName);
-        File file = new File(fileName);
-        assertTrue(file.exists());
-        assertEquals(EMPTY_FILE_SIZE, file.length());
+    public void saveAsShouldAcceptFilesThatAreSupportedRegardlessOfTheCase() throws FileNotFoundException {
+        String aFileWithUppercaseExtension = "test.JSON"; 
+
+        aCodecLibrary().saveAs(new Deployment(), aFileWithUppercaseExtension);
+
+        assertThatFileIsNearlyEmpty(aFileWithUppercaseExtension);
+
+        cleanDirectory();
     }
 
-    @Test
-    public void testGetExtensionWithMultipleExtensions() {
-        CodecsLibrary library = new CodecsLibrary();
-        String extension = library.getFileExtension("test.pouet.toto");
-        assertEquals(".toto", extension);
+    // Helpers methods
+    private CodecsLibrary aCodecLibrary() {
+        return new CodecsLibrary();
     }
 
-    @Test
-    public void testGetExtensionWithMultipleDots() {
-        CodecsLibrary library = new CodecsLibrary();
-        String extension = library.getFileExtension("test....pouet");
-        assertEquals(".pouet", extension);
+    private File assertThatFileExists(String path) {
+        final File file = new File(path);
+        assertThat("missing file '" + path + "'", file.exists());
+        return file;
     }
 
-    @Test
-    public void testGetExtensionWithUpperCase() {
-        CodecsLibrary library = new CodecsLibrary();
-        String extension = library.getFileExtension("test.JSON");
-        assertEquals(".json", extension);
+    private File assertThatFileIsNearlyEmpty(String path) {
+        final long minimumSize = 70L; // The empty deployment is 66 bytes
+        final File file = assertThatFileExists(path);
+        assertThat("file '" + file + "' is too large", file.length(), is(lessThan(minimumSize)));
+        return file;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetExtensionWithoutExtension() {
-        CodecsLibrary library = new CodecsLibrary();
-        String extension = library.getFileExtension("test");
+    private File assertThatFileSizeIsAtLeast(String path, long maxSize) {
+        final File file = assertThatFileExists(path);
+        assertThat("file '" + file + "' is too small", file.length(), is(greaterThan(maxSize)));
+        return file;
     }
 
     private void cleanDirectory() {

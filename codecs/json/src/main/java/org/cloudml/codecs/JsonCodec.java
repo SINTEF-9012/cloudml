@@ -74,6 +74,7 @@ public class JsonCodec implements Codec {
         } catch (Exception e) {
             System.err.println(e.getLocalizedMessage());
             journal.log(Level.SEVERE, e.getLocalizedMessage());
+            throw new RuntimeException(e);
         }
     }
 }
