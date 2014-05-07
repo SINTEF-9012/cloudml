@@ -45,11 +45,17 @@ public class Bind extends AbstractAction<Void> {
         if (!clientPort.isBound()) {
             final Relationship bindingType = getLibrary().findRelationshipFor(deployment, clientPort);
             final String name = getLibrary().createUniqueRelationshipInstanceName(deployment, bindingType); 
-            final ProvidedPortInstance serverPort = getLibrary().findProvidedPortFor(deployment, bindingType);   
+            final ProvidedPortInstance serverPort = getLibrary().findProvidedPortFor(deployment, bindingType);
+            if(bindingType == null){
+                throw new IllegalStateException("No type of relationship found for the client port: "+clientPort.getQualifiedName());
+            }
+            if(serverPort == null){
+                throw new IllegalStateException("No Server port for the client port: "+clientPort.getQualifiedName());
+            }
             aRelationshipInstance()
                     .named(name)
-                    .from(clientPort.getOwner().getName(), clientPort.getName())
-                    .to(serverPort.getOwner().getName(), serverPort.getName())
+                    .from(clientPort.getOwner().getName(), clientPort.getType().getName())
+                    .to(serverPort.getOwner().getName(), serverPort.getType().getName())
                     .ofType(bindingType.getName())
                     .integrateIn(deployment);        
         }

@@ -55,8 +55,9 @@ public class ExecuteOnTest extends TestCase {
                     .ofType(SSH_CLIENT)
                     .hostedBy(vmInstanceName))
                 .build();
-        
-        final ExecuteInstance instance = model.getExecuteInstances().between(appInstanceName, REQUIRED_PLATFORM, vmInstanceName, PROVIDED_PLATFORM);
+        String requiredName=model.getComponentInstances().onlyInternals().firstNamed(appInstanceName).getRequiredExecutionPlatform().getName();
+        String providedName=model.getComponentInstances().onlyVMs().firstNamed(vmInstanceName).getProvidedExecutionPlatforms().toList().get(0).getName();
+        final ExecuteInstance instance = model.getExecuteInstances().between(appInstanceName, requiredName, vmInstanceName, providedName);
         assertThat("shall not be null", instance, is(not(nullValue())));
         
         return instance;

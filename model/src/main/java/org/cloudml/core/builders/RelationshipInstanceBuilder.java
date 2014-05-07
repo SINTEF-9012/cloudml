@@ -68,19 +68,19 @@ public class RelationshipInstanceBuilder extends WithResourcesBuilder<Relationsh
         super.prepare(relationship);
         return relationship;
     }
-    
+
     private RequiredPortInstance createClientPort() {
-        return new RequiredPortInstance(clientPort, new RequiredPort("required port type")); 
+        return new RequiredPortInstance(clientPort, new RequiredPort("required port type"));
     }
-    
+
     private ProvidedPortInstance createServerPort() {
         return new ProvidedPortInstance(serverPort, new ProvidedPort("provided port type"));
     }
-    
+
     private Relationship createType() {
         return new Relationship(typeName, new RequiredPort("required port type"), new ProvidedPort("provided port type"));
     }
-    
+
 
     @Override
     protected RelationshipInstanceBuilder next() {
@@ -93,25 +93,33 @@ public class RelationshipInstanceBuilder extends WithResourcesBuilder<Relationsh
         super.prepare(relationship);
         container.getRelationshipInstances().add(relationship);
     }
-    
+
     private RequiredPortInstance findClientPort(Deployment container) {
-        final RequiredPortInstance port = findClient(container).getRequiredPorts().firstNamed(clientPort);
+        final InternalComponentInstance client = findClient(container);
+        final RequiredPort portType = client.getType().getRequiredPorts().firstNamed(clientPort);
+        if(portType == null){
+            final String error = String.format("Unable to find the required port type '%s'", clientPort);
+            throw new IllegalStateException(error);
+        }
+        final RequiredPortInstance port = client.getRequiredPorts().ofType(portType);
         if (port == null) {
-            final String error = String.format("Unable to find the required port '%s' in '%s'", clientPort, client);
+            final String error = String.format("Unable to find the required port instance '%s' in '%s'", clientPort, client);
             throw new IllegalStateException(error);
         }
         return port;
     }
-    
+
     private ProvidedPortInstance findServerPort(Deployment container) {
-        final ProvidedPortInstance port = findServer(container).getProvidedPorts().firstNamed(serverPort);
+        final ComponentInstance server = findServer(container);
+        final ProvidedPort portType = server.getType().getProvidedPorts().firstNamed(serverPort);
+        final ProvidedPortInstance port = server.getProvidedPorts().ofType(portType);
         if (port == null) {
             final String error = String.format("Unable to find the provided port '%s' in '%s'", serverPort, server);
             throw new IllegalStateException(error);
         }
         return port;
     }
-    
+
     private Relationship findType(Deployment container) {
         final Relationship type = container.getRelationships().firstNamed(typeName);
         if (type == null) {
@@ -124,7 +132,7 @@ public class RelationshipInstanceBuilder extends WithResourcesBuilder<Relationsh
     private ComponentInstance<? extends Component> findServer(Deployment container) throws IllegalStateException {
         final ComponentInstance<? extends Component> serverComponent = container.getComponentInstances().firstNamed(server);
         if (serverComponent == null) {
-             final String error = String.format("Unable to find the component instance '%s'", server);
+            final String error = String.format("Unable to find the component instance '%s'", server);
             throw new IllegalStateException(error);
         }
         return serverComponent;

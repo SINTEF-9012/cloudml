@@ -24,6 +24,7 @@ package org.cloudml.core;
 
 import java.util.*;
 import org.cloudml.core.collections.PropertyGroup;
+import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.visitors.Visitor;
 
 public class RequiredExecutionPlatform extends ExecutionPlatform {
@@ -53,6 +54,6 @@ public class RequiredExecutionPlatform extends ExecutionPlatform {
 
     @Override 
     public RequiredExecutionPlatformInstance instantiate() {
-        return new RequiredExecutionPlatformInstance(getName(), this);
+        return new RequiredExecutionPlatformInstance(ModelUtils.generateUniqueName(getName()), this);
     }
 }

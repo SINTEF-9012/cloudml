@@ -26,6 +26,8 @@
 package org.cloudml.core.collections;
 
 import java.util.Collection;
+
+import org.cloudml.core.ProvidedPort;
 import org.cloudml.core.ProvidedPortInstance;
 
 
@@ -36,6 +38,24 @@ public class ProvidedPortInstanceGroup  extends WithResourceGroup<ProvidedPortIn
 
     public ProvidedPortInstanceGroup(Collection<ProvidedPortInstance> content) {
         super(content);
+    }
+
+    public ProvidedPortInstance ofType(ProvidedPort type) {
+        for (ProvidedPortInstance port: this) {
+            if (port.getType().equals(type)) {
+                return port;
+            }
+        }
+        return null;
+    }
+
+    public ProvidedPortInstance withTypeNamed(String name){
+        for (ProvidedPortInstance port: this) {
+            if (port.getType().getName().equals(name)) {
+                return port;
+            }
+        }
+        return null;
     }
 
 }

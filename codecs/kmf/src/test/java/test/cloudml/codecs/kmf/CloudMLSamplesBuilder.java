@@ -216,10 +216,10 @@ class CloudMLSamplesBuilder {
 
     private RelationshipInstance createRelationshipInstance(String name, Relationship relationship) {
         InternalComponentInstance server = relationship.getServerComponent().asInternal().instantiate(INTERNAL_COMPONENT_INSTANCE_A_NAME);
-        ProvidedPortInstance serverPort = server.getProvidedPorts().firstNamed(server.getType().getName() + PROVIDED_PORT_NAME);
+        ProvidedPortInstance serverPort = server.getProvidedPorts().withTypeNamed(server.getType().getName() + PROVIDED_PORT_NAME);
 
         InternalComponentInstance client = relationship.getClientComponent().instantiate(INTERNAL_COMPONENT_B_NAME);
-        RequiredPortInstance clientPort = client.getRequiredPorts().firstNamed(client.getType().getName() + REQUIRED_PORT_NAME);
+        RequiredPortInstance clientPort = client.getRequiredPorts().withTypeNamed(client.getType().getName() + REQUIRED_PORT_NAME);
         
         RelationshipInstance relationshipInstance = new RelationshipInstance(name, clientPort, serverPort, relationship);
 

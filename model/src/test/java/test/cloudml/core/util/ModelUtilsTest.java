@@ -20,34 +20,24 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.core;
+package test.cloudml.core.util;
 
+import junit.framework.TestCase;
 import org.cloudml.core.util.ModelUtils;
-import org.cloudml.core.visitors.Visitor;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-public class ProvidedPort extends Port {
+/**
+ * Created by nicolasf on 07.05.14.
+ */
+@RunWith(JUnit4.class)
+public class ModelUtilsTest extends TestCase{
 
-    public ProvidedPort(String name) {
-        this(name, REMOTE);
-    }
-
-    public ProvidedPort(String name, boolean isRemote) {
-        super(name, isRemote);
-    }
-
-    @Override
-    public ProvidedPortInstance instantiate() {
-        return new ProvidedPortInstance(ModelUtils.generateUniqueName(getName()), this);
-    }
-    
-    @Override
-    public String toString() {
-        return "ProvidedPort " + getQualifiedName();
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visitProvidedPort(this);
+    @Test
+    public void extractLocalNameTest(){
+        String qname="component::port1::plop";
+        assertEquals("plop", ModelUtils.extractLocalName(qname));
     }
 
 }

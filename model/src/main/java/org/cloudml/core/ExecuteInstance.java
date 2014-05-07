@@ -33,8 +33,8 @@ public class ExecuteInstance extends WithResources implements DeploymentElement,
     private ProvidedExecutionPlatformInstance providedEnd;
     private RequiredExecutionPlatformInstance requiredEnd;
 
-    public ExecuteInstance(InternalComponentInstance instance, ProvidedExecutionPlatformInstance platform) {
-        this(DEFAULT_NAME, instance.getRequiredExecutionPlatform(), platform);
+    public ExecuteInstance(String name, InternalComponentInstance instance, ProvidedExecutionPlatformInstance platform) {
+        this(name, instance.getRequiredExecutionPlatform(), platform);
     }
 
     public ExecuteInstance(String name, RequiredExecutionPlatformInstance requiredEnd, ProvidedExecutionPlatformInstance providedEnd) {

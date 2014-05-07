@@ -64,20 +64,14 @@ public abstract class NamedElementTest extends TestCase {
         final NamedElement sut = aSampleElementWithDefaultName();
         sut.setName("");
     }
-    
-    @Test
-    public void defaultNameIsSetByTheConstructor() {
-        final NamedElement sut = aSampleElementWithDefaultName();
-        
-        assertThat("default name", sut.getName(), is(equalTo(NamedElement.DEFAULT_NAME)));
-    }
+
     
     @Test
     public void nameInitialisationInConstructor() {
         final String name = "my name";
         final NamedElement sut = aSampleElementWithName(name);
         
-        assertThat("wrong name retrived", sut.getName(), is(equalTo(name)));
+        assertThat("wrong name retrieved", sut.getName(), is(equalTo(name)));
     }
     
     @Test

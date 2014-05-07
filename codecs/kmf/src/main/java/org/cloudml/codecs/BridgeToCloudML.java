@@ -39,6 +39,8 @@ import org.cloudml.core.VMInstance;
 
 import java.util.*;
 import org.cloudml.core.credentials.FileCredentials;
+import org.cloudml.core.util.ModelUtils;
+import org.cloudml.core.util.OwnedBy;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
@@ -238,8 +240,7 @@ public class BridgeToCloudML {
     private void initRequiredExecutionPlatform(net.cloudml.core.InternalComponent kInternalComponent, InternalComponent ic) {
         if (kInternalComponent.getRequiredExecutionPlatform() != null) {
             //assert !vmInstances.isEmpty();
-            RequiredExecutionPlatform rep =
-                    new RequiredExecutionPlatform(kInternalComponent.getRequiredExecutionPlatform().getName());
+            RequiredExecutionPlatform rep = new RequiredExecutionPlatform(kInternalComponent.getRequiredExecutionPlatform().getName());
             rep.getOwner().set(ic);
             convertProperties(kInternalComponent.getRequiredExecutionPlatform(), rep);
             convertResources(kInternalComponent.getRequiredExecutionPlatform(), rep);

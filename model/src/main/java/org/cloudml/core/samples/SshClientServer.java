@@ -41,8 +41,8 @@ public class SshClientServer {
     public static final String WINDOWS_7 = "Windows 7";
     public static final String SSH_CONNECTION = "SSH connection";
     public static final String EC2_XLARGE_WINDOWS_7 = "xLarge Windows 7";
-    public static final String CLIENT_PORT = "server";
-    public static final String SERVER_PORT = "clients";
+    public static final String CLIENT_PORT = "client";
+    public static final String SERVER_PORT = "server";
     public static final String OPERATING_SYSTEM = "OS";
     public static final String REQUIRED_PLATFORM = "run on";
     public static final String PROVIDED_PLATFORM = "running";

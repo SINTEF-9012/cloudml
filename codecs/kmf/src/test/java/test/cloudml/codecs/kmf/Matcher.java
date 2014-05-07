@@ -101,8 +101,10 @@ public class Matcher {
 
     public boolean matchRequiredExecutionPlatformInstance(net.cloudml.core.RequiredExecutionPlatformInstance krepi, org.cloudml.core.RequiredExecutionPlatformInstance repi) {
         if (krepi != null && repi != null) {
-            return krepi.getName().equals(repi.getName())
-                    && matchRequiredExecutionPlatform((RequiredExecutionPlatform) krepi.getType(), repi.getType());
+            if(!krepi.getName().equals(repi.getName())){
+                throw new RuntimeException("Name are not matching Kmf:"+krepi.getName()+" != CloudML:"+repi.getQualifiedName());
+            }
+            return matchRequiredExecutionPlatform((RequiredExecutionPlatform) krepi.getType(), repi.getType());
         }
         return false;
     }

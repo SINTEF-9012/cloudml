@@ -25,6 +25,8 @@
 package org.cloudml.core.collections;
 
 import java.util.Collection;
+
+import org.cloudml.core.RequiredPort;
 import org.cloudml.core.RequiredPortInstance;
 
 
@@ -37,6 +39,24 @@ public class RequiredPortInstanceGroup extends WithResourceGroup<RequiredPortIns
         super(content);
     }
 
+
+    public RequiredPortInstance ofType(RequiredPort type) {
+        for (RequiredPortInstance port: this) {
+            if (port.getType().equals(type)) {
+                return port;
+            }
+        }
+        return null;
+    }
+
+    public RequiredPortInstance withTypeNamed(String name){
+        for (RequiredPortInstance port: this) {
+            if (port.getType().getName().equals(name)) {
+                return port;
+            }
+        }
+        return null;
+    }
     
       
 }

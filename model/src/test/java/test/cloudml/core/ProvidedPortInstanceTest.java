@@ -62,7 +62,7 @@ public class ProvidedPortInstanceTest extends PortInstanceTest {
         final ProvidedPortInstance sut = context.getComponentInstances().onlyInternals()
                                            .firstNamed(componentName)
                                            .getProvidedPorts()
-                                           .firstNamed(name);
+                                           .withTypeNamed(name);
         
         assertThat("sut", sut, is(not(nullValue())));
         return sut;
@@ -72,7 +72,13 @@ public class ProvidedPortInstanceTest extends PortInstanceTest {
     public final PortInstance<? extends Port> aSamplePortInstance(String name) {
         return aSampleProvidedPortInstance(name);
     }
-    
+
+    @Override
+    public void nameInitialisationInConstructor() {
+        final ProvidedPortInstance port = aSampleProvidedPortInstance("pouet");
+        assertThat("Required Port instance name should not be the same as is type: pouet", port.getName(), is(not(equalTo(port.getType().getName()))));
+    }
+
     public final ProvidedPortInstance aSampleProvidedPortInstance() {
         return aSampleProvidedPortInstance("sut");
     }

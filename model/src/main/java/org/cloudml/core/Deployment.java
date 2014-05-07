@@ -31,10 +31,13 @@ import org.cloudml.core.collections.InternalComponentGroup;
 import org.cloudml.core.collections.ProviderGroup;
 import org.cloudml.core.collections.RelationshipGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitable;
 import org.cloudml.core.visitors.Visitor;
+
+import java.util.Random;
 
 public class Deployment extends WithProperties implements Visitable, CanBeValidated {
 
@@ -119,7 +122,8 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
                     host.getProvidedExecutionPlatforms().onlyNames().toString());
             throw new IllegalArgumentException(error);
         }
-        final ExecuteInstance execute = new ExecuteInstance(component, platform);
+
+        final ExecuteInstance execute = new ExecuteInstance(ModelUtils.generateUniqueName("runOn"),component, platform);
         executeInstances.add(execute);
     }
 

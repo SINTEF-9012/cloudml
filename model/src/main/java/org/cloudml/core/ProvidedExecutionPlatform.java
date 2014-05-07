@@ -24,6 +24,7 @@ package org.cloudml.core;
 
 import java.util.*;
 import org.cloudml.core.collections.PropertyGroup;
+import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitor;
 
@@ -56,7 +57,7 @@ public class ProvidedExecutionPlatform extends ExecutionPlatform {
 
     @Override
     public ProvidedExecutionPlatformInstance instantiate() {
-        return new ProvidedExecutionPlatformInstance(getName(), this);
+        return new ProvidedExecutionPlatformInstance(ModelUtils.generateUniqueName(getName()), this);
     }
 
     public PropertyGroup getOffers() { 

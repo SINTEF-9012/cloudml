@@ -38,7 +38,7 @@ public interface OwnedBy<O extends NamedElement> {
     public static class OptionalOwner<O extends NamedElement> extends Optional<O> {
         
         public String getName() {
-            return isDefined() ? this.get().getName() : "??";
+            return isDefined() ? this.get().getName() : NO_OWNER_MARK;
         }
     }
 }

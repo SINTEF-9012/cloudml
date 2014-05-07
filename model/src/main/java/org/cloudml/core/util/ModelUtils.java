@@ -20,34 +20,23 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.core;
+package org.cloudml.core.util;
 
-import org.cloudml.core.util.ModelUtils;
-import org.cloudml.core.visitors.Visitor;
+import java.util.Random;
 
-public class ProvidedPort extends Port {
+/**
+ * Created by nicolasf on 07.05.14.
+ */
+public class ModelUtils {
 
-    public ProvidedPort(String name) {
-        this(name, REMOTE);
+    public static String extractLocalName(String qualifyName){
+        String[] tab=qualifyName.split(OwnedBy.CONTAINED);
+        return tab[tab.length-1];
     }
 
-    public ProvidedPort(String name, boolean isRemote) {
-        super(name, isRemote);
+    public static String generateUniqueName(String kind){
+        return String.format("%s%d", kind, new Random().nextInt());
     }
 
-    @Override
-    public ProvidedPortInstance instantiate() {
-        return new ProvidedPortInstance(ModelUtils.generateUniqueName(getName()), this);
-    }
-    
-    @Override
-    public String toString() {
-        return "ProvidedPort " + getQualifiedName();
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visitProvidedPort(this);
-    }
 
 }

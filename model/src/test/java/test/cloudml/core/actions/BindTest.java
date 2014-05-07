@@ -65,7 +65,7 @@ public class BindTest extends TestCase {
        
         final RequiredPortInstance clientPort = model
                 .getComponentInstances().onlyInternals().firstNamed("client")
-                .getRequiredPorts().firstNamed(CLIENT_PORT);    
+                .getRequiredPorts().withTypeNamed(CLIENT_PORT);
     
         final StandardLibrary deployer = new StandardLibrary();
 

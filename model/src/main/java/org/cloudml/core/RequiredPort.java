@@ -22,6 +22,7 @@
  */
 package org.cloudml.core;
 
+import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.visitors.Visitor;
 
 public class RequiredPort extends Port {
@@ -46,7 +47,7 @@ public class RequiredPort extends Port {
 
     @Override
     public RequiredPortInstance instantiate() {
-        return new RequiredPortInstance(getName(), this); 
+        return new RequiredPortInstance(ModelUtils.generateUniqueName(getName()), this);
     }    
     
 

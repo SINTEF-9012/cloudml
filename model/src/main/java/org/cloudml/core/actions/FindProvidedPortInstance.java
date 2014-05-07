@@ -62,7 +62,7 @@ public class FindProvidedPortInstance extends AbstractFind<ProvidedPortInstance>
     protected void handleLackOfCandidate(Deployment deployment, List<ProvidedPortInstance> candidates) {
         final Component component = getLibrary().findComponentProviding(deployment, bindingType);
         final ComponentInstance<? extends Component> instance = getLibrary().provision(deployment, component);
-        final ProvidedPortInstance serverPort = instance.getProvidedPorts().firstNamed(bindingType.getProvidedEnd().getName());
+        final ProvidedPortInstance serverPort = instance.getProvidedPorts().withTypeNamed(bindingType.getProvidedEnd().getName());
         candidates.add(serverPort);
     }
 
