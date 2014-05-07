@@ -54,12 +54,6 @@ public class LoadTest extends TestCase {
     }
 
     @Test
-    public void loadShouldAcceptFilesWithUppercaseExtension() throws FileNotFoundException {
-        final Deployment model = aCodecLibrary().load(testFile("empty.JSON"));
-        assertModelIsEmpty(model);
-    }
-
-    @Test
     public void loadShouldAcceptSensapp() throws FileNotFoundException {
         Codec json= new JsonCodec();
         json.save(SensApp.completeSensApp().build(), new FileOutputStream(testFile("sensapp.json")));
