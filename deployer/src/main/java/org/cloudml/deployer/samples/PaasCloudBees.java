@@ -96,74 +96,7 @@ import org.cloudml.deployer.CloudAppDeployer;
 public class PaasCloudBees 
 {
     public static void main(String[] args){
-        
- 
-        ExternalComponentBuilder dbb = anExternalComponent()
-                .named("cbdb")
-                .with(
-                        aProvidedPort().named("db")
-                )
-                .providedBy("CloudBees");
-        
-        ExternalComponentBuilder wserverb = anExternalComponent()
-                .named("granny-cloudml")
-                .with(
-                        aProvidedExecutionPlatform()
-                            .named("TomCat")
-                )
-                .providedBy("CloudBees");
-        
-        InternalComponentBuilder grannyb = anInternalComponent()
-                .named("granny-war")
-                .with(aRequiredExecutionPlatform().named("TomCat"))
-                .withProperty("warfile", "C:\\temp\\granny-common.war")
-                .withProperty("temp-warfile", "C:\\temp\\granny-common-temp.war")
-                .with(aRequiredPort().remote().named("db").mandatory());
-        
-        RelationshipBuilder relb = aRelationship()
-                .from("granny-war", "db")
-                .to("cbdb", "db")
-                .named("dbrel")
-                .withResource(
-                        aResource()
-                            .named("dbconfig")
-                            .withProperty("valet", "war-xml")
-                            .withProperty("path", "WEB-INF/classes/META-INF/spring/app-context.xml")
-                            .withProperty("#getPublicAddress", "//bean[@id=\"dataSource\"]/property[@name=\"url\"]/@value")
-                            .withProperty("@#getPublicAddress-prefix", "jdbc:mysql://")
-                            .withProperty("##getLogin","//bean[@id=\"dataSource\"]/property[@name=\"username\"]/@value")
-                            .withProperty("##getPasswd","//bean[@id=\"dataSource\"]/property[@name=\"password\"]/@value")
-                );
-                
-                
-        
-        DeploymentBuilder dmb = new DeploymentBuilder()
-                .with(aProvider()
-                        .named("CloudBees")
-                        .withProperty("account", "mod4cloud")
-                )
-                .with(dbb)
-                .with(grannyb)
-                .with(wserverb)
-                .with(relb);
-        dmb.with(anExternalComponentInstance()
-                .named("cbdb1")
-                .ofType("cbdb")
-            ).with(anExternalComponentInstance()
-                .named("granny-cloudml")
-                .ofType("granny-cloudml")
-            ).with(anInternalComponentInstance()
-                .named("granny-war-i")
-                .ofType("granny-war")
-                .hostedBy("granny-cloudml")
-            ).with(aRelationshipInstance()
-                .named("dbreli")
-                .ofType("dbrel")
-                .from("granny-war-i", "db")
-                .to("cbdb1", "db")
-            )
-            ;
-        Deployment dm = dmb.build();
+        Deployment dm = org.cloudml.core.samples.PaasCloudBees.completeCloudBeesPaaS().build();
         dm.getProviders().firstNamed("CloudBees").setCredentials(new FileCredentials("c:\\temp\\cloudbees.credential"));
         ExternalComponent c = dm.getComponents().onlyExternals().firstNamed("cbdb");
         c.setLogin("sintef");

@@ -166,7 +166,7 @@ public class CloudAppDeployer {
         unlessNotNull("Cannot deploy null!", instance);
         Connector jc;
         if (!alreadyDeployed.contains(instance) && (instance.getRequiredExecutionPlatform() != null)) {
-            ExternalComponentInstance host = instance.getHost().asExternal();
+            ExternalComponentInstance host = instance.externalHost();
             if (host.isVM()) {
                 VMInstance ownerVM = host.asVM();
                 VM n = ownerVM.getType();
@@ -278,7 +278,7 @@ public class CloudAppDeployer {
      */
     private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
         unlessNotNull("Cannot deploy null", x, relationships);
-        VMInstance ownerVM = (VMInstance) getDestination(x); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
+        VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
 
         Connector jc;
@@ -402,7 +402,7 @@ public class CloudAppDeployer {
      * Provision the VMs and upload the model with informations about the VM
      * 
      * Added: Also deal with PaaS platforms
-     * @param vms A list of vms
+     * @param ems A list of vms
      */
     private void setExternalServices(ExternalComponentInstanceGroup ems) {
         for (ExternalComponentInstance n : ems) {
