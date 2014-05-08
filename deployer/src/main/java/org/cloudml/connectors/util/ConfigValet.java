@@ -53,7 +53,7 @@ public abstract class ConfigValet {
 
         String type = resource.getProperties().valueOf("valet");
         if("war-xml".equals(type))
-            return new WarXmlConfigValet(relation.getRequiredEnd().getOwner().get(), resource, relation.getProvidedEnd().getOwner().get());
+            return new WarXmlConfigValet(relation, resource);
         
         return null;
     }
