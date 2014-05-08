@@ -42,6 +42,10 @@ public class Optional<O> {
         }
         return value; 
     }
+    
+    public final O getValue(){
+        return get();
+    }
 
     public final void set(O value) {
         if (value == NONE) {

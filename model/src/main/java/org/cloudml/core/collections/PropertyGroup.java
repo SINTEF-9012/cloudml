@@ -24,12 +24,15 @@
  */
 package org.cloudml.core.collections;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import org.cloudml.core.Property;
 
-public class PropertyGroup implements Iterable<Property> {
+public class PropertyGroup implements Iterable<Property>, Map<String, String>{
 
     private final HashMap<String, Property> properties;
 
@@ -85,6 +88,7 @@ public class PropertyGroup implements Iterable<Property> {
         return p.hasValue(value); 
     }
     
+    
     public boolean contains(Property property) {
         return contains(property.getName(), property.getValue());
     }
@@ -108,5 +112,56 @@ public class PropertyGroup implements Iterable<Property> {
             final String message = String.format("Duplicated key '%s' in properties", name);
             throw new IllegalArgumentException(message);
         }
+    }
+
+    @Override
+    public boolean containsKey(Object o) {
+        return this.properties.containsKey(o);
+    }
+
+    @Override
+    public boolean containsValue(Object o) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String get(Object o) {
+        return valueOf(o.toString());
+    }
+
+    @Override
+    public String put(String k, String v) {
+        
+            this.add(new Property(k,v));
+            return k;
+    }
+
+    @Override
+    public String remove(Object o) {
+        return properties.remove(o.toString()).getValue();
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ? extends String> map) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return this.properties.keySet();
+    }
+
+    @Override
+    public Collection<String> values() {
+        ArrayList<String> s = new ArrayList();
+        for(Property p : properties.values()){
+            s.add(p.getValue());
+        }
+        return s;
+    }
+
+    @Override
+    public Set<Entry<String, String>> entrySet() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

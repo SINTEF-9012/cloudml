@@ -86,38 +86,37 @@ public class ZipModifier {
 
 
     
-    public void updateXMLElement(String entryName, Map<String,String> keyValues) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, TransformerConfigurationException, TransformerException{
+    public void updateXMLElement(Map<String, Map<String,String>> entryKeyValues) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, TransformerConfigurationException, TransformerException{
         ZipFile inZip = new ZipFile(input);
-        ZipEntry entry = inZip.getEntry(entryName);
         ZipOutputStream outZip = new ZipOutputStream(new FileOutputStream(output));
         try{
-            if(entry == null)
-                throw new RuntimeException(String.format("Entry %s not found", entryName));
-            InputStream entryIS = inZip.getInputStream(entry);
-            DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document doc = docBuilder.parse(entryIS);
-
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            for(Map.Entry<String,String> kv : keyValues.entrySet()){
-                XPathExpression xpe = xpath.compile(kv.getKey());
-                Node node = (Node) xpe.evaluate(doc,XPathConstants.NODE);
-                if(node instanceof Attr){
-                    ((Attr)node).setValue(kv.getValue());
-                }
-                else
-                    throw new UnsupportedOperationException("Only support the change of attributes at this moment");
-            }
+            
 
             Enumeration<? extends ZipEntry> entries = inZip.entries();
             while(entries.hasMoreElements()){
                 ZipEntry en = entries.nextElement();
                 
-                if(en.getName().equals(entryName)){ 
-                     ZipEntry newen = new ZipEntry(entryName);
-                     outZip.putNextEntry(newen);
-                     Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                     Result output = new StreamResult(outZip);
-                     transformer.transform(new DOMSource(doc), output);
+                if(entryKeyValues.containsKey(en.getName())){ 
+                     
+                    InputStream entryIS = inZip.getInputStream(en);
+                    DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                    Document doc = docBuilder.parse(entryIS);
+
+                    XPath xpath = XPathFactory.newInstance().newXPath();
+                    for(Map.Entry<String,String> kv : entryKeyValues.get(en.getName()).entrySet()){
+                        XPathExpression xpe = xpath.compile(kv.getKey());
+                        Node node = (Node) xpe.evaluate(doc,XPathConstants.NODE);
+                        if(node instanceof Attr){
+                            ((Attr)node).setValue(kv.getValue());
+                        }
+                        else
+                            throw new UnsupportedOperationException("Only support the change of attributes at this moment");
+                    }
+                    ZipEntry newen = new ZipEntry(en.getName());
+                    outZip.putNextEntry(newen);
+                    Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                    Result output = new StreamResult(outZip);
+                    transformer.transform(new DOMSource(doc), output);
                 }
                 else{
                     outZip.putNextEntry(new ZipEntry(en.getName()));

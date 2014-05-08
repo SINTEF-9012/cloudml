@@ -23,6 +23,8 @@
 package org.cloudml.deployer.samples;
 
 
+import javax.xml.xpath.XPath;
+import org.cloudml.connectors.util.JXPath;
 import org.cloudml.core.Deployment;
 import org.cloudml.core.ExecuteInstance;
 import org.cloudml.core.ExternalComponent;
@@ -95,8 +97,33 @@ import org.cloudml.deployer.CloudAppDeployer;
  */
 public class PaasCloudBees 
 {
+    public static void main2(String[] args){
+        Deployment dm = createCloudBeesDeployment();
+        
+        System.out.println(dm.getProviders().firstNamed("CloudBees").getProperties().iterator().next().getName());
+        
+        JXPath xpath = new JXPath("/providers[name='CloudBees']/properties/account");
+        System.out.println(xpath.query(dm));
+        
+        RelationshipInstance ri = dm.getRelationshipInstances().iterator().next();
+        ri.getProperties().add(new Property("aa_b","c"));
+        //ri.getProvidedEnd().getOwner().get()
+        
+        //xpath = new JXPath("providedEnd/owner/value/publicAddress");
+        //xpath = new JXPath("properties[name='aa::b']/value");
+        xpath = new JXPath("properties/aa_b");
+        System.out.println(xpath.query(ri));
+    }
+    
     public static void main(String[] args){
         
+        Deployment dm = createCloudBeesDeployment();
+        
+        CloudAppDeployer deployer = new CloudAppDeployer();
+        deployer.deploy(dm);
+    }
+    
+    public static Deployment createCloudBeesDeployment(){         
  
         ExternalComponentBuilder dbb = anExternalComponent()
                 .named("cbdb")
@@ -127,17 +154,26 @@ public class PaasCloudBees
                 .withResource(
                         aResource()
                             .named("dbconfig")
-                            .withProperty("valet", "war-xml")
-                            .withProperty("path", "WEB-INF/classes/META-INF/spring/app-context.xml")
-                            .withProperty("#getPublicAddress", "//bean[@id=\"dataSource\"]/property[@name=\"url\"]/@value")
-                            .withProperty("@#getPublicAddress-prefix", "jdbc:mysql://")
-                            .withProperty("##getLogin","//bean[@id=\"dataSource\"]/property[@name=\"username\"]/@value")
-                            .withProperty("##getPasswd","//bean[@id=\"dataSource\"]/property[@name=\"password\"]/@value")
+                            .withProperty("valet","war-xml")
+                            .withProperty("entry_spring", "WEB-INF/classes/META-INF/spring/app-context.xml")
+                            .withProperty("path_dburl", "@self{properties/entry_spring}:://bean[@id=\"dataSource\"]/property[@name=\"url\"]/@value")
+                            .withProperty("value_dburl", "jdbc:mysql://@instance{providedEnd/owner/value/publicAddress}")
+                            .withProperty("path_dbuser", "@self{properties/entry_spring}:://bean[@id=\"dataSource\"]/property[@name=\"username\"]/@value")
+                            .withProperty("value_dbuser", "@instance{providedEnd/owner/value/type/login}")
+                            .withProperty("path_dbpassword", "@self{properties/entry_spring}:://bean[@id=\"dataSource\"]/property[@name=\"username\"]/@value")
+                            .withProperty("value_dbpassword", "@instance{providedEnd/owner/value/type/passwd}")
+//                            .withProperty("valet", "war-xml")
+//                            .withProperty("path", "WEB-INF/classes/META-INF/spring/app-context.xml")
+//                            .withProperty("#getPublicAddress", "//bean[@id=\"dataSource\"]/property[@name=\"url\"]/@value")
+//                            .withProperty("@#getPublicAddress-prefix", "jdbc:mysql://")
+//                            .withProperty("##getLogin","//bean[@id=\"dataSource\"]/property[@name=\"username\"]/@value")
+//                            .withProperty("##getPasswd","//bean[@id=\"dataSource\"]/property[@name=\"password\"]/@value")
                 );
                 
                 
         
         DeploymentBuilder dmb = new DeploymentBuilder()
+                .named("cloudbees-deployment")
                 .with(aProvider()
                         .named("CloudBees")
                         .withProperty("account", "mod4cloud")
@@ -170,9 +206,8 @@ public class PaasCloudBees
         c.setPasswd("password123");
         System.out.println(dm);
         
-        CloudAppDeployer deployer = new CloudAppDeployer();
-        deployer.deploy(dm);
+        return dm;
+
     }
-    
 
 }

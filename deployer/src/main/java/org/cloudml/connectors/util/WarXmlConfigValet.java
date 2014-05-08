@@ -50,16 +50,12 @@ import org.cloudml.core.Resource;
  * 
  * The properties carried by the configuration resource are in the following format:
  * 
- * 1. path -> entry : the particular xml file name inside the war file
- * 2. {name} -> {xpath} : config the given {xpath} with the value obtained from {name}, in particular,
- *    the value is carried as a property in the source component, under the same {name}, i.e., 
- *    value = sourceComponent.getProperty("{name}");
- * 3. #{method} -> {xpath} : similar as above, the the value is obtained by 
- *    invoking the {method} of the source component instance
- * 4. ##{method} -> {xpath} : the value is obtained by invoking {method} on the
- *    type of the source component.
- * 5. (@{name} | @#{method} | @##{method})-prefix -> {value} : use value as the prefix of a 
- *    particular configuration item.
+ * 1. path_{name} -> {entry}::{xpath} : config the given xml element by {xpath} inside
+ *    the entry {entry}, the value with be specified in value_{name} with the same name
+ * 2. value_{name} -> string_with_embedded queries: where the queries obtain the
+ *    values from the any cloudml elements that are reachable from the resource or
+ *    the relationship instance (usually from the component instance
+ *    e.g., "jdbc:mysql://@instance{providedEnd/owner/value/publicAddress}"
  * 
  * @author Hui Song
  */
@@ -67,14 +63,12 @@ public class WarXmlConfigValet extends ConfigValet {
     
     private ComponentInstance warCompInst;
     private Resource configResource;
-    private ComponentInstance valueSourceCompInst;
+    private RelationshipInstance relationshipInstance;
     
-
-    
-    public WarXmlConfigValet(ComponentInstance warCompInst, Resource configResource, ComponentInstance valueSourceCompInst){
-        this.warCompInst = warCompInst;
+    public WarXmlConfigValet(RelationshipInstance relationshipInstance, Resource configResource){
+        this.relationshipInstance = relationshipInstance;
+        this.warCompInst = relationshipInstance.getRequiredEnd().getOwner().get();
         this.configResource = configResource;
-        this.valueSourceCompInst = valueSourceCompInst;
     }
 
     @Override
@@ -82,51 +76,47 @@ public class WarXmlConfigValet extends ConfigValet {
         
         ComponentInstance warCompi = this.warCompInst;
         Component warComp = warCompi.getType();
-        ExternalComponentInstance dbCompi = (ExternalComponentInstance) this.valueSourceCompInst;
-        ExternalComponent dbComp = (ExternalComponent) dbCompi.getType();
+        
         
         ZipModifier zipModifier = new ZipModifier(
                 warComp.getProperties().valueOf("warfile"), 
                 warComp.getProperties().valueOf("temp-warfile")
         );
         
-        Map<String, String> kv = new HashMap<String,String>();
+        Map<String,Map<String, String>> entryKv = new HashMap<String,Map<String,String>>();
         for(Property prop : configResource.getProperties()){
             String name = prop.getName();
             if("valet".equals(name) || "path".equals(name))  // they are preserved keywords
                 continue;
-            if(!name.startsWith("@")){
-                String value = null;
-                if(name.startsWith("#")){
-                    try {
-                        
-                        if(name.startsWith("##"))
-                            value = dbComp.getClass().getMethod(name.substring(2))
-                                    .invoke(dbComp).toString();
-                        else
-                            value = dbCompi.getClass().getMethod(name.substring(1))
-                                    .invoke(dbCompi).toString();
-                    } catch (Exception ex) {
-                        Logger.getLogger(WarXmlConfigValet.class.getName()).log(Level.SEVERE, null, ex);
-                    } 
-                }
-                else{
-                    value = valueSourceCompInst.hasProperty(name) ? 
-                            valueSourceCompInst.getProperties().valueOf(name) :
-                            null;
-                }
-                String prefixName = "@"+name+"-prefix";
-
-                if(configResource.hasProperty(prefixName) && value != null)
-                    value = configResource.getProperties().valueOf(prefixName) + value;
+            if(name.startsWith("path")){
+                String entry_path_value = CloudMLQueryUtil.cloudmlStringRecover(
+                        prop.getValue(), 
+                        configResource, 
+                        relationshipInstance
+                );
+                String[] entry_path = entry_path_value.split("::");
+                if(!entryKv.containsKey(entry_path[0]))
+                    entryKv.put(entry_path[0], new HashMap<String,String>());
+                Map<String,String> kv = entryKv.get(entry_path[0]);
+                
+                String value_value = configResource.getProperties()
+                        .valueOf(name.replaceFirst("path","value"));
+                String value = CloudMLQueryUtil.cloudmlStringRecover(
+                                    value_value, 
+                                    configResource, 
+                                    relationshipInstance
+                                );
+                
                 if(value != null){
-                    kv.put(prop.getValue(), value);
+                    kv.put(entry_path[1], value);
                 }
             }
         }
 
         try{
-            zipModifier.updateXMLElement(configResource.getProperties().valueOf("path"),kv);
+           
+            zipModifier.updateXMLElement(entryKv);  
+
         }catch(Exception ex){
             ex.printStackTrace();
             throw new RuntimeException("Error in writing XML configurations in the WAR file", ex);
