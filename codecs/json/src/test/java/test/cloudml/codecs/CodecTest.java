@@ -36,6 +36,7 @@ import org.cloudml.core.*;
 
 
 import static org.cloudml.core.samples.SensApp.*;
+import static org.cloudml.core.samples.PaasCloudBees.*;
 
 /**
  * Unit test for simple App.
@@ -67,10 +68,13 @@ public class CodecTest
     public void testApp()
     {
         Deployment model = completeSensApp().build();
+        Deployment model2 = completeCloudBeesPaaS().build();
         try{
             Codec jsonCodec=new JsonCodec();
             OutputStream streamResult=new java.io.FileOutputStream("sensappTEST.json");
             jsonCodec.save(model,streamResult);
+            streamResult=new java.io.FileOutputStream("PaaS.json");
+            //jsonCodec.save(model2, streamResult);
         } catch (FileNotFoundException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
