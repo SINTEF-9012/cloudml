@@ -25,8 +25,6 @@ package org.cloudml.connectors;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
 import org.apache.commons.io.FileUtils;
-import org.cloudml.core.Node;
-import org.cloudml.core.NodeInstance;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cloudml.core.Property;
+import org.cloudml.core.VM;
+import org.cloudml.core.VMInstance;
 import org.jclouds.ContextBuilder;
 
 import org.jclouds.compute.ComputeService;
@@ -82,11 +82,11 @@ public class OpenStackConnector implements Connector{
     }
 
     /**
-     * Retrieve information about a node
-     * @param name name of a node
-     * @return data about a node
+     * Retrieve information about a VM
+     * @param name name of a VM
+     * @return data about a VM
      */
-    public ComputeMetadata getNodeByName(String name){
+    public ComputeMetadata getVMByName(String name){
         for(ComputeMetadata n : novaComputeService.listNodes()){
             if(n.getName() != null &&  n.getName().equals(name))
                 return n;
@@ -95,19 +95,19 @@ public class OpenStackConnector implements Connector{
     }
 
     /**
-     * retrieve the list of nodes
-     * @return a list of information about each node
+     * retrieve the list of VMs
+     * @return a list of information about each VM
      */
-    public Set<? extends ComputeMetadata> listOfNodes(){
+    public Set<? extends ComputeMetadata> listOfVMs(){
         return novaComputeService.listNodes();
     }
 
     /**
-     * Retrieve data about a node
-     * @param id id of a node
-     * @return Information about a node
+     * Retrieve data about a VM
+     * @param id id of a VM
+     * @return Information about a VM
      */
-    public NodeMetadata getNodeById(String id){
+    public NodeMetadata getVMById(String id){
         return novaComputeService.getNodeMetadata(id);
     }
 
@@ -141,16 +141,16 @@ public class OpenStackConnector implements Connector{
     }
 
     /**
-     * Upload a file on a selected node
+     * Upload a file on a selected VM
      * @param sourcePath path to the file to be uploaded
      * @param destinationPath path to the file to be created
-     * @param nodeId Id of a node
+     * @param VMId Id of a VM
      * @param login user login
      * @param key key to connect
      */
-    public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key){
+    public void uploadFile(String sourcePath, String destinationPath, String VMId, String login, String key){
         org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
-        SshClient ssh = novaComputeService.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(b.build()).build());
+        SshClient ssh = novaComputeService.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getVMById(VMId)).credentials(b.build()).build());
         try {
             ssh.connect();
             ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
@@ -164,7 +164,7 @@ public class OpenStackConnector implements Connector{
 
 
     /**
-     * Execute a command on a group of nodes
+     * Execute a command on a group of VMs
      * @param group name of the group
      * @param command the command to be executed
      * @param login username
@@ -210,61 +210,67 @@ public class OpenStackConnector implements Connector{
     }
 
     /**
-     * Update the runtime metadata of a node if already deployed
-     * @param a description of a node
+     * Update the runtime metadata of a VM if already deployed
+     * @param a description of a VM
      */
-    public void updateNodeMetadata(NodeInstance a){
-        ComputeMetadata cm= getNodeByName(a.getName());
+    public void updateVMMetadata(VMInstance a){
+        ComputeMetadata cm= getVMByName(a.getName());
         if(cm != null){
-            a.setPublicAddress(getNodeById(cm.getId()).getPublicAddresses().iterator().next());
+            a.setPublicAddress(getVMById(cm.getId()).getPublicAddresses().iterator().next());
             a.setId(cm.getId());
         }
     }
 
     /**
-     * Provision a node
-     * @param a description of the node to be created
+     * Provision a VM
+     * @param a description of the VM to be created
      * @return
      */
-    public void createInstance(NodeInstance a){
-        Node node= a.getType();
-        ComputeMetadata cm= getNodeByName(a.getName());
+    public void createInstance(VMInstance a){
+        VM vm = a.getType();
+        ComputeMetadata cm= getVMByName(a.getName());
 		/* UPDATE THE MODEL */
         if(cm != null){
-            updateNodeMetadata(a);
+            updateVMMetadata(a);
         }else{
             Template template=null;
             NodeMetadata nodeInstance = null;
             String groupName="cloudml-instance";
-            if(!node.getGroupName().equals(""))
-                groupName=node.getGroupName();
+            if(!vm.getGroupName().equals(""))
+                groupName= vm.getGroupName();
 
             TemplateBuilder templateBuilder = novaComputeService.templateBuilder();
 
-            if(!node.getImageId().equals("")){
-                templateBuilder.imageId(node.getImageId());
+            if(!vm.getImageId().equals("")){
+                templateBuilder.imageId(vm.getImageId());
             }
 
-            journal.log(Level.INFO, ">> Provisioning a node ...");
+            journal.log(Level.INFO, ">> Provisioning a vm ...");
 
-            if (node.getMinRam() > 0)
-                templateBuilder.minRam(node.getMinRam());
-            if (node.getMinCore() > 0)
-                templateBuilder.minCores(node.getMinCore());
-            if (!node.getLocation().equals(""))
-                templateBuilder.locationId(node.getLocation());
-            if (!node.getOS().equals(""))
-                templateBuilder.imageDescriptionMatches(node.getOS());
+            if (vm.getMinRam() > 0)
+                templateBuilder.minRam(vm.getMinRam());
+            if (vm.getMinCores() > 0)
+                templateBuilder.minCores(vm.getMinCores());
+            if (!vm.getLocation().equals(""))
+                templateBuilder.locationId(vm.getLocation());
+            if (!vm.getOs().equals(""))
+                templateBuilder.imageDescriptionMatches(vm.getOs());
             else templateBuilder.osFamily(OsFamily.UBUNTU);
-            templateBuilder.os64Bit(node.getIs64os());
+            templateBuilder.os64Bit(vm.getIs64os());
+
+			/*if(vm.getMinStorage() > 0 && provider.equals("aws-ec2")){
+    		Hardware hw=findHardwareByDisk(vm.getMinStorage());
+    		templateBuilder.hardwareId(hw.getId());
+    	}*/
 
             template = templateBuilder.build();
-            journal.log(Level.INFO, ">> node type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
+            journal.log(Level.INFO, ">> vm type: " + template.getHardware().getId() + " on location: " + template.getLocation().getId());
             a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
             a.getProperties().add(new Property("location", template.getLocation().getId()));
 
-            template.getOptions().as(NovaTemplateOptions.class).keyPairName(node.getSshKey());
-            template.getOptions().as(NovaTemplateOptions.class).securityGroups(node.getSecurityGroup());
+
+            template.getOptions().as(NovaTemplateOptions.class).keyPairName(vm.getSshKey());
+            template.getOptions().as(NovaTemplateOptions.class).securityGroups(vm.getSecurityGroup());
             template.getOptions().as(NovaTemplateOptions.class).userMetadata("Name", a.getName());
             template.getOptions().as(NovaTemplateOptions.class).overrideLoginUser(a.getName());
 
@@ -274,7 +280,7 @@ public class OpenStackConnector implements Connector{
                 Set<? extends NodeMetadata> nodes = novaComputeService.createNodesInGroup(groupName, 1, template);
                 nodeInstance = nodes.iterator().next();
 
-                journal.log(Level.INFO, ">> Running node: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() +
+                journal.log(Level.INFO, ">> Running VM: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() +
                         " on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
 
             } catch (RunNodesException e) {
@@ -294,10 +300,10 @@ public class OpenStackConnector implements Connector{
     }
 
     /**
-     * Terminate a specified node
-     * @param id id of the node
+     * Terminate a specified VM
+     * @param id id of the VM
      */
-    public void destroyNode(String id){
+    public void destroyVM(String id){
         novaComputeService.destroyNode(id);
     }
 

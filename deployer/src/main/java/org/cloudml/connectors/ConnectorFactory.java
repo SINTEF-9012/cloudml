@@ -27,19 +27,28 @@ import java.net.MalformedURLException;
 import org.cloudml.core.Provider;
 
 public class ConnectorFactory {
-	
-	public static Connector createConnector(Provider p){
-		try {
-			if(p.getName().equals("aws-ec2"))
-				return new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd()); 
-			if(p.getName().equals("flexiant"))
-				return new FlexiantConnector(p.getProperty("endPoint"), p.getLogin(), p.getPasswd());
-            if(p.getName().equals("openstack-nova"))
-                return new OpenStackConnector(p.getProperty("endPoint"),p.getName(), p.getLogin(), p.getPasswd());
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
 
-		throw new IllegalArgumentException("No such connector");
-	}
+
+    public static Connector createIaaSConnector(Provider p){
+        try {
+            if(p.getName().equals("aws-ec2"))
+                return new JCloudsConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
+            if(p.getName().equals("flexiant"))
+                return new FlexiantConnector(p.getProperties().valueOf("endPoint"), p.getCredentials().getLogin(), p.getCredentials().getPassword());
+            if(p.getName().equals("openstack-nova"))
+                return new OpenStackConnector(p.getProperties().valueOf("endPoint"), p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        throw new IllegalArgumentException("No such connector");
+    }
+
+    public static PaaSConnector createPaaSConnector(Provider p){
+        if("beanstalk".equals(p.getName().toLowerCase()))
+            return new BeanstalkConnector(p.getCredentials().getLogin(), p.getCredentials().getPassword(), "");
+        if("cloudbees".equals(p.getName().toLowerCase()))
+            return new Cloud4soaConnector(p);
+        throw new IllegalArgumentException("No such connector");
+    }
 }

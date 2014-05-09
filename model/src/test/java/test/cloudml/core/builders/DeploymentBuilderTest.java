@@ -52,7 +52,7 @@ public class DeploymentBuilderTest extends WithPropertiesBuilderTest {
                 .build();
         
         assertThat("something is built", sensapp, is(not(nullValue())));
-        assertThat("provider count", sensapp.getProviders(), hasSize(2));
+        assertThat("provider count", sensapp.getProviders(), hasSize(3));
         assertThat("type count", sensapp.getComponents(), hasSize(6));
         assertThat("relationship count", sensapp.getRelationships(), hasSize(2));
         assertThat("component instance count", sensapp.getComponentInstances(), hasSize(7));

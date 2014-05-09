@@ -101,35 +101,35 @@ public class JCloudsConnector implements Connector{
 		this.provider = provider;
 	}
 
-	/**
-	 * Retrieve information about a node
-	 * @param name name of a node
-	 * @return data about a node
-	 */
-	public ComputeMetadata getNodeByName(String name){
-		for(ComputeMetadata n : compute.listNodes()){
-			if(n.getName() != null &&  n.getName().equals(name))
-				return n;
-		}
-		return null;
-	}
+    /**
+     * Retrieve information about a VM
+     * @param name name of a VM
+     * @return data about a VM
+     */
+    public ComputeMetadata getVMByName(String name){
+        for(ComputeMetadata n : compute.listNodes()){
+            if(n.getName() != null &&  n.getName().equals(name))
+                return n;
+        }
+        return null;
+    }
 
-	/**
-	 * retrieve the list of nodes
-	 * @return a list of information about each node
-	 */
-	public Set<? extends ComputeMetadata> listOfNodes(){
-		return compute.listNodes();
-	}
+    /**
+     * retrieve the list of VMs
+     * @return a list of information about each VM
+     */
+    public Set<? extends ComputeMetadata> listOfVMs(){
+        return compute.listNodes();
+    }
 
-	/**
-	 * Retrieve data about a node
-	 * @param id id of a node
-	 * @return Information about a node
-	 */
-	public NodeMetadata getNodeById(String id){
-		return compute.getNodeMetadata(id);
-	}
+    /**
+     * Retrieve data about a VM
+     * @param id id of a VM
+     * @return Information about a VM
+     */
+    public NodeMetadata getVMById(String id){
+        return compute.getNodeMetadata(id);
+    }
 
 	/**
 	 * Close the connection
@@ -160,169 +160,169 @@ public class JCloudsConnector implements Connector{
 		return b;
 	}
 
-	/**
-	 * Upload a file on a selected node
-	 * @param sourcePath path to the file to be uploaded
-	 * @param destinationPath path to the file to be created
-	 * @param nodeId Id of a node
-	 * @param login user login
-	 * @param key key to connect
-	 */
-	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key){
-		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
-		SshClient ssh = compute.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getNodeById(nodeId)).credentials(b.build()).build());
-		try {
-			ssh.connect();
-			ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
-		} finally {
-			if (ssh != null)
-				ssh.disconnect();
-			journal.log(Level.INFO, ">> File uploaded!");
-		}
+    /**
+     * Upload a file on a selected VM
+     * @param sourcePath path to the file to be uploaded
+     * @param destinationPath path to the file to be created
+     * @param VMId Id of a VM
+     * @param login user login
+     * @param key key to connect
+     */
+    public void uploadFile(String sourcePath, String destinationPath, String VMId, String login, String key){
+        org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        SshClient ssh = compute.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getVMById(VMId)).credentials(b.build()).build());
+        try {
+            ssh.connect();
+            ssh.put(destinationPath, Payloads.newPayload(new File(sourcePath)));
+        } finally {
+            if (ssh != null)
+                ssh.disconnect();
+            journal.log(Level.INFO, ">> File uploaded!");
+        }
 
-	}
+    }
 
 
-	/**
-	 * Execute a command on a group of nodes
-	 * @param group name of the group
-	 * @param command the command to be executed
-	 * @param login username
-	 * @param key sshkey
-	 * @throws RunScriptOnNodesException
-	 */
-	public void execCommandInGroup(String group, String command, String login, String key) throws RunScriptOnNodesException{
-		journal.log(Level.INFO, ">> executing command...");
-		journal.log(Level.INFO, ">> "+ command);
+    /**
+     * Execute a command on a group of vms
+     * @param group name of the group
+     * @param command the command to be executed
+     * @param login username
+     * @param key sshkey
+     * @throws RunScriptOnNodesException
+     */
+    public void execCommandInGroup(String group, String command, String login, String key) throws RunScriptOnNodesException{
+        journal.log(Level.INFO, ">> executing command...");
+        journal.log(Level.INFO, ">> "+ command);
 
-		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
-		Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
-				runningInGroup(group),
-				exec(command),
-				overrideLoginCredentials(b.build())
-				.runAsRoot(false)
-				.wrapInInitScript(false));// run command directly
+        org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
+                runningInGroup(group),
+                exec(command),
+                overrideLoginCredentials(b.build())
+                        .runAsRoot(false)
+                        .wrapInInitScript(false));// run command directly
 
-		for(Entry<? extends NodeMetadata, ExecResponse> r : responses.entrySet())
-			journal.log(Level.INFO, ">> "+r.getValue());
-	}
+        for(Entry<? extends NodeMetadata, ExecResponse> r : responses.entrySet())
+            journal.log(Level.INFO, ">> "+r.getValue());
+    }
 
-	/**
-	 * Execute a command on a specified node
-	 * @param id id of the node
-	 * @param command the command to be executed
-	 * @param login username
-	 * @param keyPath sshkey for connection
-	 */
-	public void execCommand(String id, String command, String login, String key){
-		journal.log(Level.INFO, ">> executing command...");
-		journal.log(Level.INFO, ">> "+ command);
+    /**
+     * Execute a command on a specified vm
+     * @param id id of the VM
+     * @param command the command to be executed
+     * @param login username
+     * @param key sshkey for connection
+     */
+    public void execCommand(String id, String command, String login, String key){
+        journal.log(Level.INFO, ">> executing command...");
+        journal.log(Level.INFO, ">> "+ command);
 
-		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
-		ExecResponse response = compute.runScriptOnNode(
-				id,
-				exec(command),
-				overrideLoginCredentials(b.build())
-				.runAsRoot(false)
-				.wrapInInitScript(false));// run command directly
+        org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        ExecResponse response = compute.runScriptOnNode(
+                id,
+                exec(command),
+                overrideLoginCredentials(b.build())
+                        .runAsRoot(false)
+                        .wrapInInitScript(false));// run command directly
 
-		journal.log(Level.INFO, ">> "+response.getOutput());
-	}
+        journal.log(Level.INFO, ">> "+response.getOutput());
+    }
 
-	/**
-	 * Update the runtime metadata of a node if already deployed
-	 * @param a description of a node
-	 */
-	public void updateNodeMetadata(NodeInstance a){
-		ComputeMetadata cm= getNodeByName(a.getName());
-		if(cm != null){
-			a.setPublicAddress(getNodeById(cm.getId()).getPublicAddresses().iterator().next());
-			a.setId(cm.getId());
-		}
-	}
+    /**
+     * Update the runtime metadata of a VM if already deployed
+     * @param a description of a VM
+     */
+    public void updateVMMetadata(VMInstance a){
+        ComputeMetadata cm= getVMByName(a.getName());
+        if(cm != null){
+            a.setPublicAddress(getVMById(cm.getId()).getPublicAddresses().iterator().next());
+            a.setId(cm.getId());
+        }
+    }
 
-	/**
-	 * Provision a node
-	 * @param a description of the node to be created
-	 * @return
-	 */
-	public void createInstance(NodeInstance a){
-		Node node= a.getType();
-		ComputeMetadata cm= getNodeByName(a.getName());
+    /**
+     * Provision a VM
+     * @param a description of the VM to be created
+     * @return
+     */
+    public void createInstance(VMInstance a){
+        VM vm = a.getType();
+        ComputeMetadata cm= getVMByName(a.getName());
 		/* UPDATE THE MODEL */
-		if(cm != null){
-			updateNodeMetadata(a);
-		}else{
-			Template template=null;
-			NodeMetadata nodeInstance = null;
-			String groupName="cloudml-instance";
-			if(!node.getGroupName().equals(""))
-				groupName=node.getGroupName();
+        if(cm != null){
+            updateVMMetadata(a);
+        }else{
+            Template template=null;
+            NodeMetadata nodeInstance = null;
+            String groupName="cloudml-instance";
+            if(!vm.getGroupName().equals(""))
+                groupName= vm.getGroupName();
 
-			TemplateBuilder templateBuilder = compute.templateBuilder();
+            TemplateBuilder templateBuilder = compute.templateBuilder();
 
-			if(!node.getImageId().equals("")){
-				templateBuilder.imageId(node.getImageId());
-			}
+            if(!vm.getImageId().equals("")){
+                templateBuilder.imageId(vm.getImageId());
+            }
 
-			journal.log(Level.INFO, ">> Provisioning a node ...");
+            journal.log(Level.INFO, ">> Provisioning a vm ...");
 
-			if (node.getMinRam() > 0)
-				templateBuilder.minRam(node.getMinRam());
-			if (node.getMinCore() > 0)
-				templateBuilder.minCores(node.getMinCore());
-			if (!node.getLocation().equals(""))
-				templateBuilder.locationId(node.getLocation());
-			if (!node.getOS().equals(""))
-				templateBuilder.imageDescriptionMatches(node.getOS());
-			else templateBuilder.osFamily(OsFamily.UBUNTU);
-			templateBuilder.os64Bit(node.getIs64os());
+            if (vm.getMinRam() > 0)
+                templateBuilder.minRam(vm.getMinRam());
+            if (vm.getMinCores() > 0)
+                templateBuilder.minCores(vm.getMinCores());
+            if (!vm.getLocation().equals(""))
+                templateBuilder.locationId(vm.getLocation());
+            if (!vm.getOs().equals(""))
+                templateBuilder.imageDescriptionMatches(vm.getOs());
+            else templateBuilder.osFamily(OsFamily.UBUNTU);
+            templateBuilder.os64Bit(vm.getIs64os());
 
-			/*if(node.getMinDisk() > 0 && provider.equals("aws-ec2")){
-    		Hardware hw=findHardwareByDisk(node.getMinDisk());
+			/*if(vm.getMinStorage() > 0 && provider.equals("aws-ec2")){
+    		Hardware hw=findHardwareByDisk(vm.getMinStorage());
     		templateBuilder.hardwareId(hw.getId());
     	}*/
 
-			template = templateBuilder.build();
-			journal.log(Level.INFO, ">> node type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
-			a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
-			a.getProperties().add(new Property("location", template.getLocation().getId()));
+            template = templateBuilder.build();
+            journal.log(Level.INFO, ">> vm type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
+            a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
+            a.getProperties().add(new Property("location", template.getLocation().getId()));
 
-			if(provider.equals("aws-ec2")){
-				template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", node.getMinDisk(), true);
-				template.getOptions().as(EC2TemplateOptions.class).securityGroups(node.getSecurityGroup());
-				template.getOptions().as(EC2TemplateOptions.class).keyPair(node.getSshKey());
-				template.getOptions().as(EC2TemplateOptions.class).userMetadata("Name", a.getName());
-				template.getOptions().as(EC2TemplateOptions.class).overrideLoginUser(a.getName());
-			}
+            if(provider.equals("aws-ec2")){
+                template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", vm.getMinStorage(), true);
+                template.getOptions().as(EC2TemplateOptions.class).securityGroups(vm.getSecurityGroup());
+                template.getOptions().as(EC2TemplateOptions.class).keyPair(vm.getSshKey());
+                template.getOptions().as(EC2TemplateOptions.class).userMetadata("Name", a.getName());
+                template.getOptions().as(EC2TemplateOptions.class).overrideLoginUser(a.getName());
+            }
 
-			template.getOptions().blockUntilRunning(true);
+            template.getOptions().blockUntilRunning(true);
 
-			try {
-				Set<? extends NodeMetadata> nodes = compute.createNodesInGroup(groupName, 1, template);
-				nodeInstance = nodes.iterator().next();
+            try {
+                Set<? extends NodeMetadata> nodes = compute.createNodesInGroup(groupName, 1, template);
+                nodeInstance = nodes.iterator().next();
 
-				journal.log(Level.INFO, ">> Running node: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() +
-						" on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
+                journal.log(Level.INFO, ">> Running vm: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() +
+                        " on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
 
-			} catch (RunNodesException e) {
-				e.printStackTrace();
-				a.setStatusAsError();
-			}
+            } catch (RunNodesException e) {
+                e.printStackTrace();
+                a.setStatusAsError();
+            }
 
-			a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
-			a.setId(nodeInstance.getId());
-			a.setStatusAsRunning();
-		}
-	}
+            a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
+            a.setId(nodeInstance.getId());
+            a.setStatusAsRunning();
+        }
+    }
 
-	/**
-	 * Terminate a specified node
-	 * @param id id of the node
-	 */
-	public void destroyNode(String id){
-		compute.destroyNode(id);
-	}
+    /**
+     * Terminate a specified VM
+     * @param id id of the VM
+     */
+    public void destroyVM(String id){
+        compute.destroyNode(id);
+    }
 
 
 	/**

@@ -34,6 +34,7 @@ import static org.cloudml.core.builders.Commons.*;
 public class SensApp {
 
     public static final String AMAZON_EC2 = "aws-ec2";
+    public static final String OPENSTACK = "openstack-nova";
     public static final String FLEXIANT = "flexiant";
     public static final String SENSAPP = "SensApp";
     public static final String JETTY = "JettySC";
@@ -97,7 +98,7 @@ public class SensApp {
     private static VMBuilder vmML() {
         return aVM()
                 .named("ML")
-                .providedBy(AMAZON_EC2)
+                .providedBy(FLEXIANT)
                 .with(aProvidedExecutionPlatform()
                     .named("m1Provided")
                     .offering("OS", "Ubuntu")) // FIXME offering of the execution platform
@@ -143,6 +144,10 @@ public class SensApp {
                 .withProperty("endPoint", "https://api.sd1.flexiant.net:4442/userapi");
     }
 
+    public static ProviderBuilder minicloud() {
+        return aProvider().named(OPENSTACK).withProperty("endPoint", "http://192.168.1.10:5000/v2.0");
+    }
+
     public static InternalComponentBuilder sensApp() { 
         return anInternalComponent() 
              .named(SENSAPP)
@@ -158,8 +163,8 @@ public class SensApp {
                  .withPortNumber(8080))
              .withResource(aResource()
                  .named("sensAppWar")
-                 .retrievedBy("wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensapp/sensapp.sh")
-                 .installedBy("cd ~; sudo bash sensapp.sh"));
+                 .retrievedBy("wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh")
+                 .installedBy("cd ~; sudo bash install_start_sensapp.sh"));
     }
 
     public static InternalComponentBuilder sensAppAdmin() {
@@ -175,9 +180,10 @@ public class SensApp {
                  .withPortNumber(8080))
              .withResource(aResource()
                  .named("sensAppAdminWar")
-                 .retrievedBy("wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sensappAdmin/SensAppGUI.tar; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/startsensappgui.sh ; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/sensappgui.sh ; wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sensappAdmin/localTopology.json; wget http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/resources/sources.list; sudo mv sources.list /etc/apt/sources.list")
-                 .installedBy("cd ~; sudo bash sensappgui.sh")
-                 .startedBy("cd ~; sudo bash startsensappgui.sh"));
+                 .retrievedBy("wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json")
+                 .installedBy("cd ~; sudo bash install_sensappadmin.sh")
+                 .startedBy("cd ~; sudo bash start_sensappadmin.sh")
+                 .stoppedBy("sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart"));
     }
 
     public static InternalComponentBuilder jetty() {
@@ -191,8 +197,9 @@ public class SensApp {
                  .demanding("OS", "Ubuntu"))
              .withResource(aResource()
                  .named("jettyBin")
-                 .retrievedBy("wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/jetty/jetty.sh")
-                 .installedBy("cd ~; sudo bash jetty.sh"));
+                 .retrievedBy("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh")
+                 .installedBy("cd ~; sudo bash install_jetty.sh")
+                 .stoppedBy("sudo service jetty stop"));
     }
 
     public static InternalComponentBuilder mongoDB() {
@@ -207,8 +214,8 @@ public class SensApp {
                  .withPortNumber(0))
              .withResource(aResource()
                  .named("MongoDBBin")
-                 .retrievedBy("wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/mongoDB/mongoDB.sh")
-                 .installedBy("cd ~; sudo bash mongoDB.sh"));
+                 .retrievedBy("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh")
+                 .installedBy("cd ~; sudo bash install_mongoDB.sh"));
     }
 
     public static RelationshipBuilder sensappToMongoDB() {
@@ -225,8 +232,8 @@ public class SensApp {
              .to(SENSAPP, SENSAPP_USER_PORT)
              .withResource(aResource()
                  .named("client")
-                 .retrievedBy("wget -P ~ http://ec2-54-228-116-115.eu-west-1.compute.amazonaws.com/scripts/linux/ubuntu/sensappAdmin/configuresensappgui.sh")
-                 .installedBy("cd ~; sudo bash configuresensappgui.sh"));
+                 .retrievedBy("get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh")
+                 .installedBy("cd ~; sudo bash configure_sensappadmin.sh"));
     }
 
     public static DeploymentBuilder sensAppTypes() {
@@ -234,6 +241,7 @@ public class SensApp {
                 .named("SensApp")
                 .with(ec2())
                 .with(flexiant())
+                .with(minicloud())
                 .with(vmML())
                 .with(vmSL())
                 .with(sensApp())

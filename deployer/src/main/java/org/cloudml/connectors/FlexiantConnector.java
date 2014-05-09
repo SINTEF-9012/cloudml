@@ -33,8 +33,8 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
-import org.cloudml.core.Node;
-import org.cloudml.core.NodeInstance;
+import org.cloudml.core.VM;
+import org.cloudml.core.VMInstance;
 import org.cloudml.core.Property;
 
 import net.flexiant.extility.*;
@@ -144,77 +144,77 @@ public class FlexiantConnector implements Connector{
 		}
 	}
 
-	public void createInstance(NodeInstance a){
-		try {
-			Server template = new Server();
-			if(findResourceByName(a.getName(), ResourceType.SERVER).equals("")){
-				Node node= a.getType();
-				List<String> sshKeyList = new ArrayList<String> ();
+    public void createInstance(VMInstance a){
+        try {
+            Server template = new Server();
+            if(findResourceByName(a.getName(), ResourceType.SERVER).equals("")){
+                VM vm = a.getType();
+                List<String> sshKeyList = new ArrayList<String> ();
 
-				template.setResourceType(ResourceType.SERVER);
-				
-				journal.log(Level.INFO, ">> Provisioning a node ...");
+                template.setResourceType(ResourceType.SERVER);
 
-				if (node.getMinCore() > 0 && node.getMinRam() > 0)
-					template.setProductOfferUUID(findProduct(((double)node.getMinRam()), node.getMinCore())); 
+                journal.log(Level.INFO, ">> Provisioning a vm ...");
 
-				if (!node.getGroupName().equals(""))
-					template.setVdcUUID(findResourceByName(node.getGroupName(),ResourceType.VDC));
+                if (vm.getMinCores() > 0 && vm.getMinRam() > 0)
+                    template.setProductOfferUUID(findProduct(((double) vm.getMinRam()), vm.getMinCores()));
 
-				if(!node.getImageId().equals(""))
-					template.setImageUUID(findResourceByName(node.getImageId(),ResourceType.IMAGE)); //TODO: find by OS
+                if (!vm.getGroupName().equals(""))
+                    template.setVdcUUID(findResourceByName(vm.getGroupName(),ResourceType.VDC));
 
-				if(!node.getSshKey().equals(""))
-					sshKeyList.add(findResourceByName(node.getSshKey(),ResourceType.SSHKEY));
+                if(!vm.getImageId().equals(""))
+                    template.setImageUUID(findResourceByName(vm.getImageId(),ResourceType.IMAGE)); //TODO: find by OS
 
-				template.setResourceName(a.getName());
-				Nic n=new Nic();
-				//n.setNetworkUUID("1886a8d4-dbfb-38f7-8a53-d9a24abbd3e8"); //TODO: to be added in the metamodel
+                if(!vm.getSshKey().equals(""))
+                    sshKeyList.add(findResourceByName(vm.getSshKey(),ResourceType.SSHKEY));
+
+                template.setResourceName(a.getName());
+                Nic n=new Nic();
+                //n.setNetworkUUID("1886a8d4-dbfb-38f7-8a53-d9a24abbd3e8"); //TODO: to be added in the metamodel
                 n.setNetworkUUID("89b1a8d2-42dc-3c0a-b5f1-c9f4fc5aacc8"); //TODO: to be added in the metamodel
-				template.getNics().add(n);
-				
+                template.getNics().add(n);
+
 				/*Disk d = new Disk();
-				d.setSize(node.getMinDisk());
+				d.setSize(vm.getMinStorage());
 				template.getDisks().add(d);*/
-				
-				//TODO: Add disk
-				
-				Job job=service.createServer(template, sshKeyList, null);
-				service.waitForJob(job.getResourceUUID(), false);
-				
-				a.getProperties().add(new Property("ProviderInstanceType",template.getProductOfferName()));
-				a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
-				
+
+                //TODO: Add disk
+
+                Job job=service.createServer(template, sshKeyList, null);
+                service.waitForJob(job.getResourceUUID(), false);
+
+                a.getProperties().add(new Property("ProviderInstanceType",template.getProductOfferName()));
+                a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
+
 				/*Job nicJob=service.createNetworkInterface(n, null);
 				service.waitForJob(nicJob.getResourceUUID(), false);
 
 				service.attachNetworkInterface(job.getItemUUID(), nicJob.getItemUUID(), 0, null);*/
-				journal.log(Level.INFO, ">> node type: "+ template.getProductOfferName() +  " named " + template.getResourceName());
-				
-				Job startJob=service.changeServerStatus(a.getId(), ServerStatus.RUNNING, true, null, null);
-				service.waitForJob(startJob.getResourceUUID(), false);
-				Thread.sleep(90000);
-			}
-			a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
-			Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
-			a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
-			journal.log(Level.INFO, ">> Running node: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
-			a.setStatusAsRunning();
-		} catch (ExtilityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			a.setStatusAsError();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			a.setStatusAsError();
-		}
-	}
+                journal.log(Level.INFO, ">> vm type: "+ template.getProductOfferName() +  " named " + template.getResourceName());
 
-	public void execCommand(NodeInstance n, String command, String login, String keyPath){
-		SSHConnector sc=new SSHConnector(keyPath, login, n.getPublicAddress());
-		sc.execCommandSsh(command);
-	}
+                Job startJob=service.changeServerStatus(a.getId(), ServerStatus.RUNNING, true, null, null);
+                service.waitForJob(startJob.getResourceUUID(), false);
+                Thread.sleep(90000);
+            }
+            a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
+            Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
+            a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
+            journal.log(Level.INFO, ">> Running VM: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
+            a.setStatusAsRunning();
+        } catch (ExtilityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            a.setStatusAsError();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            a.setStatusAsError();
+        }
+    }
+
+    public void execCommand(VMInstance n, String command, String login, String keyPath){
+        SSHConnector sc=new SSHConnector(keyPath, login, n.getPublicAddress());
+        sc.execCommandSsh(command);
+    }
 
 
 	public void execCommand(String id, String command, String login, String keyPath){
@@ -380,23 +380,24 @@ public class FlexiantConnector implements Connector{
 		return this.endpoint;
 	}
 
-	public void destroyNode(String id) {
-		// TODO Auto-generated method stub
-		journal.log(Level.INFO, ">> Not yet implemented ");
-	}
+    public void destroyVM(String id) {
+        // TODO Auto-generated method stub
+        journal.log(Level.INFO, ">> Not yet implemented ");
+    }
 
-	public void closeConnection() {}
+    public void closeConnection() {}
 
-	public void updateNodeMetadata(NodeInstance a) { 
-		a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
-		Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
-		a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
-	}
+    public void updateVMMetadata(VMInstance a) {
+        a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
+        Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
+        a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
+    }
 
-	public void uploadFile(String sourcePath, String destinationPath,
-			String nodeId, String login, String key) {
-		// TODO Auto-generated method stub
-		
-	}
+    public void uploadFile(String sourcePath, String destinationPath,
+                           String VMId, String login, String key) {
+        // TODO Auto-generated method stub
+
+    }
 
 }
+

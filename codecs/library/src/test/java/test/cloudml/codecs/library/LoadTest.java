@@ -97,7 +97,7 @@ public class LoadTest extends TestCase {
     }
 
     private void assertModelMatchesSensApp(Deployment model) {
-        assertThat("2 providers", model.getProviders(), hasSize(2));
+        assertThat("3 providers", model.getProviders(), hasSize(3));
         assertThat("7 component instances", model.getComponentInstances(), hasSize(7));
         assertThat("5 component types", model.getComponents(), hasSize(6));
         assertThat("2 relationship types", model.getRelationships(), hasSize(2));
