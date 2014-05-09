@@ -34,6 +34,8 @@ public class ConnectorFactory {
 				return new JCloudsConnector(p.getName(), p.getLogin(), p.getPasswd()); 
 			if(p.getName().equals("flexiant"))
 				return new FlexiantConnector(p.getProperty("endPoint"), p.getLogin(), p.getPasswd());
+            if(p.getName().equals("openstack-nova"))
+                return new OpenStackConnector(p.getProperty("endPoint"),p.getName(), p.getLogin(), p.getPasswd());
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}

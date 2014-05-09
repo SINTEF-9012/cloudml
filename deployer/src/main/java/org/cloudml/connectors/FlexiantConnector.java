@@ -169,7 +169,8 @@ public class FlexiantConnector implements Connector{
 
 				template.setResourceName(a.getName());
 				Nic n=new Nic();
-				n.setNetworkUUID("89b1a8d2-42dc-3c0a-b5f1-c9f4fc5aacc8"); //TODO: to be added in the metamodel
+				//n.setNetworkUUID("1886a8d4-dbfb-38f7-8a53-d9a24abbd3e8"); //TODO: to be added in the metamodel
+                n.setNetworkUUID("89b1a8d2-42dc-3c0a-b5f1-c9f4fc5aacc8"); //TODO: to be added in the metamodel
 				template.getNics().add(n);
 				
 				/*Disk d = new Disk();

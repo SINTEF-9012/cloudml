@@ -19,6 +19,12 @@
 <message name="createImageResponse">
 <part name="parameters" element="tns:createImageResponse"></part>
 </message>
+<message name="createBlob">
+<part name="parameters" element="tns:createBlob"></part>
+</message>
+<message name="createBlobResponse">
+<part name="parameters" element="tns:createBlobResponse"></part>
+</message>
 <message name="addKey">
 <part name="parameters" element="tns:addKey"></part>
 </message>
@@ -30,6 +36,12 @@
 </message>
 <message name="removeKeyResponse">
 <part name="parameters" element="tns:removeKeyResponse"></part>
+</message>
+<message name="createVDC">
+<part name="parameters" element="tns:createVDC"></part>
+</message>
+<message name="createVDCResponse">
+<part name="parameters" element="tns:createVDCResponse"></part>
 </message>
 <message name="listResources">
 <part name="parameters" element="tns:listResources"></part>
@@ -61,11 +73,17 @@
 <message name="updateCustomerResponse">
 <part name="parameters" element="tns:updateCustomerResponse"></part>
 </message>
-<message name="createSubnet">
-<part name="parameters" element="tns:createSubnet"></part>
+<message name="getHypervisorConfig">
+<part name="parameters" element="tns:getHypervisorConfig"></part>
 </message>
-<message name="createSubnetResponse">
-<part name="parameters" element="tns:createSubnetResponse"></part>
+<message name="getHypervisorConfigResponse">
+<part name="parameters" element="tns:getHypervisorConfigResponse"></part>
+</message>
+<message name="updateUser">
+<part name="parameters" element="tns:updateUser"></part>
+</message>
+<message name="updateUserResponse">
+<part name="parameters" element="tns:updateUserResponse"></part>
 </message>
 <message name="createDisk">
 <part name="parameters" element="tns:createDisk"></part>
@@ -73,17 +91,23 @@
 <message name="createDiskResponse">
 <part name="parameters" element="tns:createDiskResponse"></part>
 </message>
+<message name="createSubnet">
+<part name="parameters" element="tns:createSubnet"></part>
+</message>
+<message name="createSubnetResponse">
+<part name="parameters" element="tns:createSubnetResponse"></part>
+</message>
+<message name="fetchResource">
+<part name="parameters" element="tns:fetchResource"></part>
+</message>
+<message name="fetchResourceResponse">
+<part name="parameters" element="tns:fetchResourceResponse"></part>
+</message>
 <message name="createServer">
 <part name="parameters" element="tns:createServer"></part>
 </message>
 <message name="createServerResponse">
 <part name="parameters" element="tns:createServerResponse"></part>
-</message>
-<message name="updateUser">
-<part name="parameters" element="tns:updateUser"></part>
-</message>
-<message name="updateUserResponse">
-<part name="parameters" element="tns:updateUserResponse"></part>
 </message>
 <message name="attachDisk">
 <part name="parameters" element="tns:attachDisk"></part>
@@ -97,23 +121,29 @@
 <message name="detachDiskResponse">
 <part name="parameters" element="tns:detachDiskResponse"></part>
 </message>
+<message name="publishResource">
+<part name="parameters" element="tns:publishResource"></part>
+</message>
+<message name="publishResourceResponse">
+<part name="parameters" element="tns:publishResourceResponse"></part>
+</message>
+<message name="revokeResource">
+<part name="parameters" element="tns:revokeResource"></part>
+</message>
+<message name="revokeResourceResponse">
+<part name="parameters" element="tns:revokeResourceResponse"></part>
+</message>
 <message name="removeIP">
 <part name="parameters" element="tns:removeIP"></part>
 </message>
 <message name="removeIPResponse">
 <part name="parameters" element="tns:removeIPResponse"></part>
 </message>
-<message name="publishImage">
-<part name="parameters" element="tns:publishImage"></part>
+<message name="getBlobContent">
+<part name="parameters" element="tns:getBlobContent"></part>
 </message>
-<message name="publishImageResponse">
-<part name="parameters" element="tns:publishImageResponse"></part>
-</message>
-<message name="revokeImage">
-<part name="parameters" element="tns:revokeImage"></part>
-</message>
-<message name="revokeImageResponse">
-<part name="parameters" element="tns:revokeImageResponse"></part>
+<message name="getBlobContentResponse">
+<part name="parameters" element="tns:getBlobContentResponse"></part>
 </message>
 <message name="listUnitTransactionSummary">
 <part name="parameters" element="tns:listUnitTransactionSummary"></part>
@@ -121,23 +151,29 @@
 <message name="listUnitTransactionSummaryResponse">
 <part name="parameters" element="tns:listUnitTransactionSummaryResponse"></part>
 </message>
+<message name="purchaseUnits">
+<part name="parameters" element="tns:purchaseUnits"></part>
+</message>
+<message name="purchaseUnitsResponse">
+<part name="parameters" element="tns:purchaseUnitsResponse"></part>
+</message>
 <message name="listReferralPromoCode">
 <part name="parameters" element="tns:listReferralPromoCode"></part>
 </message>
 <message name="listReferralPromoCodeResponse">
 <part name="parameters" element="tns:listReferralPromoCodeResponse"></part>
 </message>
+<message name="listStatementDetail">
+<part name="parameters" element="tns:listStatementDetail"></part>
+</message>
+<message name="listStatementDetailResponse">
+<part name="parameters" element="tns:listStatementDetailResponse"></part>
+</message>
 <message name="createSnapshot">
 <part name="parameters" element="tns:createSnapshot"></part>
 </message>
 <message name="createSnapshotResponse">
 <part name="parameters" element="tns:createSnapshotResponse"></part>
-</message>
-<message name="createNetwork">
-<part name="parameters" element="tns:createNetwork"></part>
-</message>
-<message name="createNetworkResponse">
-<part name="parameters" element="tns:createNetworkResponse"></part>
 </message>
 <message name="createReferralPromoCode">
 <part name="parameters" element="tns:createReferralPromoCode"></part>
@@ -163,11 +199,17 @@
 <message name="listProductPurchasesResponse">
 <part name="parameters" element="tns:listProductPurchasesResponse"></part>
 </message>
-<message name="publishResource">
-<part name="parameters" element="tns:publishResource"></part>
+<message name="publishImage">
+<part name="parameters" element="tns:publishImage"></part>
 </message>
-<message name="publishResourceResponse">
-<part name="parameters" element="tns:publishResourceResponse"></part>
+<message name="publishImageResponse">
+<part name="parameters" element="tns:publishImageResponse"></part>
+</message>
+<message name="revokeImage">
+<part name="parameters" element="tns:revokeImage"></part>
+</message>
+<message name="revokeImageResponse">
+<part name="parameters" element="tns:revokeImageResponse"></part>
 </message>
 <message name="deleteResource">
 <part name="parameters" element="tns:deleteResource"></part>
@@ -205,47 +247,41 @@
 <message name="getResourceTypesResponse">
 <part name="parameters" element="tns:getResourceTypesResponse"></part>
 </message>
-<message name="modifyNetwork">
-<part name="parameters" element="tns:modifyNetwork"></part>
+<message name="renderInvoice">
+<part name="parameters" element="tns:renderInvoice"></part>
 </message>
-<message name="modifyNetworkResponse">
-<part name="parameters" element="tns:modifyNetworkResponse"></part>
+<message name="renderInvoiceResponse">
+<part name="parameters" element="tns:renderInvoiceResponse"></part>
 </message>
-<message name="modifyDisk">
-<part name="parameters" element="tns:modifyDisk"></part>
+<message name="createNetwork">
+<part name="parameters" element="tns:createNetwork"></part>
 </message>
-<message name="modifyDiskResponse">
-<part name="parameters" element="tns:modifyDiskResponse"></part>
+<message name="createNetworkResponse">
+<part name="parameters" element="tns:createNetworkResponse"></part>
 </message>
-<message name="modifyServer">
-<part name="parameters" element="tns:modifyServer"></part>
+<message name="fetchServer">
+<part name="parameters" element="tns:fetchServer"></part>
 </message>
-<message name="modifyServerResponse">
-<part name="parameters" element="tns:modifyServerResponse"></part>
+<message name="fetchServerResponse">
+<part name="parameters" element="tns:fetchServerResponse"></part>
 </message>
-<message name="modifyFirewall">
-<part name="parameters" element="tns:modifyFirewall"></part>
+<message name="fetchDisk">
+<part name="parameters" element="tns:fetchDisk"></part>
 </message>
-<message name="modifyFirewallResponse">
-<part name="parameters" element="tns:modifyFirewallResponse"></part>
-</message>
-<message name="createVDC">
-<part name="parameters" element="tns:createVDC"></part>
-</message>
-<message name="createVDCResponse">
-<part name="parameters" element="tns:createVDCResponse"></part>
-</message>
-<message name="fetchResource">
-<part name="parameters" element="tns:fetchResource"></part>
-</message>
-<message name="fetchResourceResponse">
-<part name="parameters" element="tns:fetchResourceResponse"></part>
+<message name="fetchDiskResponse">
+<part name="parameters" element="tns:fetchDiskResponse"></part>
 </message>
 <message name="revertToResource">
 <part name="parameters" element="tns:revertToResource"></part>
 </message>
 <message name="revertToResourceResponse">
 <part name="parameters" element="tns:revertToResourceResponse"></part>
+</message>
+<message name="modifyServer">
+<part name="parameters" element="tns:modifyServer"></part>
+</message>
+<message name="modifyServerResponse">
+<part name="parameters" element="tns:modifyServerResponse"></part>
 </message>
 <message name="attachNetworkInterface">
 <part name="parameters" element="tns:attachNetworkInterface"></part>
@@ -283,11 +319,23 @@
 <message name="openVNCConnectionResponse">
 <part name="parameters" element="tns:openVNCConnectionResponse"></part>
 </message>
+<message name="modifyDisk">
+<part name="parameters" element="tns:modifyDisk"></part>
+</message>
+<message name="modifyDiskResponse">
+<part name="parameters" element="tns:modifyDiskResponse"></part>
+</message>
 <message name="modifySnapshot">
 <part name="parameters" element="tns:modifySnapshot"></part>
 </message>
 <message name="modifySnapshotResponse">
 <part name="parameters" element="tns:modifySnapshotResponse"></part>
+</message>
+<message name="modifyNetwork">
+<part name="parameters" element="tns:modifyNetwork"></part>
+</message>
+<message name="modifyNetworkResponse">
+<part name="parameters" element="tns:modifyNetworkResponse"></part>
 </message>
 <message name="attachSubnet">
 <part name="parameters" element="tns:attachSubnet"></part>
@@ -349,6 +397,12 @@
 <message name="modifyNetworkInterfaceResponse">
 <part name="parameters" element="tns:modifyNetworkInterfaceResponse"></part>
 </message>
+<message name="modifyPaymentMethodInstance">
+<part name="parameters" element="tns:modifyPaymentMethodInstance"></part>
+</message>
+<message name="modifyPaymentMethodInstanceResponse">
+<part name="parameters" element="tns:modifyPaymentMethodInstanceResponse"></part>
+</message>
 <message name="addIP">
 <part name="parameters" element="tns:addIP"></part>
 </message>
@@ -367,6 +421,12 @@
 <message name="modifyImageResponse">
 <part name="parameters" element="tns:modifyImageResponse"></part>
 </message>
+<message name="modifyFirewall">
+<part name="parameters" element="tns:modifyFirewall"></part>
+</message>
+<message name="modifyFirewallResponse">
+<part name="parameters" element="tns:modifyFirewallResponse"></part>
+</message>
 <message name="cancelJob">
 <part name="parameters" element="tns:cancelJob"></part>
 </message>
@@ -378,12 +438,6 @@
 </message>
 <message name="waitForJobResponse">
 <part name="parameters" element="tns:waitForJobResponse"></part>
-</message>
-<message name="revokeResource">
-<part name="parameters" element="tns:revokeResource"></part>
-</message>
-<message name="revokeResourceResponse">
-<part name="parameters" element="tns:revokeResourceResponse"></part>
 </message>
 <message name="cloneResource">
 <part name="parameters" element="tns:cloneResource"></part>
@@ -463,6 +517,36 @@
 <message name="createDeploymentTemplateFromInstanceResponse">
 <part name="parameters" element="tns:createDeploymentTemplateFromInstanceResponse"></part>
 </message>
+<message name="payInvoice">
+<part name="parameters" element="tns:payInvoice"></part>
+</message>
+<message name="payInvoiceResponse">
+<part name="parameters" element="tns:payInvoiceResponse"></part>
+</message>
+<message name="createPaymentMethodInstance">
+<part name="parameters" element="tns:createPaymentMethodInstance"></part>
+</message>
+<message name="createPaymentMethodInstanceResponse">
+<part name="parameters" element="tns:createPaymentMethodInstanceResponse"></part>
+</message>
+<message name="resumeTransaction">
+<part name="parameters" element="tns:resumeTransaction"></part>
+</message>
+<message name="resumeTransactionResponse">
+<part name="parameters" element="tns:resumeTransactionResponse"></part>
+</message>
+<message name="cancelTransaction">
+<part name="parameters" element="tns:cancelTransaction"></part>
+</message>
+<message name="cancelTransactionResponse">
+<part name="parameters" element="tns:cancelTransactionResponse"></part>
+</message>
+<message name="testPaymentMethod">
+<part name="parameters" element="tns:testPaymentMethod"></part>
+</message>
+<message name="testPaymentMethodResponse">
+<part name="parameters" element="tns:testPaymentMethodResponse"></part>
+</message>
 <portType name="UserService">
 <operation name="createGroup">
 <input message="tns:createGroup"></input>
@@ -474,6 +558,11 @@
 <output message="tns:createImageResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="createBlob">
+<input message="tns:createBlob"></input>
+<output message="tns:createBlobResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="addKey">
 <input message="tns:addKey"></input>
 <output message="tns:addKeyResponse"></output>
@@ -482,6 +571,11 @@
 <operation name="removeKey">
 <input message="tns:removeKey"></input>
 <output message="tns:removeKeyResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="createVDC">
+<input message="tns:createVDC"></input>
+<output message="tns:createVDCResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="listResources">
@@ -509,9 +603,14 @@
 <output message="tns:updateCustomerResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
-<operation name="createSubnet">
-<input message="tns:createSubnet"></input>
-<output message="tns:createSubnetResponse"></output>
+<operation name="getHypervisorConfig">
+<input message="tns:getHypervisorConfig"></input>
+<output message="tns:getHypervisorConfigResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="updateUser">
+<input message="tns:updateUser"></input>
+<output message="tns:updateUserResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="createDisk">
@@ -519,14 +618,19 @@
 <output message="tns:createDiskResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="createSubnet">
+<input message="tns:createSubnet"></input>
+<output message="tns:createSubnetResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="fetchResource">
+<input message="tns:fetchResource"></input>
+<output message="tns:fetchResourceResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="createServer">
 <input message="tns:createServer"></input>
 <output message="tns:createServerResponse"></output>
-<fault message="tns:ExtilityException" name="ExtilityException"></fault>
-</operation>
-<operation name="updateUser">
-<input message="tns:updateUser"></input>
-<output message="tns:updateUserResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="attachDisk">
@@ -539,19 +643,24 @@
 <output message="tns:detachDiskResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="publishResource">
+<input message="tns:publishResource"></input>
+<output message="tns:publishResourceResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="revokeResource">
+<input message="tns:revokeResource"></input>
+<output message="tns:revokeResourceResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="removeIP">
 <input message="tns:removeIP"></input>
 <output message="tns:removeIPResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
-<operation name="publishImage">
-<input message="tns:publishImage"></input>
-<output message="tns:publishImageResponse"></output>
-<fault message="tns:ExtilityException" name="ExtilityException"></fault>
-</operation>
-<operation name="revokeImage">
-<input message="tns:revokeImage"></input>
-<output message="tns:revokeImageResponse"></output>
+<operation name="getBlobContent">
+<input message="tns:getBlobContent"></input>
+<output message="tns:getBlobContentResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="listUnitTransactionSummary">
@@ -559,19 +668,24 @@
 <output message="tns:listUnitTransactionSummaryResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="purchaseUnits">
+<input message="tns:purchaseUnits"></input>
+<output message="tns:purchaseUnitsResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="listReferralPromoCode">
 <input message="tns:listReferralPromoCode"></input>
 <output message="tns:listReferralPromoCodeResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="listStatementDetail">
+<input message="tns:listStatementDetail"></input>
+<output message="tns:listStatementDetailResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="createSnapshot">
 <input message="tns:createSnapshot"></input>
 <output message="tns:createSnapshotResponse"></output>
-<fault message="tns:ExtilityException" name="ExtilityException"></fault>
-</operation>
-<operation name="createNetwork">
-<input message="tns:createNetwork"></input>
-<output message="tns:createNetworkResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="createReferralPromoCode">
@@ -594,9 +708,14 @@
 <output message="tns:listProductPurchasesResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
-<operation name="publishResource">
-<input message="tns:publishResource"></input>
-<output message="tns:publishResourceResponse"></output>
+<operation name="publishImage">
+<input message="tns:publishImage"></input>
+<output message="tns:publishImageResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="revokeImage">
+<input message="tns:revokeImage"></input>
+<output message="tns:revokeImageResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="deleteResource">
@@ -629,39 +748,34 @@
 <output message="tns:getResourceTypesResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
-<operation name="modifyNetwork">
-<input message="tns:modifyNetwork"></input>
-<output message="tns:modifyNetworkResponse"></output>
+<operation name="renderInvoice">
+<input message="tns:renderInvoice"></input>
+<output message="tns:renderInvoiceResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
-<operation name="modifyDisk">
-<input message="tns:modifyDisk"></input>
-<output message="tns:modifyDiskResponse"></output>
+<operation name="createNetwork">
+<input message="tns:createNetwork"></input>
+<output message="tns:createNetworkResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
-<operation name="modifyServer">
-<input message="tns:modifyServer"></input>
-<output message="tns:modifyServerResponse"></output>
+<operation name="fetchServer">
+<input message="tns:fetchServer"></input>
+<output message="tns:fetchServerResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
-<operation name="modifyFirewall">
-<input message="tns:modifyFirewall"></input>
-<output message="tns:modifyFirewallResponse"></output>
-<fault message="tns:ExtilityException" name="ExtilityException"></fault>
-</operation>
-<operation name="createVDC">
-<input message="tns:createVDC"></input>
-<output message="tns:createVDCResponse"></output>
-<fault message="tns:ExtilityException" name="ExtilityException"></fault>
-</operation>
-<operation name="fetchResource">
-<input message="tns:fetchResource"></input>
-<output message="tns:fetchResourceResponse"></output>
+<operation name="fetchDisk">
+<input message="tns:fetchDisk"></input>
+<output message="tns:fetchDiskResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="revertToResource">
 <input message="tns:revertToResource"></input>
 <output message="tns:revertToResourceResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="modifyServer">
+<input message="tns:modifyServer"></input>
+<output message="tns:modifyServerResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="attachNetworkInterface">
@@ -694,9 +808,19 @@
 <output message="tns:openVNCConnectionResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="modifyDisk">
+<input message="tns:modifyDisk"></input>
+<output message="tns:modifyDiskResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="modifySnapshot">
 <input message="tns:modifySnapshot"></input>
 <output message="tns:modifySnapshotResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="modifyNetwork">
+<input message="tns:modifyNetwork"></input>
+<output message="tns:modifyNetworkResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="attachSubnet">
@@ -749,6 +873,11 @@
 <output message="tns:modifyNetworkInterfaceResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="modifyPaymentMethodInstance">
+<input message="tns:modifyPaymentMethodInstance"></input>
+<output message="tns:modifyPaymentMethodInstanceResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="addIP">
 <input message="tns:addIP"></input>
 <output message="tns:addIPResponse"></output>
@@ -764,6 +893,11 @@
 <output message="tns:modifyImageResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="modifyFirewall">
+<input message="tns:modifyFirewall"></input>
+<output message="tns:modifyFirewallResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 <operation name="cancelJob">
 <input message="tns:cancelJob"></input>
 <output message="tns:cancelJobResponse"></output>
@@ -772,11 +906,6 @@
 <operation name="waitForJob">
 <input message="tns:waitForJob"></input>
 <output message="tns:waitForJobResponse"></output>
-<fault message="tns:ExtilityException" name="ExtilityException"></fault>
-</operation>
-<operation name="revokeResource">
-<input message="tns:revokeResource"></input>
-<output message="tns:revokeResourceResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
 <operation name="cloneResource">
@@ -844,6 +973,31 @@
 <output message="tns:createDeploymentTemplateFromInstanceResponse"></output>
 <fault message="tns:ExtilityException" name="ExtilityException"></fault>
 </operation>
+<operation name="payInvoice">
+<input message="tns:payInvoice"></input>
+<output message="tns:payInvoiceResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="createPaymentMethodInstance">
+<input message="tns:createPaymentMethodInstance"></input>
+<output message="tns:createPaymentMethodInstanceResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="resumeTransaction">
+<input message="tns:resumeTransaction"></input>
+<output message="tns:resumeTransactionResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="cancelTransaction">
+<input message="tns:cancelTransaction"></input>
+<output message="tns:cancelTransactionResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
+<operation name="testPaymentMethod">
+<input message="tns:testPaymentMethod"></input>
+<output message="tns:testPaymentMethodResponse"></output>
+<fault message="tns:ExtilityException" name="ExtilityException"></fault>
+</operation>
 </portType>
 <binding name="UserServicePortBinding" type="tns:UserService">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"></soap:binding>
@@ -871,6 +1025,18 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
+<operation name="createBlob">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
 <operation name="addKey">
 <soap:operation soapAction=""></soap:operation>
 <input>
@@ -884,6 +1050,18 @@
 </fault>
 </operation>
 <operation name="removeKey">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="createVDC">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -955,7 +1133,19 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="createSubnet">
+<operation name="getHypervisorConfig">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="updateUser">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -979,7 +1169,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="createServer">
+<operation name="createSubnet">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -991,7 +1181,19 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="updateUser">
+<operation name="fetchResource">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="createServer">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1027,6 +1229,30 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
+<operation name="publishResource">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="revokeResource">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
 <operation name="removeIP">
 <soap:operation soapAction=""></soap:operation>
 <input>
@@ -1039,19 +1265,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="publishImage">
-<soap:operation soapAction=""></soap:operation>
-<input>
-<soap:body use="literal"></soap:body>
-</input>
-<output>
-<soap:body use="literal"></soap:body>
-</output>
-<fault name="ExtilityException">
-<soap:fault name="ExtilityException" use="literal"></soap:fault>
-</fault>
-</operation>
-<operation name="revokeImage">
+<operation name="getBlobContent">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1075,6 +1289,18 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
+<operation name="purchaseUnits">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
 <operation name="listReferralPromoCode">
 <soap:operation soapAction=""></soap:operation>
 <input>
@@ -1087,7 +1313,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="createSnapshot">
+<operation name="listStatementDetail">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1099,7 +1325,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="createNetwork">
+<operation name="createSnapshot">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1159,7 +1385,19 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="publishResource">
+<operation name="publishImage">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="revokeImage">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1243,7 +1481,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="modifyNetwork">
+<operation name="renderInvoice">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1255,7 +1493,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="modifyDisk">
+<operation name="createNetwork">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1267,7 +1505,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="modifyServer">
+<operation name="fetchServer">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1279,31 +1517,7 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
-<operation name="modifyFirewall">
-<soap:operation soapAction=""></soap:operation>
-<input>
-<soap:body use="literal"></soap:body>
-</input>
-<output>
-<soap:body use="literal"></soap:body>
-</output>
-<fault name="ExtilityException">
-<soap:fault name="ExtilityException" use="literal"></soap:fault>
-</fault>
-</operation>
-<operation name="createVDC">
-<soap:operation soapAction=""></soap:operation>
-<input>
-<soap:body use="literal"></soap:body>
-</input>
-<output>
-<soap:body use="literal"></soap:body>
-</output>
-<fault name="ExtilityException">
-<soap:fault name="ExtilityException" use="literal"></soap:fault>
-</fault>
-</operation>
-<operation name="fetchResource">
+<operation name="fetchDisk">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1316,6 +1530,18 @@
 </fault>
 </operation>
 <operation name="revertToResource">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="modifyServer">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1399,7 +1625,31 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
+<operation name="modifyDisk">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
 <operation name="modifySnapshot">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="modifyNetwork">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1531,6 +1781,18 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
+<operation name="modifyPaymentMethodInstance">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
 <operation name="addIP">
 <soap:operation soapAction=""></soap:operation>
 <input>
@@ -1567,6 +1829,18 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
+<operation name="modifyFirewall">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
 <operation name="cancelJob">
 <soap:operation soapAction=""></soap:operation>
 <input>
@@ -1580,18 +1854,6 @@
 </fault>
 </operation>
 <operation name="waitForJob">
-<soap:operation soapAction=""></soap:operation>
-<input>
-<soap:body use="literal"></soap:body>
-</input>
-<output>
-<soap:body use="literal"></soap:body>
-</output>
-<fault name="ExtilityException">
-<soap:fault name="ExtilityException" use="literal"></soap:fault>
-</fault>
-</operation>
-<operation name="revokeResource">
 <soap:operation soapAction=""></soap:operation>
 <input>
 <soap:body use="literal"></soap:body>
@@ -1759,10 +2021,70 @@
 <soap:fault name="ExtilityException" use="literal"></soap:fault>
 </fault>
 </operation>
+<operation name="payInvoice">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="createPaymentMethodInstance">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="resumeTransaction">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="cancelTransaction">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
+<operation name="testPaymentMethod">
+<soap:operation soapAction=""></soap:operation>
+<input>
+<soap:body use="literal"></soap:body>
+</input>
+<output>
+<soap:body use="literal"></soap:body>
+</output>
+<fault name="ExtilityException">
+<soap:fault name="ExtilityException" use="literal"></soap:fault>
+</fault>
+</operation>
 </binding>
 <service name="UserAPI">
 <port name="UserServicePort" binding="tns:UserServicePortBinding">
-<soap:address location="https://cp.sd1.flexiant.net:4442/userapi"></soap:address>
+<soap:address location="https://api.sd1.flexiant.net:4442/userapi"></soap:address>
 </port>
 </service>
 </definitions>

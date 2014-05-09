@@ -62,6 +62,10 @@
 
 <xs:element name="cancelJobResponse" type="tns:cancelJobResponse"></xs:element>
 
+<xs:element name="cancelTransaction" type="tns:cancelTransaction"></xs:element>
+
+<xs:element name="cancelTransactionResponse" type="tns:cancelTransactionResponse"></xs:element>
+
 <xs:element name="changeDeploymentInstanceStatus" type="tns:changeDeploymentInstanceStatus"></xs:element>
 
 <xs:element name="changeDeploymentInstanceStatusResponse" type="tns:changeDeploymentInstanceStatusResponse"></xs:element>
@@ -73,6 +77,10 @@
 <xs:element name="cloneResource" type="tns:cloneResource"></xs:element>
 
 <xs:element name="cloneResourceResponse" type="tns:cloneResourceResponse"></xs:element>
+
+<xs:element name="createBlob" type="tns:createBlob"></xs:element>
+
+<xs:element name="createBlobResponse" type="tns:createBlobResponse"></xs:element>
 
 <xs:element name="createDeploymentTemplate" type="tns:createDeploymentTemplate"></xs:element>
 
@@ -105,6 +113,10 @@
 <xs:element name="createNetworkInterfaceResponse" type="tns:createNetworkInterfaceResponse"></xs:element>
 
 <xs:element name="createNetworkResponse" type="tns:createNetworkResponse"></xs:element>
+
+<xs:element name="createPaymentMethodInstance" type="tns:createPaymentMethodInstance"></xs:element>
+
+<xs:element name="createPaymentMethodInstanceResponse" type="tns:createPaymentMethodInstanceResponse"></xs:element>
 
 <xs:element name="createReferralPromoCode" type="tns:createReferralPromoCode"></xs:element>
 
@@ -170,11 +182,27 @@
 
 <xs:element name="dryRunTemplateResponse" type="tns:dryRunTemplateResponse"></xs:element>
 
+<xs:element name="fetchDisk" type="tns:fetchDisk"></xs:element>
+
+<xs:element name="fetchDiskResponse" type="tns:fetchDiskResponse"></xs:element>
+
 <xs:element name="fetchParameters" type="tns:fetchParameters"></xs:element>
 
 <xs:element name="fetchResource" type="tns:fetchResource"></xs:element>
 
 <xs:element name="fetchResourceResponse" type="tns:fetchResourceResponse"></xs:element>
+
+<xs:element name="fetchServer" type="tns:fetchServer"></xs:element>
+
+<xs:element name="fetchServerResponse" type="tns:fetchServerResponse"></xs:element>
+
+<xs:element name="getBlobContent" type="tns:getBlobContent"></xs:element>
+
+<xs:element name="getBlobContentResponse" type="tns:getBlobContentResponse"></xs:element>
+
+<xs:element name="getHypervisorConfig" type="tns:getHypervisorConfig"></xs:element>
+
+<xs:element name="getHypervisorConfigResponse" type="tns:getHypervisorConfigResponse"></xs:element>
 
 <xs:element name="getMeasuredValues" type="tns:getMeasuredValues"></xs:element>
 
@@ -183,6 +211,14 @@
 <xs:element name="getResourceTypes" type="tns:getResourceTypes"></xs:element>
 
 <xs:element name="getResourceTypesResponse" type="tns:getResourceTypesResponse"></xs:element>
+
+<xs:element name="hypervisorConfig" type="tns:hypervisorConfig"></xs:element>
+
+<xs:element name="hypervisorSetting" type="tns:hypervisorSetting"></xs:element>
+
+<xs:element name="invoice" type="tns:invoice"></xs:element>
+
+<xs:element name="invoiceSetting" type="tns:invoiceSetting"></xs:element>
 
 <xs:element name="isPermitted" type="tns:isPermitted"></xs:element>
 
@@ -203,6 +239,10 @@
 <xs:element name="listResources" type="tns:listResources"></xs:element>
 
 <xs:element name="listResourcesResponse" type="tns:listResourcesResponse"></xs:element>
+
+<xs:element name="listStatementDetail" type="tns:listStatementDetail"></xs:element>
+
+<xs:element name="listStatementDetailResponse" type="tns:listStatementDetailResponse"></xs:element>
 
 <xs:element name="listUnitTransactionSummary" type="tns:listUnitTransactionSummary"></xs:element>
 
@@ -258,6 +298,10 @@
 
 <xs:element name="modifyNetworkResponse" type="tns:modifyNetworkResponse"></xs:element>
 
+<xs:element name="modifyPaymentMethodInstance" type="tns:modifyPaymentMethodInstance"></xs:element>
+
+<xs:element name="modifyPaymentMethodInstanceResponse" type="tns:modifyPaymentMethodInstanceResponse"></xs:element>
+
 <xs:element name="modifyResource" type="tns:modifyResource"></xs:element>
 
 <xs:element name="modifyResourceResponse" type="tns:modifyResourceResponse"></xs:element>
@@ -288,7 +332,17 @@
 
 <xs:element name="openVNCConnectionResponse" type="tns:openVNCConnectionResponse"></xs:element>
 
+<xs:element name="payInvoice" type="tns:payInvoice"></xs:element>
+
+<xs:element name="payInvoiceResponse" type="tns:payInvoiceResponse"></xs:element>
+
+<xs:element name="paymentMethod" type="tns:paymentMethod"></xs:element>
+
+<xs:element name="paymentMethodInstance" type="tns:paymentMethodInstance"></xs:element>
+
 <xs:element name="productOffer" type="tns:productOffer"></xs:element>
+
+<xs:element name="productPurchase" type="tns:productPurchase"></xs:element>
 
 <xs:element name="publishImage" type="tns:publishImage"></xs:element>
 
@@ -300,6 +354,10 @@
 
 <xs:element name="publishTo" type="tns:publishTo"></xs:element>
 
+<xs:element name="purchaseUnits" type="tns:purchaseUnits"></xs:element>
+
+<xs:element name="purchaseUnitsResponse" type="tns:purchaseUnitsResponse"></xs:element>
+
 <xs:element name="removeIP" type="tns:removeIP"></xs:element>
 
 <xs:element name="removeIPResponse" type="tns:removeIPResponse"></xs:element>
@@ -308,7 +366,15 @@
 
 <xs:element name="removeKeyResponse" type="tns:removeKeyResponse"></xs:element>
 
+<xs:element name="renderInvoice" type="tns:renderInvoice"></xs:element>
+
+<xs:element name="renderInvoiceResponse" type="tns:renderInvoiceResponse"></xs:element>
+
 <xs:element name="resourceKey" type="tns:resourceKey"></xs:element>
+
+<xs:element name="resumeTransaction" type="tns:resumeTransaction"></xs:element>
+
+<xs:element name="resumeTransactionResponse" type="tns:resumeTransactionResponse"></xs:element>
 
 <xs:element name="revertToResource" type="tns:revertToResource"></xs:element>
 
@@ -327,6 +393,14 @@
 <xs:element name="setPermissions" type="tns:setPermissions"></xs:element>
 
 <xs:element name="setPermissionsResponse" type="tns:setPermissionsResponse"></xs:element>
+
+<xs:element name="statementDetail" type="tns:statementDetail"></xs:element>
+
+<xs:element name="testPaymentMethod" type="tns:testPaymentMethod"></xs:element>
+
+<xs:element name="testPaymentMethodResponse" type="tns:testPaymentMethodResponse"></xs:element>
+
+<xs:element name="transaction" type="tns:transaction"></xs:element>
 
 <xs:element name="unlockUser" type="tns:unlockUser"></xs:element>
 
@@ -356,13 +430,13 @@
 <xs:element name="billingEntityUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="customerUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="description" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="donotRebill" type="xs:boolean"></xs:element>
 <xs:element name="endDate" type="xs:dateTime" minOccurs="0"></xs:element>
 <xs:element name="lastBillPeriod" type="xs:dateTime" minOccurs="0"></xs:element>
 <xs:element name="nextBillPeriod" type="xs:dateTime" minOccurs="0"></xs:element>
 <xs:element name="productID" type="xs:long"></xs:element>
 <xs:element name="productOfferUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="purchaseDate" type="xs:dateTime" minOccurs="0"></xs:element>
+<xs:element name="purchaseUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="purchasedConfig" type="tns:productComponent" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
 <xs:element name="referenceUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
@@ -388,6 +462,8 @@
 <xs:element name="key" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="measureType" type="tns:measureType" minOccurs="0"></xs:element>
 <xs:element name="name" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="readOnly" type="xs:boolean" minOccurs="0"></xs:element>
+<xs:element name="required" type="xs:boolean" minOccurs="0"></xs:element>
 <xs:element name="validator" type="tns:valueValidator" minOccurs="0"></xs:element>
 <xs:element name="value" type="xs:string" minOccurs="0"></xs:element>
 </xs:sequence>
@@ -459,7 +535,6 @@
 <xs:complexContent>
 <xs:extension base="tns:resource">
 <xs:sequence>
-<xs:element name="billingEntityName" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="clusterName" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="clusterUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="customerName" type="xs:string" minOccurs="0"></xs:element>
@@ -479,6 +554,7 @@
 <xs:complexContent>
 <xs:extension base="tns:pseudoResource">
 <xs:sequence>
+<xs:element name="billingEntityName" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="billingEntityUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="resourceCreateDate" type="xs:dateTime" minOccurs="0"></xs:element>
 <xs:element name="resourceKey" type="tns:resourceKey" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
@@ -515,10 +591,10 @@
 <xs:extension base="tns:resource">
 <xs:sequence>
 <xs:element name="invoiceTotalInc" type="xs:double"></xs:element>
-<xs:element name="invoiceDate" type="xs:dateTime" minOccurs="0"></xs:element>
+<xs:element name="invoiceDate" type="xs:long" minOccurs="0"></xs:element>
 <xs:element name="invoiceTaxAmt" type="xs:double"></xs:element>
 <xs:element name="invoiceTotalExc" type="xs:double"></xs:element>
-<xs:element name="paidDate" type="xs:dateTime" minOccurs="0"></xs:element>
+<xs:element name="paidDate" type="xs:long" minOccurs="0"></xs:element>
 <xs:element name="invoiceNo" type="xs:long"></xs:element>
 <xs:element name="invoiceItems" type="tns:invoiceItem" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
 <xs:element name="customerName" type="xs:string" minOccurs="0"></xs:element>
@@ -526,21 +602,19 @@
 <xs:element name="customerAddress" type="tns:address" minOccurs="0"></xs:element>
 <xs:element name="billingAddress" type="tns:address" minOccurs="0"></xs:element>
 <xs:element name="customerVatNo" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="billingEntityName" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="billingEntityVatNo" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="currencyId" type="xs:long"></xs:element>
 <xs:element name="taxRate" type="xs:double"></xs:element>
 <xs:element name="pdfRef" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="invoiceSource" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="paymentMethodUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="paymentProvider" type="tns:paymentProvider" minOccurs="0"></xs:element>
-<xs:element name="paymentProviderRef" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="authCode" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="usingStoredCard" type="xs:boolean"></xs:element>
-<xs:element name="cardUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="customerUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="paymentMethodInstanceName" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="status" type="tns:invoiceStatus" minOccurs="0"></xs:element>
-<xs:element name="dueDate" type="xs:dateTime" minOccurs="0"></xs:element>
+<xs:element name="dueDate" type="xs:long" minOccurs="0"></xs:element>
+<xs:element name="cutOffDate" type="xs:long" minOccurs="0"></xs:element>
+<xs:element name="paymentMethodInstanceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="currencyId" type="xs:long"></xs:element>
+<xs:element name="customerUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="creditNote" type="xs:boolean"></xs:element>
+<xs:element name="transactionUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="pdf" type="xs:string" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:extension>
 </xs:complexContent>
@@ -553,6 +627,7 @@
 <xs:element name="invoiceItemTotalExc" type="xs:double"></xs:element>
 <xs:element name="invoiceItemTotalInc" type="xs:double"></xs:element>
 <xs:element name="invoiceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="productPurchaseUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="quantity" type="xs:long"></xs:element>
 <xs:element name="taxRate" type="xs:double"></xs:element>
 <xs:element name="unitPrice" type="xs:double"></xs:element>
@@ -614,6 +689,8 @@
 <xs:element name="validatedString" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="creditCustomer" type="tns:paymentType" minOccurs="0"></xs:element>
 <xs:element name="productOfferUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="exceedCreditLimit" type="xs:boolean" minOccurs="0"></xs:element>
+<xs:element name="exceedCutoffLimit" type="xs:boolean" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:extension>
 </xs:complexContent>
@@ -652,6 +729,10 @@
 <xs:extension base="tns:resource">
 <xs:sequence>
 <xs:element name="systemCapabilities" type="tns:systemCapabilitySet" minOccurs="0"></xs:element>
+<xs:element name="hypervisorConfig" type="tns:hypervisorConfig" minOccurs="0"></xs:element>
+<xs:element name="hypervisorSettings" type="tns:hypervisorSetting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="defaultSettings" type="tns:hypervisorSetting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="createDefaultVDC" type="xs:boolean" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:extension>
 </xs:complexContent>
@@ -682,6 +763,40 @@
 <xs:element name="signup" type="tns:signup" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
 <xs:element name="snapshotting" type="tns:snapshotting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
 <xs:element name="vnc" type="tns:vnc" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="hypervisorConfig">
+<xs:sequence>
+<xs:element name="config">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="key" minOccurs="0" type="xs:string"></xs:element>
+<xs:element name="value" minOccurs="0" type="tns:valueValidator"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="defaultSettings" minOccurs="0">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="setting" type="tns:hypervisorSetting" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="hypervisorSetting">
+<xs:sequence>
+<xs:element name="key" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="value" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="locked" type="xs:boolean"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
@@ -741,6 +856,7 @@
 <xs:element name="billingEntityUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="body" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="emailType" type="tns:emailType" minOccurs="0"></xs:element>
+<xs:element name="enable" type="xs:boolean" minOccurs="0"></xs:element>
 <xs:element name="subject" type="xs:string" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
@@ -787,6 +903,7 @@
 </xs:sequence>
 </xs:complexType>
 </xs:element>
+<xs:element name="invoiceSetting" type="tns:invoiceSetting" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:extension>
 </xs:complexContent>
@@ -799,9 +916,45 @@
 <xs:element name="billingType" type="tns:billingType" minOccurs="0"></xs:element>
 <xs:element name="systemCapabilities" type="tns:systemCapabilitySet" minOccurs="0"></xs:element>
 <xs:element name="permittedPOResourceTypes" type="tns:resourceType" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="parentUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="descendants" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
 </xs:sequence>
 </xs:extension>
 </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="invoiceSetting">
+<xs:sequence>
+<xs:element name="dateFormat" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="timeZone" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="decimalPlace" type="xs:int"></xs:element>
+<xs:element name="decimalSeparator" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="groupSeparator" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="tax" type="tns:tax" minOccurs="0"></xs:element>
+<xs:element name="invoiceHeaders">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="key" minOccurs="0" type="tns:invoiceHeader"></xs:element>
+<xs:element name="value" minOccurs="0" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="pageSize" type="tns:pdfPageSize" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="tax">
+<xs:sequence>
+<xs:element name="taxRate" type="xs:double"></xs:element>
+<xs:element name="taxName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="taxType" type="tns:taxType" minOccurs="0"></xs:element>
+</xs:sequence>
 </xs:complexType>
 
 <xs:complexType name="jadeList">
@@ -827,6 +980,88 @@
 </xs:complexType>
 </xs:element>
 </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="paymentMethod">
+<xs:complexContent>
+<xs:extension base="tns:resource">
+<xs:sequence>
+<xs:element name="paymentProviderUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="configuredValues" type="tns:value" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="paymentProviderName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="instanceValues" type="tns:value" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="consolidateInvoices" type="xs:boolean"></xs:element>
+<xs:element name="configured" type="xs:boolean" minOccurs="0"></xs:element>
+<xs:element name="fdlPaymentRef" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="paymentMethodInstance">
+<xs:complexContent>
+<xs:extension base="tns:customerResource">
+<xs:sequence>
+<xs:element name="paymentMethodUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="isDefault" type="xs:boolean"></xs:element>
+<xs:element name="configuredValues" type="tns:value" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="paymentMethodName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="nonInteractivePay" type="xs:boolean" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="customerResource">
+<xs:complexContent>
+<xs:extension base="tns:resource">
+<xs:sequence>
+<xs:element name="customerName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="customerUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="transaction">
+<xs:complexContent>
+<xs:extension base="tns:customerResource">
+<xs:sequence>
+<xs:element name="paymentMethodInstanceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="state" type="tns:transactionState" minOccurs="0"></xs:element>
+<xs:element name="invoiceUUIDList" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="providerReference" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="publicData" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="redirectURL" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="redirectData">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="key" minOccurs="0" type="xs:string"></xs:element>
+<xs:element name="value" minOccurs="0" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="interactiveURL" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="allowInteractive" type="xs:boolean"></xs:element>
+<xs:element name="currencyCode" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="errorCode" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="errorReason" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="paymentAmount" type="xs:double"></xs:element>
+<xs:element name="paymentMethodInstanceName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="transactionFunction" type="tns:paymentFunction" minOccurs="0"></xs:element>
+<xs:element name="endTimestamp" type="xs:long"></xs:element>
+<xs:element name="startTimestamp" type="xs:long"></xs:element>
+<xs:element name="merchantDescription" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="linkedTransaction" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
 </xs:complexType>
 
 <xs:complexType name="paymentCard">
@@ -944,8 +1179,8 @@
 <xs:element name="userPermission" type="tns:templateProtectionPermission" minOccurs="0"></xs:element>
 <xs:element name="ownerPermission" type="tns:templateProtectionPermission" minOccurs="0"></xs:element>
 <xs:element name="questions" type="tns:question" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
-<xs:element name="customer" type="tns:customer" minOccurs="0"></xs:element>
-<xs:element name="billing" type="tns:billingEntity" minOccurs="0"></xs:element>
+<xs:element name="instanceChargeProductOfferUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="instanceChargeProductOfferName" type="xs:string" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:extension>
 </xs:complexContent>
@@ -969,6 +1204,8 @@
 <xs:element name="disableEmulatedDevices" type="xs:boolean"></xs:element>
 <xs:element name="imageName" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="imagePermission" type="tns:imagePermission" minOccurs="0"></xs:element>
+<xs:element name="hypervisorSettings" type="tns:hypervisorSetting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="defaultSettings" type="tns:hypervisorSetting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
 <xs:element name="storageCapabilities" type="tns:storageCapability" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
 </xs:sequence>
 </xs:extension>
@@ -1120,6 +1357,7 @@
 
 <xs:complexType name="publishTo">
 <xs:sequence>
+<xs:element name="exclude" type="xs:boolean"></xs:element>
 <xs:element name="resourceName" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="resourceType" type="tns:resourceType" minOccurs="0"></xs:element>
 <xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
@@ -1163,16 +1401,59 @@
 </xs:complexContent>
 </xs:complexType>
 
-<xs:complexType name="addIP">
+<xs:complexType name="arrayList">
+<xs:complexContent>
+<xs:extension base="tns:abstractList">
+<xs:sequence></xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="abstractList" abstract="true">
+<xs:complexContent>
+<xs:extension base="tns:abstractCollection">
+<xs:sequence></xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="abstractCollection" abstract="true">
+<xs:sequence></xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="blob">
+<xs:complexContent>
+<xs:extension base="tns:customerResource">
 <xs:sequence>
-<xs:element name="networkInterfaceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="ipAddress" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="auto" type="xs:boolean"></xs:element>
+<xs:element name="value" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="sha256" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="statementDetail">
+<xs:sequence>
+<xs:element name="reference" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="description" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="debitAmount" type="xs:double"></xs:element>
+<xs:element name="creditAmount" type="xs:double"></xs:element>
+<xs:element name="timestamp" type="xs:long"></xs:element>
+<xs:element name="customerUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="balanceTodate" type="xs:double"></xs:element>
+<xs:element name="recordType" type="tns:statementType" minOccurs="0"></xs:element>
+<xs:element name="lastBalance" type="xs:double"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createFirewallTemplate">
+<xs:sequence>
+<xs:element name="skeletonFirewallTemplate" type="tns:firewallTemplate" minOccurs="0"></xs:element>
 <xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="addIPResponse">
+<xs:complexType name="createFirewallTemplateResponse">
 <xs:sequence>
 <xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
 </xs:sequence>
@@ -1209,23 +1490,522 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="createNetworkInterface">
+<xs:complexType name="payInvoice">
 <xs:sequence>
-<xs:element name="skeletonNIC" type="tns:nic" minOccurs="0"></xs:element>
+<xs:element name="invoiceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="paymentMethodInstanceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="allowInteractive" type="xs:boolean"></xs:element>
+<xs:element name="interactiveInputReturnURL" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="createNetworkInterfaceResponse">
+<xs:complexType name="payInvoiceResponse">
 <xs:sequence>
 <xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="listUnitTransactionSummary">
+<xs:complexType name="modifySSHKey">
+<xs:sequence>
+<xs:element name="updatedSSHKey" type="tns:sshKey" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifySSHKeyResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="unlockUser">
+<xs:sequence>
+<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="unlockUserResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createPaymentMethodInstance">
+<xs:sequence>
+<xs:element name="paymentMethodInstance" type="tns:paymentMethodInstance" minOccurs="0"></xs:element>
+<xs:element name="configuredValues" type="tns:value" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="allowInteractive" type="xs:boolean"></xs:element>
+<xs:element name="interactiveInputReturnURL" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createPaymentMethodInstanceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getMeasuredValues">
+<xs:sequence>
+<xs:element name="measureKeys" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="resourceUUID" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="timestamp" type="xs:long"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getMeasuredValuesResponse">
+<xs:sequence>
+<xs:element name="measuredValues" type="tns:measuredValue" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="measuredValue">
+<xs:complexContent>
+<xs:extension base="tns:pseudoResource">
+<xs:sequence>
+<xs:element name="timestamp" type="xs:long"></xs:element>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="customerUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="billingEntityUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="measureKey" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="measurement" type="xs:double"></xs:element>
+<xs:element name="measurementType" type="tns:measureType" minOccurs="0"></xs:element>
+<xs:element name="measurementAsValue" type="tns:value" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="updateCustomer">
+<xs:sequence>
+<xs:element name="customerDetails" type="tns:customerDetails" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="updateCustomerResponse">
+<xs:sequence>
+<xs:element name="customer" type="tns:customerDetails" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyFirewall">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:firewall" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyFirewallResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="setPermissions">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="permissions" type="tns:permission" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="permission">
+<xs:sequence>
+<xs:element name="permittedResource" type="tns:resource" minOccurs="0"></xs:element>
+<xs:element name="permittedTo" type="tns:simpleResource" minOccurs="0"></xs:element>
+<xs:element name="capability" type="tns:capability" minOccurs="0"></xs:element>
+<xs:element name="resourceType" type="tns:resourceType" minOccurs="0"></xs:element>
+<xs:element name="permitted" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="simpleResource">
+<xs:sequence>
+<xs:element name="resourceName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="resourceType" type="tns:resourceType" minOccurs="0"></xs:element>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="setPermissionsResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revertToResource">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="newSnapshotName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revertToResourceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cloneResource">
+<xs:sequence>
+<xs:element name="snapshotUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="name" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="locationUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cloneResourceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="openVNCConnection">
+<xs:sequence>
+<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="handlerType" type="tns:vncHandler" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="openVNCConnectionResponse">
+<xs:sequence>
+<xs:element name="vncConnection" type="tns:vncConnection" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="vncConnection">
+<xs:sequence>
+<xs:element name="serverName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="vncHandler" type="tns:vncHandler" minOccurs="0"></xs:element>
+<xs:element name="vncPassword" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="vncToken" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="webSocketPath" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="changeServerStatus">
+<xs:sequence>
+<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="newStatus" type="tns:serverStatus" minOccurs="0"></xs:element>
+<xs:element name="safe" type="xs:boolean"></xs:element>
+<xs:element name="runtimeMetadata" type="tns:resourceMetadata" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="changeServerStatusResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="publishImage">
+<xs:sequence>
+<xs:element name="imageUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="exclude" type="xs:boolean" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="publishImageResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyServer">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:server" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyServerResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createDeploymentTemplateFromInstance">
+<xs:sequence>
+<xs:element name="instanceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createDeploymentTemplateFromInstanceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deleteUserFromGroup">
+<xs:sequence>
+<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="groupUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deleteUserFromGroupResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="updateUser">
+<xs:sequence>
+<xs:element name="userDetails" type="tns:userDetails" minOccurs="0"></xs:element>
+<xs:element name="password" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="passwordHash" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="updateUserResponse">
+<xs:sequence>
+<xs:element name="user" type="tns:userDetails" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createBlob">
+<xs:sequence>
+<xs:element name="skeletonBlob" type="tns:blob" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createBlobResponse">
+<xs:sequence>
+<xs:element name="blob" type="tns:blob" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="lockUser">
+<xs:sequence>
+<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="lockUserResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fetchDisk">
+<xs:sequence>
+<xs:element name="skeletonDisk" type="tns:disk" minOccurs="0"></xs:element>
+<xs:element name="fetchParameters" type="tns:fetchParameters" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fetchDiskResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="publishResource">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="exclude" type="xs:boolean" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="publishResourceResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyNetwork">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:network" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyNetworkResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="removeIP">
+<xs:sequence>
+<xs:element name="networkInterfaceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="ipAddress" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="removeIPResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="removeKey">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="resourceKey" type="tns:resourceKey" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="removeKeyResponse">
+<xs:sequence>
+<xs:element name="resource" type="tns:resource" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createSnapshot">
+<xs:sequence>
+<xs:element name="skeletonSnapshot" type="tns:snapshot" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="snapshot">
+<xs:complexContent>
+<xs:extension base="tns:virtualResource">
+<xs:sequence>
+<xs:element name="type" type="tns:snapshotType" minOccurs="0"></xs:element>
+<xs:element name="parentUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="parentName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="parentType" type="tns:resourceType" minOccurs="0"></xs:element>
+<xs:element name="hypervisorSettings" type="tns:hypervisorSetting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="createSnapshotResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="updateMetadata">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="resourceMetadata" type="tns:resourceMetadata" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="updateMetadataResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifySubnet">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:subnet" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifySubnetResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getHypervisorConfig">
+<xs:sequence>
+<xs:element name="clusterUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getHypervisorConfigResponse">
+<xs:sequence>
+<xs:element name="hypervisorConfig" type="tns:mapHolder" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="mapHolder">
+<xs:sequence>
+<xs:element name="content">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="key" minOccurs="0" type="xs:anyType"></xs:element>
+<xs:element name="value" minOccurs="0" type="xs:anyType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deleteResource">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="cascade" type="xs:boolean"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deleteResourceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="isPermitted">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="permission" type="tns:permission" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="isPermittedResponse">
+<xs:sequence>
+<xs:element name="permitted" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyDisk">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:disk" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyDiskResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fetchResource">
+<xs:sequence>
+<xs:element name="skeletonResource" type="tns:virtualResource" minOccurs="0"></xs:element>
+<xs:element name="fetchParameters" type="tns:fetchParameters" minOccurs="0"></xs:element>
+<xs:element name="referenceSize" type="xs:long" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fetchResourceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="listResources">
 <xs:sequence>
 <xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
 <xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
+<xs:element name="resourceType" type="tns:resourceType" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
@@ -1261,36 +2041,654 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="listUnitTransactionSummaryResponse">
+<xs:complexType name="listResourcesResponse">
 <xs:sequence>
-<xs:element name="listUnitTransactionSummary" type="tns:listResult" minOccurs="0"></xs:element>
+<xs:element name="resourcesList" type="tns:listResult" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="createServer">
+<xs:complexType name="detachSSHKey">
 <xs:sequence>
-<xs:element name="skeletonServer" type="tns:server" minOccurs="0"></xs:element>
-<xs:element name="sshKeyUUIDList" type="xs:string" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="SSHKeyUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="createServerResponse">
+<xs:complexType name="detachSSHKeyResponse">
 <xs:sequence>
 <xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="listProductPurchases">
+<xs:complexType name="resumeTransaction">
+<xs:sequence>
+<xs:element name="transactionUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="resumeTransactionResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="listReferralPromoCode">
 <xs:sequence>
 <xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
 <xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="listProductPurchasesResponse">
+<xs:complexType name="listReferralPromoCodeResponse">
 <xs:sequence>
-<xs:element name="listProductPurchases" type="tns:listResult" minOccurs="0"></xs:element>
+<xs:element name="listReferralPromoCode" type="tns:listResult" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revokeResource">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="exclude" type="xs:boolean" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revokeResourceResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="listPermissions">
+<xs:sequence>
+<xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
+<xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="listPermissionsResponse">
+<xs:sequence>
+<xs:element name="permissions" type="tns:listResult" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="attachSubnet">
+<xs:sequence>
+<xs:element name="networkUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="subnetUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="attachSubnetResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createGroup">
+<xs:sequence>
+<xs:element name="skeletonGroup" type="tns:group" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createGroupResponse">
+<xs:sequence>
+<xs:element name="success" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyPaymentMethodInstance">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:paymentMethodInstance" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyPaymentMethodInstanceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="applyFirewallTemplate">
+<xs:sequence>
+<xs:element name="firewallTemplateUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="ipAddress" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="applyFirewallTemplateResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="attachDisk">
+<xs:sequence>
+<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="diskUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="index" type="xs:int"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="attachDiskResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createSubnet">
+<xs:sequence>
+<xs:element name="skeletonSubnet" type="tns:subnet" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createSubnetResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="addUserToGroup">
+<xs:sequence>
+<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="groupUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="addUserToGroupResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="changeDeploymentInstanceStatus">
+<xs:sequence>
+<xs:element name="deploymentInstanceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="newStatus" type="tns:deploymentInstanceStatus" minOccurs="0"></xs:element>
+<xs:element name="safe" type="xs:boolean"></xs:element>
+<xs:element name="runtimeMetadata" type="tns:resourceMetadata" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="changeDeploymentInstanceStatusResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="listUnitTransactions">
+<xs:sequence>
+<xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
+<xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="listUnitTransactionsResponse">
+<xs:sequence>
+<xs:element name="listUnitTransaction" type="tns:listResult" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deployTemplate">
+<xs:sequence>
+<xs:element name="skeletonDeploymentInstance" type="tns:deploymentInstance" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deployTemplateResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="addKey">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="resourceKey" type="tns:resourceKey" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="addKeyResponse">
+<xs:sequence>
+<xs:element name="resource" type="tns:resource" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="attachSSHKey">
+<xs:sequence>
+<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="SSHKeyUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="attachSSHKeyResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="testPaymentMethod">
+<xs:sequence>
+<xs:element name="paymentMethodUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="testPaymentMethodResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="waitForJob">
+<xs:sequence>
+<xs:element name="jobUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="noWaitForChildren" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="waitForJobResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createDeploymentTemplate">
+<xs:sequence>
+<xs:element name="skeletonDeploymentTemplate" type="tns:deploymentTemplate" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createDeploymentTemplateResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createImage">
+<xs:sequence>
+<xs:element name="skeletonImage" type="tns:image" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="image">
+<xs:complexContent>
+<xs:extension base="tns:virtualResource">
+<xs:sequence>
+<xs:element name="size" type="xs:long"></xs:element>
+<xs:element name="defaultUser" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="genPassword" type="xs:boolean"></xs:element>
+<xs:element name="imageType" type="tns:imageType" minOccurs="0"></xs:element>
+<xs:element name="baseUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="snapshotUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="baseName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="userPermission" type="tns:imagePermission" minOccurs="0"></xs:element>
+<xs:element name="ownerPermission" type="tns:imagePermission" minOccurs="0"></xs:element>
+<xs:element name="customerValidString" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="publishedTo" type="tns:publishTo" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="osChargeProductOfferUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="osChargeProductOfferName" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="hypervisorSettings" type="tns:hypervisorSetting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+<xs:element name="defaultSettings" type="tns:hypervisorSetting" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="createImageResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyKey">
+<xs:sequence>
+<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="resourceKey" type="tns:resourceKey" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyKeyResponse">
+<xs:sequence>
+<xs:element name="resource" type="tns:virtualResource" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createReferralPromoCode">
+<xs:sequence>
+<xs:element name="referralPromoCode" type="tns:referralPromoCode" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createReferralPromoCodeResponse">
+<xs:sequence>
+<xs:element name="referralPromoCode" type="tns:referralPromoCode" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyFirewallTemplate">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:firewallTemplate" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyFirewallTemplateResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getBlobContent">
+<xs:sequence>
+<xs:element name="blobUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getBlobContentResponse">
+<xs:sequence>
+<xs:element name="blobValue" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cancelTransaction">
+<xs:sequence>
+<xs:element name="transactionUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="cancelTransactionResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="renderInvoice">
+<xs:sequence>
+<xs:element name="invoiceUUID" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="renderInvoiceResponse">
+<xs:sequence>
+<xs:element name="invoicePDF" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyImage">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:image" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyImageResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifySnapshot">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:snapshot" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifySnapshotResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyVDC">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:vdc" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyVDCResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createSSHKey">
+<xs:sequence>
+<xs:element name="skeletonSSHKey" type="tns:sshKey" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createSSHKeyResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fetchServer">
+<xs:sequence>
+<xs:element name="skeletonServer" type="tns:server" minOccurs="0"></xs:element>
+<xs:element name="fetchParameters" type="tns:fetchParameters" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="fetchServerResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyNetworkInterface">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:nic" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyNetworkInterfaceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="detachDisk">
+<xs:sequence>
+<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="diskUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="detachDiskResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="detachNetworkInterface">
+<xs:sequence>
+<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="nicUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="detachNetworkInterfaceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="purchaseUnits">
+<xs:sequence>
+<xs:element name="productOfferUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="paymentMethodInstanceUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="units" type="xs:double" minOccurs="0"></xs:element>
+<xs:element name="interactiveInputReturnURL" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="dryrun" type="xs:boolean" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="purchaseUnitsResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:resource" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createVDC">
+<xs:sequence>
+<xs:element name="skeletonVDC" type="tns:vdc" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createVDCResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyResource">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:virtualResource" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyResourceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deleteReferralPromoCode">
+<xs:sequence>
+<xs:element name="promoCode" type="xs:string" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="deleteReferralPromoCodeResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getResourceTypes">
+<xs:sequence></xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getResourceTypesResponse">
+<xs:sequence>
+<xs:element name="resourceTypeMap" type="tns:mapHolder" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyDeploymentInstance">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:deploymentInstance" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyDeploymentInstanceResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revokeImage">
+<xs:sequence>
+<xs:element name="imageUUID" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="exclude" type="xs:boolean" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="revokeImageResponse">
+<xs:sequence>
+<xs:element name="success" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createDisk">
+<xs:sequence>
+<xs:element name="skeletonDisk" type="tns:disk" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createDiskResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dryRunTemplate">
+<xs:sequence>
+<xs:element name="skeletonDeploymentInstance" type="tns:deploymentInstance" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="dryRunTemplateResponse">
+<xs:sequence>
+<xs:element name="dryRunResult" type="tns:dryRunResult" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createNetwork">
+<xs:sequence>
+<xs:element name="skeletonNetwork" type="tns:network" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createNetworkResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyDeploymentTemplate">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:deploymentTemplate" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyDeploymentTemplateResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyGroup">
+<xs:sequence>
+<xs:element name="updatedResource" type="tns:group" minOccurs="0"></xs:element>
+<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="modifyGroupResponse">
+<xs:sequence>
+<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
@@ -1389,1001 +2787,84 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="modifyGroup">
+<xs:complexType name="createNetworkInterface">
 <xs:sequence>
-<xs:element name="updatedResource" type="tns:group" minOccurs="0"></xs:element>
+<xs:element name="skeletonNIC" type="tns:nic" minOccurs="0"></xs:element>
 <xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="modifyGroupResponse">
+<xs:complexType name="createNetworkInterfaceResponse">
 <xs:sequence>
 <xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="dryRunTemplate">
-<xs:sequence>
-<xs:element name="skeletonDeploymentInstance" type="tns:deploymentInstance" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="dryRunTemplateResponse">
-<xs:sequence>
-<xs:element name="dryRunResult" type="tns:dryRunResult" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createNetwork">
-<xs:sequence>
-<xs:element name="skeletonNetwork" type="tns:network" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createNetworkResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyDeploymentTemplate">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:deploymentTemplate" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyDeploymentTemplateResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createDisk">
-<xs:sequence>
-<xs:element name="skeletonDisk" type="tns:disk" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createDiskResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyDeploymentInstance">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:deploymentInstance" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyDeploymentInstanceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="revokeImage">
-<xs:sequence>
-<xs:element name="imageUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="revokeImageResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deleteReferralPromoCode">
-<xs:sequence>
-<xs:element name="promoCode" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deleteReferralPromoCodeResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="getResourceTypes">
-<xs:sequence></xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="getResourceTypesResponse">
-<xs:sequence>
-<xs:element name="resourceTypeMap" type="tns:mapHolder" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="mapHolder">
-<xs:sequence>
-<xs:element name="content">
-<xs:complexType>
-<xs:sequence>
-<xs:element name="entry" minOccurs="0" maxOccurs="unbounded">
-<xs:complexType>
-<xs:sequence>
-<xs:element name="key" minOccurs="0" type="xs:anyType"></xs:element>
-<xs:element name="value" minOccurs="0" type="xs:anyType"></xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyResource">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:virtualResource" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyResourceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createVDC">
-<xs:sequence>
-<xs:element name="skeletonVDC" type="tns:vdc" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createVDCResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createSSHKey">
-<xs:sequence>
-<xs:element name="skeletonSSHKey" type="tns:sshKey" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createSSHKeyResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="detachDisk">
-<xs:sequence>
-<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="diskUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="detachDiskResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="detachNetworkInterface">
-<xs:sequence>
-<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="nicUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="detachNetworkInterfaceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyNetworkInterface">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:nic" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyNetworkInterfaceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyVDC">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:vdc" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyVDCResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifySnapshot">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:snapshot" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="snapshot">
-<xs:complexContent>
-<xs:extension base="tns:virtualResource">
-<xs:sequence>
-<xs:element name="type" type="tns:snapshotType" minOccurs="0"></xs:element>
-<xs:element name="parentUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="parentName" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="parentType" type="tns:resourceType" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:extension>
-</xs:complexContent>
-</xs:complexType>
-
-<xs:complexType name="modifySnapshotResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyImage">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:image" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="image">
-<xs:complexContent>
-<xs:extension base="tns:virtualResource">
-<xs:sequence>
-<xs:element name="size" type="xs:long"></xs:element>
-<xs:element name="defaultUser" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="genPassword" type="xs:boolean"></xs:element>
-<xs:element name="imageType" type="tns:imageType" minOccurs="0"></xs:element>
-<xs:element name="baseUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="snapshotUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="baseName" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="userPermission" type="tns:imagePermission" minOccurs="0"></xs:element>
-<xs:element name="ownerPermission" type="tns:imagePermission" minOccurs="0"></xs:element>
-<xs:element name="customerValidString" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="publishedTo" type="tns:publishTo" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
-<xs:element name="osChargeProductOfferUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="osChargeProductOfferName" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:extension>
-</xs:complexContent>
-</xs:complexType>
-
-<xs:complexType name="modifyImageResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyFirewallTemplate">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:firewallTemplate" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyFirewallTemplateResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createReferralPromoCode">
-<xs:sequence>
-<xs:element name="referralPromoCode" type="tns:referralPromoCode" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createReferralPromoCodeResponse">
-<xs:sequence>
-<xs:element name="referralPromoCode" type="tns:referralPromoCode" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createImage">
-<xs:sequence>
-<xs:element name="skeletonImage" type="tns:image" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createImageResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createDeploymentTemplate">
-<xs:sequence>
-<xs:element name="skeletonDeploymentTemplate" type="tns:deploymentTemplate" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createDeploymentTemplateResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyKey">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="resourceKey" type="tns:resourceKey" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyKeyResponse">
-<xs:sequence>
-<xs:element name="resource" type="tns:virtualResource" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="waitForJob">
-<xs:sequence>
-<xs:element name="jobUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="noWaitForChildren" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="waitForJobResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="attachSSHKey">
-<xs:sequence>
-<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="SSHKeyUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="attachSSHKeyResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deployTemplate">
-<xs:sequence>
-<xs:element name="skeletonDeploymentInstance" type="tns:deploymentInstance" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deployTemplateResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="addKey">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="resourceKey" type="tns:resourceKey" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="addKeyResponse">
-<xs:sequence>
-<xs:element name="resource" type="tns:resource" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="addUserToGroup">
-<xs:sequence>
-<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="groupUUID" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="addUserToGroupResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="listUnitTransactions">
+<xs:complexType name="listUnitTransactionSummary">
 <xs:sequence>
 <xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
 <xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="listUnitTransactionsResponse">
+<xs:complexType name="listUnitTransactionSummaryResponse">
 <xs:sequence>
-<xs:element name="listUnitTransaction" type="tns:listResult" minOccurs="0"></xs:element>
+<xs:element name="listUnitTransactionSummary" type="tns:listResult" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="changeDeploymentInstanceStatus">
+<xs:complexType name="createServer">
 <xs:sequence>
-<xs:element name="deploymentInstanceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="newStatus" type="tns:deploymentInstanceStatus" minOccurs="0"></xs:element>
-<xs:element name="safe" type="xs:boolean"></xs:element>
-<xs:element name="runtimeMetadata" type="tns:resourceMetadata" minOccurs="0"></xs:element>
+<xs:element name="skeletonServer" type="tns:server" minOccurs="0"></xs:element>
+<xs:element name="sshKeyUUIDList" type="xs:string" minOccurs="0" maxOccurs="unbounded"></xs:element>
 <xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="changeDeploymentInstanceStatusResponse">
+<xs:complexType name="createServerResponse">
 <xs:sequence>
 <xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="createGroup">
-<xs:sequence>
-<xs:element name="skeletonGroup" type="tns:group" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createGroupResponse">
-<xs:sequence>
-<xs:element name="success" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="attachDisk">
-<xs:sequence>
-<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="diskUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="index" type="xs:int"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="attachDiskResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createSubnet">
-<xs:sequence>
-<xs:element name="skeletonSubnet" type="tns:subnet" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createSubnetResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="applyFirewallTemplate">
-<xs:sequence>
-<xs:element name="firewallTemplateUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="ipAddress" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="applyFirewallTemplateResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="revokeResource">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="revokeResourceResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="listPermissions">
-<xs:sequence>
-<xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
-<xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="listPermissionsResponse">
-<xs:sequence>
-<xs:element name="permissions" type="tns:listResult" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="attachSubnet">
-<xs:sequence>
-<xs:element name="networkUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="subnetUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="attachSubnetResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="detachSSHKey">
-<xs:sequence>
-<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="SSHKeyUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="detachSSHKeyResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="listReferralPromoCode">
-<xs:sequence>
-<xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
-<xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="listReferralPromoCodeResponse">
-<xs:sequence>
-<xs:element name="listReferralPromoCode" type="tns:listResult" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="listResources">
-<xs:sequence>
-<xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
-<xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
-<xs:element name="resourceType" type="tns:resourceType" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="listResourcesResponse">
-<xs:sequence>
-<xs:element name="resourcesList" type="tns:listResult" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deleteResource">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="cascade" type="xs:boolean"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deleteResourceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifySubnet">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:subnet" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifySubnetResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="fetchResource">
-<xs:sequence>
-<xs:element name="skeletonResource" type="tns:virtualResource" minOccurs="0"></xs:element>
-<xs:element name="fetchParameters" type="tns:fetchParameters" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="fetchResourceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="isPermitted">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="permission" type="tns:permission" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="permission">
-<xs:sequence>
-<xs:element name="permittedResource" type="tns:resource" minOccurs="0"></xs:element>
-<xs:element name="permittedTo" type="tns:simpleResource" minOccurs="0"></xs:element>
-<xs:element name="capability" type="tns:capability" minOccurs="0"></xs:element>
-<xs:element name="resourceType" type="tns:resourceType" minOccurs="0"></xs:element>
-<xs:element name="permitted" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="simpleResource">
-<xs:sequence>
-<xs:element name="resourceName" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="resourceType" type="tns:resourceType" minOccurs="0"></xs:element>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="isPermittedResponse">
-<xs:sequence>
-<xs:element name="permitted" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyDisk">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:disk" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyDiskResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="removeIP">
+<xs:complexType name="addIP">
 <xs:sequence>
 <xs:element name="networkInterfaceUUID" type="xs:string" minOccurs="0"></xs:element>
 <xs:element name="ipAddress" type="xs:string" minOccurs="0"></xs:element>
+<xs:element name="auto" type="xs:boolean"></xs:element>
 <xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="removeIPResponse">
+<xs:complexType name="addIPResponse">
 <xs:sequence>
 <xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="modifyNetwork">
+<xs:complexType name="listProductPurchases">
 <xs:sequence>
-<xs:element name="updatedResource" type="tns:network" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
+<xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
+<xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="modifyNetworkResponse">
+<xs:complexType name="listProductPurchasesResponse">
 <xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+<xs:element name="listProductPurchases" type="tns:listResult" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="updateMetadata">
+<xs:complexType name="listStatementDetail">
 <xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="resourceMetadata" type="tns:resourceMetadata" minOccurs="0"></xs:element>
+<xs:element name="searchFilter" type="tns:searchFilter" minOccurs="0"></xs:element>
+<xs:element name="queryLimit" type="tns:queryLimit" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="updateMetadataResponse">
+<xs:complexType name="listStatementDetailResponse">
 <xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createSnapshot">
-<xs:sequence>
-<xs:element name="skeletonSnapshot" type="tns:snapshot" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createSnapshotResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="removeKey">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="resourceKey" type="tns:resourceKey" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="removeKeyResponse">
-<xs:sequence>
-<xs:element name="resource" type="tns:resource" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="publishResource">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="publishResourceResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deleteUserFromGroup">
-<xs:sequence>
-<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="groupUUID" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="deleteUserFromGroupResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="updateUser">
-<xs:sequence>
-<xs:element name="userDetails" type="tns:userDetails" minOccurs="0"></xs:element>
-<xs:element name="password" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="passwordHash" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="updateUserResponse">
-<xs:sequence>
-<xs:element name="user" type="tns:userDetails" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="lockUser">
-<xs:sequence>
-<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="lockUserResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="publishImage">
-<xs:sequence>
-<xs:element name="imageUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="publishTo" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="publishImageResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyServer">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:server" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyServerResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="changeServerStatus">
-<xs:sequence>
-<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="newStatus" type="tns:serverStatus" minOccurs="0"></xs:element>
-<xs:element name="safe" type="xs:boolean"></xs:element>
-<xs:element name="runtimeMetadata" type="tns:resourceMetadata" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="changeServerStatusResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createDeploymentTemplateFromInstance">
-<xs:sequence>
-<xs:element name="instanceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createDeploymentTemplateFromInstanceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="revertToResource">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="newSnapshotName" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="revertToResourceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="setPermissions">
-<xs:sequence>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="permissions" type="tns:permission" minOccurs="0" maxOccurs="unbounded"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="setPermissionsResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="cloneResource">
-<xs:sequence>
-<xs:element name="snapshotUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="name" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="locationUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="cloneResourceResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="openVNCConnection">
-<xs:sequence>
-<xs:element name="serverUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="handlerType" type="tns:vncHandler" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="openVNCConnectionResponse">
-<xs:sequence>
-<xs:element name="vncConnection" type="tns:vncConnection" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="vncConnection">
-<xs:sequence>
-<xs:element name="serverName" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="vncHandler" type="tns:vncHandler" minOccurs="0"></xs:element>
-<xs:element name="vncPassword" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="vncToken" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="webSocketPath" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="updateCustomer">
-<xs:sequence>
-<xs:element name="customerDetails" type="tns:customerDetails" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="updateCustomerResponse">
-<xs:sequence>
-<xs:element name="customer" type="tns:customerDetails" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyFirewall">
-<xs:sequence>
-<xs:element name="updatedResource" type="tns:firewall" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifyFirewallResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="unlockUser">
-<xs:sequence>
-<xs:element name="userUUID" type="xs:string" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="unlockUserResponse">
-<xs:sequence>
-<xs:element name="success" type="xs:boolean"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="getMeasuredValues">
-<xs:sequence>
-<xs:element name="measureKeys" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
-<xs:element name="resourceUUID" type="xs:string" nillable="true" minOccurs="0" maxOccurs="unbounded"></xs:element>
-<xs:element name="timestamp" type="xs:long"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="getMeasuredValuesResponse">
-<xs:sequence>
-<xs:element name="measuredValues" type="tns:measuredValue" minOccurs="0" maxOccurs="unbounded"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="measuredValue">
-<xs:complexContent>
-<xs:extension base="tns:pseudoResource">
-<xs:sequence>
-<xs:element name="timestamp" type="xs:long"></xs:element>
-<xs:element name="resourceUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="customerUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="billingEntityUUID" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="measureKey" type="xs:string" minOccurs="0"></xs:element>
-<xs:element name="measurement" type="xs:double"></xs:element>
-<xs:element name="measurementType" type="tns:measureType" minOccurs="0"></xs:element>
-<xs:element name="measurementAsValue" type="tns:value" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:extension>
-</xs:complexContent>
-</xs:complexType>
-
-<xs:complexType name="modifySSHKey">
-<xs:sequence>
-<xs:element name="updatedSSHKey" type="tns:sshKey" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="modifySSHKeyResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createFirewallTemplate">
-<xs:sequence>
-<xs:element name="skeletonFirewallTemplate" type="tns:firewallTemplate" minOccurs="0"></xs:element>
-<xs:element name="when" type="xs:dateTime" minOccurs="0"></xs:element>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="createFirewallTemplateResponse">
-<xs:sequence>
-<xs:element name="job" type="tns:job" minOccurs="0"></xs:element>
+<xs:element name="listStatementDetail" type="tns:listResult" minOccurs="0"></xs:element>
 </xs:sequence>
 </xs:complexType>
 
@@ -2408,6 +2889,9 @@
 <xs:enumeration value="REGEX"></xs:enumeration>
 <xs:enumeration value="NUMERIC_INT"></xs:enumeration>
 <xs:enumeration value="NUMERIC_DOUBLE"></xs:enumeration>
+<xs:enumeration value="PASSWORD"></xs:enumeration>
+<xs:enumeration value="DATE"></xs:enumeration>
+<xs:enumeration value="BIG_TEXT"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -2440,7 +2924,6 @@
 <xs:enumeration value="GROUP"></xs:enumeration>
 <xs:enumeration value="ANY"></xs:enumeration>
 <xs:enumeration value="PAYMENTCARD"></xs:enumeration>
-<xs:enumeration value="PAYMENTMETHOD"></xs:enumeration>
 <xs:enumeration value="INVOICE"></xs:enumeration>
 <xs:enumeration value="PROMOTION"></xs:enumeration>
 <xs:enumeration value="REFERRAL_PROMOTION"></xs:enumeration>
@@ -2450,6 +2933,13 @@
 <xs:enumeration value="PRODUCT"></xs:enumeration>
 <xs:enumeration value="PRODUCT_COMP_TYPE"></xs:enumeration>
 <xs:enumeration value="FDL"></xs:enumeration>
+<xs:enumeration value="PAYMENT_PROVIDER"></xs:enumeration>
+<xs:enumeration value="PAYMENT_METHOD"></xs:enumeration>
+<xs:enumeration value="PAYMENT_METHOD_INSTANCE"></xs:enumeration>
+<xs:enumeration value="TRANSACTION"></xs:enumeration>
+<xs:enumeration value="TRIGGER_METHOD"></xs:enumeration>
+<xs:enumeration value="CREDIT_NOTE"></xs:enumeration>
+<xs:enumeration value="BLOB"></xs:enumeration>
 <xs:enumeration value="UNIT_TRANSACTION"></xs:enumeration>
 <xs:enumeration value="UNIT_TRANSACTION_SUMMARY"></xs:enumeration>
 <xs:enumeration value="PRODUCT_PURCHASE"></xs:enumeration>
@@ -2462,6 +2952,7 @@
 <xs:enumeration value="IMAGEINSTANCE"></xs:enumeration>
 <xs:enumeration value="FETCH_RESOURCE"></xs:enumeration>
 <xs:enumeration value="MEASUREMENT"></xs:enumeration>
+<xs:enumeration value="STATEMENT_DETAIL"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -2485,21 +2976,14 @@
 </xs:restriction>
 </xs:simpleType>
 
-<xs:simpleType name="paymentProvider">
-<xs:restriction base="xs:string">
-<xs:enumeration value="INPAY"></xs:enumeration>
-<xs:enumeration value="DATACASH"></xs:enumeration>
-<xs:enumeration value="QUICKPAY"></xs:enumeration>
-<xs:enumeration value="INVOICE"></xs:enumeration>
-</xs:restriction>
-</xs:simpleType>
-
 <xs:simpleType name="invoiceStatus">
 <xs:restriction base="xs:string">
 <xs:enumeration value="PENDING"></xs:enumeration>
 <xs:enumeration value="VOID"></xs:enumeration>
 <xs:enumeration value="UNPAID"></xs:enumeration>
 <xs:enumeration value="PAID"></xs:enumeration>
+<xs:enumeration value="LOCKED"></xs:enumeration>
+<xs:enumeration value="CLOSED"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -2534,6 +3018,12 @@
 <xs:enumeration value="MAX_IPv6_SUBNETS"></xs:enumeration>
 <xs:enumeration value="MAX_NETWORK_PUBLIC"></xs:enumeration>
 <xs:enumeration value="MAX_NETWORK_PRIVATE"></xs:enumeration>
+<xs:enumeration value="REFUND"></xs:enumeration>
+<xs:enumeration value="CUTOFF_DUE_DAYS"></xs:enumeration>
+<xs:enumeration value="CREDIT_LIMIT_DUE_DAYS"></xs:enumeration>
+<xs:enumeration value="MAX_BLOBS"></xs:enumeration>
+<xs:enumeration value="MAX_BLOB_SIZE"></xs:enumeration>
+<xs:enumeration value="CUTOFF_LIMIT"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -2666,6 +3156,42 @@
 <xs:enumeration value="ZERO_BALANCE"></xs:enumeration>
 <xs:enumeration value="LOW_BALANCE"></xs:enumeration>
 <xs:enumeration value="GENERAL_EMAIL"></xs:enumeration>
+<xs:enumeration value="CREDIT_NOTE"></xs:enumeration>
+<xs:enumeration value="PAID_INVOICE"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="taxType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="VAT"></xs:enumeration>
+<xs:enumeration value="OTHER"></xs:enumeration>
+<xs:enumeration value="NONE"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="invoiceHeader">
+<xs:restriction base="xs:string">
+<xs:enumeration value="INVOICE"></xs:enumeration>
+<xs:enumeration value="CREDITNOTE"></xs:enumeration>
+<xs:enumeration value="DUEDATE"></xs:enumeration>
+<xs:enumeration value="INVOICE_NUMBER"></xs:enumeration>
+<xs:enumeration value="BE_TAX_REF"></xs:enumeration>
+<xs:enumeration value="INVOICE_DATE"></xs:enumeration>
+<xs:enumeration value="QUANTITY"></xs:enumeration>
+<xs:enumeration value="ITEM"></xs:enumeration>
+<xs:enumeration value="EXCLUDE"></xs:enumeration>
+<xs:enumeration value="INCLUDE"></xs:enumeration>
+<xs:enumeration value="TOTAL"></xs:enumeration>
+<xs:enumeration value="CUSTOMER_TAX_REF"></xs:enumeration>
+<xs:enumeration value="CREDIT_NOTE_NUMBER"></xs:enumeration>
+<xs:enumeration value="AMOUNT"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="pdfPageSize">
+<xs:restriction base="xs:string">
+<xs:enumeration value="A4"></xs:enumeration>
+<xs:enumeration value="LETTER"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -2673,6 +3199,32 @@
 <xs:restriction base="xs:string">
 <xs:enumeration value="MASTERBILL"></xs:enumeration>
 <xs:enumeration value="REGULARBILL"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="transactionState">
+<xs:restriction base="xs:string">
+<xs:enumeration value="INPROGRESS"></xs:enumeration>
+<xs:enumeration value="SUCCESS"></xs:enumeration>
+<xs:enumeration value="FAILURE"></xs:enumeration>
+<xs:enumeration value="NOT_STARTED"></xs:enumeration>
+<xs:enumeration value="AWAITINGINTERACTIVEINPUT"></xs:enumeration>
+<xs:enumeration value="CANCELLED"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="paymentFunction">
+<xs:restriction base="xs:string">
+<xs:enumeration value="UNDEF"></xs:enumeration>
+<xs:enumeration value="CANCEL_TRANSACTION"></xs:enumeration>
+<xs:enumeration value="MAKE_PAYMENT"></xs:enumeration>
+<xs:enumeration value="REFUND_PAYMENT"></xs:enumeration>
+<xs:enumeration value="REGISTER_PAYMENT_INSTANCE"></xs:enumeration>
+<xs:enumeration value="REMOVE_PAYMENT_INSTANCE"></xs:enumeration>
+<xs:enumeration value="REGISTER_PAYMENT_METHOD"></xs:enumeration>
+<xs:enumeration value="SELF_TEST"></xs:enumeration>
+<xs:enumeration value="UPDATE_PAYMENT_METHOD"></xs:enumeration>
+<xs:enumeration value="REFUND_TRANSACTION"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -2781,10 +3333,8 @@
 <xs:enumeration value="PRODUCT_PURCHASES_EXISTS"></xs:enumeration>
 <xs:enumeration value="CANNOT_SET_PERMISSIONS_ON_USER"></xs:enumeration>
 <xs:enumeration value="CANNOT_DELETE_USER"></xs:enumeration>
-<xs:enumeration value="PAYMENT_METHOD_EXISTS_IN_CARD"></xs:enumeration>
 <xs:enumeration value="SERVER_CONTAINS_SNAPSHOTS"></xs:enumeration>
 <xs:enumeration value="INVALID_USE_OF_AGGREGATION_FUNCTION"></xs:enumeration>
-<xs:enumeration value="PAYMENT_METHOD_NOT_ALLOWED"></xs:enumeration>
 <xs:enumeration value="INVALID_PRODUCT_OFFER_FOR_IMAGE"></xs:enumeration>
 <xs:enumeration value="CANNOT_LOCK_ONLY_ADMIN_USER"></xs:enumeration>
 <xs:enumeration value="EXCEEDS_MAX_OUTSTANDING_INVITATIONS_LIMIT"></xs:enumeration>
@@ -2820,6 +3370,20 @@
 <xs:enumeration value="CANNOT_EXCEED_MAX_PUBLIC_NETWORK_LIMIT"></xs:enumeration>
 <xs:enumeration value="CANNOT_EXCEED_MAX_IP_NETWORK_LIMIT"></xs:enumeration>
 <xs:enumeration value="CANNOT_EXCEED_MAX_PRIVATE_NETWORK_LIMIT"></xs:enumeration>
+<xs:enumeration value="CANNOT_DELETE_PAYMENT_PROVIDER"></xs:enumeration>
+<xs:enumeration value="CANNOT_MODIFY_PAYMENT_METHOD"></xs:enumeration>
+<xs:enumeration value="NO_ACCESS_TO_PAYMENT_METHOD"></xs:enumeration>
+<xs:enumeration value="INVOICE_ALREADY_PAID"></xs:enumeration>
+<xs:enumeration value="INVALID_JADE_INSTANCE"></xs:enumeration>
+<xs:enumeration value="CANNOT_EXCEED_MAX_BLOBS_LIMIT"></xs:enumeration>
+<xs:enumeration value="CANNOT_EXCEED_MAX_BLOB_SIZE"></xs:enumeration>
+<xs:enumeration value="UNPAID_INVOICES_EXIST"></xs:enumeration>
+<xs:enumeration value="PAYMENT_PROVIDER_NOT_SUPPORTED"></xs:enumeration>
+<xs:enumeration value="NON_INTERACTIVE_PAY_IS_FALSE"></xs:enumeration>
+<xs:enumeration value="CANNOT_UPDATE_MBE_PARENT"></xs:enumeration>
+<xs:enumeration value="NO_CAPABILITY_TO_DO_TRANSACTIONS"></xs:enumeration>
+<xs:enumeration value="CUSTOMER_USER_NOT_IN_SAME_BE"></xs:enumeration>
+<xs:enumeration value="NETWORK_AND_SUBNET_NOT_ON_SAME_CLUSTER"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -3008,6 +3572,15 @@
 <xs:enumeration value="FDL_CODE_SIGNING_ERROR"></xs:enumeration>
 <xs:enumeration value="NO_PRODUCT_COMPONENT_SPECIFIED"></xs:enumeration>
 <xs:enumeration value="REQUIRED_PRODUCT_COMPONENTS_NOT_SET"></xs:enumeration>
+<xs:enumeration value="INVALID_TAG_NAME"></xs:enumeration>
+<xs:enumeration value="NO_PAYMENT_REFERENCE_DEFINED"></xs:enumeration>
+<xs:enumeration value="MISMATCHED_BILLING_ENTITIES"></xs:enumeration>
+<xs:enumeration value="HASH_INVALID"></xs:enumeration>
+<xs:enumeration value="NO_CONFIGURED_VALUES_SPECIFIED"></xs:enumeration>
+<xs:enumeration value="NO_BLOB_DEFINED"></xs:enumeration>
+<xs:enumeration value="NO_BLOB_RESOURCE_UUID_DEFINED"></xs:enumeration>
+<xs:enumeration value="NO_PAYMENT_METHOD_INSTANCE_DEFINED"></xs:enumeration>
+<xs:enumeration value="NO_PAYMENT_METHOD_INSTANCE_NAME_DEFINED"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -3063,7 +3636,6 @@
 <xs:enumeration value="NO_CLUSTER_UUID_FOUND"></xs:enumeration>
 <xs:enumeration value="NO_JOB_UUID_FOUND"></xs:enumeration>
 <xs:enumeration value="NO_FIREWALL_TEMPLATE_UUID_FOUND"></xs:enumeration>
-<xs:enumeration value="NO_PAYMENT_CARD_FOUND"></xs:enumeration>
 <xs:enumeration value="NO_GROUP_FOUND"></xs:enumeration>
 <xs:enumeration value="NO_IP_FOUND"></xs:enumeration>
 <xs:enumeration value="NO_STORAGE_UNIT_FOUND"></xs:enumeration>
@@ -3073,6 +3645,11 @@
 <xs:enumeration value="NO_DEPLOYMENT_INSTANCE_FOUND"></xs:enumeration>
 <xs:enumeration value="NO_TEMPLATE_PROTECTION_PERMISSION_FOUND"></xs:enumeration>
 <xs:enumeration value="NO_FDL_CODE_BLOCK_FOUND"></xs:enumeration>
+<xs:enumeration value="NO_PAYMENT_FOUND"></xs:enumeration>
+<xs:enumeration value="NO_PAYMENT_PROVIDER_FOUND"></xs:enumeration>
+<xs:enumeration value="NO_PAYMENT_METHOD_INSTANCE_FOUND"></xs:enumeration>
+<xs:enumeration value="NO_TRANSACTION_FOUND"></xs:enumeration>
+<xs:enumeration value="NO_BLOB_FOUND"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -3129,6 +3706,9 @@
 <xs:enumeration value="FQL_EXCEPTION"></xs:enumeration>
 <xs:enumeration value="FAILED_TO_UNMARSHAL"></xs:enumeration>
 <xs:enumeration value="FAILED_TO_CREATE_DEPLOYMENT_TEMPLATE"></xs:enumeration>
+<xs:enumeration value="FAILED_TRIGGER_FUNCTION"></xs:enumeration>
+<xs:enumeration value="PAYMENT_ERROR"></xs:enumeration>
+<xs:enumeration value="FAILED_TO_CREATE_BLOB"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -3269,6 +3849,15 @@
 </xs:restriction>
 </xs:simpleType>
 
+<xs:simpleType name="statementType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="UNPAID_INVOICE"></xs:enumeration>
+<xs:enumeration value="PAYMENT_RECEIVED"></xs:enumeration>
+<xs:enumeration value="UNPAID_CREDITNOTE"></xs:enumeration>
+<xs:enumeration value="PAYMENT_MADE"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
 <xs:simpleType name="jobStatus">
 <xs:restriction base="xs:string">
 <xs:enumeration value="SUCCESSFUL"></xs:enumeration>
@@ -3337,6 +3926,7 @@
 <xs:enumeration value="ATTACH_SSHKEY"></xs:enumeration>
 <xs:enumeration value="DETACH_SSHKEY"></xs:enumeration>
 <xs:enumeration value="ATTACH_SUBNET"></xs:enumeration>
+<xs:enumeration value="DELETE_CUSTOMER"></xs:enumeration>
 <xs:enumeration value="DELETE_USER"></xs:enumeration>
 <xs:enumeration value="DELETE_JOB"></xs:enumeration>
 <xs:enumeration value="DELETE_PRODUCT_OFFER"></xs:enumeration>
@@ -3358,7 +3948,6 @@
 <xs:enumeration value="CREATE_GROUP"></xs:enumeration>
 <xs:enumeration value="MODIFY_GROUP"></xs:enumeration>
 <xs:enumeration value="DELETE_GROUP"></xs:enumeration>
-<xs:enumeration value="DELETE_PAYMENT_CARD"></xs:enumeration>
 <xs:enumeration value="DEPLOY_TEMPLATE"></xs:enumeration>
 <xs:enumeration value="CREATE_TEMPLATE"></xs:enumeration>
 <xs:enumeration value="UPDATE_INSTANCE_STATE"></xs:enumeration>
@@ -3368,6 +3957,48 @@
 <xs:enumeration value="DELETE_TEMPLATE_INSTANCE"></xs:enumeration>
 <xs:enumeration value="PUBLISH_TEMPLATE"></xs:enumeration>
 <xs:enumeration value="REVOKE_TEMPLATE"></xs:enumeration>
+<xs:enumeration value="CREATE_PAYMENT_METHOD_INSTANCE"></xs:enumeration>
+<xs:enumeration value="CONFIGURE_PAYMENT_METHOD"></xs:enumeration>
+<xs:enumeration value="MAKE_PAYMENT"></xs:enumeration>
+<xs:enumeration value="RESUME_TRANSACTION"></xs:enumeration>
+<xs:enumeration value="CANCEL_TRANSACTION"></xs:enumeration>
+<xs:enumeration value="TEST_PAYMENT_METHOD"></xs:enumeration>
+<xs:enumeration value="DELETE_PAYMENT_METHOD_INSTANCE"></xs:enumeration>
+<xs:enumeration value="MODIFY_PAYMENT_METHOD_INSTANCE"></xs:enumeration>
+<xs:enumeration value="PURCHASE_UNIT_PRODUCT"></xs:enumeration>
+<xs:enumeration value="CREATE_BLOB"></xs:enumeration>
+<xs:enumeration value="REFUND_TRANSACTION"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="capability">
+<xs:restriction base="xs:string">
+<xs:enumeration value="CREATE"></xs:enumeration>
+<xs:enumeration value="DELETE"></xs:enumeration>
+<xs:enumeration value="MODIFY"></xs:enumeration>
+<xs:enumeration value="ATTACH_DETACH"></xs:enumeration>
+<xs:enumeration value="START_STOP"></xs:enumeration>
+<xs:enumeration value="PUBLISH"></xs:enumeration>
+<xs:enumeration value="FETCH"></xs:enumeration>
+<xs:enumeration value="CLONE"></xs:enumeration>
+<xs:enumeration value="CHANGE_PERMISSIONS"></xs:enumeration>
+<xs:enumeration value="DO_TRANSACTION"></xs:enumeration>
+<xs:enumeration value="ALL"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="vncHandler">
+<xs:restriction base="xs:string">
+<xs:enumeration value="RAW"></xs:enumeration>
+<xs:enumeration value="GUACAMOLE"></xs:enumeration>
+<xs:enumeration value="ANY"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="snapshotType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="DISK"></xs:enumeration>
+<xs:enumeration value="SERVER"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 
@@ -3409,40 +4040,10 @@
 </xs:restriction>
 </xs:simpleType>
 
-<xs:simpleType name="snapshotType">
-<xs:restriction base="xs:string">
-<xs:enumeration value="DISK"></xs:enumeration>
-<xs:enumeration value="SERVER"></xs:enumeration>
-</xs:restriction>
-</xs:simpleType>
-
 <xs:simpleType name="imageType">
 <xs:restriction base="xs:string">
 <xs:enumeration value="DISK"></xs:enumeration>
 <xs:enumeration value="SERVER"></xs:enumeration>
-</xs:restriction>
-</xs:simpleType>
-
-<xs:simpleType name="capability">
-<xs:restriction base="xs:string">
-<xs:enumeration value="CREATE"></xs:enumeration>
-<xs:enumeration value="DELETE"></xs:enumeration>
-<xs:enumeration value="MODIFY"></xs:enumeration>
-<xs:enumeration value="ATTACH_DETACH"></xs:enumeration>
-<xs:enumeration value="START_STOP"></xs:enumeration>
-<xs:enumeration value="PUBLISH"></xs:enumeration>
-<xs:enumeration value="FETCH"></xs:enumeration>
-<xs:enumeration value="CLONE"></xs:enumeration>
-<xs:enumeration value="CHANGE_PERMISSIONS"></xs:enumeration>
-<xs:enumeration value="ALL"></xs:enumeration>
-</xs:restriction>
-</xs:simpleType>
-
-<xs:simpleType name="vncHandler">
-<xs:restriction base="xs:string">
-<xs:enumeration value="RAW"></xs:enumeration>
-<xs:enumeration value="GUACAMOLE"></xs:enumeration>
-<xs:enumeration value="ANY"></xs:enumeration>
 </xs:restriction>
 </xs:simpleType>
 </xs:schema>

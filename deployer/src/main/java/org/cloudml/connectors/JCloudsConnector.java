@@ -44,21 +44,14 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.cloudml.core.*;
+import org.jclouds.Constants;
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.RunScriptOnNodesException;
-import org.jclouds.compute.domain.ComputeMetadata;
-import org.jclouds.compute.domain.ExecResponse;
-import org.jclouds.compute.domain.Hardware;
-import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.compute.domain.NodeMetadataBuilder;
-import org.jclouds.compute.domain.OsFamily;
-import org.jclouds.compute.domain.Template;
-import org.jclouds.compute.domain.TemplateBuilder;
-import org.jclouds.compute.domain.Volume;
+import org.jclouds.compute.domain.*;
 import org.jclouds.domain.Location;
 import org.jclouds.domain.LocationBuilder;
 import org.jclouds.domain.LoginCredentials;
@@ -105,7 +98,7 @@ public class JCloudsConnector implements Connector{
 		computeContext=builder.buildView(ComputeServiceContext.class);
 		//loadBalancerCtx=builder.buildView(LoadBalancerServiceContext.class);
 		compute=computeContext.getComputeService();
-		this.provider = provider; 
+		this.provider = provider;
 	}
 
 	/**
@@ -166,7 +159,7 @@ public class JCloudsConnector implements Connector{
 		}
 		return b;
 	}
-	
+
 	/**
 	 * Upload a file on a selected node
 	 * @param sourcePath path to the file to be uploaded
@@ -204,10 +197,10 @@ public class JCloudsConnector implements Connector{
 
 		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
 		Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
-				runningInGroup(group), 
+				runningInGroup(group),
 				exec(command),
-				overrideLoginCredentials(b.build()) 
-				.runAsRoot(false) 
+				overrideLoginCredentials(b.build())
+				.runAsRoot(false)
 				.wrapInInitScript(false));// run command directly
 
 		for(Entry<? extends NodeMetadata, ExecResponse> r : responses.entrySet())
@@ -227,10 +220,10 @@ public class JCloudsConnector implements Connector{
 
 		org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
 		ExecResponse response = compute.runScriptOnNode(
-				id, 
+				id,
 				exec(command),
-				overrideLoginCredentials(b.build()) 
-				.runAsRoot(false) 
+				overrideLoginCredentials(b.build())
+				.runAsRoot(false)
 				.wrapInInitScript(false));// run command directly
 
 		journal.log(Level.INFO, ">> "+response.getOutput());
@@ -309,13 +302,13 @@ public class JCloudsConnector implements Connector{
 				Set<? extends NodeMetadata> nodes = compute.createNodesInGroup(groupName, 1, template);
 				nodeInstance = nodes.iterator().next();
 
-				journal.log(Level.INFO, ">> Running node: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() + 
+				journal.log(Level.INFO, ">> Running node: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() +
 						" on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
 
 			} catch (RunNodesException e) {
 				e.printStackTrace();
 				a.setStatusAsError();
-			}	
+			}
 
 			a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
 			a.setId(nodeInstance.getId());
