@@ -34,6 +34,8 @@ public class RelationshipBuilder extends WithResourcesBuilder<Relationship, Rela
     private String clientPortName;
     private String serverName;
     private String serverPortName;
+    private ResourceBuilder clientResource;
+    private ResourceBuilder serverResource;
 
     public RelationshipBuilder() {
         clientName = "default client component";
@@ -60,6 +62,10 @@ public class RelationshipBuilder extends WithResourcesBuilder<Relationship, Rela
                 getName(),
                 aRequiredPort().named(clientPortName).build(),
                 aProvidedPort().named(serverPortName).build());
+        if(clientResource != null)
+            relationship.setClientResource(clientResource.build());
+        if(serverResource != null)
+            relationship.setServerResource(serverResource.build());
         super.prepare(relationship);
         return relationship;
     }
@@ -72,6 +78,10 @@ public class RelationshipBuilder extends WithResourcesBuilder<Relationship, Rela
     @Override
     public void integrateIn(Deployment container) {
         final Relationship relationship = new Relationship(getName(), findClientPort(container), findServerPort(container));
+        if(clientResource != null)
+            relationship.setClientResource(clientResource.build());
+        if(serverResource != null)
+            relationship.setServerResource(serverResource.build());
         super.prepare(relationship);
         container.getRelationships().add(relationship);
         relationship.getOwner().set(container);
@@ -115,5 +125,15 @@ public class RelationshipBuilder extends WithResourcesBuilder<Relationship, Rela
             throw new IllegalStateException(formatError(error));
         }
         return serverPort;
+    }
+
+    public RelationshipBuilder withClientResource(ResourceBuilder builder) {
+        this.clientResource=builder;
+        return next();
+    }
+
+    public RelationshipBuilder withServerResource(ResourceBuilder builder) {
+        this.serverResource=builder;
+        return next();
     }
 }

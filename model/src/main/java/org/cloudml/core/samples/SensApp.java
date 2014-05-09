@@ -36,7 +36,7 @@ public class SensApp {
     public static final String AMAZON_EC2 = "aws-ec2";
     public static final String OPENSTACK = "openstack-nova";
     public static final String FLEXIANT = "flexiant";
-    public static final String SENSAPP = "SensApp";
+    public static final String SENSAPP = "sensapp";
     public static final String JETTY = "JettySC";
     public static final String MONGO_DB = "mongoDB";
     public static final String SENSAPP_ADMIN = "SensAppAdmin";
@@ -51,8 +51,8 @@ public class SensApp {
     public static final String SENSAPP_ADMIN_1 = "sensAppAdmin1";
     public static final String SENSAPP_ADMIN_TO_SENSAPP = "SensAppAdminSensApp";
     public static final String SENSAPP_TO_MONGO_DB = "SensAppMongoDB";
-    public static final String SENSAPP_ADMIN_VM = "sensapp-SL1";
-    public static final String SENSAPP_VM = "sensapp-ML1";
+    public static final String SENSAPP_ADMIN_VM = "sensapp-sl1";
+    public static final String SENSAPP_VM = "sensapp-ml1";
 
     public static DeploymentBuilder completeSensApp() {
         return sensAppTypes()
@@ -108,8 +108,7 @@ public class SensApp {
                 .withLocation("eu-west-1b")
                 .withOS("ubuntu")
                 .withGroupName("sensapp")
-                .withSshKey("cloudml")
-                .withProperty("KeyPath", "./cloudml.pem")
+                .withSshKey("cloudml") //TODO: also add withPrivateKey
                 .withSecurityGroup("SensApp")
                 .with64OS();
     }
@@ -127,7 +126,6 @@ public class SensApp {
                 .withOS("ubuntu")
                 .withGroupName("SensApp")
                 .withSshKey("cloudml")
-                .withProperty("KeyPath", "./cloudml.pem")
                 .withSecurityGroup("SensApp")
                 .withImageId("Ubuntu-SINTEF")
                 .with64OS();
@@ -230,7 +228,7 @@ public class SensApp {
              .named(SENSAPP_ADMIN_TO_SENSAPP)
              .from(SENSAPP_ADMIN, SENSAPP_ADMIN_PORT)
              .to(SENSAPP, SENSAPP_USER_PORT)
-             .withResource(aResource()
+             .withClientResource(aResource()
                  .named("client")
                  .retrievedBy("get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh")
                  .installedBy("cd ~; sudo bash configure_sensappadmin.sh"));

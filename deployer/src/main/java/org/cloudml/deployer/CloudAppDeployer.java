@@ -252,22 +252,11 @@ public class CloudAppDeployer {
         unlessNotNull("Cannot find destination of null!", component);
         if (component instanceof InternalComponentInstance) {
             InternalComponentInstance internalComponent = (InternalComponentInstance) component;
-            RequiredExecutionPlatformInstance repi = internalComponent.getRequiredExecutionPlatform();
-            for (ExecuteInstance ei : targetModel.getExecuteInstances()) {
-                if (repi.equals(ei.getRequiredEnd())) {
-                    if (ei.getProvidedEnd().getOwner().get().isExternal() ) {
-                        return (ExternalComponentInstance) ei.getProvidedEnd().getOwner().get();
-                    }
-                    else {
-                        getDestination(ei.getProvidedEnd().getOwner().get());
-                    }
-                }
-            }
+            return internalComponent.externalHost();
         }
         else {
             return (ExternalComponentInstance) component;
         }
-        return null;
     }
 
     /**
@@ -342,7 +331,7 @@ public class CloudAppDeployer {
         for (ComponentInstance x : components) {
             if (x.isInternal() && (!alreadyStarted.contains(x))) {
                 InternalComponentInstance ix = x.asInternal();
-                ExternalComponentInstance owner = getDestination(ix);
+                ExternalComponentInstance owner = ix.externalHost();
                 if (owner instanceof VMInstance) { //TODO: refactor and be more generic for external component in general
                     VMInstance ownerVM = (VMInstance) owner;
                     VM n = ownerVM.getType();
