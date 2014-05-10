@@ -33,17 +33,17 @@ public abstract class Port extends WithResources implements DeploymentElement, O
     public static final boolean LOCAL = false;
     public static final boolean REMOTE = true;
     private final OptionalOwner<Component> owner;
-    private boolean remote;
+    private boolean local;
     private int portNumber;
 
     public Port(String name) {
         this(name, REMOTE);
     }
 
-    public Port(String name, boolean isRemote) {
+    public Port(String name, boolean isLocal) {
         super(name);
         this.owner = new OptionalOwner<Component>();
-        this.remote = isRemote;
+        this.local = isLocal;
         this.portNumber = DEFAULT_PORT_NUMBER;
     }
 
@@ -80,16 +80,16 @@ public abstract class Port extends WithResources implements DeploymentElement, O
         this.portNumber = portNumber;
     }
 
-    public final void setRemote(boolean isRemote) {
-        this.remote = isRemote;
+    public final void setLocal(boolean isLocal) {
+        this.local = isLocal;
     }
 
     public final boolean isRemote() {
-        return this.remote;
+        return !this.local;
     }
 
     public final boolean isLocal() {
-        return !isRemote();
+        return this.local;
     }
 
     @Override

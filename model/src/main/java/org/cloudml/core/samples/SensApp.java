@@ -225,12 +225,12 @@ public class SensApp {
 
     public static RelationshipBuilder sensappAdminToSensapp() {
         return aRelationship()
-             .named(SENSAPP_ADMIN_TO_SENSAPP)
+             .named(SENSAPP_ADMIN_TO_SENSAPP) //add islocal
              .from(SENSAPP_ADMIN, SENSAPP_ADMIN_PORT)
              .to(SENSAPP, SENSAPP_USER_PORT)
              .withClientResource(aResource()
                  .named("client")
-                 .retrievedBy("get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh")
+                 .retrievedBy("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh")
                  .installedBy("cd ~; sudo bash configure_sensappadmin.sh"));
     }
 

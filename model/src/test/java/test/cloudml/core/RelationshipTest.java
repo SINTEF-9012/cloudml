@@ -93,7 +93,7 @@ public class RelationshipTest extends WithResourcesTest {
     @Test
     public void validationDetectsLocalClientsConnectedToRemoteServers() {
         final Relationship relationship = aSampleRelationship();
-        relationship.getRequiredEnd().setRemote(false);
+        relationship.getRequiredEnd().setLocal(true);
 
         final Report validation = relationship.validate();
 
@@ -105,7 +105,7 @@ public class RelationshipTest extends WithResourcesTest {
     @Test
     public void validationDetectsRemoteClientsConnectedToLocalServers() {
         final Relationship relationship = aSampleRelationship();
-        relationship.getProvidedEnd().setRemote(false);
+        relationship.getProvidedEnd().setLocal(true);
 
         final Report validation = relationship.validate();
 

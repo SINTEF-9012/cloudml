@@ -82,7 +82,7 @@ public abstract class PortTest extends TestCase {
     public void testRemoteCanBeSetAndRetrieved() {
         final Port port = aSamplePort();
 
-        port.setRemote(false);
+        port.setLocal(true);
         
         assertThat("Shall not be remote", !port.isRemote());
         assertThat("Shall be local", port.isLocal());

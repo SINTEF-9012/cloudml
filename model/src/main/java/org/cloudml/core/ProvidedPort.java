@@ -31,8 +31,8 @@ public class ProvidedPort extends Port {
         this(name, REMOTE);
     }
 
-    public ProvidedPort(String name, boolean isRemote) {
-        super(name, isRemote);
+    public ProvidedPort(String name, boolean isLocal) {
+        super(name, isLocal);
     }
 
     @Override

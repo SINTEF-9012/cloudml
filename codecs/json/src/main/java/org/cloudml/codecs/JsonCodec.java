@@ -58,7 +58,8 @@ public class JsonCodec implements Codec {
         ModelLoader loader = new JSONModelLoader();
         try {
             net.cloudml.core.CloudMLModel kDeploy = (net.cloudml.core.CloudMLModel) loader.loadModelFromStream(content).get(0);//beware of this cast...
-            return bridge.toPOJO(kDeploy);
+            NamedElement result=bridge.toPOJO(kDeploy);
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println(e.getLocalizedMessage());

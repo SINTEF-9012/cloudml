@@ -58,6 +58,7 @@ public class DeploymentBuilderTest extends WithPropertiesBuilderTest {
         assertThat("component instance count", sensapp.getComponentInstances(), hasSize(7));
         assertThat("executeOn count", sensapp.getExecuteInstances(), hasSize(5)); 
         assertThat("clouds count", sensapp.getClouds(), is(empty()));
+        assertThat("client resource is built", sensapp.getRelationships().firstNamed("SensAppAdminSensApp").getClientResource(), is(not(nullValue())));
     }
 
     

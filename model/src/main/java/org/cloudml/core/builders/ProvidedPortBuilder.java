@@ -38,13 +38,13 @@ public class ProvidedPortBuilder extends PortBuilder<ProvidedPort, ProvidedPortB
     }
             
     public ProvidedPort build() {
-        final ProvidedPort result = new ProvidedPort(getName(), isRemote());
+        final ProvidedPort result = new ProvidedPort(getName(), isLocal());
         prepare(result);
         return result;
     }
 
     public void integrateIn(Component container) {
-        final ProvidedPort port = new ProvidedPort(getName(), isRemote());
+        final ProvidedPort port = new ProvidedPort(getName(), isLocal());
         prepare(port);
         port.getOwner().set(container);
         container.getProvidedPorts().add(port);

@@ -245,7 +245,7 @@ public class OpenStackConnector implements Connector{
                 templateBuilder.imageId(vm.getImageId());
             }
 
-            journal.log(Level.INFO, ">> Provisioning a vm ...");
+            journal.log(Level.INFO, ">> Provisioning a VM ...");
 
             if (vm.getMinRam() > 0)
                 templateBuilder.minRam(vm.getMinRam());
@@ -264,7 +264,7 @@ public class OpenStackConnector implements Connector{
     	}*/
 
             template = templateBuilder.build();
-            journal.log(Level.INFO, ">> vm type: " + template.getHardware().getId() + " on location: " + template.getLocation().getId());
+            journal.log(Level.INFO, ">> VM type: " + template.getHardware().getId() + " on location: " + template.getLocation().getId());
             a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
             a.getProperties().add(new Property("location", template.getLocation().getId()));
 

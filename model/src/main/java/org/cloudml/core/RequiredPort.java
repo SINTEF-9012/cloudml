@@ -36,12 +36,12 @@ public class RequiredPort extends Port {
         this(name, REMOTE, MANDATORY);
     }
     
-    public RequiredPort(String name, boolean isRemote) {
-        this(name, isRemote, MANDATORY);
+    public RequiredPort(String name, boolean isLocal) {
+        this(name, isLocal, MANDATORY);
     }
 
-    public RequiredPort(String name, boolean isRemote, boolean isOptional) {
-        super(name, isRemote);
+    public RequiredPort(String name, boolean isLocal, boolean isOptional) {
+        super(name, isLocal);
         this.optional = isOptional;
     }
 

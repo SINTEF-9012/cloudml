@@ -53,13 +53,13 @@ public class RequiredPortBuilder extends PortBuilder<RequiredPort, RequiredPortB
 
     @Override
     public RequiredPort build() {
-        RequiredPort result = new RequiredPort(getName(), isRemote(), optional);
+        RequiredPort result = new RequiredPort(getName(), isLocal(), optional);
         prepare(result);
         return result;
     }
 
     public void integrateIn(InternalComponent container) {
-        RequiredPort result = new RequiredPort(getName(), isRemote(), optional);
+        RequiredPort result = new RequiredPort(getName(), isLocal(), optional);
         prepare(result);
         result.getOwner().set(container);
         container.getRequiredPorts().add(result);

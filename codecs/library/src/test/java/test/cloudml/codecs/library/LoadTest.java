@@ -60,6 +60,7 @@ public class LoadTest extends TestCase {
         final Deployment model = aCodecLibrary().load(testFile("sensapp.json"));
         Codec c= new DotCodec();
         //c.save(SensApp.completeSensApp().build(), new FileOutputStream("sensapp2.dot"));
+        assertNotNull(model.getRelationships().firstNamed("SensAppAdminSensApp").getClientResource());
         c.save(model, new FileOutputStream("sensapp.dot"));
         assertModelMatchesSensApp(model);
     }

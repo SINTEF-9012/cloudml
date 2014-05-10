@@ -29,16 +29,16 @@ import org.cloudml.core.Port;
 
 public abstract class PortBuilder<T extends Port, N extends PortBuilder<?,?>> extends WithResourcesBuilder<T, N> {
 
-    private boolean remote;
+    private boolean local;
     private int portNumber;
             
     public PortBuilder() {
-        remote = Port.REMOTE;
+        local = Port.REMOTE;
         portNumber = Port.DEFAULT_PORT_NUMBER;
     }
     
-    protected boolean isRemote() {
-        return remote;
+    protected boolean isLocal() {
+        return local;
     }
     
     public N withPortNumber(int portNumber) {
@@ -47,12 +47,12 @@ public abstract class PortBuilder<T extends Port, N extends PortBuilder<?,?>> ex
     }
     
     public N remote() {
-        this.remote = Port.REMOTE;
+        this.local = false;
         return next();
     }
     
     public N local() {
-        this.remote = Port.LOCAL;
+        this.local = true;
         return next();
     }
         
