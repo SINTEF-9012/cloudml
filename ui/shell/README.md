@@ -51,7 +51,7 @@ The table below summarises the key commands, which one must know in order to use
 | help | `help <d>?` | Provide information about the available commands |
 | history | `history <d>?` | List the command you previously entered |
 | dump | `dump [from <d>]? to <file>?` | Write the d last commands of the history into the given file |
-| replay | `replay from <file>` | Replay all the shell commands stored in the given file |
+| replay | `replay <file>` | Replay all the shell commands stored in the given file |
 | messages | `messages <d>?` | Show the d last messages received by the shell from the CloudML back-end |
 | version | `version` | Show the version of the CloudML shell |
 
