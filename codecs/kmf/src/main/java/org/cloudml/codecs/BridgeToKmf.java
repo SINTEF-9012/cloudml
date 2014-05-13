@@ -38,11 +38,13 @@ import org.cloudml.core.credentials.NoCredentials;
 public class BridgeToKmf {
 
     private Map<String, net.cloudml.core.VM> vms = new HashMap<String, net.cloudml.core.VM>();
+    private Map<String, net.cloudml.core.ExternalComponent> externalComponents = new HashMap<String, net.cloudml.core.ExternalComponent>();
     private Map<String, net.cloudml.core.Provider> providers = new HashMap<String, net.cloudml.core.Provider>();
     private Map<String, net.cloudml.core.InternalComponent> internalComponents = new HashMap<String, net.cloudml.core.InternalComponent>();
     private Map<String, net.cloudml.core.RequiredPort> requiredPorts = new HashMap<String, net.cloudml.core.RequiredPort>();
     private Map<String, net.cloudml.core.ProvidedPort> providedPorts = new HashMap<String, net.cloudml.core.ProvidedPort>();
     private Map<String, net.cloudml.core.InternalComponentInstance> internalComponentInstances = new HashMap<String, net.cloudml.core.InternalComponentInstance>();
+    private Map<String, net.cloudml.core.ExternalComponentInstance> externalComponentInstances = new HashMap<String, net.cloudml.core.ExternalComponentInstance>();
     private Map<String, net.cloudml.core.RequiredPortInstance> requiredPortInstances = new HashMap<String, net.cloudml.core.RequiredPortInstance>();
     private Map<String, net.cloudml.core.ProvidedPortInstance> providedPortInstances = new HashMap<String, net.cloudml.core.ProvidedPortInstance>();
     private Map<String, net.cloudml.core.VMInstance> VMInstances = new HashMap<String, net.cloudml.core.VMInstance>();
@@ -179,6 +181,17 @@ public class BridgeToKmf {
 
                 kDeploy.addVms(kNode);
                 //kDeploy.addComponents(kNode);
+            }else{
+                net.cloudml.core.ExternalComponent kec = factory.createExternalComponent();
+                convertProperties(ec, kec, factory);
+                convertResources(ec, kec, factory);
+                kec.setName(ec.getName());
+
+                initProvidedExecutionPlatforms(ec, kec);
+                convertAndAddProvidedPorts(ec.getProvidedPorts().toList(),kec);
+                this.externalComponents.put(kec.getName(), kec);
+
+                kDeploy.addExternalComponents(kec);
             }
         }
     }
@@ -391,7 +404,18 @@ public class BridgeToKmf {
                 //kDeploy.addComponentInstances(kni);
             }
             else {
-                throw new IllegalArgumentException("Unknown subtype of ExternalComponentInstance: " + eni.getClass().getName());
+                net.cloudml.core.ExternalComponentInstance keci = factory.createExternalComponentInstance();
+                keci.setName(eni.getName());
+                //keci.setPublicAddress(eni.getPublicAddress()); TODO: to be added in the ecore model
+                keci.setType(this.externalComponents.get(eni.getType().getName()));
+                convertProperties(eni, keci, factory);
+
+                convertAndAddProvidedPortInstances(eni.getProvidedPorts().toList(), keci);
+
+                this.externalComponentInstances.put(keci.getName(), keci);
+                initProvidedExecutionPlatformInstances(eni, keci);
+
+                kDeploy.addExternalComponentInstances(keci);
             }
         }
     }
@@ -474,7 +498,7 @@ public class BridgeToKmf {
         }
     }
 
-    private void convertAndAddProvidedPortInstances(List<ProvidedPortInstance> ports, net.cloudml.core.InternalComponentInstance kai) {
+    private void convertAndAddProvidedPortInstances(List<ProvidedPortInstance> ports, net.cloudml.core.ComponentInstance kai) {
         checkNull(ports, "Cannot iterate on null");
         for (ProvidedPortInstance api: ports) {
             checkNull(api, "Cannot convert null");

@@ -37,17 +37,18 @@ import org.cloudml.core.RequiredPortInstance;
 import org.cloudml.core.Resource;
 import org.cloudml.core.VMInstance;
 
-import java.util.*;
 import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.util.OwnedBy;
+import java.util.*;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
  */
 public class BridgeToCloudML {
 
-    private Map<String, VM> externalComponents = new HashMap<String, VM>();
+    private Map<String, VM> vms = new HashMap<String, VM>();
+    private Map<String, ExternalComponent> externalComponents = new HashMap<String, ExternalComponent>();
     private Map<String, Provider> providers = new HashMap<String, Provider>();
     private Map<String, InternalComponent> internalComponents = new HashMap<String, InternalComponent>();
     private Map<String, RequiredPort> requiredPorts = new HashMap<String, RequiredPort>();
@@ -56,6 +57,7 @@ public class BridgeToCloudML {
     private Map<String, RequiredPortInstance> requiredPortInstances = new HashMap<String, RequiredPortInstance>();
     private Map<String, ProvidedPortInstance> providedPortInstances = new HashMap<String, ProvidedPortInstance>();
     private Map<String, VMInstance> vmInstances = new HashMap<String, VMInstance>();
+    private Map<String, ExternalComponentInstance> externalComponentInstances = new HashMap<String, ExternalComponentInstance>();
     private Map<String, Relationship> relationships = new HashMap<String, Relationship>();
     private Map<String, ProvidedExecutionPlatformInstance> providedExecutionPlatformInstances = new HashMap<String, ProvidedExecutionPlatformInstance>();
     private Map<String, RequiredExecutionPlatformInstance> requiredExecutionPlatformInstances = new HashMap<String, RequiredExecutionPlatformInstance>();
@@ -132,7 +134,7 @@ public class BridgeToCloudML {
         vm.setSshKey(kVM.getSshKey());
 
         initProvidedExecutionPlatforms(kVM, vm);
-        externalComponents.put(vm.getName(), vm);
+        vms.put(vm.getName(), vm);
 
         model.getComponents().add(vm);
     }
@@ -151,7 +153,18 @@ public class BridgeToCloudML {
         checkForNull(kExternalComponent, "Cannot convert null!");
 
         if (kExternalComponent instanceof net.cloudml.core.ExternalComponent) {
-           //TODO: to be defined
+
+            ExternalComponent ec = new ExternalComponent(kExternalComponent.getName(), new Provider("Dummy provider"));
+            convertProperties(kExternalComponent, ec);
+            convertResources(kExternalComponent, ec);
+
+            Provider p = providers.get(kExternalComponent.getProvider().getName());
+
+            convertAndAddProvidedPortsToPOJO(kExternalComponent.getProvidedPorts(), ec);
+            initProvidedExecutionPlatforms(kExternalComponent, ec);
+            externalComponents.put(ec.getName(), ec);
+
+            model.getComponents().add(ec);
         }
         else {
             throw new IllegalArgumentException("Unknown subtype of ExternalComponent " + kExternalComponent.getClass().getName());
@@ -192,7 +205,7 @@ public class BridgeToCloudML {
         return String.format("%s_%s", kp.getComponent().getName(), kp.getName());
     }
 
-    public void convertAndAddProvidedPortsToPOJO(List<net.cloudml.core.ProvidedPort> pps, InternalComponent ic) {
+    public void convertAndAddProvidedPortsToPOJO(List<net.cloudml.core.ProvidedPort> pps, Component ic) {
         for (net.cloudml.core.ProvidedPort kpp : pps) {
             ProvidedPort pp = new ProvidedPort(kpp.getName(), kpp.getIsLocal());
             pp.getOwner().set(ic);
@@ -337,8 +350,8 @@ public class BridgeToCloudML {
 
     public void vmInstanceToPOJO(net.cloudml.core.VMInstance kVmInstance){
         net.cloudml.core.VMInstance kVM = (net.cloudml.core.VMInstance) kVmInstance;
-        assert externalComponents.containsKey(kVM.getType().getName());
-        VMInstance ni = new VMInstance(kVM.getName(), externalComponents.get(kVM.getType().getName()));
+        assert vms.containsKey(kVM.getType().getName());
+        VMInstance ni = new VMInstance(kVM.getName(), vms.get(kVM.getType().getName()));
         ni.setPublicAddress(kVM.getPublicAddress());
         convertProperties(kVM, ni);
 
@@ -363,7 +376,16 @@ public class BridgeToCloudML {
         checkForNull(kExternalComponentInstance, "Cannot convert null!");
 
         if (kExternalComponentInstance instanceof net.cloudml.core.ExternalComponentInstance) {
+            assert externalComponents.containsKey(kExternalComponentInstance.getType().getName());
+            ExternalComponentInstance ni = new ExternalComponentInstance(kExternalComponentInstance.getName(), externalComponents.get(kExternalComponentInstance.getType().getName()));
+            //ni.setPublicAddress(kExternalComponentInstance.getPublicAddress());
+            convertProperties(kExternalComponentInstance, ni);
 
+            initProvidedExecutionPlatformInstances(kExternalComponentInstance, ni);
+            convertAndAddProvidedPortInstances(kExternalComponentInstance.getProvidedPortInstances(), ni);
+            externalComponentInstances.put(ni.getName(), ni);
+
+            model.getComponentInstances().add(ni);
         }
         else {
             throw new IllegalArgumentException("Unknown subtype of ExternalComponentInstance '" + kExternalComponentInstance.getClass().getName());
@@ -380,6 +402,18 @@ public class BridgeToCloudML {
         assert counter == internalComponentInstances.size();
     }
 
+
+    public void convertAndAddProvidedPortInstances(List<net.cloudml.core.ProvidedPortInstance> ppi, ComponentInstance ai){
+        for (net.cloudml.core.ProvidedPortInstance kapi : ppi) {
+            ProvidedPortInstance api = new ProvidedPortInstance(kapi.getName(), providedPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()));
+            api.getOwner().set(ai);
+            convertProperties(kapi, api);
+            //ai.getProvidedPorts().add(api);
+            providedPortInstances.put(api.getName(), api);
+        }
+    }
+
+
     public void internalComponentInstanceToPOJO(net.cloudml.core.InternalComponentInstance kInternalComponentInstance) {
         checkForNull(kInternalComponentInstance, "Cannot convert null!");
 
@@ -391,13 +425,7 @@ public class BridgeToCloudML {
         initProvidedExecutionPlatformInstances(kInternalComponentInstance, ai);
         //TODO: destination
 
-        for (net.cloudml.core.ProvidedPortInstance kapi : kInternalComponentInstance.getProvidedPortInstances()) {
-            ProvidedPortInstance api = new ProvidedPortInstance(kapi.getName(), providedPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()));
-            api.getOwner().set(ai);
-            convertProperties(kapi, api);
-            //ai.getProvidedPorts().add(api);
-            providedPortInstances.put(api.getName(), api);
-        }
+        convertAndAddProvidedPortInstances(kInternalComponentInstance.getProvidedPortInstances(),ai);
 
         for (net.cloudml.core.RequiredPortInstance kapi : kInternalComponentInstance.getRequiredPortInstances()) {
             RequiredPortInstance api = new RequiredPortInstance(kapi.getName(), requiredPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()));

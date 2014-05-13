@@ -59,10 +59,10 @@ public class PaasCloudBees {
                 .with(aRequiredExecutionPlatform().named("TomCat"))
                 .withProperty("warfile", "C:\\temp\\granny-common.war")
                 .withProperty("temp-warfile", "C:\\temp\\granny-common-temp.war")
-                .with(aRequiredPort().remote().named("db").mandatory());
+                .with(aRequiredPort().remote().named("dbr").mandatory());
         
         RelationshipBuilder relb = aRelationship()
-                .from("granny-war", "db")
+                .from("granny-war", "dbr")
                 .to("cbdb", "db")
                 .named("dbrel")
                 .withResource(
@@ -109,7 +109,7 @@ public class PaasCloudBees {
             ).with(aRelationshipInstance()
                 .named("dbreli")
                 .ofType("dbrel")
-                .from("granny-war-i", "db")
+                .from("granny-war-i", "dbr")
                 .to("cbdb1", "db")
             )
             ;
