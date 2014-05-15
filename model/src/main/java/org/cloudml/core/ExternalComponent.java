@@ -130,7 +130,7 @@ public class ExternalComponent extends Component {
 
     @Override
     public void accept(Visitor visitor) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        visitor.visitExternalComponent(this);
     }
 
 }

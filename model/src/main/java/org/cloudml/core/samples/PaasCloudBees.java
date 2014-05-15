@@ -50,13 +50,13 @@ public class PaasCloudBees {
                 .named("granny-cloudml")
                 .with(
                         aProvidedExecutionPlatform()
-                            .named("TomCat")
+                            .named("tomcatProvided")
                 )
                 .providedBy("CloudBees");
         
         InternalComponentBuilder grannyb = anInternalComponent()
                 .named("granny-war")
-                .with(aRequiredExecutionPlatform().named("TomCat"))
+                .with(aRequiredExecutionPlatform().named("tomcat"))
                 .withProperty("warfile", "C:\\temp\\granny-common.war")
                 .withProperty("temp-warfile", "C:\\temp\\granny-common-temp.war")
                 .with(aRequiredPort().remote().named("dbr").mandatory());
@@ -100,12 +100,12 @@ public class PaasCloudBees {
                 .named("cbdb1")
                 .ofType("cbdb")
             ).with(anExternalComponentInstance()
-                .named("granny-cloudml")
+                .named("granny-cloudml1")
                 .ofType("granny-cloudml")
             ).with(anInternalComponentInstance()
                 .named("granny-war-i")
                 .ofType("granny-war")
-                .hostedBy("granny-cloudml")
+                .hostedBy("granny-cloudml1")
             ).with(aRelationshipInstance()
                 .named("dbreli")
                 .ofType("dbrel")

@@ -31,13 +31,17 @@ import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.codecs.library.CodecsLibrary;
 import org.cloudml.core.Deployment;
-import org.cloudml.core.samples.SensApp;
+import org.cloudml.core.samples.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+
+/**
+ * @author Nicolas Ferry and Franck Chauvel
+ */
 
 @RunWith(JUnit4.class)
 public class LoadTest extends TestCase {
@@ -61,8 +65,23 @@ public class LoadTest extends TestCase {
         Codec c= new DotCodec();
         //c.save(SensApp.completeSensApp().build(), new FileOutputStream("sensapp2.dot"));
         assertNotNull(model.getRelationships().firstNamed("SensAppAdminSensApp").getClientResource());
-        c.save(model, new FileOutputStream("sensapp.dot"));
+        c.save(model, new FileOutputStream(testFile("sensapp.dot")));
         assertModelMatchesSensApp(model);
+    }
+
+    @Test
+    public void loadShouldAcceptPaaS() throws FileNotFoundException {
+        Codec json2= new JsonCodec();
+        json2.save(PaasCloudBees.completeCloudBeesPaaS().build(), new FileOutputStream(testFile("paas.json")));
+
+        Codec c= new DotCodec();
+        //c.save(model, new FileOutputStream(testFile("paas.dot")));
+        c.save(PaasCloudBees.completeCloudBeesPaaS().build(), new FileOutputStream(testFile("paas.dot")));
+
+        final Deployment model = aCodecLibrary().load(testFile("paas.json"));
+
+        assertNotNull(model.getRelationships().firstNamed("dbrel"));
+        assertModelMatchesPaaS(model);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -96,6 +115,15 @@ public class LoadTest extends TestCase {
         assertThat("no relationship instance", model.getRelationshipInstances(), is(empty()));
         assertThat("no cloud", model.getClouds(), is(empty()));
     }
+
+    private void assertModelMatchesPaaS(Deployment model){
+        assertThat("1 providers", model.getProviders(), hasSize(1));
+        assertThat("3 component instances", model.getComponentInstances(), hasSize(3));
+        assertThat("3 component types", model.getComponents(), hasSize(3));
+        assertThat("1 relationship types", model.getRelationships(), hasSize(1));
+        assertThat("1 relationship instances", model.getRelationshipInstances(), hasSize(1));
+    }
+
 
     private void assertModelMatchesSensApp(Deployment model) {
         assertThat("3 providers", model.getProviders(), hasSize(3));

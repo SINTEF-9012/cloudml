@@ -53,7 +53,16 @@ public class DotPrinter extends AbstractVisitListener {
     public void onDeploymentExit(Deployment subject) {
         dotText.append("}\n");
     }
-    
+
+    @Override
+    public void onExternalComponentInstanceEntry(ExternalComponentInstance subject) {
+        ensureBufferIsReady();
+        dotText.append("\t")
+                .append(symbols.initialise(subject))
+                .append(" [")
+                .append(componentFormatting(subject)).append("];\n");
+    }
+
     @Override
     public void onVMInstanceEntry(VMInstance subject) {
         ensureBufferIsReady();

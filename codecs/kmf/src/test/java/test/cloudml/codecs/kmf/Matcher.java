@@ -149,7 +149,7 @@ public class Matcher {
         if (kici != null && cici != null) {
             return cici.getName().equals(kici.getName())
                     && matchIC(kici.getType(), cici.getType())
-                    && matchRequiredExecutionPlatformInstance(kici.getRequiredExecutionPlatformInstance(), cici.getRequiredExecutionPlatform())
+                    && matchRequiredExecutionPlatformInstance(kici.getRequiredExecutionPlatformInstances(), cici.getRequiredExecutionPlatform())
                     && matchProvidedExecutionPlatformInstances(kici.getProvidedExecutionPlatformInstances(), cici.getProvidedExecutionPlatforms().toList());
         }
         return false;

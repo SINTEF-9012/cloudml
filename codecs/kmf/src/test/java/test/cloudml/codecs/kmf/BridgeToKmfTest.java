@@ -222,7 +222,7 @@ public class BridgeToKmfTest extends TestCase {
         assertNotNull(output);
         assertNotNull(output.getName());
         assertNotNull(output.getType());
-        assertNotNull(((net.cloudml.core.InternalComponentInstance)output).getRequiredExecutionPlatformInstance());
+        assertNotNull(((net.cloudml.core.InternalComponentInstance)output).getRequiredExecutionPlatformInstances());
 
         assertTrue(new Matcher().matchICI((net.cloudml.core.InternalComponentInstance) output, input));
     }

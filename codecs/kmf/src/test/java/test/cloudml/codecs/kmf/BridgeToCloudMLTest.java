@@ -323,7 +323,7 @@ public class BridgeToCloudMLTest extends TestCase {
         net.cloudml.core.CoreFactory factory = new net.cloudml.factory.MainFactory().getCoreFactory();
         net.cloudml.core.InternalComponentInstance kcomp = factory.createInternalComponentInstance();
         //kcomp.setDestination(factory.createVMInstance());
-        kcomp.setRequiredExecutionPlatformInstance(factory.createRequiredExecutionPlatformInstance());
+        kcomp.setRequiredExecutionPlatformInstances(factory.createRequiredExecutionPlatformInstance());
         kcomp.setName(name);
         return kcomp;
     }

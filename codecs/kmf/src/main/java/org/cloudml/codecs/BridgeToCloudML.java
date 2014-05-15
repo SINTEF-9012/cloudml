@@ -159,6 +159,7 @@ public class BridgeToCloudML {
             convertResources(kExternalComponent, ec);
 
             Provider p = providers.get(kExternalComponent.getProvider().getName());
+            ec.setProvider(p);
 
             convertAndAddProvidedPortsToPOJO(kExternalComponent.getProvidedPorts(), ec);
             initProvidedExecutionPlatforms(kExternalComponent, ec);
@@ -369,7 +370,7 @@ public class BridgeToCloudML {
                 counter++;
         }
         assert counter == model.getComponentInstances().onlyExternals().size();
-        assert vmInstances.size() == counter;
+        assert externalComponentInstances.size() == counter;
     }
 
     public void externalComponentInstanceToPOJO(net.cloudml.core.ExternalComponentInstance kExternalComponentInstance) {
@@ -439,14 +440,14 @@ public class BridgeToCloudML {
     }
 
     private void initRequiredExecutionPlatformInstance(net.cloudml.core.InternalComponentInstance kInternalComponentInstance, InternalComponentInstance ai) {
-        if (kInternalComponentInstance.getRequiredExecutionPlatformInstance() != null) {
+        if (kInternalComponentInstance.getRequiredExecutionPlatformInstances() != null) {
             //assert !vmInstances.isEmpty();
             RequiredExecutionPlatformInstance repi =
-                    new RequiredExecutionPlatformInstance(kInternalComponentInstance.getRequiredExecutionPlatformInstance().getName(),
+                    new RequiredExecutionPlatformInstance(kInternalComponentInstance.getRequiredExecutionPlatformInstances().getName(),
                                                           ai.getType().getRequiredExecutionPlatform());
             repi.getOwner().set(ai);
-            convertProperties(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
-            convertResources(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
+            convertProperties(kInternalComponentInstance.getRequiredExecutionPlatformInstances(), repi);
+            convertResources(kInternalComponentInstance.getRequiredExecutionPlatformInstances(), repi);
             requiredExecutionPlatformInstances.put(repi.getName(), repi);
             ai.setRequiredExecutionPlatform(repi);
         }

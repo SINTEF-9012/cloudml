@@ -84,7 +84,7 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="providedExecutionPlatforms"
           upperBound="-1" eType="#//core/ProvidedExecutionPlatform" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="InternalComponent" eSuperTypes="#//core/CloudMLElementWithProperties #//core/Component">
+    <eClassifiers xsi:type="ecore:EClass" name="InternalComponent" eSuperTypes="#//core/Component">
       <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPorts" upperBound="-1"
           eType="#//core/RequiredPort" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="compositeInternalComponents"
@@ -139,7 +139,7 @@
     <eClassifiers xsi:type="ecore:EClass" name="InternalComponentInstance" eSuperTypes="#//core/ComponentInstance">
       <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPortInstances"
           upperBound="-1" eType="#//core/RequiredPortInstance" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="requiredExecutionPlatformInstance"
+      <eStructuralFeatures xsi:type="ecore:EReference" name="requiredExecutionPlatformInstances"
           lowerBound="1" eType="#//core/RequiredExecutionPlatformInstance" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="PortInstance" eSuperTypes="#//core/CloudMLElementWithProperties">
@@ -161,10 +161,14 @@
     <eClassifiers xsi:type="ecore:EClass" name="ExternalComponent" eSuperTypes="#//core/Component">
       <eStructuralFeatures xsi:type="ecore:EReference" name="provider" eType="#//core/Provider"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="endPoint" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="provide" upperBound="-1"
+          eType="#//core/VMPort" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ExternalComponentInstance" eSuperTypes="#//core/ComponentInstance">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="ips" upperBound="-1"
           eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="provide" upperBound="-1"
+          eType="#//core/VMPortInstance" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ExecutionPlatform" abstract="true"
         eSuperTypes="#//core/CloudMLElementWithProperties">
