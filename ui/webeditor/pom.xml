@@ -52,7 +52,7 @@
                     </connectors>
                 </configuration>
             </plugin>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.kevoree.modeling</groupId>
                 <artifactId>org.kevoree.modeling.kotlin.generator.mavenplugin</artifactId>
                 <version>${kmf.version}</version>
@@ -67,12 +67,11 @@
                             <ecore>${metamodel.ecore}</ecore>
                             <packagePrefix>net</packagePrefix>
                             <js>true</js>
-                            <!--  <timeAware>true</timeAware>-->
                             <events>true</events>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>	
 </project>

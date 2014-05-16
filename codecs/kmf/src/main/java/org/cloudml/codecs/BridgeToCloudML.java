@@ -160,6 +160,10 @@ public class BridgeToCloudML {
 
             Provider p = providers.get(kExternalComponent.getProvider().getName());
             ec.setProvider(p);
+            if(kExternalComponent.getLogin() != null)
+                ec.setLogin(kExternalComponent.getLogin());
+            if(kExternalComponent.getPasswd() != null)
+                ec.setPasswd(kExternalComponent.getPasswd());
 
             convertAndAddProvidedPortsToPOJO(kExternalComponent.getProvidedPorts(), ec);
             initProvidedExecutionPlatforms(kExternalComponent, ec);
@@ -299,6 +303,9 @@ public class BridgeToCloudML {
         }
 
         Relationship b = new Relationship(kRelationship.getName(), rp, pp);
+
+        convertProperties(kRelationship, b);
+        convertResources(kRelationship, b);
 
         if (kRelationship.getRequiredPortResource() != null) {
             Resource cr = new Resource(kRelationship.getRequiredPortResource().getName());
@@ -557,7 +564,7 @@ public class BridgeToCloudML {
                 }
             }
             r.setUploadCommand(up);
-
+            convertProperties(kr,r);
             element.getResources().add(r);
         }
     }

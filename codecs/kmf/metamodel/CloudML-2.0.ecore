@@ -163,6 +163,8 @@
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="endPoint" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="provide" upperBound="-1"
           eType="#//core/VMPort" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="login" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="passwd" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ExternalComponentInstance" eSuperTypes="#//core/ComponentInstance">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="ips" upperBound="-1"

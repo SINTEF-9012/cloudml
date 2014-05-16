@@ -99,7 +99,7 @@ public class BridgeToKmf {
             kr.setStartCommand(r.getStartCommand());
             kr.setStopCommand(r.getStopCommand());
             kElement.addResources(kr);
-
+            convertProperties(r,kr,factory);
             String kup = "";
             for (Map.Entry<String, String> up: r.getUploadCommand().entrySet()) {
                 kup += up.getKey() + " " + up.getValue() + ";";
@@ -187,7 +187,10 @@ public class BridgeToKmf {
                 convertResources(ec, kec, factory);
                 kec.setName(ec.getName());
                 kec.setProvider(providers.get(ec.getProvider().getName()));
-
+                if(ec.getLogin() != null)
+                    kec.setLogin(ec.getLogin());
+                if(ec.getPasswd() != null)
+                    kec.setPasswd(ec.getPasswd());
                 initProvidedExecutionPlatforms(ec, kec);
                 convertAndAddProvidedPorts(ec.getProvidedPorts().toList(),kec);
                 this.externalComponents.put(kec.getName(), kec);
@@ -339,6 +342,9 @@ public class BridgeToKmf {
         krelationship.setProvidedPort(providedPorts.get(calculatePortIdentifier(pp)));
         assert krelationship.getProvidedPort() != null;
 
+        convertResources(relationship, krelationship, factory);
+        convertProperties(relationship, krelationship, factory);
+
         if (relationship.getClientResource() != null) {
             net.cloudml.core.Resource cr = factory.createResource();
             cr.setName(relationship.getClientResource().getName());
@@ -409,6 +415,7 @@ public class BridgeToKmf {
                 keci.setName(eni.getName());
                 //keci.setPublicAddress(eni.getPublicAddress()); TODO: to be added in the ecore model
                 keci.setType(this.externalComponents.get(eni.getType().getName()));
+
                 convertProperties(eni, keci, factory);
 
                 convertAndAddProvidedPortInstances(eni.getProvidedPorts().toList(), keci);

@@ -31,6 +31,7 @@ import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.codecs.library.CodecsLibrary;
 import org.cloudml.core.Deployment;
+import org.cloudml.core.ExternalComponent;
 import org.cloudml.core.samples.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,7 +73,11 @@ public class LoadTest extends TestCase {
     @Test
     public void loadShouldAcceptPaaS() throws FileNotFoundException {
         Codec json2= new JsonCodec();
-        json2.save(PaasCloudBees.completeCloudBeesPaaS().build(), new FileOutputStream(testFile("paas.json")));
+        Deployment dm=PaasCloudBees.completeCloudBeesPaaS().build();
+        ExternalComponent ec = dm.getComponents().onlyExternals().firstNamed("cbdb");
+        ec.setLogin("sintef");
+        ec.setPasswd("password123");
+        json2.save(dm, new FileOutputStream(testFile("paas.json")));
 
         Codec c= new DotCodec();
         //c.save(model, new FileOutputStream(testFile("paas.dot")));

@@ -159,6 +159,7 @@ public class Cloud4soaConnector implements PaaSConnector {
                 version = defaultValues.get(platform).get("DB-Version");
             if(dbName==null || dbName.equals(""))
                 dbName = dbInstanceIdentifier;
+
             DatabaseInfo dbinfo = Adapter.createDB(platform, credentials.getPublicKey(), credentials.getPrivateKey(),credentials.getAccountName(),
                     dbInstanceIdentifier, engine, version, "created by cloudml",
                     dbName, username, password
