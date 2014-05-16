@@ -20,9 +20,10 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.deployer.samples;
+package test.cloudml.deployment;
 
-
+import org.cloudml.deployer.samples.*;
+import org.cloudml.codecs.JsonCodec;
 import javax.xml.xpath.XPath;
 import org.cloudml.connectors.util.JXPath;
 import org.cloudml.core.Deployment;
@@ -102,8 +103,8 @@ public class PaasCloudBees
         
         Deployment dm = createCloudBeesDeployment();
         
-        CloudAppDeployer deployer = new CloudAppDeployer();
-        deployer.deploy(dm);
+        //CloudAppDeployer deployer = new CloudAppDeployer();
+        //deployer.deploy(dm);
         
     }
     
@@ -118,6 +119,7 @@ public class PaasCloudBees
         c.setPasswd("password123");
         System.out.println(dm);
         
+        new JsonCodec().save(dm, System.out);
         
         return dm;
 
