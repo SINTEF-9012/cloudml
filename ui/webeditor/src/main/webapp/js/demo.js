@@ -20,14 +20,9 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+	//jsplumb instance
 	var instance;
-	var model = Kotlin.modules['ui.webeditor.js'];
-    var saver = new model.org.cloud.serializer.JSONModelSerializer();
-    var loader = new model.org.cloud.loader.JSONModelLoader();
-    var cloner = new model.org.cloud.cloner.DefaultModelCloner();
-    var compare = new model.org.cloud.compare.DefaultModelCompare();
-    var event2trace = new model.org.kevoree.modeling.api.trace.Event2Trace(compare);
-    var factory = new model.org.cloud.impl.DefaultCloudFactory();
+	var deploymentModel;
 	
 	jsPlumb.ready(function() {
 
@@ -185,7 +180,7 @@
 			};
 
 		instance.doWhileSuspended(function() {
-			addNodeInstances();
+			addVMInstances();
 			addArtefactsInstances();
 			instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
 			addPortInstances();
@@ -200,28 +195,28 @@
 	});
 	
 	
-	function addNodeInstances(){
-		if(deploymentModel.nodeInstances != null){
-			for(a=0;a<deploymentModel.nodeInstances.length;a++){
-				var nodeInfo="name:"+deploymentModel.nodeInstances[a].name+
-							"&lt;br&gt; type:"+deploymentModel.nodeInstances[a].type;
+	function addVMInstances(){
+		if(deploymentModel.vmInstances != null){
+			for(a=0;a<deploymentModel.vmInstances.length;a++){
+				var nodeInfo="name:"+deploymentModel.vmInstances[a].name+
+							"&lt;br&gt; type:"+deploymentModel.vmInstances[a].type;
 				
-				$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='Node Info:' id='flowchartWindow_"+deploymentModel.nodeInstances[a].name+"'><strong>"+ deploymentModel.nodeInstances[a].name +"</strong><br/><br></div>" );
-				placeRandomly("flowchartWindow_"+deploymentModel.nodeInstances[a].name);
+				$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='VM Info:' id='flowchartWindow_"+deploymentModel.vmInstances[a].name+"'><strong>"+ deploymentModel.vmInstances[a].name +"</strong><br/><br></div>" );
+				placeRandomly("flowchartWindow_"+deploymentModel.vmInstances[a].name);
 				targetEndpoint.overlays[0][1].label = "destination";
-				instance.addEndpoint("flowchartWindow_"+deploymentModel.nodeInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"nodeInstances["+deploymentModel.nodeInstances[a].name+"]" });
+				instance.addEndpoint("flowchartWindow_"+deploymentModel.vmInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"vmInstances["+deploymentModel.vmInstances[a].name+"]" });
 				
-				$('#flowchartWindow_'+deploymentModel.nodeInstances[a].name).popover({html:true});
+				$('#flowchartWindow_'+deploymentModel.vmInstances[a].name).popover({html:true});
 			}
 		}
 	}
 		
-		function addArtefactsInstances(){
-			if(deploymentModel.artefactInstances != null){
-				for(a=0;a<deploymentModel.artefactInstances.length;a++){
-					$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.artefactInstances[a].name+"'><strong>"+ deploymentModel.artefactInstances[a].name +"</strong><br/><br></div>" );
-					placeRandomly("flowchartWindow_"+deploymentModel.artefactInstances[a].name);
-					//$('#flowchartWindow_'+deploymentModel.artefactInstances[a].name).popover();
+		function addInternalComponentInstances(){
+			if(deploymentModel.internalComponentInstances != null){
+				for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
+					$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.internalComponentInstances[a].name+"'><strong>"+ deploymentModel.internalComponentInstances[a].name +"</strong><br/><br></div>" );
+					placeRandomly("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name);
+					//$('#flowchartWindow_'+deploymentModel.internalComponentInstances[a].name).popover();
 				}
 			}
 		}
@@ -233,26 +228,26 @@
 		}
 		
 		function addPortInstances(){
-			if(deploymentModel.artefactInstances != null){
-				for(a=0;a<deploymentModel.artefactInstances.length;a++){
+			if(deploymentModel.internalComponentInstances != null){
+				for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
 					var i=0;
-					instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceDestEndpoint, { anchor:"Continuous", uuid:deploymentModel.artefactInstances[a].name+"_destination"});
-					if(deploymentModel.artefactInstances[a].required != null){
-						for(i=0; i<deploymentModel.artefactInstances[a].required.length;i++){
-							sourceEndpoint.overlays[0][1].label = deploymentModel.artefactInstances[a].required[i].name;
-							var port=findPortType(deploymentModel.artefactInstances[a].type,deploymentModel.artefactInstances[a].required[i].type);
+					instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceDestEndpoint, { anchor:"Continuous", uuid:deploymentModel.internalComponentInstances[a].name+"_destination"});
+					if(deploymentModel.internalComponentInstances[a].requiredPortInstances != null){
+						for(i=0; i<deploymentModel.internalComponentInstances[a].requiredPortInstances.length;i++){
+							sourceEndpoint.overlays[0][1].label = deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name;
+							var port=findPortType(deploymentModel.internalComponentInstances[a].type,deploymentModel.internalComponentInstances[a].requiredPortInstances[i].type);
 							if(!port.isOptional){
-								instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/required["+deploymentModel.artefactInstances[a].required[i].name +"]"});
+								instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/requiredPortInstances["+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name +"]"});
 							}else{
-								instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, sourceOptionalEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/required["+deploymentModel.artefactInstances[a].required[i].name +"]"});
+								instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceOptionalEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/requiredPortInstances["+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name +"]"});
 							}
 							
 						}
 					}
-					if(deploymentModel.artefactInstances[a].provided != null){
-						for(i=0; i<deploymentModel.artefactInstances[a].provided.length;i++){
-							targetEndpoint.overlays[0][1].label = deploymentModel.artefactInstances[a].provided[i].name;
-							instance.addEndpoint("flowchartWindow_"+deploymentModel.artefactInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"artefactInstances["+deploymentModel.artefactInstances[a].name+"]/provided["+deploymentModel.artefactInstances[a].provided[i].name +"]"});
+					if(deploymentModel.internalComponentInstances[a].providedPortInstances != null){
+						for(i=0; i<deploymentModel.internalComponentInstances[a].providedPortInstances.length;i++){
+							targetEndpoint.overlays[0][1].label = deploymentModel.internalComponentInstances[a].providedPortInstances[i].name;
+							instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/providedPortInstances["+deploymentModel.internalComponentInstances[a].providedPortInstances[i].name +"]"});
 						}
 					}
 				}
@@ -277,9 +272,9 @@
 					connection.addOverlay([ "PlainArrow", { location:1 , id:"myarrow"} ]);
 				}
 			}
-			for(a=0;a<deploymentModel.artefactInstances.length;a++){
-				if(deploymentModel.artefactInstances[a].destination != null){
-					var connection=instance.connect({uuids:[ deploymentModel.artefactInstances[a].name+"_destination", deploymentModel.artefactInstances[a].destination ], editable:true});
+			for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
+				if(deploymentModel.internalComponentInstances[a].destination != null){
+					var connection=instance.connect({uuids:[ deploymentModel.internalComponentInstances[a].name+"_destination", deploymentModel.internalComponentInstances[a].destination ], editable:true});
 				}
 			}
 		}
@@ -335,15 +330,16 @@ function loadFile(inputDiv) {
   
  //Load the deployment model
 function loadDeploymentModel(jsonString) {
-	deploymentModel = loader.loadModelFromString(jsonString).get(0);
+	deploymentModel = eval('(' + jsonString + ')');
+	
 	reset();
-	addArtefactType();
-	addNodeTypes();
-	addBindingType();
+	addInternalComponentType();
+	addVMTypes();
+	addRelationshipType();
 	addProviders();
 	instance.doWhileSuspended(function() {
-		addNodeInstances();
-		addArtefactsInstances();
+		addVMInstances();
+		addInternalComponentInstances();
 		instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
 		addPortInstances();
 		addBindinInstances();
@@ -351,29 +347,30 @@ function loadDeploymentModel(jsonString) {
 
 }
 
-function addArtefactType(){
-	if(deploymentModel.artefactTypes != null){
-		for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-			$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.artefactTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' data-toggle='modal' data-target='#editArtefactModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+function addInternalComponentType(){
+	if(deploymentModel.internalComponents != null){
+		for(var a=0;a<deploymentModel.internalComponents.length;a++){
+			$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.internalComponents[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' data-toggle='modal' data-target='#editArtefactModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
 		}
 	}
 }
 
-function addBindingType(){
-	if(deploymentModel.bindingTypes != null){
-		for(var a=0;a<deploymentModel.bindingTypes.length;a++){
-			$( "#bindingTable>tbody" ).append("<tr><td>"+deploymentModel.bindingTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' data-toggle='modal' data-target='#editBindingModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+function addRelationshipType(){
+	if(deploymentModel.relationships != null){
+		for(var a=0;a<deploymentModel.relationships.length;a++){
+			$( "#bindingTable>tbody" ).append("<tr><td>"+deploymentModel.relationships[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' data-toggle='modal' data-target='#editBindingModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
 		}
 	}
 }
 
-function addNodeTypes(){
-	if(deploymentModel.nodeTypes != null){
-		for(var a=0;a<deploymentModel.nodeTypes.length;a++){
-			$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.nodeTypes[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button'   data-toggle='modal' data-target='#editNodeModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+function addVMTypes(){
+	if(deploymentModel.vms != null){
+		for(var a=0;a<deploymentModel.vms.length;a++){
+			$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.vms[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button'   data-toggle='modal' data-target='#editNodeModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
 		}
 	}
 }
+
 
 function addProviders(){
 	if(deploymentModel.providers != null){
