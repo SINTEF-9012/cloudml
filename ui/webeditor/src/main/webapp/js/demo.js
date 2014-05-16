@@ -21,6 +21,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 	var instance;
+	var model = Kotlin.modules['ui.webeditor.js'];
+    var saver = new model.org.cloud.serializer.JSONModelSerializer();
+    var loader = new model.org.cloud.loader.JSONModelLoader();
+    var cloner = new model.org.cloud.cloner.DefaultModelCloner();
+    var compare = new model.org.cloud.compare.DefaultModelCompare();
+    var event2trace = new model.org.kevoree.modeling.api.trace.Event2Trace(compare);
+    var factory = new model.org.cloud.impl.DefaultCloudFactory();
 	
 	jsPlumb.ready(function() {
 
@@ -328,7 +335,7 @@ function loadFile(inputDiv) {
   
  //Load the deployment model
 function loadDeploymentModel(jsonString) {
-	deploymentModel=eval("(" + jsonString + ")");
+	deploymentModel = loader.loadModelFromString(jsonString).get(0);
 	reset();
 	addArtefactType();
 	addNodeTypes();
