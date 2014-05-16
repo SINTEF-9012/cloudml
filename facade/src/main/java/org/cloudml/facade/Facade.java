@@ -40,6 +40,7 @@ import org.cloudml.core.*;
 import org.cloudml.deployer.CloudAppDeployer;
 import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.core.credentials.Credentials;
+import org.cloudml.core.samples.SensApp;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
@@ -65,7 +66,7 @@ class Facade implements CloudML, CommandHandler {
 	private Deployment deploy;
 	private boolean stopOnTimeout = false;
 	private final CloudAppDeployer deployer;
-
+        
 	/**
 	 * Default constructor
 	 */
@@ -309,8 +310,16 @@ class Facade implements CloudML, CommandHandler {
 	}
 
 	public void handle(LoadDeployment command) {
+                String path = command.getPathToModel();
+                if("sample://sensapp".equals(path.toLowerCase())){
+                            deploy = SensApp.completeSensApp().build();
+                            return;
+                        }
 		final String extension = canHandle(command.getPathToModel());
+                
 		if (extension != null) {
+                        
+                        
 			final File f = new File(command.getPathToModel());
 			try {
 				deploy = (Deployment) getCodec(extension).load(new FileInputStream(f));

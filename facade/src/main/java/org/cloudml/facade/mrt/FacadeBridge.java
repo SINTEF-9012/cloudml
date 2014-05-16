@@ -44,6 +44,7 @@ public class FacadeBridge implements ModelRepo{
     public FacadeBridge(){
         facade = Factory.getInstance().getCloudML();
         factory = new CommandFactory(facade);
+        
     }
 
     @Override
@@ -67,5 +68,7 @@ public class FacadeBridge implements ModelRepo{
         }
         facade.fireAndForget(command);
     }
+
+
     
 }

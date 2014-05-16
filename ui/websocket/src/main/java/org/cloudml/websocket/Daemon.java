@@ -24,11 +24,17 @@ package org.cloudml.websocket;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
+import org.cloudml.core.builders.DeploymentBuilder;
+import org.cloudml.core.samples.PaasCloudBees;
+import org.cloudml.core.samples.SensApp;
 import org.cloudml.facade.mrt.Coordinator;
+import org.cloudml.facade.mrt.PeerStub;
+import org.cloudml.facade.mrt.cmd.gen.Extended;
 
 /**
  * Hello world!
@@ -48,6 +54,9 @@ public class Daemon
         coord.setReception(reception);
         //coord.setCloudMLRoot(initWithSenseApp());
         //coord.executor.repo.root = initWithMdms();
+        
+        initWithSample(coord);
+
         coord.start();
     }
     
@@ -68,5 +77,25 @@ public class Daemon
 //            ai.getProperties().add(new Property("state","onn"));
 //        }
         
+    }
+    
+    public static void initWithSample(Coordinator coord){
+        Extended extended = new Extended();
+        extended.name = "LoadDeployment";
+        extended.params = Arrays.asList("sample://sensApp");
+        coord.process(extended, new PeerStub(){
+
+            @Override
+            public String getID() {
+                return "Root User";
+            }
+
+            @Override
+            public void sendMessage(Object message) {
+                
+            }
+            
+        });
+        //coord.
     }
 }
