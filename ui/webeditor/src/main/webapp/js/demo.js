@@ -180,11 +180,11 @@
 			};
 
 		instance.doWhileSuspended(function() {
-			addVMInstances();
-			addArtefactsInstances();
+			/*addVMInstances();
+			addInternalComponentInstances();
 			instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
 			addPortInstances();
-			addBindinInstances();
+			addRelationshipInstances();*/
 		});
 		
 		
@@ -203,8 +203,8 @@
 				
 				$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='VM Info:' id='flowchartWindow_"+deploymentModel.vmInstances[a].name+"'><strong>"+ deploymentModel.vmInstances[a].name +"</strong><br/><br></div>" );
 				placeRandomly("flowchartWindow_"+deploymentModel.vmInstances[a].name);
-				targetEndpoint.overlays[0][1].label = "destination";
-				instance.addEndpoint("flowchartWindow_"+deploymentModel.vmInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"vmInstances["+deploymentModel.vmInstances[a].name+"]" });
+				//targetEndpoint.overlays[0][1].label = "destination";
+				//instance.addEndpoint("flowchartWindow_"+deploymentModel.vmInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"vmInstances["+deploymentModel.vmInstances[a].name+"]" });
 				
 				$('#flowchartWindow_'+deploymentModel.vmInstances[a].name).popover({html:true});
 			}
@@ -235,8 +235,9 @@
 					if(deploymentModel.internalComponentInstances[a].requiredPortInstances != null){
 						for(i=0; i<deploymentModel.internalComponentInstances[a].requiredPortInstances.length;i++){
 							sourceEndpoint.overlays[0][1].label = deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name;
-							var port=findPortType(deploymentModel.internalComponentInstances[a].type,deploymentModel.internalComponentInstances[a].requiredPortInstances[i].type);
-							if(!port.isOptional){
+							//var port=findPortType(deploymentModel.internalComponentInstances[a].type,deploymentModel.internalComponentInstances[a].requiredPortInstances[i].type);
+							var port=getJSON(deploymentModel, "/"+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].type);
+							if(port.isMandatory){
 								instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/requiredPortInstances["+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name +"]"});
 							}else{
 								instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceOptionalEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/requiredPortInstances["+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name +"]"});
@@ -255,28 +256,30 @@
 		}
 		
 		
-		function addBindinInstances(){
-			for(a=0; a< deploymentModel.bindingInstances.length;a++){
-				var connection=instance.connect({uuids:[deploymentModel.bindingInstances[a].server, deploymentModel.bindingInstances[a].client], editable:true});
+		function addRelationshipInstances(){
+			for(a=0; a< deploymentModel.relationshipInstances.length;a++){
+				var connection=instance.connect({uuids:[deploymentModel.relationshipInstances[a].providedPortInstance, deploymentModel.relationshipInstances[a].requiredPortInstance], editable:true});
 				if(!connection){
-					alertMessage("error","Binding:"+deploymentModel.bindingInstances[a].name+" not well defined!",5000);
+					alertMessage("error","Relationship instance:"+deploymentModel.relationshipInstances[a].name+" not well defined!",5000);
 				}
-				connection.getOverlay("label").setLabel(deploymentModel.bindingInstances[a].name);
+				connection.getOverlay("label").setLabel(deploymentModel.relationshipInstances[a].name);
 				
-				var artefactinstance=findArtefactInstanceByName(deploymentModel.bindingInstances[a].client);
-				var portinstance=findPortInstanceByName(artefactinstance,deploymentModel.bindingInstances[a].client);
-				var port=findPortType(artefactinstance.type, portinstance.type);
-				
+				//var artefactinstance=findArtefactInstanceByName(deploymentModel.relationshipInstances[a].client);
+				//var portinstance=findPortInstanceByName(artefactinstance,deploymentModel.relationshipInstances[a].client);
+				//var port=findPortType(artefactinstance.type, portinstance.type);
+				var port = getJSON(deploymentModel.relationshipInstances[a].requiredPortInstance);
+				if(port == null)
+					return deploymentModel.relationshipInstances[a].requiredPortInstance;
 				if((port != null) && !port.isRemote){
 					connection.removeOverlay("myarrow");
 					connection.addOverlay([ "PlainArrow", { location:1 , id:"myarrow"} ]);
 				}
 			}
-			for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
+			/*for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
 				if(deploymentModel.internalComponentInstances[a].destination != null){
 					var connection=instance.connect({uuids:[ deploymentModel.internalComponentInstances[a].name+"_destination", deploymentModel.internalComponentInstances[a].destination ], editable:true});
 				}
-			}
+			}*/
 		}
 	
 	
@@ -342,7 +345,7 @@ function loadDeploymentModel(jsonString) {
 		addInternalComponentInstances();
 		instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
 		addPortInstances();
-		addBindinInstances();
+		addRelationshipInstances();
 	});
 
 }
