@@ -67,7 +67,7 @@
 			dashstyle:"4 2",
 			outlineWidth:2
 		},
-		// this is the connecting style for optional communication
+		// this is the connecting style for local communication
 		connectorLocalPaintStyle = {
 			lineWidth:4,
 			strokeStyle:"#aa1111",
@@ -123,7 +123,14 @@
 			connectorStyle:connectorDestPaintStyle,
 			hoverPaintStyle:endpointHoverStyle,
 			connectorHoverStyle:connectorHoverStyle,
-            dragOptions:{}
+            dragOptions:{},
+            overlays:[
+            	[ "Label", { 
+                	location:[0.5, 1.5], 
+                	label:"Drag",
+                	cssClass:"endpointSourceLabel" 
+                } ]
+            ]
 		},
 		// the definition of source endpoints (the small red ones)
 		sourceEndpoint = {
@@ -180,11 +187,12 @@
 			};
 
 		instance.doWhileSuspended(function() {
-			/*addVMInstances();
+			addVMInstances();
 			addInternalComponentInstances();
+			addExternalComponentInstances();
 			instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
-			addPortInstances();
-			addRelationshipInstances();*/
+			addRelationshipInstances();
+			addExecuteInstances();
 		});
 		
 		
@@ -195,94 +203,138 @@
 	});
 	
 	
-	function addVMInstances(){
-		if(deploymentModel.vmInstances != null){
-			for(a=0;a<deploymentModel.vmInstances.length;a++){
-				var nodeInfo="name:"+deploymentModel.vmInstances[a].name+
-							"&lt;br&gt; type:"+deploymentModel.vmInstances[a].type;
-				
-				$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='VM Info:' id='flowchartWindow_"+deploymentModel.vmInstances[a].name+"'><strong>"+ deploymentModel.vmInstances[a].name +"</strong><br/><br></div>" );
-				placeRandomly("flowchartWindow_"+deploymentModel.vmInstances[a].name);
-				//targetEndpoint.overlays[0][1].label = "destination";
-				//instance.addEndpoint("flowchartWindow_"+deploymentModel.vmInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"vmInstances["+deploymentModel.vmInstances[a].name+"]" });
-				
-				$('#flowchartWindow_'+deploymentModel.vmInstances[a].name).popover({html:true});
+
+/***********************************************
+* Functions to add CloudML elements in the graph
+************************************************/
+
+function addVMInstances(){
+	if(deploymentModel.vmInstances != null){
+		for(a=0;a<deploymentModel.vmInstances.length;a++){
+			var nodeInfo="name:"+deploymentModel.vmInstances[a].name+
+						"&lt;br&gt; type:"+deploymentModel.vmInstances[a].type;
+			
+			$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='VM Info:' id='flowchartWindow_"+deploymentModel.vmInstances[a].name+"'><strong>"+ deploymentModel.vmInstances[a].name +"</strong><br/><br></div>" );
+			placeRandomly("flowchartWindow_"+deploymentModel.vmInstances[a].name);
+
+			$('#flowchartWindow_'+deploymentModel.vmInstances[a].name).popover({html:true});
+			addExecutionPort(deploymentModel.vmInstances[a]);
+			addPortInstances(deploymentModel.vmInstances[a]);
+		}
+	}
+}
+
+function addInternalComponentInstances(){
+	if(deploymentModel.internalComponentInstances != null){
+		for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
+			$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.internalComponentInstances[a].name+"'><strong>"+ deploymentModel.internalComponentInstances[a].name +"</strong><br/><br></div>" );
+			placeRandomly("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name);
+			addExecutionPort(deploymentModel.internalComponentInstances[a]);
+			addPortInstances(deploymentModel.internalComponentInstances[a]);
+		}
+	}
+}
+
+function addExternalComponentInstances(){
+	if(deploymentModel.externalComponentInstances != null){
+		for(a=0;a<deploymentModel.externalComponentInstances.length;a++){
+			$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.externalComponentInstances[a].name+"'><strong>"+ deploymentModel.externalComponentInstances[a].name +"</strong><br/><br></div>" );
+			placeRandomly("flowchartWindow_"+deploymentModel.externalComponentInstances[a].name);
+			addExecutionPort(deploymentModel.externalComponentInstances[a]);
+			addPortInstances(deploymentModel.externalComponentInstances[a]);
+		}
+	}
+}
+
+function placeRandomly(id){
+	var x=Math.floor((Math.random()*50)+1);
+	var y=Math.floor((Math.random()*50)+1);
+	$("#"+id).attr("style","top:"+y+"em;left:"+x+"em;");
+}
+
+function addPortInstances(obj){
+	if(obj == null)
+		throw("obj cannot be null");
+	var tab = obj['requiredPortInstances'];
+	if(tab !== null && (typeof tab !== "undefined")){
+		var length = tab.length;
+		for(j = 0 ; j < length ; j++){
+			sourceEndpoint.overlays[0][1].label = tab[j].name;
+			var port=getJSON(deploymentModel, "/"+tab[j].type);
+			var stringType = (obj['eClass'].split(":")[1]+"s").uncapitalizes(2);
+			if(port.isMandatory){
+				instance.addEndpoint("flowchartWindow_"+obj.name, sourceEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/requiredPortInstances["+tab[j].name +"]"});
+			}else{
+				instance.addEndpoint("flowchartWindow_"+obj.name, sourceOptionalEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/requiredPortInstances["+tab[j].name +"]"});
 			}
 		}
 	}
-		
-		function addInternalComponentInstances(){
-			if(deploymentModel.internalComponentInstances != null){
-				for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
-					$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.internalComponentInstances[a].name+"'><strong>"+ deploymentModel.internalComponentInstances[a].name +"</strong><br/><br></div>" );
-					placeRandomly("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name);
-					//$('#flowchartWindow_'+deploymentModel.internalComponentInstances[a].name).popover();
-				}
-			}
+	var tab = obj['providedPortInstances'];
+	if(tab !== null && (typeof tab !== "undefined")){
+		var length = tab.length;
+		for(j = 0 ; j < length ; j++){
+			targetEndpoint.overlays[0][1].label = tab[j].name;
+			var stringType = (obj['eClass'].split(":")[1]+"s").uncapitalizes(2); // the 's' trick is very crappy ...
+			instance.addEndpoint("flowchartWindow_"+obj.name, targetEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/providedPortInstances["+tab[j].name +"]"});
 		}
-		
-		function placeRandomly(id){
-			var x=Math.floor((Math.random()*50)+1);
-			var y=Math.floor((Math.random()*50)+1);
-			$("#"+id).attr("style","top:"+y+"em;left:"+x+"em;");
+	}
+}
+
+
+function addExecutionPort(obj){
+	if(obj == null){
+		throw("obj cannot be null");
+	}
+	var tab = obj['providedExecutionPlatformInstances'];
+	if(tab !== null && (typeof tab !== "undefined")){
+		var length = tab.length;
+		for(j = 0 ; j < length ; j++){
+			sourceDestEndpoint.overlays[0][1].label = tab.name;
+			var stringType = (obj['eClass'].split(":")[1]+"s").uncapitalizes(2);
+			instance.addEndpoint("flowchartWindow_"+obj.name, sourceDestEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj['name']+"]/providedExecutionPlatformInstances["+tab[j]['name'] +"]"});
 		}
-		
-		function addPortInstances(){
-			if(deploymentModel.internalComponentInstances != null){
-				for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
-					var i=0;
-					instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceDestEndpoint, { anchor:"Continuous", uuid:deploymentModel.internalComponentInstances[a].name+"_destination"});
-					if(deploymentModel.internalComponentInstances[a].requiredPortInstances != null){
-						for(i=0; i<deploymentModel.internalComponentInstances[a].requiredPortInstances.length;i++){
-							sourceEndpoint.overlays[0][1].label = deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name;
-							//var port=findPortType(deploymentModel.internalComponentInstances[a].type,deploymentModel.internalComponentInstances[a].requiredPortInstances[i].type);
-							var port=getJSON(deploymentModel, "/"+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].type);
-							if(port.isMandatory){
-								instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/requiredPortInstances["+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name +"]"});
-							}else{
-								instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, sourceOptionalEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/requiredPortInstances["+deploymentModel.internalComponentInstances[a].requiredPortInstances[i].name +"]"});
-							}
-							
-						}
-					}
-					if(deploymentModel.internalComponentInstances[a].providedPortInstances != null){
-						for(i=0; i<deploymentModel.internalComponentInstances[a].providedPortInstances.length;i++){
-							targetEndpoint.overlays[0][1].label = deploymentModel.internalComponentInstances[a].providedPortInstances[i].name;
-							instance.addEndpoint("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name, targetEndpoint, { anchor:"Continuous", uuid:"internalComponentInstances["+deploymentModel.internalComponentInstances[a].name+"]/providedPortInstances["+deploymentModel.internalComponentInstances[a].providedPortInstances[i].name +"]"});
-						}
-					}
-				}
-			}
+	}
+	var tab = obj['requiredExecutionPlatformInstances'];
+	if(tab !== null && (typeof tab !== "undefined")){
+		targetEndpoint.overlays[0][1].label = tab.name;
+		//targetEndpoint.connectorStyle=connectorDestPaintStyle;
+		var stringType = (obj['eClass'].split(":")[1]+"s").uncapitalizes(2);
+		instance.addEndpoint("flowchartWindow_"+obj.name, targetEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/requiredExecutionPlatformInstances["+tab.name +"]"});
+	}
+}
+
+
+function addRelationshipInstances(){
+	for(a=0; a< deploymentModel.relationshipInstances.length;a++){
+		var connection=instance.connect({uuids:[deploymentModel.relationshipInstances[a].providedPortInstance, deploymentModel.relationshipInstances[a].requiredPortInstance], editable:true});
+		if(!connection){
+			alertMessage("error","Relationship instance:"+deploymentModel.relationshipInstances[a].name+" not well defined!",5000);
 		}
+		connection.getOverlay("label").setLabel(deploymentModel.relationshipInstances[a].name);
 		
-		
-		function addRelationshipInstances(){
-			for(a=0; a< deploymentModel.relationshipInstances.length;a++){
-				var connection=instance.connect({uuids:[deploymentModel.relationshipInstances[a].providedPortInstance, deploymentModel.relationshipInstances[a].requiredPortInstance], editable:true});
-				if(!connection){
-					alertMessage("error","Relationship instance:"+deploymentModel.relationshipInstances[a].name+" not well defined!",5000);
-				}
-				connection.getOverlay("label").setLabel(deploymentModel.relationshipInstances[a].name);
-				
-				//var artefactinstance=findArtefactInstanceByName(deploymentModel.relationshipInstances[a].client);
-				//var portinstance=findPortInstanceByName(artefactinstance,deploymentModel.relationshipInstances[a].client);
-				//var port=findPortType(artefactinstance.type, portinstance.type);
-				var port = getJSON(deploymentModel.relationshipInstances[a].requiredPortInstance);
-				if(port == null)
-					return deploymentModel.relationshipInstances[a].requiredPortInstance;
-				if((port != null) && !port.isRemote){
-					connection.removeOverlay("myarrow");
-					connection.addOverlay([ "PlainArrow", { location:1 , id:"myarrow"} ]);
-				}
-			}
-			/*for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
-				if(deploymentModel.internalComponentInstances[a].destination != null){
-					var connection=instance.connect({uuids:[ deploymentModel.internalComponentInstances[a].name+"_destination", deploymentModel.internalComponentInstances[a].destination ], editable:true});
-				}
-			}*/
+		var relationshipType = getJSON(deploymentModel, "/"+deploymentModel.relationshipInstances[a].type);
+		var portType = getJSON(deploymentModel, "/"+relationshipType.requiredPort);
+
+		if((portType != null) && portType.isLocal){
+			connection.removeOverlay("myarrow");
+			connection.addOverlay([ "PlainArrow", { location:1 , id:"myarrow"} ]);
 		}
-	
-	
+	}
+}
+
+function addExecuteInstances(){
+	var tab = deploymentModel.executesInstances;
+	var length = tab.length;
+	for(k=0; k < length;k++){
+		var connection=instance.connect({uuids:[tab[k].providedExecutionPlatformInstance, tab[k].requiredExecutionPlatformInstance], paintStyle:{strokeStyle:"blue",lineWidth:20}, editable:true});
+	}
+}
+
+
+/***************************************
+* General management of deployment model
+****************************************/
+
 function loadFile(inputDiv) {
     var input, file, fr;
 	var progress = $('#'+inputDiv).find('#progressBar');
@@ -297,7 +349,7 @@ function loadFile(inputDiv) {
     input = $('#'+inputDiv).find('input').get(0);
 	
     if (!input) {
-        console.log("error","Um, couldn't find the fileinput element.",5000);
+        console.log("error","Hum, couldn't find the fileinput element.",5000);
     }
     else if (!input.files) {
         console.log("error","This browser doesn't seem to support the `files` property of file inputs",5000);
@@ -321,7 +373,8 @@ function loadFile(inputDiv) {
     }
 }
 
- function reset(){
+
+function reset(){
 	instance.reset();
 	instance.repaintEverything();
 	$( "#flowchart-demo").empty();
@@ -331,26 +384,31 @@ function loadFile(inputDiv) {
 	$( "#providerTable>tbody" ).empty();
  }
   
- //Load the deployment model
+//Load the deployment model
 function loadDeploymentModel(jsonString) {
 	deploymentModel = eval('(' + jsonString + ')');
 	
 	reset();
-	addInternalComponentType();
+	addInternalComponentTypes();
 	addVMTypes();
 	addRelationshipType();
 	addProviders();
 	instance.doWhileSuspended(function() {
 		addVMInstances();
 		addInternalComponentInstances();
+		addExternalComponentInstances();
 		instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
-		addPortInstances();
 		addRelationshipInstances();
+		addExecuteInstances();
 	});
 
 }
 
-function addInternalComponentType(){
+/********************************************
+* Build the list of buttons to manage types
+*********************************************/
+
+function addInternalComponentTypes(){
 	if(deploymentModel.internalComponents != null){
 		for(var a=0;a<deploymentModel.internalComponents.length;a++){
 			$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.internalComponents[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' data-toggle='modal' data-target='#editArtefactModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");

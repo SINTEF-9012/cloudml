@@ -44,6 +44,23 @@ function updateProgress (evt) {
     }
   }
   
+
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+String.prototype.uncapitalize = function() {
+    return this.charAt(0).toLowerCase() + this.slice(1);
+}
+
+String.prototype.uncapitalizes = function(n) {
+    var result="";
+    for(i=0;i<n;i++){
+        result+=this.charAt(i).toLowerCase();
+    }
+    return result + this.slice(n);
+}
+
   //Alert Messages
 function alertMessage(type,message,timeout) {
         alertDiv = $(document.createElement('div'));
