@@ -56,6 +56,11 @@ box-shadow: 2px 2px 19px #aaa;
 	color:black;
 }
 
+._ext {
+	background-color:#222299;
+	color:black;
+}
+
 .flowchart-demo .active {
 	border:1px dotted green;
 }

@@ -211,10 +211,12 @@
 function addVMInstances(){
 	if(deploymentModel.vmInstances != null){
 		for(a=0;a<deploymentModel.vmInstances.length;a++){
-			var nodeInfo="name:"+deploymentModel.vmInstances[a].name+
-						"&lt;br&gt; type:"+deploymentModel.vmInstances[a].type;
+			var typeInfo = getJSON(deploymentModel,"/"+deploymentModel.vmInstances[a].type);
+			var nodeInfo="name:"+deploymentModel.vmInstances[a].name+"&lt;br&gt; type:"+deploymentModel.vmInstances[a].type+"&lt;br&gt; OS:"+typeInfo.os+"&lt;br&gt; OS:"+typeInfo.provider;
 			
-			$( "#flowchart-demo").append( "<div class='window _vm' data-content='"+nodeInfo+"' data-original-title='VM Info:' id='flowchartWindow_"+deploymentModel.vmInstances[a].name+"'><strong>"+ deploymentModel.vmInstances[a].name +"</strong><br/><br></div>" );
+			$( "#flowchart-demo").append( "<div class='window _vm' data-content='"
+											+nodeInfo+"' data-original-title='VM Info:' id='flowchartWindow_"+deploymentModel.vmInstances[a].name+"'><strong>"
+											+ deploymentModel.vmInstances[a].name +"</strong><br/><br></div>" );
 			placeRandomly("flowchartWindow_"+deploymentModel.vmInstances[a].name);
 
 			$('#flowchartWindow_'+deploymentModel.vmInstances[a].name).popover({html:true});
@@ -227,8 +229,12 @@ function addVMInstances(){
 function addInternalComponentInstances(){
 	if(deploymentModel.internalComponentInstances != null){
 		for(a=0;a<deploymentModel.internalComponentInstances.length;a++){
-			$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.internalComponentInstances[a].name+"'><strong>"+ deploymentModel.internalComponentInstances[a].name +"</strong><br/><br></div>" );
+			var nodeInfo="name:"+deploymentModel.internalComponentInstances[a].name+"&lt;br&gt; Type:"+deploymentModel.internalComponentInstances[a].type;
+		
+			$( "#flowchart-demo").append( "<div class='window _art' data-content='"
+											+nodeInfo+"' data-original-title='Component Info:' id='flowchartWindow_"+deploymentModel.internalComponentInstances[a].name+"'><strong>"+ deploymentModel.internalComponentInstances[a].name +"</strong><br/><br></div>" );
 			placeRandomly("flowchartWindow_"+deploymentModel.internalComponentInstances[a].name);
+			$('#flowchartWindow_'+deploymentModel.internalComponentInstances[a].name).popover({html:true});
 			addExecutionPort(deploymentModel.internalComponentInstances[a]);
 			addPortInstances(deploymentModel.internalComponentInstances[a]);
 		}
@@ -238,8 +244,11 @@ function addInternalComponentInstances(){
 function addExternalComponentInstances(){
 	if(deploymentModel.externalComponentInstances != null){
 		for(a=0;a<deploymentModel.externalComponentInstances.length;a++){
-			$( "#flowchart-demo").append( "<div class='window _art' id='flowchartWindow_"+deploymentModel.externalComponentInstances[a].name+"'><strong>"+ deploymentModel.externalComponentInstances[a].name +"</strong><br/><br></div>" );
+			var nodeInfo="name:"+deploymentModel.externalComponentInstances[a].name+"&lt;br&gt; Type:"+deploymentModel.externalComponentInstances[a].type;
+			$( "#flowchart-demo").append( "<div class='window _vm' data-content='"
+											+nodeInfo+"' data-original-title='Component Info:' id='flowchartWindow_"+deploymentModel.externalComponentInstances[a].name+"'><strong>"+ deploymentModel.externalComponentInstances[a].name +"</strong><br/><br></div>" );
 			placeRandomly("flowchartWindow_"+deploymentModel.externalComponentInstances[a].name);
+			$('#flowchartWindow_'+deploymentModel.externalComponentInstances[a].name).popover({html:true});
 			addExecutionPort(deploymentModel.externalComponentInstances[a]);
 			addPortInstances(deploymentModel.externalComponentInstances[a]);
 		}
@@ -289,16 +298,17 @@ function addExecutionPort(obj){
 	if(tab !== null && (typeof tab !== "undefined")){
 		var length = tab.length;
 		for(j = 0 ; j < length ; j++){
-			sourceDestEndpoint.overlays[0][1].label = tab.name;
+			sourceDestEndpoint.overlays[0][1].label = tab[j].name;
 			var stringType = (obj['eClass'].split(":")[1]+"s").uncapitalizes(2);
-			instance.addEndpoint("flowchartWindow_"+obj.name, sourceDestEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj['name']+"]/providedExecutionPlatformInstances["+tab[j]['name'] +"]"});
+			console.log(stringType+" plop"+tab[j].name);
+			instance.addEndpoint("flowchartWindow_"+obj.name, sourceDestEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/providedExecutionPlatformInstances["+tab[j].name +"]"});
 		}
 	}
 	var tab = obj['requiredExecutionPlatformInstances'];
 	if(tab !== null && (typeof tab !== "undefined")){
 		targetEndpoint.overlays[0][1].label = tab.name;
-		//targetEndpoint.connectorStyle=connectorDestPaintStyle;
 		var stringType = (obj['eClass'].split(":")[1]+"s").uncapitalizes(2);
+		console.log(stringType+" plop");
 		instance.addEndpoint("flowchartWindow_"+obj.name, targetEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/requiredExecutionPlatformInstances["+tab.name +"]"});
 	}
 }
@@ -326,14 +336,23 @@ function addExecuteInstances(){
 	var tab = deploymentModel.executesInstances;
 	var length = tab.length;
 	for(k=0; k < length;k++){
-		var connection=instance.connect({uuids:[tab[k].providedExecutionPlatformInstance, tab[k].requiredExecutionPlatformInstance], paintStyle:{strokeStyle:"blue",lineWidth:20}, editable:true});
+		var connection=instance.connect({uuids:[tab[k].providedExecutionPlatformInstance, tab[k].requiredExecutionPlatformInstance], editable:true});
 	}
+}
+
+function setModelName(name){
+	$('#title').text(name);
 }
 
 
 /***************************************
 * General management of deployment model
 ****************************************/
+
+function saveFile(inputDiv){
+	if(deploymentModel)
+		window.open("data:application/octet-stream,"+JSON.stringify(deploymentModel));
+}
 
 function loadFile(inputDiv) {
     var input, file, fr;
@@ -389,10 +408,12 @@ function loadDeploymentModel(jsonString) {
 	deploymentModel = eval('(' + jsonString + ')');
 	
 	reset();
-	addInternalComponentTypes();
-	addVMTypes();
-	addRelationshipType();
-	addProviders();
+	setModelName(deploymentModel.name);
+	console.log(deploymentModel.name);
+	//addInternalComponentTypes();
+	//addVMTypes();
+	//addRelationshipType();
+	//addProviders();
 	instance.doWhileSuspended(function() {
 		addVMInstances();
 		addInternalComponentInstances();

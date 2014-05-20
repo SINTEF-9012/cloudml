@@ -31,15 +31,7 @@ function updateProperty(id,propertyId,value){
 			xpath=id+"/"+propertyId;
 		}
 		setJSON(deploymentModel,xpath, value);
-
-	}else{
-		if(propertyId != "type"){
-			tempObject[propertyId]=value;
-		}else{
-			var array=value.split("/");
-			tempObject.type="/"+array[1]+"["+array[2]+"]";
-		}
-	}	
+	}
 }
 
 function addInModel(object){
@@ -126,10 +118,6 @@ function removeBinding(name){
 	return null;
 }
 
-function setDestination(artefactId, nodeId){
-	var artefact = findArtefactInstanceByName(artefactId);
-	artefact.destination="nodeInstances["+nodeId+"]";
-}
 
 
 /*********************************************

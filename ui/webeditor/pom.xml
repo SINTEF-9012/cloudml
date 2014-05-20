@@ -19,13 +19,7 @@
         <metamodel.ecore>metamodel/CloudML-2.0.ecore</metamodel.ecore>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.kevoree.modeling</groupId>
-            <artifactId>org.kevoree.modeling.microframework</artifactId>
-            <version>${kmf.version}</version>
-        </dependency>
-    </dependencies>
+
 
     <repositories>
         <repository>
@@ -36,7 +30,6 @@
     </repositories>
 		
     <build>
-  
         <plugins>
             <plugin>
                 <groupId>org.mortbay.jetty</groupId>
@@ -52,26 +45,6 @@
                     </connectors>
                 </configuration>
             </plugin>
-            <!--<plugin>
-                <groupId>org.kevoree.modeling</groupId>
-                <artifactId>org.kevoree.modeling.kotlin.generator.mavenplugin</artifactId>
-                <version>${kmf.version}</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>ModelGen</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <ecore>${metamodel.ecore}</ecore>
-                            <packagePrefix>net</packagePrefix>
-                            <js>true</js>
-                            <events>true</events>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
         </plugins>
     </build>	
 </project>
