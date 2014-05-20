@@ -48,8 +48,8 @@ public class Extended extends Instruction {
   protected Object _execute(final Object context, final List<Change> changes) {
     Object _xblockexpression = null;
     {
-      ((ModelRepo) context).handle(this.name, this.params);
-      _xblockexpression = (null);
+      
+      _xblockexpression = ((ModelRepo) context).handle(this.name, this.params);
     }
     return _xblockexpression;
   }

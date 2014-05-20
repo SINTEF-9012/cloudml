@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
 import org.cloudml.facade.mrt.cmd.abstracts.Change;
+import org.cloudml.facade.mrt.cmd.abstracts.ContentSetter;
 import org.cloudml.facade.mrt.cmd.abstracts.Instruction;
 import org.cloudml.facade.mrt.cmd.abstracts.Listener;
 import org.cloudml.facade.mrt.cmd.gen.CloudMLCmds;
@@ -46,12 +47,16 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class Coordinator {
     
+    public static final String ADDITIONAL_PREFIX = "!additional";
+    
     CommandReception reception = null;
     //JsonCodec jsonCodec = new JsonCodec();
     CommandExecutor executor = null;    
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
     JsonCodec jsonCodec = new JsonCodec();
+    
+    Instruction lastInstruction = null;
     
     public Coordinator(){
         FacadeBridge  bridge = new FacadeBridge();
@@ -71,6 +76,7 @@ public class Coordinator {
     
     public Object process(Instruction inst, PeerStub from){
         //Do something before, such as record every instruction
+        this.lastInstruction = inst;
         inst.fromPeer = from.getID();
         return executor.execute(inst, changeList);
         //Do something after, such as...
@@ -89,8 +95,16 @@ public class Coordinator {
     }
     
     public String process(String cmdLiteral, PeerStub from){
-        Yaml yaml = CloudMLCmds.INSTANCE.getYaml();
         
+        if(cmdLiteral.startsWith(ADDITIONAL_PREFIX)){
+            String additional = cmdLiteral.substring(ADDITIONAL_PREFIX.length());
+            lastInstruction.addAdditional(additional);
+            return (String) process(lastInstruction, from);
+        }
+            
+        
+        Yaml yaml = CloudMLCmds.INSTANCE.getYaml();
+
         String ret = "";
         for (Object cmd : yaml.loadAll(cmdLiteral)) {
             Object obj = null;
