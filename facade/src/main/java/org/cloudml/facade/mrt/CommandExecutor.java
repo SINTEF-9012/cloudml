@@ -23,6 +23,7 @@
 package org.cloudml.facade.mrt;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Provider;
@@ -83,6 +84,12 @@ public class CommandExecutor {
         int curr = changes.size();
 
         if (inst instanceof Extended) {
+            if(inst.getAdditional()!=null && !inst.getAdditional().isEmpty()){
+                Extended extended = (Extended) inst;
+                if(extended.params == null)
+                    extended.params = new ArrayList<String>();
+                extended.params.addAll(inst.getAdditional());
+            }
             inst.execute(repo, changes);
             return null;
         }

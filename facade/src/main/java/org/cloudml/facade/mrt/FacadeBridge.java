@@ -40,6 +40,7 @@ public class FacadeBridge implements ModelRepo{
     
     CloudML facade = null;
     CommandFactory factory = null;
+    String longContent = null;
     
     public FacadeBridge(){
         facade = Factory.getInstance().getCloudML();
@@ -52,10 +53,17 @@ public class FacadeBridge implements ModelRepo{
         return facade.getDeploymentModel(); 
     } 
     
-    public void handle(String name, Collection<String> params){
+    public Object handle(String name, Collection<String> params){
         CloudMlCommand command = null;
         if("LoadDeployment".equals(name)){
-            command = factory.createLoadDeployment(params.iterator().next());
+            
+            if(params == null || params.isEmpty()){
+                
+                return "###Waiting for Deployment Content";
+                
+            }
+            String param = params.iterator().next();
+            command = factory.createLoadDeployment(param);
         }
         else if("Deploy".equals(name)){
             command = factory.createDeploy();
@@ -67,6 +75,7 @@ public class FacadeBridge implements ModelRepo{
             throw new RuntimeException("Command not defined in facade");
         }
         facade.fireAndForget(command);
+        return null;
     }
 
 

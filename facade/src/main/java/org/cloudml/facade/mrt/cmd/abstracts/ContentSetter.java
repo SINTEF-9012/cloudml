@@ -20,38 +20,18 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package org.cloudml.facade.mrt.cmd.abstracts;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Instruction {
-    
-    public String fromPeer = "";
-    
-    public Object execute(Object context, List<Change> changes){
-        return _execute(context, changes);
-    }
-    
-    /**
-     * This method is left to the generated instructions
-     * @param context
-     * @return 
-     */
-    protected Object _execute(final Object context, List<Change> changes){
-        return null;
-    }
-    
-    protected List<String> additional = null;
-    
-    public void addAdditional(String s){
-        if(additional == null){
-            additional = new ArrayList<String>();
-        }
-        additional.add(s);
-    }
-    
-    public List<String> getAdditional(){
-        return additional;
-    }
+/**
+ *
+ * @author huis
+ */
+public interface ContentSetter {
+    public String setContent(String content);
 }

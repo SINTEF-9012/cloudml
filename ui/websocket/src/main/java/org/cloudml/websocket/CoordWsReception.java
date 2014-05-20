@@ -94,4 +94,12 @@ public class CoordWsReception extends WebSocketServer implements CommandReceptio
         return coord;
     }
     
+    public static void main( String[] args ){
+        String prefix = "abc:";
+        
+        String s = "abc:def";
+        
+        System.out.println(s.substring(prefix.length()));
+    }
+    
 }

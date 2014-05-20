@@ -22,10 +22,12 @@
  */
 package org.cloudml.facade;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -66,6 +68,8 @@ class Facade implements CloudML, CommandHandler {
 	private Deployment deploy;
 	private boolean stopOnTimeout = false;
 	private final CloudAppDeployer deployer;
+        
+        private static final String JSON_STRING_PREFIX = "json-string:";
         
 	/**
 	 * Default constructor
@@ -313,8 +317,20 @@ class Facade implements CloudML, CommandHandler {
                 String path = command.getPathToModel();
                 if("sample://sensapp".equals(path.toLowerCase())){
                             deploy = SensApp.completeSensApp().build();
+                            final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
+                            dispatch(message);
                             return;
                         }
+                
+                if(path.trim().startsWith(JSON_STRING_PREFIX)){
+                    String content = path.trim().substring(JSON_STRING_PREFIX.length()).trim();
+                    InputStream instream = new ByteArrayInputStream(content.getBytes());
+                    deploy = (Deployment) new JsonCodec().load(instream);
+                    final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
+		    dispatch(message);
+                    return;
+                }
+                
 		final String extension = canHandle(command.getPathToModel());
                 
 		if (extension != null) {

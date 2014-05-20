@@ -55,7 +55,7 @@ public class Daemon
         //coord.setCloudMLRoot(initWithSenseApp());
         //coord.executor.repo.root = initWithMdms();
         
-        initWithSample(coord);
+        //initWithSample(coord);
 
         coord.start();
     }

@@ -33,7 +33,7 @@ public interface ModelRepo {
      
     public Deployment getRoot();
     
-    public void handle(String name, Collection<String> parameter);
+    public Object handle(String name, Collection<String> parameter);
  
     
 }
