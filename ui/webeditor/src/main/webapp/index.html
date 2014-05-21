@@ -84,9 +84,10 @@
 				<li id="Server" class="dropdown">
 					<a class="dropdown-toggle" data-toggle="dropdown" href="#Server">Server<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li><a href="#" data-toggle="modal" data-target="#connectModal">Connect ...</a></li>
-						<li><a href="#" onclick="loadOnServer();">Load model in the server</a></li>
-						<li><a href="#" onclick="deploy();">Deploy ...</a></li>
+						<li><a href="#" data-toggle='modal' data-target="#connectModal">Connect ...</a></li>
+						<li><a href="#" onclick='send("!extended { name : LoadDeployment }");send("!additional json-string:"+JSON.stringify(deploymentModel))'>Push model to the server</a></li>
+						<li><a href="#" onclick='send("!getSnapshot {path : /}");'>Load model from the server</a></li>
+						<li><a href="#" onclick='send("!extended { name : Deploy }")'>Deploy ...</a></li>
 					</ul>
 				</li>
               <li><a href="#about">About</a></li>
@@ -142,7 +143,7 @@
 						<div class="input-group">
 							<input type="text" id="url" class="form-control" placeholder="URL">
 							<span class="input-group-btn">
-								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());send("!getSnapshot {path : /}");send("!listenToAny");' type="button">Go!</button>
+								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());send("!listenToAny");' type="button">Go!</button>
 							</span>
 						</div>
 					</div>
@@ -178,15 +179,15 @@
 		<div class="modal-content">
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-			<h4 class="modal-title" id="resetModalLabel">Connect to a CloudML Server</h4>
+			<h4 class="modal-title" id="connectModalLabel">Connect to a CloudML Server</h4>
 			</div>
 			<div class="modal-body">
 				<div class="span4">
 					<div class="col-lg-6">
 						<div class="input-group">
-							<input type="text" id="url" class="form-control" placeholder="URL">
+							<input type="text" id="urlWS" class="form-control" placeholder="URL">
 							<span class="input-group-btn">
-								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());send("!getSnapshot {path : /}");send("!listenToAny");' type="button">Go!</button>
+								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#urlWS").val());send("!listenToAny");' type="button">Go!</button>
 							</span>
 						</div>
 					</div>
