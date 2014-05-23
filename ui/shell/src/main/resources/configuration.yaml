@@ -15,7 +15,7 @@ prompt: "CloudML > "
 
 #
 # The version number displayed on startup and by the 'version' command
-version: CloudML v1.0
+version: CloudML v2.0
 
 #
 # The warranty disclaimer, displayed on startup 
