@@ -31,6 +31,13 @@ import java.net.*;
  * @author Lorenzo Cianciaruso
  */
 public class HTTPConnection {
+
+    /**
+     * This methods makes an http post request
+     * @param targetUrl target of the request
+     * @param parameter body of the request
+     * @return response in StringBuffer variable
+     */
     public StringBuffer postRequest(String targetUrl, String parameter) {
         URL url;
         HttpURLConnection connection;
@@ -64,6 +71,12 @@ public class HTTPConnection {
             return null;
         }
     }
+
+    /**
+     * This methods maked a get request
+     * @param targetUrl target of the request
+     * @return response in a StringBuffer variable
+     */
     public StringBuffer getRequest(String targetUrl){
         URL url;
         HttpURLConnection connection = null;
