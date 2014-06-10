@@ -31,6 +31,8 @@ public class ExternalComponent extends Component {
     private String endPoint;
     private String credentials;
     protected Provider provider;
+    private String location;
+    private String serviceType;
 
     public ExternalComponent(String name) {
         super(name);
@@ -74,6 +76,10 @@ public class ExternalComponent extends Component {
         return this.passwd;
     }
 
+    public String getServiceType() {
+        return this.serviceType;
+    }
+
     public boolean isProvidedBy(Provider provider) {
         return this.provider.equals(provider);
     }
@@ -91,6 +97,10 @@ public class ExternalComponent extends Component {
         return this.endPoint;
     }
 
+    public String getLocation(){
+        return this.location;
+    }
+
   
     public void setLogin(String login) {
         this.login = login;
@@ -106,6 +116,14 @@ public class ExternalComponent extends Component {
 
     public void setCredentials(String credentials) {
         this.credentials = credentials;
+    }
+
+    public void setLocation(String location){
+        this.location=location;
+    }
+
+    public void setServiceType(String type){
+        this.serviceType=type;
     }
 
     @Override

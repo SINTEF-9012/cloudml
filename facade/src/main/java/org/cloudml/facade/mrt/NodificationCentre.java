@@ -30,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.facade.mrt.cmd.abstracts.Change;
 import org.cloudml.facade.mrt.cmd.abstracts.Listener;
-import org.java_websocket.exceptions.WebsocketNotConnectedException;
 
 /**
  *
@@ -89,7 +88,7 @@ public class NodificationCentre {
                         checkAndNotify();
                     } catch (InterruptedException ex) {
                         Logger.getLogger(NodificationCentre.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (WebsocketNotConnectedException ex){
+                    } catch (Exception ex){
                         ex.printStackTrace();
                         Logger.getLogger(NodificationCentre.class.getName()).log(Level.SEVERE, null, ex);
                     }

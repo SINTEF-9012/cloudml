@@ -87,6 +87,10 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
         this.status = State.RUNNING;
     }
     
+    public void setStatus(String state){
+        this.status = State.valueOf(state);
+    }
+    
     @Override
     public String toString() {
         return "Instance " + getQualifiedName();

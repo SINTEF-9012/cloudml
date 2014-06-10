@@ -447,22 +447,28 @@ public class CloudAppDeployer {
     private void provisionAPlatform(ExternalComponentInstance n) {
         ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
         ExternalComponent ec = eci.getType();
-
-        if(!ec.getProvidedExecutionPlatforms().isEmpty())  //A simplified assumption: A platform that does not provide any execution platforms is a *DB*
-            return;
         Provider p = eci.getType().getProvider();
 
-        PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
-        connector.createDBInstance(
-                p.hasProperty("DB-Engine")?p.getProperties().valueOf("DB-Engine"):null,
-                p.hasProperty("DB-Version")?p.getProperties().valueOf("DB-Version"):null,
-                eci.getName(),
-                p.hasProperty("DB-Name")?p.getProperties().valueOf("DB-Name"):null,
-                ec.getLogin(),
-                ec.getPasswd(),
-                0,
-                null);
-        eci.setPublicAddress(connector.getDBEndPoint(eci.getName(), 600));
+        if(ec.getServiceType() == null)
+            return;
+        if(ec.getServiceType().toLowerCase().equals("database")){//For now we use string but this will evolve to an enum
+            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
+            connector.createDBInstance(
+                    p.hasProperty("DB-Engine")?p.getProperties().valueOf("DB-Engine"):null,
+                    p.hasProperty("DB-Version")?p.getProperties().valueOf("DB-Version"):null,
+                    eci.getName(),
+                    p.hasProperty("DB-Name")?p.getProperties().valueOf("DB-Name"):null,
+                    ec.getLogin(),
+                    ec.getPasswd(),
+                    0,
+                    null);
+            eci.setPublicAddress(connector.getDBEndPoint(eci.getName(), 600));
+        }
+        if(ec.getServiceType().toLowerCase().equals("messagequeue")){
+            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
+            String url=connector.createQueue(n.getName());
+            eci.setPublicAddress(url);
+        }
     }
 
 

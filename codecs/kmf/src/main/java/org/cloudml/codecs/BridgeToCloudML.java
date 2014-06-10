@@ -164,6 +164,10 @@ public class BridgeToCloudML {
                 ec.setLogin(kExternalComponent.getLogin());
             if(kExternalComponent.getPasswd() != null)
                 ec.setPasswd(kExternalComponent.getPasswd());
+            if(kExternalComponent.getLocation() != null)
+                ec.setLocation(kExternalComponent.getLocation());
+            if(kExternalComponent.getServiceType() != null)
+                ec.setServiceType(kExternalComponent.getServiceType());
 
             convertAndAddProvidedPortsToPOJO(kExternalComponent.getProvidedPorts(), ec);
             initProvidedExecutionPlatforms(kExternalComponent, ec);

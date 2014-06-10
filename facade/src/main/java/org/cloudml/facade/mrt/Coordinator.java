@@ -28,6 +28,7 @@ package org.cloudml.facade.mrt;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,7 @@ import org.cloudml.facade.mrt.cmd.abstracts.ContentSetter;
 import org.cloudml.facade.mrt.cmd.abstracts.Instruction;
 import org.cloudml.facade.mrt.cmd.abstracts.Listener;
 import org.cloudml.facade.mrt.cmd.gen.CloudMLCmds;
+import org.cloudml.facade.mrt.cmd.gen.Extended;
 import org.cloudml.facade.mrt.cmd.gen.Snapshot;
 import org.yaml.snakeyaml.Yaml;
 
@@ -64,8 +66,27 @@ public class Coordinator {
         
     }
     
+    public Coordinator(String initModel){
+        this();
+        Extended extended = new Extended();
+        extended.name = "LoadDeployment";
+        extended.params = Arrays.asList("sample://sensApp");
+        this.process(extended, new PeerStub(){
+            @Override
+            public String getID() {
+                return "RootUser";
+            }
+            @Override
+            public void sendMessage(Object message) {
+                System.out.println(String.format("RootUser:>> %s", message));
+            }
+            
+        });
+    }
+    
     public void start(){
-        reception.start();
+        if(reception !=null)
+            reception.start();
         notificationCentre.coordinator = this;
         notificationCentre.startListening();
     }

@@ -119,7 +119,7 @@ body {
   height:900px;
   text-align: center;
   position: relative;
-  max-width:850px;
+  /*max-width:850px;*/
 }
 
 .demo {

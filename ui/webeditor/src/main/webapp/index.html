@@ -75,10 +75,16 @@
 				<li id="Edit" class="dropdown">
 					<a class="dropdown-toggle" data-toggle="dropdown" href="#Edit">Edit<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li><a href="#" >VM type</a></li>
+						<li><a href="#" data-toggle="modal" data-target="#createVMModal">VM type</a></li>
 						<li><a href="#" >ExternalComponent type</a></li>
 						<li><a href="#" >InternalComponent type</a></li>
 						<li><a href="#" >Binding type</a></li>
+						<li class="divider"></li>
+						<li><a href="#" data-toggle="modal" data-target="#instantiateVMModal">Instantiate VM</a></li>
+						<li><a href="#" data-toggle="modal" data-target="#instantiateInternalComponentModal">Instantiate InternalComponent</a></li>
+						<li><a href="#" data-toggle="modal" data-target="#instantiateExternalComponentModal">Instantiate ExternalComponent</a></li>
+						<li><a href="#">Instantiate Relationship</a></li>
+						<li><a href="#">Instantiate ExecuteOn</a></li>
 					</ul>
 				</li>
 				<li id="Server" class="dropdown">
@@ -201,10 +207,194 @@
 	</div><!-- /.modal -->
 	
 	
+	<!-- CREATE VM Modal -->
+	<div class="modal fade" id="createVMModal" tabindex="-1" role="dialog" aria-labelledby="createVMModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h4 class="modal-title" id="createVMModalLabel">Create a VM Type</h4>
+			</div>
+			<div class="modal-body">
+				<div class="span4">
+					<div class="col-lg-6">
+						<div class="input-group">
+						<span class="input-group-addon">Name</span>
+						<input type="text" id="name" class="form-control" placeholder="name"><br />
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">MinCores</span>
+						<input type="text" id="minCores" class="form-control" placeholder="minCore"><br />
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">MaxCores</span>
+						<input type="text" id="maxCores" class="form-control" placeholder="maxCore"><br />
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">MinRam</span>
+						<input type="text" id="minRam" class="form-control" placeholder="minRam"><br />
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">MaxRam</span>
+						<input type="text" id="maxRam" class="form-control" placeholder="maxRam"><br />
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">MinStorage</span>
+						<input type="text" id="minStorage" class="form-control" placeholder="maxDisk">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">MaxStorage</span>
+						<input type="text" id="maxStorage" class="form-control" placeholder="maxDisk">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">Location</span>
+						<input type="text" id="location" class="form-control" placeholder="location">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">OS</span>
+						<input type="text" id="OS" class="form-control" placeholder="OS">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">sshKey</span>
+						<input type="text" id="sshKey" class="form-control" placeholder="sshKey">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">privateKey</span>
+						<input type="text" id="privateKey" class="form-control" placeholder="privateKey">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">Is64</span>
+						<input type="checkbox" id="Is64" class="form-control" placeholder="Is64">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">Provider</span>
+						<input type="text" id="provider" class="form-control" placeholder="Provider">
+						</div><br />
+						<div class="input-group">
+						<span class="input-group-addon">Image Id</span>
+						<input type="text" id="imageId" class="form-control" placeholder="imageId">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal">Next</button>
+			</div>
+		</div><!-- /.modal-dialog -->
+		</div>
+	</div><!-- /.modal -->
+	
+		<!-- Instantiate InternalComponent MODAL-->
+		<div class="modal fade" id="instantiateInternalComponentModal" tabindex="-1" role="dialog" aria-labelledby="instantiateInternalComponentModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="instantiateInternalComponentModalLabel">Instantiate an Internal Component</h4>
+					</div>
+					<div class="modal-body">
+						<div class="span4">
+							<div class="col-lg-6">
+								<div class="input-group">
+								<span class="input-group-addon">Name</span>
+								<input type="text" id="name" class="form-control" placeholder="name"><br />
+								</div><br />
+								<div class="input-group">
+								<span class="input-group-addon">Type</span>
+								<select class="form-control" id="ICtype">
+								</select>
+								</div><br />
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal" onclick="">Instantiate</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		
+		<!-- Instantiate ExternalComponent MODAL-->
+		<div class="modal fade" id="instantiateExternalComponentModal" tabindex="-1" role="dialog" aria-labelledby="instantiateExternalComponentModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="instantiateExternalComponentModalLabel">Instantiate an External Component</h4>
+					</div>
+					<div class="modal-body">
+						<div class="span4">
+							<div class="col-lg-6">
+								<div class="input-group">
+								<span class="input-group-addon">Name</span>
+								<input type="text" id="name" class="form-control" placeholder="name"><br />
+								</div><br />
+								<div class="input-group">
+								<span class="input-group-addon">Type</span>
+								<select class="form-control" id="ECtype">
+								</select>
+								</div><br />
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal" onclick="">Instantiate</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		
+		<!-- Instantiate ExternalComponent MODAL-->
+		<div class="modal fade" id="instantiateVMModal" tabindex="-1" role="dialog" aria-labelledby="instantiateVMModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="instantiateVMModalLabel">Instantiate a VM</h4>
+					</div>
+					<div class="modal-body">
+						<div class="span4">
+							<div class="col-lg-6">
+								<div class="input-group">
+								<span class="input-group-addon">Name</span>
+								<input type="text" id="name" class="form-control" placeholder="name"><br />
+								</div><br />
+								<div class="input-group">
+								<span class="input-group-addon">Type</span>
+								<select class="form-control" id="VMtype">
+								</select>
+								</div><br />
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal" onclick="">Instantiate</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+	
 		<div id="main"> 
 			<h3 id="title"></h3>
             <div class="demo flowchart-demo" id="flowchart-demo">
-            </div>          
+            </div>        
+
+			<!--<div class="btn-group">
+			  <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+				Instantiate<span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu" role="menu">
+				<li><a href="#" data-toggle="modal" data-target="#instantiateVMModal">VM</a></li>
+				<li><a href="#" data-toggle="modal" data-target="#instantiateInternalComponentModal">InternalComponent</a></li>
+				<li><a href="#" data-toggle="modal" data-target="#instantiateExternalComponentModal">ExternalComponent</a></li>
+				<li><a href="#">Relationship</a></li>
+				<li><a href="#">ExecuteOn</a></li>
+			  </ul>
+			</div>-->
         </div>
 		
 

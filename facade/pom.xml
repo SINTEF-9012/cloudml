@@ -91,5 +91,62 @@
         </dependency>
 		
     </dependencies>
+    <build>
+    <plugins>
+    <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+            <archive>
+                <manifestEntries>
+                    <Class-Path>aws-ec2-1.5.4.jar</Class-Path>
+                </manifestEntries>
+            </archive>
+            <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+            </descriptorRefs>
+            <finalName>cloudml-library</finalName>
+            <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+            <execution>
+                <id>make-assembly</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>single</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+            <execution>
+                <id>copy</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>copy</goal>
+                </goals>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>org.jclouds.provider</groupId>
+                            <artifactId>aws-ec2</artifactId>
+                            <version>1.5.4</version>
+                            <overWrite>false</overWrite>
+                            <destFileName>aws-ec2-1.5.4.jar</destFileName>
+                        </artifactItem>
+                    </artifactItems>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
+                </configuration>
+            </execution>
+        </executions>
+    </plugin>
+    </plugins>
+    </build>
 
 </project>

@@ -43,6 +43,8 @@ import eu.cloud4soa.api.util.exception.adapter.Cloud4SoaException;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule.Paas;
 import eu.cloud4soa.governance.ems.IExecutionManagementService;
+
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -145,6 +147,21 @@ public class Cloud4soaConnector implements PaaSConnector {
 
         }
 
+    }
+
+    @Override
+    public String createQueue(String name) {
+        throw new IllegalStateException("not supported");
+    }
+
+    @Override
+    public void deleteQueue(String name) {
+        throw new IllegalStateException("not supported");
+    }
+
+    @Override
+    public List<String> listQueues() {
+        throw new IllegalStateException("not supported");
     }
 
 

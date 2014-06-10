@@ -69,6 +69,13 @@ import com.amazonaws.services.rds.model.Endpoint;
 import com.amazonaws.services.rds.model.InvalidDBInstanceStateException;
 import com.amazonaws.services.rds.model.ModifyDBInstanceRequest;
 import com.amazonaws.services.rds.model.RevokeDBSecurityGroupIngressRequest;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClient;
+import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.services.sqs.model.CreateQueueRequest;
+import com.amazonaws.services.sqs.model.CreateQueueResult;
+import com.amazonaws.services.sqs.model.DeleteQueueRequest;
+import com.amazonaws.services.sqs.model.ListQueuesResult;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,8 +109,9 @@ public class BeanstalkConnector implements PaaSConnector {
     private AWSCredentials awsCredentials;
     private String beanstalkEndpoint;
     private String rdsEndpoint;
+    private String sqsEndpoint;
     private AmazonRDSClient rdsClient;
-    
+    private AmazonSQSClient sqsClient;
 
 
     Map<String, CreateDBInstanceRequest> previousRequests = new HashMap<String, CreateDBInstanceRequest>();
@@ -118,6 +126,10 @@ public class BeanstalkConnector implements PaaSConnector {
         this.rdsEndpoint = String.format("rds.%s.amazonaws.com", region);
         rdsClient = new AmazonRDSClient(awsCredentials);
         rdsClient.setEndpoint(rdsEndpoint);
+
+        this.sqsEndpoint = String.format("sqs.%s.amazonaws.com", region);
+        sqsClient=new AmazonSQSAsyncClient(awsCredentials);
+        sqsClient.setEndpoint(this.sqsEndpoint);
     }
 
     public void createApplication(String name) {
@@ -431,6 +443,23 @@ public class BeanstalkConnector implements PaaSConnector {
         request.setDBInstanceIdentifier(dbInstanceIdentifier);
         rdsClient.deleteDBInstance(request);
 
+    }
+
+    public String createQueue(String name){
+        CreateQueueRequest request=new CreateQueueRequest();
+        request.setQueueName(name);
+        CreateQueueResult res= sqsClient.createQueue(request);
+        return res.getQueueUrl();
+    }
+
+    public void deleteQueue(String name){
+        DeleteQueueRequest request = new DeleteQueueRequest(name);
+        sqsClient.deleteQueue(request);
+    }
+
+    public List<String> listQueues(){
+        ListQueuesResult result= sqsClient.listQueues();
+        return result.getQueueUrls();
     }
 
 }

@@ -1,33 +1,3 @@
-JSON Codec
-==========
-
-###Usage
-
-This codec makes it possible to load/save CloudML models from/to JSON files.
-
-It can be used programmatically directly as follows:
-```java
-Codec jsonCodec=new JsonCodec();
-OutputStream streamResult=new java.io.FileOutputStream("sensappTEST.json");
-jsonCodec.save(model,streamResult);
-```
-
-Or via the Facade:
-```java
-```
-
-Or via the Shell using the following commands:
-```java
-load deployment from file.json
-store deployment in file.json
-```
-
-
-###The JSON Syntax
-Please for details about the concepts of the metamodel refer to the [wiki page](https://github.com/SINTEF-9012/cloudml/wiki).
-
-Name of the deployment model and list of providers:
-```json
 {
 	"eClass" : "net.cloudml.core:CloudMLModel",
 	"name" : "cloudbees-deployment",
@@ -43,11 +13,7 @@ Name of the deployment model and list of providers:
 			]
 		}
 	],
-```
-
-List of internal components
-```json
-"internalComponents" : [{
+	"internalComponents" : [{
 			"eClass" : "net.cloudml.core:InternalComponent",
 			"name" : "granny-war",
 			"properties" : [{
@@ -76,11 +42,34 @@ List of internal components
 			}
 		}
 	],
-```
-
-List of internal components instances
-```json
-"internalComponentInstances" : [{
+	"externalComponents" : [{
+			"eClass" : "net.cloudml.core:ExternalComponent",
+			"name" : "granny-cloudml",
+			"provider" : "providers[CloudBees]",
+			"providedExecutionPlatforms" : [{
+					"eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
+					"name" : "tomcatProvided",
+					"owner" : "externalComponents[granny-cloudml]"
+				}
+			]
+		}, {
+			"eClass" : "net.cloudml.core:ExternalComponent",
+			"name" : "cbdb",
+			"serviceType" : "database",
+			"login" : "sintef",
+			"passwd" : "password123",
+			"provider" : "providers[CloudBees]",
+			"providedPorts" : [{
+					"eClass" : "net.cloudml.core:ProvidedPort",
+					"name" : "db",
+					"isLocal" : true,
+					"portNumber" : "0",
+					"component" : "externalComponents[cbdb]"
+				}
+			]
+		}
+	],
+	"internalComponentInstances" : [{
 			"eClass" : "net.cloudml.core:InternalComponentInstance",
 			"name" : "granny-war-i",
 			"type" : "internalComponents[granny-war]",
@@ -98,77 +87,7 @@ List of internal components instances
 			}
 		}
 	],
-```
-
-List of VMs
-```json
-"vms" : [{
-			"eClass" : "net.cloudml.core:VM",
-			"name" : "ML",
-			"minRam" : "1024",
-			"maxRam" : "0",
-			"minCores" : "1",
-			"maxCores" : "0",
-			"minStorage" : "10",
-			"maxStorage" : "0",
-			"os" : "ubuntu",
-			"is64os" : true,
-			"securityGroup" : "SensApp",
-			"sshKey" : "cloudml",
-			"groupName" : "sensapp",
-			"privateKey" : "cloudml.pem",
-			"provider" : "providers[openstack-nova]",
-			"imageId" : "RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4",
-			"properties" : [{
-					"eClass" : "net.cloudml.core:Property",
-					"name" : "KeyPath",
-					"value" : "./cloudml.pem"
-				}
-			],
-			"providedExecutionPlatforms" : [{
-					"eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
-					"name" : "m1Provided",
-					"owner" : "vms[ML]"
-				}
-			]
-		}
-```
-		
-List of VM instances
-```json
-"vmInstances" : [{
-			"eClass" : "net.cloudml.core:VMInstance",
-			"name" : "sensapp-ml1",
-			"publicAddress" : "no address given",
-			"type" : "vms[ML]",
-			"providedExecutionPlatformInstances" : [{
-					"eClass" : "net.cloudml.core:ProvidedExecutionPlatformInstance",
-					"name" : "m1Provided-541856653",
-					"owner" : "vmInstances[sensapp-ml1]",
-					"type" : "vms[ML]/providedExecutionPlatforms[m1Provided]"
-				}
-			]
-		}
-```
-
-List of external components
-```json
-"externalComponents" : [{
-			"eClass" : "net.cloudml.core:ExternalComponent",
-			"name" : "granny-cloudml",
-			"provider" : "providers[CloudBees]",
-			"providedExecutionPlatforms" : [{
-					"eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
-					"name" : "tomcatProvided",
-					"owner" : "externalComponents[granny-cloudml]"
-				}
-			]
-		}
-```
-
-List of external component instances
-```json
-"externalComponentInstances" : [{
+	"externalComponentInstances" : [{
 			"eClass" : "net.cloudml.core:ExternalComponentInstance",
 			"name" : "granny-cloudml1",
 			"type" : "externalComponents[granny-cloudml]",
@@ -179,24 +98,65 @@ List of external component instances
 					"type" : "externalComponents[granny-cloudml]/providedExecutionPlatforms[tomcatProvided]"
 				}
 			]
+		}, {
+			"eClass" : "net.cloudml.core:ExternalComponentInstance",
+			"name" : "cbdb1",
+			"type" : "externalComponents[cbdb]",
+			"providedPortInstances" : [{
+					"eClass" : "net.cloudml.core:ProvidedPortInstance",
+					"name" : "db-803038999",
+					"type" : "externalComponents[cbdb]/providedPorts[db]"
+				}
+			]
 		}
-```
-
-List of Relationships
-```json
-"relationships" : [{
+	],
+	"relationships" : [{
 			"eClass" : "net.cloudml.core:Relationship",
 			"name" : "dbrel",
 			"requiredPort" : "internalComponents[granny-war]/requiredPorts[dbr]",
 			"providedPort" : "externalComponents[cbdb]/providedPorts[db]",
+			"resources" : [{
+					"eClass" : "net.cloudml.core:Resource",
+					"name" : "no name",
+					"properties" : [{
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "path_dburl",
+							"value" : "@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;url&quot;]/@value"
+						}, {
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "entry_spring",
+							"value" : "WEB-INF/classes/META-INF/spring/app-context.xml"
+						}, {
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "value_dburl",
+							"value" : "jdbc:mysql://@instance{providedEnd/owner/value/publicAddress}"
+						}, {
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "value_dbpassword",
+							"value" : "@instance{providedEnd/owner/value/type/passwd}"
+						}, {
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "path_dbpassword",
+							"value" : "@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;username&quot;]/@value"
+						}, {
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "valet",
+							"value" : "war-xml"
+						}, {
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "path_dbuser",
+							"value" : "@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;username&quot;]/@value"
+						}, {
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "value_dbuser",
+							"value" : "@instance{providedEnd/owner/value/type/login}"
+						}
+					]
+				}
 			]
 		}
 	],
-```
-
-List of Relationship instances
-```json
-"relationshipInstances" : [{
+	"relationshipInstances" : [{
 			"eClass" : "net.cloudml.core:RelationshipInstance",
 			"name" : "dbreli",
 			"type" : "relationships[dbrel]",
@@ -204,15 +164,11 @@ List of Relationship instances
 			"providedPortInstance" : "externalComponentInstances[cbdb1]/providedPortInstances[db-803038999]"
 		}
 	],
-```
-
-List of Execution bindings
-```json
-"executesInstances" : [{
+	"executesInstances" : [{
 			"eClass" : "net.cloudml.core:ExecuteInstance",
 			"name" : "runOn1983021251",
 			"providedExecutionPlatformInstance" : "externalComponentInstances[granny-cloudml1]/providedExecutionPlatformInstances[tomcatProvided-478693748]",
 			"requiredExecutionPlatformInstance" : "internalComponentInstances[granny-war-i]/requiredExecutionPlatformInstances[tomcat-592730653]"
 		}
 	]
-```
+}

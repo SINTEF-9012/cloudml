@@ -410,8 +410,9 @@ function loadDeploymentModel(jsonString) {
 	reset();
 	setModelName(deploymentModel.name);
 	console.log(deploymentModel.name);
-	//addInternalComponentTypes();
-	//addVMTypes();
+	addInternalComponentTypes();
+	addVMTypes();
+	addExternalComponentTypes();
 	//addRelationshipType();
 	//addProviders();
 	instance.doWhileSuspended(function() {
@@ -432,7 +433,8 @@ function loadDeploymentModel(jsonString) {
 function addInternalComponentTypes(){
 	if(deploymentModel.internalComponents != null){
 		for(var a=0;a<deploymentModel.internalComponents.length;a++){
-			$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.internalComponents[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' data-toggle='modal' data-target='#editArtefactModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			//$( "#artefactTable>tbody" ).append("<tr><td>"+deploymentModel.internalComponents[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button' data-toggle='modal' data-target='#editArtefactModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			$("#ICtype").append("<option value='"+deploymentModel.internalComponents[a].name+"'>"+deploymentModel.internalComponents[a].name+"</option>");
 		}
 	}
 }
@@ -448,7 +450,17 @@ function addRelationshipType(){
 function addVMTypes(){
 	if(deploymentModel.vms != null){
 		for(var a=0;a<deploymentModel.vms.length;a++){
-			$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.vms[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button'   data-toggle='modal' data-target='#editNodeModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			//$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.vms[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button'   data-toggle='modal' data-target='#editNodeModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			$("#VMtype").append("<option value='"+deploymentModel.vms[a].name+"'>"+deploymentModel.vms[a].name+"</option>");
+		}
+	}
+}
+
+function addExternalComponentTypes(){
+	if(deploymentModel.externalComponents != null){
+		for(var a=0;a<deploymentModel.externalComponents.length;a++){
+			//$( "#nodeTable>tbody" ).append("<tr><td>"+deploymentModel.vms[a].name+" </td><td><button type='button' class='btn btn-xs btn-primary'>Instantiate</button>&nbsp;<button type='button'   data-toggle='modal' data-target='#editNodeModal' class='btn btn-xs btn-warning'>Edit</button>&nbsp;<button type='button' class='btn btn-xs btn-danger'><b>x</b></button></td></tr>");
+			$("#ECtype").append("<option value='"+deploymentModel.externalComponents[a].name+"'>"+deploymentModel.externalComponents[a].name+"</option>");
 		}
 	}
 }

@@ -22,9 +22,12 @@
  */
 package org.cloudml.core;
 
+import java.sql.Timestamp;
+
 public class Property extends NamedElement {
 
     public static final String UNDEFINED = null;
+    public static final String CONCAT_IDENTIFIER = "_";
     private String value;
 
     public Property(String name) {
@@ -36,8 +39,24 @@ public class Property extends NamedElement {
         this.value = value;
     }
 
+    public Property(String name, String value, Timestamp timestamp){
+        super(name);
+        this.value = value+ CONCAT_IDENTIFIER +timestamp.getTime();
+    }
+
     public String getValue() {
         return value;
+    }
+
+    public Timestamp getTimestamp(){
+        int index= value.lastIndexOf(CONCAT_IDENTIFIER);
+        String timestamp = value.substring(index+1);
+        return (new Timestamp(Long.valueOf(timestamp)));
+    }
+
+    public String getValueWithTimestamp(){
+        int index= value.lastIndexOf(CONCAT_IDENTIFIER);
+        return value.substring(0,index);
     }
 
     public boolean hasValue() {
@@ -50,6 +69,10 @@ public class Property extends NamedElement {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public void setValue(String value, Timestamp timestamp){
+        this.value = value+ CONCAT_IDENTIFIER +timestamp.getTime();
     }
 
     @Override
@@ -68,4 +91,5 @@ public class Property extends NamedElement {
     public String toString() {
         return String.format("(%s = %s)", getName(), getValue());
     }
-}
+
+  }

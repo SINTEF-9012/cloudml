@@ -23,6 +23,7 @@
 package org.cloudml.connectors;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface PaaSConnector{
     
@@ -34,6 +35,12 @@ public interface PaaSConnector{
     String getDBEndPoint(String dbInstanceId, int timeout);
     
     public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout);
+
+    public String createQueue(String name);
+
+    public void deleteQueue(String name);
+
+    public List<String> listQueues();
     
 //Should be part of the interface at some point
 	//public void createApplication();

@@ -1,7 +1,10 @@
 Codecs
 ==============
 
-A set of codecs to load/save CloudML models from/to serialized forms (e.g. JSON, XMI).
+A set of codecs to load/save CloudML models from/to serialized forms:
+* [JSON](https://github.com/SINTEF-9012/cloudml/tree/master/codecs/json)
+* [XMI](https://github.com/SINTEF-9012/cloudml/tree/master/codecs/xmi)
+* [DOT](https://github.com/SINTEF-9012/cloudml/tree/master/codecs/dot)
 
 Codecs implement this simple Java interface:
 

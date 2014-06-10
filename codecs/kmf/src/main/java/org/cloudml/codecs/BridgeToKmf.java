@@ -191,6 +191,10 @@ public class BridgeToKmf {
                     kec.setLogin(ec.getLogin());
                 if(ec.getPasswd() != null)
                     kec.setPasswd(ec.getPasswd());
+                if(ec.getLocation() != null)
+                    kec.setLocation(ec.getLocation());
+                if(ec.getServiceType() != null)
+                    kec.setServiceType(ec.getServiceType());
                 initProvidedExecutionPlatforms(ec, kec);
                 convertAndAddProvidedPorts(ec.getProvidedPorts().toList(),kec);
                 this.externalComponents.put(kec.getName(), kec);

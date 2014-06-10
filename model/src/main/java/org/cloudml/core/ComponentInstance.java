@@ -33,10 +33,36 @@ import org.cloudml.core.validation.Report;
 public abstract class ComponentInstance<T extends Component> extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
 
     public static enum State {
-
+        /**
+         * The node is in transition.
+         */
+        PENDING,
+        /**
+         * The node is visible, and in the process of being deleted.
+         * Available on jCLouds only.
+         */
+        TERMINATED,
+        /**
+         * The node is deployed, but suspended or stopped.
+         */
         STOPPED,
+        /**
+         * The node is available for requests
+         */
         RUNNING,
+        /**
+         * There is an error on the node
+         */
         ERROR,
+        /**
+         * The state of the node is unrecognized.
+         */
+        UNRECOGNIZED,
+        /**
+         * This status is available only on Flexiant
+         */
+        RECOVERY;
+
     }
     private final OptionalOwner<Deployment> owner;
     private T type;

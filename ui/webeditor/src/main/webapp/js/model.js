@@ -59,7 +59,11 @@ function removeInModel(path){
 	}
 }
 
-function instanciateNode(id, typeOfNode, ip){
+/*******************************************
+* Methods to instantiate
+********************************************/
+
+function instanciateVM(id, typeOfNode, ip){
 	var node=new Object();
 	node.eClass="net.cloudml.core:NodeInstance";
 	node.name=id;
@@ -70,7 +74,7 @@ function instanciateNode(id, typeOfNode, ip){
 	deploymentModel.nodeInstances.push(node);
 }
 
-function instanciateArtefact(id, typeOfArtefact, dest, required,provided){
+function instanciateInternalComponent(id, typeOfArtefact, dest, required,provided){
 	var artefact=new Object();
 	artefact.eClass="net.cloudml.core:ArtefactInstance";
 	artefact.name=id;
@@ -81,115 +85,43 @@ function instanciateArtefact(id, typeOfArtefact, dest, required,provided){
 	deploymentModel.artefactInstances.push(artefact);
 }
 
-function instanciateBinding(){
+function instanciateExternalComponent(){
 
 }
 
-function removeNode(name){
-	for(var a=0; a<deploymentModel.nodeInstances.length;a++){
-		var instance=deploymentModel.nodeInstances[a];
+/*******************************************
+* Methods to remove instances
+********************************************/
+
+function removeVMInstance(name){
+	for(var a=0; a<deploymentModel.vms.length;a++){
+		var instance=deploymentModel.vms[a];
 		if(instance.name.indexOf(name) >= 0){
-			deploymentModel.nodeInstances.splice(a,1);
+			deploymentModel.vms.splice(a,1);
 			return instance;
 		}
 	}
 	return null;
 }
 
-function removeArtefact(name){
-	for(var a=0; a<deploymentModel.artefactInstances.length;a++){
-		var instance=deploymentModel.artefactInstances[a];
+function removeInternalComponentInstance(name){
+	for(var a=0; a<deploymentModel.internalComponentInstances.length;a++){
+		var instance=deploymentModel.internalComponentInstances[a];
 		if(instance.name.indexOf("name") >= 0){
-			deploymentModel.artefactInstances.splice(a,1);
+			deploymentModel.internalComponentInstances.splice(a,1);
 			return instance;
 		}
 	}
 	return null;
 }
 
-function removeBinding(name){
-	for(var a=0; a<deploymentModel.bindingInstances.length;a++){
-		var instance=deploymentModel.bindingInstances[a];
+function removeRelationshipInstance(name){
+	for(var a=0; a<deploymentModel.relationshipInstances.length;a++){
+		var instance=deploymentModel.relationshipInstances[a];
 		if(instance.name.indexOf("name") >= 0){
-			deploymentModel.bindingInstances.splice(a,1);
+			deploymentModel.relationshipInstances.splice(a,1);
 			return instance;
 		}
 	}
 	return null;
 }
-
-
-
-/*********************************************
-* Looking for something in the model ?
-* Should not be used anymore => jspointer
-**********************************************/
-
-
-function findPortType(artefactTypeName,portTypeName){
-	if(deploymentModel.artefactTypes != null){
-		for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-			//very crappy but I am lazy
-			var aname="artefactTypes["+deploymentModel.artefactTypes[a].name+"]";
-			if(aname == artefactTypeName){
-				for(var i=0; i<deploymentModel.artefactTypes[a].required.length;i++){
-					//very crappy but I am lazy
-					if(aname+"/required["+deploymentModel.artefactTypes[a].required[i].name+"]" == portTypeName){
-						return deploymentModel.artefactTypes[a].required[i];
-					}
-				}
-			}
-		}
-	}
-	alertMessage("error","Unknown port type!",5000);
-	return null;
-}
-
-function findArtefactInstanceByName(name){
-	for(var a=0;a<deploymentModel.artefactInstances.length;a++){
-		if(name.indexOf(deploymentModel.artefactInstances[a].name) >= 0){
-			return deploymentModel.artefactInstances[a];
-		}
-	}
-	return null;
-}
-
-function findArtefactTypeByName(name){
-	if(deploymentModel.artefactTypes != null){
-		for(var a=0;a<deploymentModel.artefactTypes.length;a++){
-			if(name.indexOf(deploymentModel.artefactTypes[a].name) >= 0){
-				return deploymentModel.artefactTypes[a];
-			}
-		}
-	}
-	alertMessage("error","Unknown artefact type!",5000);
-	return null;
-}
-
-function findNodeTypeByName(name){
-	if(deploymentModel.nodeTypes != null){
-		for(var a=0;a<deploymentModel.nodeTypes.length;a++){
-			if(name.indexOf(deploymentModel.nodeTypes[a].name) >= 0){
-				return deploymentModel.nodeTypes[a];
-			}
-		}
-	}
-	alertMessage("error","Unknown node type!",5000);
-	return null;
-}
-
-function findPortInstanceByName(artefactInstance, name){
-	for(var a=0; a < artefactInstance.required.length; a++){
-		if(name.indexOf(artefactInstance.required[a].name) >= 0){
-			return artefactInstance.required[a];
-		}
-	}
-	for(var a=0; a < artefactInstance.provided.length; a++){
-		if(name.indexOf(artefactInstance.provided[a].name) >= 0){
-			return artefactInstance.provided[a];
-		}
-	}
-	alertMessage("error","Unknown port type!",5000);
-	return null;
-}
-

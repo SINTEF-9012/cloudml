@@ -1,25 +1,3 @@
-/**
- * This file is part of CloudML [ http://cloudml.org ]
- *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
- *
- * Module: root
- *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
- *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
- * <http://www.gnu.org/licenses/>.
- */
 package org.cloudml.facade.mrt.cmd.gen;
 
 import com.google.common.base.Objects;
@@ -202,32 +180,74 @@ public class CloudMLCmds {
                 return Boolean.valueOf(_equals);
               }
             };
-          final Method setter = IterableExtensions.<Method>findFirst(((Iterable<Method>)Conversions.doWrapArray(_methods)), _function_1);
-          Method[] _methods_1 = clazz.getMethods();
-          final Function1<Method,Boolean> _function_2 = new Function1<Method,Boolean>() {
-              public Boolean apply(final Method it) {
-                String _name = it.getName();
-                String _firstUpper = StringExtensions.toFirstUpper(p.name);
-                String _plus = ("get" + _firstUpper);
-                boolean _equals = Objects.equal(_name, _plus);
-                return Boolean.valueOf(_equals);
-              }
-            };
-          final Method getter = IterableExtensions.<Method>findFirst(((Iterable<Method>)Conversions.doWrapArray(_methods_1)), _function_2);
-          Class<? extends Object>[] _parameterTypes = null;
-          if (setter!=null) {
-            _parameterTypes=setter.getParameterTypes();
-          }
-          Class<? extends Object> _get = _parameterTypes[0];
-          String _simpleName_1 = _get.getSimpleName();
-          final Object newValue_1 = CloudMLCmds.convert(_simpleName_1, value, context);
-          final Object original_1 = getter.invoke(obj);
-          boolean _notEquals_2 = (!Objects.equal(original_1, newValue_1));
-          if (_notEquals_2) {
+          boolean _exists = IterableExtensions.<Method>exists(((Iterable<Method>)Conversions.doWrapArray(_methods)), _function_1);
+          if (_exists) {
+            Method[] _methods_1 = clazz.getMethods();
+            final Function1<Method,Boolean> _function_2 = new Function1<Method,Boolean>() {
+                public Boolean apply(final Method it) {
+                  String _name = it.getName();
+                  String _firstUpper = StringExtensions.toFirstUpper(p.name);
+                  String _plus = ("set" + _firstUpper);
+                  boolean _equals = Objects.equal(_name, _plus);
+                  return Boolean.valueOf(_equals);
+                }
+              };
+            final Method setter = IterableExtensions.<Method>findFirst(((Iterable<Method>)Conversions.doWrapArray(_methods_1)), _function_2);
+            Method[] _methods_2 = clazz.getMethods();
+            final Function1<Method,Boolean> _function_3 = new Function1<Method,Boolean>() {
+                public Boolean apply(final Method it) {
+                  String _name = it.getName();
+                  String _firstUpper = StringExtensions.toFirstUpper(p.name);
+                  String _plus = ("get" + _firstUpper);
+                  boolean _equals = Objects.equal(_name, _plus);
+                  return Boolean.valueOf(_equals);
+                }
+              };
+            final Method getter = IterableExtensions.<Method>findFirst(((Iterable<Method>)Conversions.doWrapArray(_methods_2)), _function_3);
+            Class<? extends Object>[] _parameterTypes = null;
             if (setter!=null) {
-              setter.invoke(obj, newValue_1);
+              _parameterTypes=setter.getParameterTypes();
             }
-            return true;
+            Class<? extends Object> _get = _parameterTypes[0];
+            String _simpleName_1 = _get.getSimpleName();
+            final Object newValue_1 = CloudMLCmds.convert(_simpleName_1, value, context);
+            final Object original_1 = getter.invoke(obj);
+            boolean _notEquals_2 = (!Objects.equal(original_1, newValue_1));
+            if (_notEquals_2) {
+              if (setter!=null) {
+                setter.invoke(obj, newValue_1);
+              }
+              return true;
+            }
+          } else {
+            boolean _startsWith = p.name.startsWith("properties/");
+            if (_startsWith) {
+              String _trim = p.name.trim();
+              final String propName = _trim.substring(11);
+              Method[] _methods_3 = clazz.getMethods();
+              final Function1<Method,Boolean> _function_4 = new Function1<Method,Boolean>() {
+                  public Boolean apply(final Method it) {
+                    String _name = it.getName();
+                    boolean _equals = Objects.equal(_name, "setProperty");
+                    return Boolean.valueOf(_equals);
+                  }
+                };
+              final Method setter_1 = IterableExtensions.<Method>findFirst(((Iterable<Method>)Conversions.doWrapArray(_methods_3)), _function_4);
+              try {
+                if (setter_1!=null) {
+                  String _string = value.toString();
+                  setter_1.invoke(obj, propName, _string);
+                }
+                return true;
+              } catch (final Throwable _t) {
+                if (_t instanceof Exception) {
+                  final Exception e = (Exception)_t;
+                  return false;
+                } else {
+                  throw Exceptions.sneakyThrow(_t);
+                }
+              }
+            }
           }
         }
         _xblockexpression = (false);

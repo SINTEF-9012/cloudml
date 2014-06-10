@@ -49,6 +49,15 @@ public abstract class WithProperties extends NamedElement {
     public boolean hasProperty(String key, String value) {
         return this.properties.contains(key, value);
     } 
-
+    
+    public void setProperty(String key, String value){
+        if(this.properties.containsKey(key)){
+            this.properties.get(key).setValue(value);
+        }
+        else{
+            Property p = new Property(key, value);
+            this.properties.add(p);
+        }
+    }
   
 }
