@@ -25,10 +25,11 @@ package org.cloudml.monitoring.util;
 
 import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.core.ComponentInstance;
-import org.cloudml.facade.mrt.Coordinator;
-import org.cloudml.facade.mrt.PeerStub;
-import org.cloudml.facade.mrt.cmd.CmdWrapper;
-import org.cloudml.facade.mrt.sample.SystemOutPeerStub;
+import org.cloudml.mrt.Coordinator;
+import org.cloudml.mrt.PeerStub;
+import org.cloudml.mrt.cmd.CmdWrapper;
+import org.cloudml.mrt.sample.SystemOutPeerStub;
+
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

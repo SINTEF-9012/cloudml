@@ -29,7 +29,7 @@
 package org.cloudml.websocket;
 
 import org.cloudml.facade.mrt.PeerStub;
-import org.cloudml.facade.mrt.cmd.gen.CloudMLCmds;
+import org.cloudml.mrt.cmd.gen.CloudMLCmds;
 import org.java_websocket.WebSocket;
 import org.yaml.snakeyaml.Yaml;
 

@@ -29,12 +29,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
-import org.cloudml.core.builders.DeploymentBuilder;
-import org.cloudml.core.samples.PaasCloudBees;
-import org.cloudml.core.samples.SensApp;
 import org.cloudml.facade.mrt.Coordinator;
 import org.cloudml.facade.mrt.PeerStub;
-import org.cloudml.facade.mrt.cmd.gen.Extended;
+import org.cloudml.mrt.cmd.gen.Extended;
 
 /**
  * Hello world!

@@ -27,7 +27,10 @@
         <module>codecs</module>
         <module>deployer</module>
         <module>facade</module>
-        
+        <module>monitoring</module>
+        <module>mrt</module>
+
+
         <module>ui</module>
     </modules>
 

@@ -17,33 +17,6 @@
     <name>CloudML :: Monitoring</name>
 
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.jax-ws-commons</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <sourceDestDir>src/main/java</sourceDestDir>
-                    <wsdlDirectory>src/main/resources</wsdlDirectory>
-                    <wsdlFiles>
-                        <wsdlFile>UserAdmin.wsdl</wsdlFile>
-                    </wsdlFiles>
-                    <keep>true</keep>
-                    <xnocompile>false</xnocompile>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
 
         <!-- CloudML module dependencies -->
@@ -55,16 +28,21 @@
 
         <dependency>
             <groupId>org.cloudml</groupId>
-            <artifactId>codecs.json</artifactId>
+            <artifactId>deployer</artifactId>
             <version>2.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.cloudml</groupId>
-            <artifactId>codecs.xmi</artifactId>
+            <groupId>org.cloudml.mrt</groupId>
+            <artifactId>mrt</artifactId>
             <version>2.0-SNAPSHOT</version>
-            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>it.polimi.modaclouds.monitoring</groupId>
+            <artifactId>metrics-observer</artifactId>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
@@ -216,18 +194,6 @@
             <groupId>org.cloudml</groupId>
             <artifactId>deployer</artifactId>
             <version>2.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.cloudml</groupId>
-            <artifactId>facade</artifactId>
-            <version>2.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>it.polimi.modaclouds.monitoring</groupId>
-            <artifactId>metrics-observer</artifactId>
-            <version>1.0.1</version>
         </dependency>
 
     </dependencies>

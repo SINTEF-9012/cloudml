@@ -28,13 +28,11 @@
 
 package org.cloudml.websocket;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.cloudml.facade.mrt.CommandReception;
 import org.cloudml.facade.mrt.Coordinator;
 import org.java_websocket.WebSocket;
