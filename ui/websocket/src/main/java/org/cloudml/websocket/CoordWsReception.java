@@ -33,8 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.cloudml.facade.mrt.CommandReception;
-import org.cloudml.facade.mrt.Coordinator;
+import org.cloudml.mrt.CommandReception;
+import org.cloudml.mrt.Coordinator;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_17;

@@ -60,16 +60,20 @@ public class Coordinator {
     Instruction lastInstruction = null;
     
     public Coordinator(){
-        FacadeBridge  bridge = new FacadeBridge();
-        executor = new CommandExecutor(bridge);
+        ModelRepo  repo = new SimpleModelRepo();
+        executor = new CommandExecutor(repo);
         
+    }
+    
+    public void setModelRepo(ModelRepo repo){
+        this.executor.setModelRepo(repo);
     }
     
     public Coordinator(String initModel){
         this();
         Extended extended = new Extended();
         extended.name = "LoadDeployment";
-        extended.params = Arrays.asList("sample://sensApp");
+        extended.params = Arrays.asList(initModel);
         this.process(extended, new PeerStub(){
             @Override
             public String getID() {

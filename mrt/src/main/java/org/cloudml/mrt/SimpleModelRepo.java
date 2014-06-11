@@ -26,41 +26,42 @@
  * and open the template in the editor.
  */
 
-package org.cloudml.websocket;
+package org.cloudml.mrt;
 
-import org.cloudml.mrt.PeerStub;
-import org.cloudml.mrt.cmd.gen.CloudMLCmds;
-import org.java_websocket.WebSocket;
-import org.yaml.snakeyaml.Yaml;
+import java.util.Collection;
+import org.cloudml.core.Deployment;
+import org.cloudml.core.samples.SensApp;
 
 /**
  *
  * @author huis
  */
-public class WsPeerStub extends PeerStub{
+public class SimpleModelRepo implements ModelRepo{
     
-    WebSocket webSocket = null;
-    String id = null;
+    Deployment root = null;
     
-    public WsPeerStub(WebSocket webSocket){
-        this.webSocket = webSocket;
-        id = webSocket.getRemoteSocketAddress().toString();
+    public SimpleModelRepo(){
+        root = new Deployment();
+    }
+    
+    public SimpleModelRepo(Deployment root){
+        this.root = root;
     }
 
     @Override
-    public String getID() {
-        return id;
+    public Deployment getRoot() {
+        return root;
     }
 
     @Override
-    public void sendMessage(Object message) {
-        Yaml yaml = CloudMLCmds.INSTANCE.getYaml();
-        try{
-        webSocket.send(yaml.dump(message));
+    public Object handle(String name, Collection<String> parameter) {
+        if("LoadDeployment".equals(name) && parameter.size()>0){
+            if("sample://sensapp".equals(parameter.iterator().next().toLowerCase())){
+                root = SensApp.completeSensApp().build();                          
+                return "Loaded";
+            }
         }
-        catch(Exception ex){
-            
-        }
+        throw new UnsupportedOperationException(String.format("Extended command %s Not supported yet.", name)); 
     }
     
 }

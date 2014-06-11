@@ -45,6 +45,12 @@
             <artifactId>facade</artifactId>
             <version>2.0-SNAPSHOT</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>mrt</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
     
         <dependency>
             <groupId>org.cloudml</groupId>

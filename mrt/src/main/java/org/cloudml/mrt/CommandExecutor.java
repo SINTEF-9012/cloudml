@@ -101,4 +101,8 @@ public class CommandExecutor {
         }
         return obj;
     }
+
+    void setModelRepo(ModelRepo repo) {
+        this.repo = repo;
+    }
 }

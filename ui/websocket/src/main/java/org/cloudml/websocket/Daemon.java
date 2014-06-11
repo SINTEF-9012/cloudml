@@ -29,8 +29,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
-import org.cloudml.facade.mrt.Coordinator;
-import org.cloudml.facade.mrt.PeerStub;
+import org.cloudml.facade.FacadeBridge;
+import org.cloudml.mrt.Coordinator;
+import org.cloudml.mrt.PeerStub;
 import org.cloudml.mrt.cmd.gen.Extended;
 
 /**
@@ -46,7 +47,7 @@ public class Daemon
             port = Integer.parseInt(args[0]);
         
         Coordinator coord = new Coordinator();
-        
+        coord.setModelRepo(new FacadeBridge());
         CoordWsReception reception = new CoordWsReception(port, coord);
         coord.setReception(reception);
         //coord.setCloudMLRoot(initWithSenseApp());

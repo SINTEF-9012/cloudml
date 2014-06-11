@@ -30,7 +30,6 @@ package org.cloudml.mrt.sample;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.PeerStub;
 import org.cloudml.mrt.cmd.CmdWrapper;
@@ -40,7 +39,7 @@ import org.cloudml.mrt.cmd.CmdWrapper;
  * @author huis
  */
 public class MrtModificationSample {
-    private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
+    private static final Logger journal = Logger.getLogger(MrtModificationSample.class.getName());
     
     public static void main(String[] args){
         
