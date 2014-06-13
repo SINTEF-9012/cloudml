@@ -45,6 +45,14 @@ Name of the deployment model and list of providers:
 	],
 ```
 
+The "credentials" attribute refers to a file (i.e., should be a path to the file) containing the credentials to access to the specified provider API. This content of this file should be as follows:
+```
+login=xxxx
+passwd=xxxxx
+```
+
+For instance, in the case of Amazon AWS login corresponds to the your access key id whilst passwd corresponds the secret access key.
+
 List of internal components
 ```json
 "internalComponents" : [{
