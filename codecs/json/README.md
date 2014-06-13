@@ -141,6 +141,7 @@ List of VMs
 			]
 		}
 ```
+For now, in the case of Flexiant the attribute **groupName is equal to the VDC name**...
 		
 List of VM instances
 ```json
