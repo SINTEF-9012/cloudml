@@ -73,4 +73,35 @@ public abstract class WithPropertiesTest extends NamedElementTest {
         assertThat("property key has value", sut.hasProperty(key, value));
         assertThat("property count", sut.getProperties().size(), is(equalTo(1)));
     }
+    
+    @Test
+    public void propertiesShouldBeRemovable() {
+        final WithProperties sut = aSampleWithProperties();
+        final String key = "foo";
+        final String value = "bar";
+        
+        sut.getProperties().add(new Property(key, value));
+        sut.getProperties().remove(new Property(key, value));
+        
+        assertThat("property is not defined", !sut.hasProperty(key));
+        assertThat("property does not has the given value", !sut.hasProperty(key, value));
+        assertThat("property count", sut.getProperties().size(), is(equalTo(0)));
+        
+    }
+    
+    
+    @Test
+    public void removingAPropertyThatDoesNotExistsShouldNotFail() {
+        final WithProperties sut = aSampleWithProperties();
+         final String key = "foo";
+        final String value = "bar";
+        
+        sut.getProperties().remove(new Property(key, value));
+                
+        assertThat("property is not defined", !sut.hasProperty(key));
+        assertThat("property does not has the given value", !sut.hasProperty(key, value));
+        assertThat("property count", sut.getProperties().size(), is(equalTo(0)));
+        
+    }
+    
 }

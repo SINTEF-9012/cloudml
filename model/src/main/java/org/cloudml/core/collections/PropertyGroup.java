@@ -136,9 +136,17 @@ public class PropertyGroup implements Iterable<Property>, Map<String, String>{
             return k;
     }
 
-    @Override
+    @Override 
     public String remove(Object o) {
-        return properties.remove(o.toString()).getValue();
+        if (o instanceof Property) {
+            Property p = (Property) o;
+            Property removed = properties.remove(p.getName());
+            if (removed != null) {
+                return removed.getName();
+            }
+            return null;
+        }
+        return null;
     }
 
     @Override
