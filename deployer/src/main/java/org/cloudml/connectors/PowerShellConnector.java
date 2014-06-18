@@ -35,9 +35,8 @@ public class PowerShellConnector {
     private final OutputCollector standardOutput;
     private final OutputCollector standardError;
 
-    public PowerShellConnector(String directory, String commandLine) throws IOException, InterruptedException {
+    public PowerShellConnector(String commandLine) throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder(commandLine.split("\\s+"));
-        builder.directory(new File(directory));
         Process p = builder.start();
         p.getOutputStream().close();
         standardOutput = new OutputCollector(p.getInputStream());
