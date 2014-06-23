@@ -33,6 +33,9 @@ import org.junit.runners.JUnit4;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
 /**
  * Created by nicolasf on 26.02.14.
  */
@@ -51,6 +54,43 @@ public class BridgeToCloudMLTest extends TestCase {
         assertTrue(kmodel.getRelationshipInstances().isEmpty());
         assertTrue(kmodel.getRelationships().isEmpty());
         assertTrue(kmodel.getProviders().isEmpty());
+    }
+    
+    
+    @Test
+    public void offersShouldBeConvertedToCloudML() {
+        final KMFSamplesBuilder kmfSamples = new KMFSamplesBuilder();
+        final String vmName = "Foo VM";
+        net.cloudml.core.CloudMLModel kDeployment = kmfSamples.aVmOffering(vmName, "OS", "Linux");
+        
+        final KMFBridge bridge = new KMFBridge();
+        final Deployment deployment = (Deployment) bridge.toPOJO(kDeployment);
+        final Property offer = deployment
+                .getComponents()
+                .onlyVMs().firstNamed(vmName)
+                .getProvidedExecutionPlatforms().toList().get(0).getOffers().get("OS");
+        
+        assertThat("offer", offer, is(not(nullValue())));
+        assertThat("offer's name", offer.getName(), is(equalTo("OS")));
+        assertThat("offer's value", offer.getValue(), is(equalTo("Linux")));
+    }
+    
+    @Test
+    public void demandsShouldBeConvertedToCloudML() {
+        final KMFSamplesBuilder kmfSamples = new KMFSamplesBuilder(); 
+        final String appName = "Foo App";
+        net.cloudml.core.CloudMLModel kDeployment = kmfSamples.anInternalComponentDemanding(appName, "OS", "Linux");
+        
+        final KMFBridge bridge = new KMFBridge();
+        final Deployment deployment = (Deployment) bridge.toPOJO(kDeployment);
+        final Property demand = deployment
+                .getComponents()
+                .onlyInternals().firstNamed(appName)
+                .getRequiredExecutionPlatform().getDemands().get("OS");
+        
+        assertThat("demand", demand, is(not(nullValue())));
+        assertThat("demand's name", demand.getName(), is(equalTo("OS")));
+        assertThat("demand's value", demand.getValue(), is(equalTo("Linux")));
     }
 
     /**
