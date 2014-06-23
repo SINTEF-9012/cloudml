@@ -1,23 +1,23 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
- * <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT
+ * Contact: Franck Chauvel <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * CloudML is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
  *
- * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
+ * CloudML is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.codecs;
@@ -197,12 +197,16 @@ public class BridgeToCloudML {
             pep.getOwner().set(c);
             convertProperties(kpep, pep);
             convertResources(kpep, pep);
-            for (net.cloudml.core.Property eachKOffer: kpep.getOffers()) {
-                pep.getOffers().add(new Property(eachKOffer.getName(), eachKOffer.getValue()));
-            }
+            convertOffers(kpep, pep);
             return pep;
         }
         return null;
+    }
+
+    private void convertOffers(net.cloudml.core.ProvidedExecutionPlatform kpep, ProvidedExecutionPlatform pep) {
+        for (net.cloudml.core.Property eachKOffer: kpep.getOffers()) {
+            pep.getOffers().add(new Property(eachKOffer.getName(), eachKOffer.getValue()));
+        }
     }
 
     public void internalComponentsToPOJO(List<net.cloudml.core.InternalComponent> components) {
@@ -271,10 +275,14 @@ public class BridgeToCloudML {
             rep.getOwner().set(ic);
             convertProperties(kInternalComponent.getRequiredExecutionPlatform(), rep);
             convertResources(kInternalComponent.getRequiredExecutionPlatform(), rep);
-            for (net.cloudml.core.Property eachKDemand: kInternalComponent.getRequiredExecutionPlatform().getDemands()) {
-                rep.getDemands().add(new Property(eachKDemand.getName(), eachKDemand.getValue()));
-            }
+            convertDemands(kInternalComponent, rep);
             ic.setRequiredExecutionPlatform(rep);
+        }
+    }
+
+    private void convertDemands(net.cloudml.core.InternalComponent kInternalComponent, RequiredExecutionPlatform rep) {
+        for (net.cloudml.core.Property eachKDemand: kInternalComponent.getRequiredExecutionPlatform().getDemands()) {
+            rep.getDemands().add(new Property(eachKDemand.getName(), eachKDemand.getValue()));
         }
     }
 
