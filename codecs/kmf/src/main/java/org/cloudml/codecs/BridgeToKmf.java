@@ -267,12 +267,22 @@ public class BridgeToKmf {
 
     private void initRequiredExecutionPlatform(InternalComponent ic, net.cloudml.core.InternalComponent ka) {
         if (ic.getRequiredExecutionPlatform() != null) {
-            net.cloudml.core.RequiredExecutionPlatform repi = factory.createRequiredExecutionPlatform();
-            repi.setName(ic.getRequiredExecutionPlatform().getName());
-            repi.setOwner(ka);
-            convertProperties(ic.getRequiredExecutionPlatform(), repi, factory);
-            convertResources(ic.getRequiredExecutionPlatform(), repi, factory);
-            ka.setRequiredExecutionPlatform(repi);
+            net.cloudml.core.RequiredExecutionPlatform krep = factory.createRequiredExecutionPlatform();
+            krep.setName(ic.getRequiredExecutionPlatform().getName());
+            krep.setOwner(ka);
+            convertDemands(ic, krep);
+            convertProperties(ic.getRequiredExecutionPlatform(), krep, factory);
+            convertResources(ic.getRequiredExecutionPlatform(), krep, factory);
+            ka.setRequiredExecutionPlatform(krep);
+        }
+    }
+
+    private void convertDemands(InternalComponent ic, net.cloudml.core.RequiredExecutionPlatform krep) {
+        for(Property eachDemand: ic.getRequiredExecutionPlatform().getDemands()) {
+            net.cloudml.core.Property kDemand = factory.createProperty();
+            kDemand.setName(eachDemand.getName());
+            kDemand.setValue(eachDemand.getValue());
+            krep.addDemands(kDemand);
         }
     }
 
@@ -293,14 +303,24 @@ public class BridgeToKmf {
 
     private net.cloudml.core.ProvidedExecutionPlatform initProvidedExecutionPlatform(ProvidedExecutionPlatform pep, net.cloudml.core.Component kc) {
         if (pep != null) {
-            net.cloudml.core.ProvidedExecutionPlatform pepi = factory.createProvidedExecutionPlatform();
-            pepi.setName(pep.getName());
-            pepi.setOwner(kc);
-            convertProperties(pep, pepi, factory);
-            convertResources(pep, pepi, factory);
-            return pepi;
+            net.cloudml.core.ProvidedExecutionPlatform kpep = factory.createProvidedExecutionPlatform();
+            kpep.setName(pep.getName());
+            kpep.setOwner(kc);
+            convertOffers(pep, kpep);
+            convertProperties(pep, kpep, factory);
+            convertResources(pep, kpep, factory);
+            return kpep;
         }
         return null;
+    }
+
+    private void convertOffers(ProvidedExecutionPlatform pep, net.cloudml.core.ProvidedExecutionPlatform kpep) {
+        for(Property eachOffer: pep.getOffers()) {
+            net.cloudml.core.Property kOffer = factory.createProperty();
+            kOffer.setName(eachOffer.getName());
+            kOffer.setValue(eachOffer.getValue());
+            kpep.addOffers(kOffer);
+        }
     }
 
     public void relationshipsToKmf(Iterable<Relationship> relationships) {
