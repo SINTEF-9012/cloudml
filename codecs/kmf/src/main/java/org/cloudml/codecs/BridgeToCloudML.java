@@ -558,6 +558,9 @@ public class BridgeToCloudML {
         for (net.cloudml.core.Resource kr : kElement.getResources()) {
             Resource r = new Resource(kr.getName(), kr.getInstallCommand(), kr.getDownloadCommand(), kr.getConfigureCommand(), kr.getStartCommand(), kr.getStopCommand());
 
+            r.setRequireCredentials(kr.getRequireCredentials());
+            r.setExecuteLocally(kr.getExecuteLocally());
+
             Map<String, String> up = new HashMap<String, String>();
             String kup = kr.getUploadCommand();
             String[] ups = kup.split(";");
