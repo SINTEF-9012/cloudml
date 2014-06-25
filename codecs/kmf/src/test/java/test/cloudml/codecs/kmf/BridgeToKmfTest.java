@@ -33,32 +33,102 @@ import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
 import java.util.List;
+import static org.cloudml.core.builders.Commons.*;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(JUnit4.class)
 public class BridgeToKmfTest extends TestCase {
 
+    @Test
+    public void offersShouldBeConvertedInKmf() {
+        final Deployment cloudml = aDeployment()
+                .with(aProvider()
+                        .named("EC2"))
+                .with(aVM()
+                        .named("VM")
+                        .providedBy("EC2")
+                        .with(aProvidedExecutionPlatform()
+                                .offering("OS", "Linux")))
+                .build();
+
+        final BridgeToKmf bridge = new BridgeToKmf();
+        final net.cloudml.core.CloudMLModel kmf = bridge.toKMF(cloudml);
+
+        net.cloudml.core.VM vm = null;
+        for (net.cloudml.core.VM each: kmf.getVms()) {
+            if (each.getName().equals("VM")) {
+                vm = each;
+                break;
+            }
+        }
+        assertThat("missing vm", vm, is(not(nullValue())));
+
+        assertThat("provided execution platform", vm.getProvidedExecutionPlatforms().size(), is(equalTo(1)));
+
+        net.cloudml.core.ProvidedExecutionPlatform pep = vm.getProvidedExecutionPlatforms().get(0);
+        assertThat(pep, is(not(nullValue())));
+
+        assertThat("offering", pep.getOffers().size(), is(equalTo(1)));
+        net.cloudml.core.Property property = pep.getOffers().get(0);
+
+        assertThat(property.getName(), is(equalTo("OS")));
+        assertThat(property.getValue(), is(equalTo("Linux")));
+
+    }
+
+    @Test
+    public void demandsShouldBeConvertedToKmf() {
+        final Deployment cloudml = aDeployment()
+                .with(anInternalComponent()
+                        .named("foo")
+                        .with(aRequiredExecutionPlatform()
+                                .demanding("OS", "Linux")))
+                .build();
+
+        final BridgeToKmf bridge = new BridgeToKmf();
+        final net.cloudml.core.CloudMLModel kmf = bridge.toKMF(cloudml);
+
+        net.cloudml.core.InternalComponent cpt = null;
+        for (net.cloudml.core.InternalComponent each: kmf.getInternalComponents()) {
+            if (each.getName().equals("foo")) {
+                cpt = each;
+                break;
+            }
+        }
+
+        assertThat(cpt, is(not(nullValue())));
+        assertThat("required execution platform", cpt.getRequiredExecutionPlatform(), is(not(nullValue())));
+
+        net.cloudml.core.RequiredExecutionPlatform rep = cpt.getRequiredExecutionPlatform();
+        assertThat("demands count", rep.getDemands().size(), is(equalTo(1)));
+
+        net.cloudml.core.Property property = rep.getDemands().get(0);
+        assertThat("demand's key", property.getName(), is(equalTo("OS")));
+        assertThat("demand's value", property.getValue(), is(equalTo("Linux")));
+    }
 
     /**
      * Tests providers
      */
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testProviderToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testProviderToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.providersToKmf(null);
     }
 
     @Test
-    public void testProviderToKmfEmpty(){
+    public void testProviderToKmfEmpty() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.providersToKmf(new ArrayList<Provider>());
         assertTrue(bridge.getKmfModel().getProviders().isEmpty());
     }
 
     @Test
-    public void testProviderToKmfWithElements(){
+    public void testProviderToKmfWithElements() {
         BridgeToKmf bridge = new BridgeToKmf();
-        List<Provider> providers=new ArrayList<Provider>();
+        List<Provider> providers = new ArrayList<Provider>();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
 
@@ -67,33 +137,31 @@ public class BridgeToKmfTest extends TestCase {
         net.cloudml.core.Provider actual = bridge.getKmfModel().getProviders().get(0);
 
         Matcher matcher = new Matcher();
-        assertTrue(new Matcher().match(actual,cloudMLSamples.getProviderA()));
+        assertTrue(new Matcher().match(actual, cloudMLSamples.getProviderA()));
     }
 
     /**
      * Tests on external components
      */
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testExternalComponentToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testExternalComponentToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.externalComponentToKmf(null);
     }
 
-
     @Test
-    public void testExternalComponentToKmfWithElements(){
+    public void testExternalComponentToKmfWithElements() {
         BridgeToKmf bridge = new BridgeToKmf();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
 
         VM input = cloudMLSamples.getVMA();
-        Deployment model=new Deployment();
+        Deployment model = new Deployment();
         model.getProviders().add(input.getProvider());
         model.getComponents().add(input);
         bridge.toKMF(model);
 
-        List<net.cloudml.core.VM> output= bridge.getKmfModel().getVms();
+        List<net.cloudml.core.VM> output = bridge.getKmfModel().getVms();
         assertFalse(output.isEmpty());
         net.cloudml.core.VM actual = output.get(0);
 
@@ -103,15 +171,14 @@ public class BridgeToKmfTest extends TestCase {
     /**
      * Tests on internal components
      */
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testInternalComponentToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testInternalComponentToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.internalComponentToKmf(null);
     }
 
     @Test
-    public void testInternalComponentToKmfWithElements(){
+    public void testInternalComponentToKmfWithElements() {
         BridgeToKmf bridge = new BridgeToKmf();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
@@ -125,31 +192,31 @@ public class BridgeToKmfTest extends TestCase {
     /**
      * Tests on relationships
      */
-    @Test(expected=IllegalArgumentException.class)
-    public void testRelationshipToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testRelationshipToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.relationshipToKmf(null);
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testRelationshipToKmfWithInvalidElements(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testRelationshipToKmfWithInvalidElements() {
         BridgeToKmf bridge = new BridgeToKmf();
-        Relationship rel= new Relationship("Sensapp", null, null);
+        Relationship rel = new Relationship("Sensapp", null, null);
         bridge.relationshipToKmf(rel);
     }
 
     @Test
-    public void testRelationshipToKmfWithElements(){
+    public void testRelationshipToKmfWithElements() {
         BridgeToKmf bridge = new BridgeToKmf();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
         Relationship input = cloudMLSamples.getRelationshipB();
 
-        Deployment cm=new Deployment();
+        Deployment cm = new Deployment();
         cm.getRelationships().add(input);
-        Component ownerProvided=input.getProvidedEnd().getOwner().get();
+        Component ownerProvided = input.getProvidedEnd().getOwner().get();
         cm.getComponents().add(ownerProvided);
-        Component ownerRequired= input.getRequiredEnd().getOwner().get();
+        Component ownerRequired = input.getRequiredEnd().getOwner().get();
         cm.getComponents().add(ownerRequired);
         bridge.toKMF(cm);
 
@@ -158,22 +225,21 @@ public class BridgeToKmfTest extends TestCase {
         assertTrue(new Matcher().matchRelationship(output, input));
     }
 
-
     /**
      * Tests on VM instances
      */
-    @Test(expected=IllegalArgumentException.class)
-    public void testExternalComponentInstanceToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testExternalComponentInstanceToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.externalComponentInstanceToKmf(null);
     }
 
     @Test
-    public void testExternalComponentInstanceToKmfWithElement(){
+    public void testExternalComponentInstanceToKmfWithElement() {
         BridgeToKmf bridge = new BridgeToKmf();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
-        Deployment cm=new Deployment();
+        Deployment cm = new Deployment();
 
         VMInstance input = cloudMLSamples.getVMInstanceA();
         cm.getProviders().add(input.getType().getProvider());
@@ -190,31 +256,30 @@ public class BridgeToKmfTest extends TestCase {
         assertTrue(new Matcher().matchVMInstance(output, input));
     }
 
-
     /**
      * Tests in internal component instance
      */
-    @Test(expected=IllegalArgumentException.class)
-    public void testInternalComponentInstanceToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testInternalComponentInstanceToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.internalComponentInstancesToKmf(null);
     }
 
     @Test
-    public void testInternalComponentInstanceToKmfWithElement(){
+    public void testInternalComponentInstanceToKmfWithElement() {
         BridgeToKmf bridge = new BridgeToKmf();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
-        Deployment cm=new Deployment();
+        Deployment cm = new Deployment();
 
         InternalComponentInstance input = cloudMLSamples.getInternalComponentInstanceA();
         cm.getComponents().add(input.getType());
         // TODO: Handle execute object when we build example models. (so as to mirror the behaviour using destination)
         cm.getComponentInstances().add(input);
-      
+
         bridge.toKMF(cm);
 
-        List<net.cloudml.core.InternalComponentInstance> ici= bridge.getKmfModel().getInternalComponentInstances();
+        List<net.cloudml.core.InternalComponentInstance> ici = bridge.getKmfModel().getInternalComponentInstances();
         assertFalse(ici.isEmpty());
 
         net.cloudml.core.InternalComponentInstance output = ici.get(0);
@@ -222,7 +287,7 @@ public class BridgeToKmfTest extends TestCase {
         assertNotNull(output);
         assertNotNull(output.getName());
         assertNotNull(output.getType());
-        assertNotNull(((net.cloudml.core.InternalComponentInstance)output).getRequiredExecutionPlatformInstances());
+        assertNotNull(((net.cloudml.core.InternalComponentInstance) output).getRequiredExecutionPlatformInstances());
 
         assertTrue(new Matcher().matchICI((net.cloudml.core.InternalComponentInstance) output, input));
     }
@@ -230,45 +295,45 @@ public class BridgeToKmfTest extends TestCase {
     /**
      * Tests relationship instances
      */
-    @Test(expected=IllegalArgumentException.class)
-    public void testRelationshipInstanceToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testRelationshipInstanceToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.relationshipInstancesToKmf(null);
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testRelationshipInstancesToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testRelationshipInstancesToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.relationshipInstancesToKmf(null);
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testRelationshipInstanceToKmfWithNotValidElement(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testRelationshipInstanceToKmfWithNotValidElement() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.relationshipInstanceToKmf(new RelationshipInstance("ri", null, null, null));
     }
 
     @Test
-    public void testRelationshipInstanceToKmfWithElement(){
+    public void testRelationshipInstanceToKmfWithElement() {
         BridgeToKmf bridge = new BridgeToKmf();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
-        Deployment cm=new Deployment();
+        Deployment cm = new Deployment();
 
         RelationshipInstance input = cloudMLSamples.getRelationshipInstanceB();
 
         //Adding the types
         cm.getRelationships().add(input.getType());
-        Component ownerProvided=input.getProvidedEnd().getOwner().get().getType();
+        Component ownerProvided = input.getProvidedEnd().getOwner().get().getType();
         cm.getComponents().add(
                 ownerProvided);
-        Component ownerRequired=input.getRequiredEnd().getOwner().get().getType();
+        Component ownerRequired = input.getRequiredEnd().getOwner().get().getType();
         cm.getComponents().add(ownerRequired);
 
         //Adding the instances
         cm.getRelationshipInstances().add(input);
         cm.getComponentInstances().add(input.getProvidedEnd().getOwner().get());
-        cm.getComponentInstances().add(input.getRequiredEnd().getOwner().get()); 
+        cm.getComponentInstances().add(input.getRequiredEnd().getOwner().get());
 
         bridge.toKMF(cm);
 
@@ -277,24 +342,24 @@ public class BridgeToKmfTest extends TestCase {
         assertTrue(new Matcher().matchRelationshipInstance(output, input));
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testExecuteInstanceToKmfWithNull(){
+    @Test(expected = IllegalArgumentException.class)
+    public void testExecuteInstanceToKmfWithNull() {
         BridgeToKmf bridge = new BridgeToKmf();
         bridge.relationshipInstancesToKmf(null);
     }
 
     @Test
-    public void testExecuteInstanceToKmfWithValidElement(){
+    public void testExecuteInstanceToKmfWithValidElement() {
         BridgeToKmf bridge = new BridgeToKmf();
 
         CloudMLSamplesBuilder cloudMLSamples = new CloudMLSamplesBuilder();
-        Deployment cm=new Deployment();
+        Deployment cm = new Deployment();
 
-        ExecuteInstance ei=cloudMLSamples.getExecuteInstanceA();
+        ExecuteInstance ei = cloudMLSamples.getExecuteInstanceA();
         cm.getExecuteInstances().add(ei);
-        Component ownerProvided=ei.getProvidedEnd().getOwner().get().getType();
+        Component ownerProvided = ei.getProvidedEnd().getOwner().get().getType();
         cm.getComponents().add(ownerProvided);
-        Component ownerRequired=ei.getRequiredEnd().getOwner().get().getType();
+        Component ownerRequired = ei.getRequiredEnd().getOwner().get().getType();
         cm.getComponents().add(ownerRequired);
 
         cm.getComponentInstances().add(ei.getProvidedEnd().getOwner().get());

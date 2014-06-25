@@ -20,8 +20,6 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
 package test.cloudml.codecs.kmf;
 
 import static test.cloudml.codecs.kmf.Samples.*;
@@ -33,17 +31,49 @@ import net.cloudml.factory.*;
  */
 class KMFSamplesBuilder {
 
-   private final CoreFactory factory;
+    private final CoreFactory factory;
 
+    public KMFSamplesBuilder() {
+        factory = new MainFactory().getCoreFactory();
+    }
 
-   public KMFSamplesBuilder() {
-       factory = new MainFactory().getCoreFactory();
-   }
+    public CloudMLModel aVmOffering(String vmName, String key, String value) {
+        final CloudMLModel deployment = factory.createCloudMLModel();
+        final Provider provider = createProvider("Ec2");
+        deployment.addProviders(provider);
+        final VM vm = createVM(vmName, "192.168.0.1", provider);
+        deployment.addVms(vm);
+        final ProvidedExecutionPlatform pep = createProvidedExecutionPlatform("pep");
+        pep.addOffers(createProperty(key, value));
+        vm.addProvidedExecutionPlatforms(pep);
+        return deployment;
+    }
+
+    public ProvidedExecutionPlatform createProvidedExecutionPlatform(String name) {
+        final ProvidedExecutionPlatform result = factory.createProvidedExecutionPlatform();
+        result.setName(name);
+        return result;
+    } 
+
+    public CloudMLModel anInternalComponentDemanding(String componentName, String key, String value) {
+        final CloudMLModel deployment = factory.createCloudMLModel();
+        final InternalComponent component = createInternalComponent(componentName, createRequiredExecutionPlatform("rep"));
+        component.getRequiredExecutionPlatform().addDemands(createProperty(key, value));
+        deployment.addInternalComponents(component);
+        return deployment;
+    }
+
+    public Property createProperty(String key, String value) {
+        final Property result = factory.createProperty();
+        result.setName(key);
+        result.setValue(value);
+        return result;
+    }
 
     public Provider getProviderA() {
         return createProvider(PROVIDER_A_NAME);
     }
-    
+
     public Provider getProviderB() {
         return createProvider(PROVIDER_B_NAME);
     }
@@ -55,16 +85,16 @@ class KMFSamplesBuilder {
         return provider;
     }
 
-    public VM getVMA(){
+    public VM getVMA() {
         return createVM(VM_A_NAME, ENDPOINT_A_NAME, getProviderA());
     }
 
-    public VM getVMB(){
+    public VM getVMB() {
         return createVM(VM_B_NAME, ENDPOINT_B_NAME, getProviderB());
     }
 
-    public net.cloudml.core.VM createVM(String name, String endPoint, Provider p){
-        net.cloudml.core.VM kcomp=factory.createVM();
+    public net.cloudml.core.VM createVM(String name, String endPoint, Provider p) {
+        net.cloudml.core.VM kcomp = factory.createVM();
         //TODO: to be completed
         kcomp.setProvider(p);
         kcomp.setName(name);
@@ -72,16 +102,16 @@ class KMFSamplesBuilder {
         return kcomp;
     }
 
-    public VMInstance getVMInstanceA(){
+    public VMInstance getVMInstanceA() {
         return createVMInstance(VM_INSTANCE_A, IP_ADDRESS_A, getVMA());
     }
 
-    public VMInstance getVMInstanceB(){
+    public VMInstance getVMInstanceB() {
         return createVMInstance(VM_INSTANCE_B, IP_ADDRESS_B, getVMB());
     }
 
-    public net.cloudml.core.VMInstance createVMInstance(String name, String ip, VM type){
-        net.cloudml.core.VMInstance kcomp=factory.createVMInstance();
+    public net.cloudml.core.VMInstance createVMInstance(String name, String ip, VM type) {
+        net.cloudml.core.VMInstance kcomp = factory.createVMInstance();
         //TODO: to be completed
         kcomp.setPublicAddress(ip);
         kcomp.setName(name);
@@ -89,11 +119,11 @@ class KMFSamplesBuilder {
         return kcomp;
     }
 
-    public InternalComponent getInternalComponentA(){
+    public InternalComponent getInternalComponentA() {
         return createInternalComponent(INTERNAL_COMPONENT_A_NAME, getRequiredExecutionPlatformA());
     }
 
-    public InternalComponent getInternalComponentB(){
+    public InternalComponent getInternalComponentB() {
         return createInternalComponent(INTERNAL_COMPONENT_B_NAME, getRequiredExecutionPlatformB());
     }
 
@@ -111,8 +141,7 @@ class KMFSamplesBuilder {
         return krep;
     }
 
-
-    public net.cloudml.core.InternalComponent createInternalComponent(String name, RequiredExecutionPlatform krep){
+    public net.cloudml.core.InternalComponent createInternalComponent(String name, RequiredExecutionPlatform krep) {
         InternalComponent internalComponent = factory.createInternalComponent();
         //TODO: to be completed
         internalComponent.setName(name);
@@ -120,7 +149,6 @@ class KMFSamplesBuilder {
         krep.setOwner(internalComponent);
         return internalComponent;
     }
-
 
     public RequiredExecutionPlatformInstance getRequiredExecutionPlatformInstanceA(InternalComponent icA) {
         return createRequiredExecutionPlatformInstance(REQUIRED_EXECUTION_PLATFORM_INSTANCE_NAME_A, icA.getRequiredExecutionPlatform());
@@ -137,18 +165,17 @@ class KMFSamplesBuilder {
         return kInstance;
     }
 
-
-    public InternalComponentInstance getInternalComponentInstanceA(){
-        InternalComponent icA=getInternalComponentA();
+    public InternalComponentInstance getInternalComponentInstanceA() {
+        InternalComponent icA = getInternalComponentA();
         return createInternalComponentInstance(INTERNAL_COMPONENT_INSTANCE_A_NAME, getRequiredExecutionPlatformInstanceA(icA), icA);
     }
 
-    public InternalComponentInstance getInternalComponentInstanceB(){
-        InternalComponent icB=getInternalComponentB();
+    public InternalComponentInstance getInternalComponentInstanceB() {
+        InternalComponent icB = getInternalComponentB();
         return createInternalComponentInstance(INTERNAL_COMPONENT_INSTANCE_B_NAME, getRequiredExecutionPlatformInstanceB(icB), icB);
     }
 
-    public InternalComponentInstance createInternalComponentInstance(String name, RequiredExecutionPlatformInstance krepi, InternalComponent type){
+    public InternalComponentInstance createInternalComponentInstance(String name, RequiredExecutionPlatformInstance krepi, InternalComponent type) {
         InternalComponentInstance internalComponentInstance = factory.createInternalComponentInstance();
         internalComponentInstance.setRequiredExecutionPlatformInstances(krepi);
         krepi.setOwner(internalComponentInstance);
@@ -165,19 +192,18 @@ class KMFSamplesBuilder {
         return createRelationship(RELATIONSHIP_B_NAME);
     }
 
-    private Relationship createRelationship(String name){
-        net.cloudml.core.Relationship krel=factory.createRelationship();
+    private Relationship createRelationship(String name) {
+        net.cloudml.core.Relationship krel = factory.createRelationship();
         krel.setName(name);
 
-        net.cloudml.core.ProvidedPort pp=factory.createProvidedPort();
+        net.cloudml.core.ProvidedPort pp = factory.createProvidedPort();
         pp.setName(name + PROVIDED_PORT_NAME);
-        net.cloudml.core.Component c=getInternalComponentA();
+        net.cloudml.core.Component c = getInternalComponentA();
         c.addProvidedPorts(pp);
         pp.setComponent(c);
         krel.setProvidedPort(pp);
 
-
-        net.cloudml.core.RequiredPort rp=factory.createRequiredPort();
+        net.cloudml.core.RequiredPort rp = factory.createRequiredPort();
         rp.setName(name + REQUIRED_PORT_NAME);
         net.cloudml.core.InternalComponent c2 = getInternalComponentB();
         c2.addRequiredPorts(rp);
@@ -196,7 +222,7 @@ class KMFSamplesBuilder {
         return createRelationshipInstance(RELATIONSHIP_INSTANCE_B_NAME, getRelationshipB());
     }
 
-    private RelationshipInstance createRelationshipInstance(String name, Relationship relationship){
+    private RelationshipInstance createRelationshipInstance(String name, Relationship relationship) {
         RelationshipInstance relationshipInstance = factory.createRelationshipInstance();
 
         relationshipInstance.setName(name);
