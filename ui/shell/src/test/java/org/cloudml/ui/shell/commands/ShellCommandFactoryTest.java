@@ -22,129 +22,63 @@
  */
 package org.cloudml.ui.shell.commands;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
+import static org.cloudml.ui.shell.commands.ShellCommand.*;
+
 /**
- * Specification of the commands
+ * Specification of the commands accepted by the parser
  */
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ShellCommandFactoryTest extends TestCase {
 
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Object[]> samples() {
+        final List<Object[]> results = new ArrayList<Object[]>();
+        
+        results.add(new Object[]{"exit", exit()});
+        results.add(new Object[]{"quit", exit()});
+        results.add(new Object[]{"version", version()});
+        results.add(new Object[]{"help", help()});
+        results.add(new Object[]{"help \"foo\"", help("foo")});
+        results.add(new Object[]{"history", history()});
+        results.add(new Object[]{"history 23", history(23)});
+        results.add(new Object[]{"dump to c:\\temp\\myscript.txt", dumpTo("c:\\temp\\myscript.txt")});
+        results.add(new Object[]{"dump to /home/foo/script.txt", dumpTo("/home/foo/script.txt")});
+        results.add(new Object[]{"dump 23 to /home/foo/script.txt", dumpTo(23, "/home/foo/script.txt")});
+        results.add(new Object[]{"replay /home/foo/script.txt", replay("/home/foo/script.txt")});
+        results.add(new Object[]{"messages", showMessages()});
+        results.add(new Object[]{"messages 24", showMessages(24)});
+        results.add(new Object[]{"history version exit", script(history(), version(), exit())});
+        
+        return results;
+    }
+    
+    
+    private final String text;
+    private final ShellCommand expectation;
+    
+    public ShellCommandFactoryTest(String text, ShellCommand expectation) {
+        this.text = text;
+        this.expectation = expectation;
+    }
+    
+    
     @Test
-    public void fromTextShouldBuildExit() {
-        final String command = "exit";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.exit())));
+    public void builderShouldAccept() {
+        ShellCommand actual = ShellCommand.fromText(text);
+        assertThat(actual, is(equalTo(expectation)));
     }
 
-    @Test
-    public void fromTextShouldBuildQuit() {
-        final String command = "quit";
 
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.exit())));
-    }
-
-    @Test
-    public void fromTextShouldBuildVersion() {
-        final String command = "version";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.version())));
-    }
-
-    @Test
-    public void fromTextShouldBuildHelp() {
-        final String command = "help";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.help())));
-    }
-
-    @Test
-    public void fromTextShouldBuildHelpWithASubject() {
-        final String command = "help \"foo\"";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.help("foo"))));
-    }
-
-    @Test
-    public void fromTextShouldBuildHistory() {
-        final String command = "history";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.history())));
-    }
-
-    @Test
-    public void fromTextShouldBuildHistoryWithDepth() {
-        final String command = "history 23";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.history(23))));
-    }
-
-    @Test
-    public void fromTextShouldBuildDumpWithAWindowsFile() {
-        final String command = "dump to c:\\temp\\myscript.txt";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.dumpTo("c:\\temp\\myscript.txt"))));
-    }
-
-    @Test
-    public void fromTextShouldBuildDumpWithALinuxFile() {
-        final String command = "dump to /home/foo/script.txt";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.dumpTo("/home/foo/script.txt"))));
-    }
-
-    @Test
-    public void fromTextShouldBuildDumpWithDepth() {
-        final String command = "dump 23 to /home/foo/script.txt";
-
-        ShellCommand actual = ShellCommand.fromText(command);
-
-        assertThat(actual, is(equalTo(ShellCommand.dumpTo(23, "/home/foo/script.txt"))));
-    }
-
-    @Test
-    public void fromTextShouldBuildReplay() {
-        ShellCommand actual = ShellCommand.fromText("replay /home/foo/script.txt");
-
-        assertThat(actual, is(equalTo(ShellCommand.replay("/home/foo/script.txt"))));
-    }
-
-    @Test
-    public void fromTextShouldBuildMessages() {
-        ShellCommand actual = ShellCommand.fromText("messages");
-
-        assertThat(actual, is(equalTo(ShellCommand.showMessages())));
-    }
-
-    @Test
-    public void fromTextShouldBuildMessagesWithDepth() {
-        ShellCommand actual = ShellCommand.fromText("messages 543");
-
-        assertThat(actual, is(equalTo(ShellCommand.showMessages(543))));
-    }
 
 }

@@ -22,6 +22,8 @@
  */
 package org.cloudml.ui.shell.commands;
 
+import org.cloudml.facade.commands.CloudMlCommand;
+
 /**
  * Interface required to handle shell commands
  */
@@ -71,4 +73,13 @@ public interface ShellCommandHandler {
      * @param depth the number of messages to display
      */
     public void showMessages(int depth);
+
+    /**
+     * Delegate the execution to the given CloudML command, either synchronously
+     * or asynchronously
+     *
+     * @param command the CloudML command to run
+     * @param runInBackground a flag to run in background or not
+     */
+    public void delegate(CloudMlCommand command, boolean runInBackground);
 }
