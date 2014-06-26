@@ -9,21 +9,48 @@ script
     ;
 
 command
-    :   'dump' INTEGER? 'to' PATH   # Dump
-    |   'exit'                      # Exit
-    |   'help' STRING?              # Help
-    |   'history' INTEGER?          # History
-    |   'messages' INTEGER?         # Messages
-    |   'quit'                      # Quit
-    |   'replay' PATH               # Replay
-    |   'version'                   # Version
-    |   action asJob?               # Proxy
+    :   'dump' INTEGER? 'to' PATH                           # Dump
+    |   'exit'                                              # Exit
+    |   'help' STRING?                                      # Help
+    |   'history' INTEGER?                                  # History
+    |   'messages' INTEGER?                                 # Messages
+    |   'quit'                                              # Quit
+    |   'replay' PATH                                       # Replay
+    |   'version'                                           # Version
+    |   action asJob?                                       # Proxy
     ;
 
 
 action
-    :   'deploy'                    # Deploy
+    :   'connect' customer=ID 'to' provider=ID              # Connect 
+    |   'deploy'                                            # Deploy
+    |   'destroy' instance=ID                               # Destroy
+    |   'disconnect' customer=ID 'from' provider=ID         # Disconnect
+    |   'install' component=ID 'on' platform=ID             # Install
+    |   'instantiate' type=ID 'as' instance=ID              # Instantiate
+    |   'list' level                                        # List
+    |   'load' kind 'from' PATH                             # Load                                       
+    |   'snapshot' 'to' PATH                                # Snapshot
+    |   'start' ID                                          # Start
+    |   'stop' ID                                           # Stop
+    |   'store' kind 'to' PATH                              # Store
+    |   'uninstall' component=ID 'from' platform=ID         # Uninstall
+    |   'upload' local=PATH 'on' ID 'at' remote=PATH        # Upload
+    |   'view' level ID                                     # View
     ;
+
+kind
+    :   'deployment'
+    |   'credentials'
+    ;
+
+level
+    :   'instances'
+    |   'instance'
+    |   'types'
+    |   'type'
+    ;
+    
 
 asJob
     :   '&'

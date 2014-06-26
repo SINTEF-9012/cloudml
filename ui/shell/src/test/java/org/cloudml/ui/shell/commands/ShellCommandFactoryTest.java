@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import junit.framework.TestCase;
-import org.cloudml.facade.commands.Deploy;
+import org.cloudml.facade.commands.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -62,6 +62,24 @@ public class ShellCommandFactoryTest extends TestCase {
         results.add(new Object[]{"history version exit", script(history(), version(), exit())});
         results.add(new Object[]{"deploy &", delegate(new Deploy(), true)});
         results.add(new Object[]{"deploy", delegate(new Deploy(), false)});  
+        results.add(new Object[]{"connect foo to bar", delegate(new Attach("foo", "bar"), false)});
+        results.add(new Object[]{"disconnect foo from bar", delegate(new Detach("foo", "bar"), false)});
+        results.add(new Object[]{"destroy foo", delegate(new Destroy("foo"), false)});
+        results.add(new Object[]{"install foo on bar", delegate(new Install("foo", "bar"), false)});
+        results.add(new Object[]{"uninstall foo from bar", delegate(new Uninstall("bar", "foo"), false)});
+        results.add(new Object[]{"instantiate foo as bar", delegate(new Instantiate("foo", "bar"), false)});
+        results.add(new Object[]{"list types", delegate(new ListComponents(), false)});
+        results.add(new Object[]{"list instances", delegate(new ListComponentInstances(), false)});
+        results.add(new Object[]{"view type foo", delegate(new ViewComponent("foo"), false)});
+        results.add(new Object[]{"view instance foo", delegate(new ViewComponentInstance("foo"), false)});
+        results.add(new Object[]{"load credentials from c:\\Users\\franckc\\credentials", delegate(new LoadCredentials("c:\\Users\\franckc\\credentials"), false)});
+        results.add(new Object[]{"load deployment from c:\\Users\\franckc\\sensapp.json", delegate(new LoadDeployment("c:\\Users\\franckc\\sensapp.json"), false)});
+        results.add(new Object[]{"view instance foo", delegate(new ViewComponentInstance("foo"), false)});
+        results.add(new Object[]{"store credentials to c:\\Users\\franckc\\credentials", delegate(new StoreCredentials("c:\\Users\\franckc\\credentials"), false)});
+        results.add(new Object[]{"store deployment to c:\\Users\\franckc\\sensapp.json", delegate(new StoreDeployment("c:\\Users\\franckc\\sensapp.json"), false)});
+        results.add(new Object[]{"upload c:\\sensapp.json on foo at /home/sensapp.json", delegate(new Upload("c:\\sensapp.json", "foo", "/home/sensapp.json"), false)});
+        results.add(new Object[]{"snapshot to /home/sensapp.json", delegate(new Snapshot("/home/sensapp.json"), false)});
+        
         return results;
     }
     

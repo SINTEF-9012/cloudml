@@ -106,13 +106,10 @@ public class ShellCommandBuilder extends ShellCommandsBaseVisitor<ShellCommand> 
 
     @Override
     public ShellCommand visitProxy(ProxyContext ctx) {
-        final boolean runInBackground = true;
+        final boolean runInBackground = (ctx.asJob() != null);
         final CloudMlCommand action = ctx.action().accept(new CloudMLCommandBuilder());
         return ShellCommand.delegate(action, runInBackground);
-    }
-    
-    
-    
+    }    
     
 
 }
