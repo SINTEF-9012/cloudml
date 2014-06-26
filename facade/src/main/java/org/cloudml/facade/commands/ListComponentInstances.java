@@ -20,27 +20,21 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.cloudml.facade.commands;
 
 /**
  * Request the list of available artefacts instances
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
-public class ListComponentInstances extends ManageableCommand {
+public class ListComponentInstances extends CloudMlCommand {
 
-    public ListComponentInstances(CommandHandler handler) {
-        super(handler);
-    }
-    
     @Override
     public void execute(CommandHandler handler) {
         handler.handle(this);
     }
-    
+
+    @Override
+    public String toString() {
+        return "list instances";
+    }
+
 }

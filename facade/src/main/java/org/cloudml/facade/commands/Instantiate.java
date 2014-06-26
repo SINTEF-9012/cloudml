@@ -24,53 +24,51 @@ package org.cloudml.facade.commands;
 
 /**
  * A request for the instantiation of a given type
- * 
- * @author Franck Chauvel - SINTEF ICT
- * @since 1.0
  */
-public class Instantiate extends ManageableCommand {
+public class Instantiate extends CloudMlCommand {
 
-	private final String typeId;
+    private final String typeId;
 
-	private final String instanceId;
+    private final String instanceId;
 
-	/**
-	 * Create a new instantiation request from the type ID and the name to give
-	 * to the resulting instance.
-	 * 
-	 * @param typeId
-	 *            the ID of the type to instantiate
-	 *            
-	 * @param instanceId
-	 *            the name to give to the resulting instance
-	 */
-	public Instantiate(CommandHandler handler, final String typeId, final String instanceId) {
-		super(handler);
-		this.typeId = typeId;
-		this.instanceId = instanceId;
-	}
+    /**
+     * Create a new instantiation request from the type ID and the name to give
+     * to the resulting instance.
+     *
+     * @param typeId the ID of the type to instantiate
+     *
+     * @param instanceId the name to give to the resulting instance
+     */
+    public Instantiate(final String typeId, final String instanceId) {
+        this.typeId = typeId;
+        this.instanceId = instanceId;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.CloudMlCommand#execute(org.cloudml.facade.commands.CommandHandler)
-	 */
-	public void execute(CommandHandler handler) {
-		handler.handle(this);
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
 
-	}
+    }
 
-	/**
-	 * @return the typeId
-	 */
-	public String getTypeId() {
-		return typeId;
-	}
+    /**
+     * @return the typeId
+     */
+    public String getTypeId() {
+        return typeId;
+    }
 
-	/**
-	 * @return the instanceId
-	 */
-	public String getInstanceId() {
-		return instanceId;
-	}
+    /**
+     * @return the instanceId
+     */
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("instantiate %s as %s", typeId, instanceId);
+    }
+    
+    
 
 }

@@ -34,38 +34,32 @@ package org.cloudml.facade.commands;
  * @author Brice Morin - SINTEF ICT
  * @since 1.0
  */
-public abstract class CloudMlCommand implements Runnable {
+public abstract class CloudMlCommand {
 
-    protected boolean isCompleted = false;
-    CommandHandler target;
-    protected long timeout = -1;
-
-    public void run() {
-        execute(target);
-        isCompleted = true;
-    }
-
-    public CloudMlCommand(CommandHandler handler) {
-        this.target = handler;
-    }
-    
-    
     public abstract void execute(CommandHandler target);
 
-    /**
-     * @return true if the command is complete
+    /*
+     * The equality of commands is computed on the associated string. Two
+     * commands that serialize the same are equals.
      */
-    public synchronized boolean isCompleted() {
-        return this.isCompleted;
-    }
-
-    public long getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
+    @Override
+    public final boolean equals(Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (object instanceof CloudMlCommand) {
+            final CloudMlCommand command = (CloudMlCommand) object;
+            return toString().equals(command.toString());
+        }
+        return false;
     }
     
+    @Override
+    public final int hashCode() {
+        return toString().hashCode();
+    }
     
+    @Override
+    public abstract String toString(); 
+
 }

@@ -24,36 +24,38 @@ package org.cloudml.facade.commands;
 
 /**
  * Request detailed information about a selected artefact type
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
-public class ViewComponent extends ManageableCommand {
+public class ViewComponent extends CloudMlCommand {
 
-    private final String ComponentId;
-    
-    
+    private final String componentId;
+
     /**
      * Create a new ViewComponent from the ID of the component type whose
      * details are needed
+     *
      * @param ComponentId the ID of the needed component type.
      */
-    public ViewComponent(CommandHandler handler, final String ComponentId) {
-        super(handler);
-        this.ComponentId = ComponentId;
+    public ViewComponent(final String ComponentId) {
+        this.componentId = ComponentId;
     }
-    
-    
+
     /**
      * @return the ID of the needed component type.
      */
     public String getComponentId() {
-        return this.ComponentId;
+        return this.componentId;
     }
-    
+
     @Override
     public void execute(CommandHandler handler) {
         handler.handle(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("view type %s", componentId);
+    }
     
+    
+
 }

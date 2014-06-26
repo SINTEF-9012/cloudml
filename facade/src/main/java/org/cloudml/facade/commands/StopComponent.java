@@ -23,40 +23,38 @@
 package org.cloudml.facade.commands;
 
 /**
- * Request to stop a given artifact, identified by its ID.
- * 
- * @author Franck Chauvel
- * @since 1.0
+ * Stop the component whose ID is given
  */
-public class StopComponent extends ManageableCommand {
+public class StopComponent extends CloudMlCommand {
 
-	private final String componentId;
+    private final String componentId;
 
-	/**
-	 * Create a new StopComponent request from the ID of the artifact to stop
-	 * 
-	 * @param componentId
-	 *            the ID of the artifact to stop
-	 */
-	public StopComponent(CommandHandler handler, String componentId) {
-		super(handler);
-		this.componentId = componentId;
-	}
+    /**
+     * Create a new StopComponent request from the ID of the artifact to stop
+     *
+     * @param componentId the ID of the artifact to stop
+     */
+    public StopComponent(String componentId) {
+        this.componentId = componentId;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.cloudml.facade.commands.Command#execute(org.cloudml.facade.Facade)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
+    /**
+     * @return the componentId to stop
+     */
+    public String getComponentId() {
+        return componentId;
+    }
 
-	/**
-	 * @return the componentId to stop
-	 */
-	public String getComponentId() {
-		return componentId;
-	}
+    @Override
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("stop %s", componentId);
+    }
+    
+    
+
 }

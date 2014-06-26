@@ -17,12 +17,16 @@ command
     |   'quit'                      # Quit
     |   'replay' PATH               # Replay
     |   'version'                   # Version
-    |   action '&'?                 # Proxy
+    |   action asJob?               # Proxy
     ;
 
 
 action
     :   'deploy'                    # Deploy
+    ;
+
+asJob
+    :   '&'
     ;
 
 DIGIT   

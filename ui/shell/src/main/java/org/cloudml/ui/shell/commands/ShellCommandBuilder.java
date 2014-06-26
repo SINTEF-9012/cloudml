@@ -25,8 +25,7 @@ package org.cloudml.ui.shell.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.cloudml.ui.shell.commands.Script;
-import org.cloudml.ui.shell.commands.ShellCommand;
+import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsBaseVisitor;
 
 import org.cloudml.ui.shell.commands.builder.ShellCommandsParser.*;
@@ -103,6 +102,13 @@ public class ShellCommandBuilder extends ShellCommandsBaseVisitor<ShellCommand> 
             return ShellCommand.showMessages(depth);
         }
         return ShellCommand.showMessages();
+    }
+
+    @Override
+    public ShellCommand visitProxy(ProxyContext ctx) {
+        final boolean runInBackground = true;
+        final CloudMlCommand action = ctx.action().accept(new CloudMLCommandBuilder());
+        return ShellCommand.delegate(action, runInBackground);
     }
     
     

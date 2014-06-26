@@ -20,18 +20,22 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.facade.commands;
+package org.cloudml.ui.shell.commands;
 
-abstract class ManageableCommand extends CloudMlCommand {
+import org.cloudml.facade.commands.CloudMlCommand;
+import org.cloudml.facade.commands.Deploy;
+import org.cloudml.ui.shell.commands.builder.ShellCommandsBaseVisitor;
+import org.cloudml.ui.shell.commands.builder.ShellCommandsParser;
 
-	public ManageableCommand(CommandHandler handler) {
-		super(handler);
-	}
-	
-	
-	/*public synchronized void markAsCompleted() {
-		this.isCompleted = true;
-		this.notifyAll();
-	}*/
+/**
+ * Traverse subparts of the ANTLR parse tree and output the related
+ * CloudMLCommand objects.
+ */
+public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlCommand> {
+    
+    @Override
+    public CloudMlCommand visitDeploy(ShellCommandsParser.DeployContext ctx) {
+        return new Deploy();
+    }
 
 }

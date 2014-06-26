@@ -25,66 +25,59 @@ package org.cloudml.facade.commands;
 /**
  * Request for the direct upload of a local resources on one of the artifact
  * managed through the deployment model
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
-public class Upload extends ManageableCommand {
+public class Upload extends CloudMlCommand {
 
-	private final String artifactId;
-	private final String localPath;
-	private final String remotePath;
+    private final String artifactId;
+    private final String localPath;
+    private final String remotePath;
 
-	/**
-	 * Create a request for a direct upload of a local resources on one of the
-	 * existing artifact.
-	 * 
-	 * @param artifactI
-	 *            the ID of the artifact where the resources shall be uploaded
-	 * @param localPath
-	 *            the path to the local resources to upload
-	 * @param remotePath
-	 *            the path on the remote host, where the resources shall be
-	 *            stored
-	 */
-	public Upload(CommandHandler handler, final String artifactId, final String localPath,
-			final String remotePath) {
-		super(handler);
-		this.artifactId = artifactId;
-		this.localPath = localPath;
-		this.remotePath = remotePath;
-	}
+    /**
+     * Create a request for a direct upload of a local resources on one of the
+     * existing artifact.
+     *
+     * @param artifactId the ID of the artifact where the resources shall be
+     * uploaded
+     * @param localPath the path to the local resources to upload
+     * @param remotePath the path on the remote host, where the resources shall
+     * be stored
+     */
+    public Upload(final String artifactId, final String localPath,
+                  final String remotePath) {
+        this.artifactId = artifactId;
+        this.localPath = localPath;
+        this.remotePath = remotePath;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.cloudml.facade.commands.CloudMlCommand#execute(org.cloudml.facade
-	 * .commands.CommandHandler)
-	 */
-	public void execute(CommandHandler handler) {
-		handler.handle(this);
-	}
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
+    }
 
-	/**
-	 * @return the artifactId
-	 */
-	public String getArtifactId() {
-		return artifactId;
-	}
+    /**
+     * @return the artifactId
+     */
+    public String getArtifactId() {
+        return artifactId;
+    }
 
-	/**
-	 * @return the localPath
-	 */
-	public String getLocalPath() {
-		return localPath;
-	}
+    /**
+     * @return the localPath
+     */
+    public String getLocalPath() {
+        return localPath;
+    }
 
-	/**
-	 * @return the remotePath
-	 */
-	public String getRemotePath() {
-		return remotePath;
-	}
+    /**
+     * @return the remotePath
+     */
+    public String getRemotePath() {
+        return remotePath;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("upload %s on %s at %s", localPath, artifactId, remotePath);
+    }
 
 }

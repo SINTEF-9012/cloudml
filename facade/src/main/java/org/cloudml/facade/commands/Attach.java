@@ -26,56 +26,46 @@ package org.cloudml.facade.commands;
  * Request for the connection of a provided service with a required service. By
  * contrast, with install (resp. uninstall) which target deployment links,
  * attach/detach target software dependencies.
- * 
- * @see org.cloudml.facade.commands.Detach
- * 
- * @author Franck Chauvel
- * 
- * @since 1.0
  */
-public class Attach extends ManageableCommand {
+public class Attach extends CloudMlCommand {
 
-	private final String providerId;
+    private final String providerId;
 
-	private final String consumerId;
+    private final String consumerId;
 
-	/**
-	 * Create a new Attach request from the providerId, and the consumerID
-	 * 
-	 * @param providerId
-	 *            the ID of the provider
-	 * @param consumerId
-	 *            the ID of the consumer
-	 */
-	public Attach(CommandHandler handler, String providerId, String consumerId) {
-		super(handler);
-		this.consumerId = consumerId;
-		this.providerId = providerId;
-	}
+    /**
+     * Create a new Attach request from the providerId, and the consumerID
+     *
+     * @param providerId the ID of the provider
+     * @param consumerId the ID of the consumer
+     */
+    public Attach(String providerId, String consumerId) {
+        this.consumerId = consumerId;
+        this.providerId = providerId;
+    }
 
+    /**
+     * @return the provider ID
+     */
+    public String getProviderId() {
+        return providerId;
+    }
 
-	/**
-	 *  @return the provider ID
-	 */
-	public String getProviderId() {
-		return providerId;
-	}
+    /**
+     * @return the consumer ID
+     */
+    public String getConsumerId() {
+        return consumerId;
+    }
 
-	/**
-	 * @return the consumer ID
-	 */
-	public String getConsumerId() {
-		return consumerId;
-	}
-	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.Command#execute(org.cloudml.facade.commands.CommandHandler)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
+    @Override
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
 
+    @Override
+    public String toString() {
+        return String.format("connect %s to %s", consumerId, providerId);
+    }
 
 }

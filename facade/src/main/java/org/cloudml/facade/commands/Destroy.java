@@ -24,38 +24,36 @@ package org.cloudml.facade.commands;
 
 /**
  * A request for the instantiation of a given type
- * 
- * @author Franck Chauvel - SINTEF ICT
- * @since 1.0
  */
-public class Destroy extends ManageableCommand {
+public class Destroy extends CloudMlCommand {
 
-	private final String instanceId;
+    private final String instanceId;
 
-	/**
-	 * Destroy an instance specified by its ID
-	 *
-	 * @param instanceId
-	 */
-	public Destroy(CommandHandler handler, final String instanceId) {
-		super(handler);
-		this.instanceId = instanceId;
-	}
+    /**
+     * Destroy an instance specified by its ID
+     *
+     * @param instanceId
+     */
+    public Destroy(final String instanceId) {
+        this.instanceId = instanceId;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.CloudMlCommand#execute(org.cloudml.facade.commands.CommandHandler)
-	 */
-	public void execute(CommandHandler handler) {
-		handler.handle(this);
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
+    }
 
-	}
+    /**
+     * @return the instanceId
+     */
+    public String getInstanceId() {
+        return instanceId;
+    }
 
-	/**
-	 * @return the instanceId
-	 */
-	public String getInstanceId() {
-		return instanceId;
-	}
+    @Override
+    public String toString() {
+        return String.format("destroy %s", instanceId);
+    }
+    
 
 }

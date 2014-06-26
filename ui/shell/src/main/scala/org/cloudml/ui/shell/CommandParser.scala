@@ -30,13 +30,10 @@ import org.cloudml.facade.commands.CommandFactory
 
 /**
  * Parse the command and script files containing commands.
- *
- * @author Franck Chauvel - SINTEF ICT
- * @since 0.0.1
  */
 object CommandParser extends RegexParsers {
 
-  var factory = null.asInstanceOf[CommandFactory]// = new CommandFactory()
+  var factory = null.asInstanceOf[CommandFactory]
   
   // TIPS: comments ('#') are trimmed as white spaces
   protected override val whiteSpace = """(\s|#.*)+""".r
@@ -92,35 +89,35 @@ object CommandParser extends RegexParsers {
    * The syntax of the commands, which are forwarded to the CloudML facade
    */
   def cloudMlCommand: Parser[CloudMlCommand] =
-    "start" ~> identifier ^^ { case i => factory.createStartArtifact(i) } |
-  "stop" ~> identifier ^^ { case i => factory.createStopArtifact(i) } |
-  "attach" ~> identifier ~ ("to" ~> identifier) ^^ { case p ~ r => factory.createAttach(p, r) } |
-  "detach" ~> identifier ~ ("from" ~> identifier) ^^ { case p ~ r => factory.createDetach(p, r) } |
-  "install" ~> identifier ~ ("on" ~> identifier) ^^ { case s ~ p => factory.createInstall(p, s) } |
-  "uninstall" ~> identifier ~ ("from" ~> identifier) ^^ { case s ~ p => factory.createUninstall(p, s) } |
-  "instantiate" ~> identifier ~ ("as" ~> identifier) ^^ { case tn ~ an => factory.createInstantiate(tn, an) } |
-  "destroy" ~> identifier  ^^ { case an => factory.createDestroy(an) } |
-  "snapshot" ~> file ^^ {case f => factory.createSnapshot(f)} |
+    "start" ~> identifier ^^ { case i => factory.startComponent(i) } |
+  "stop" ~> identifier ^^ { case i => factory.stopComponent(i) } |
+  "attach" ~> identifier ~ ("to" ~> identifier) ^^ { case p ~ r => factory.attach(p, r) } |
+  "detach" ~> identifier ~ ("from" ~> identifier) ^^ { case p ~ r => factory.detach(p, r) } |
+  "install" ~> identifier ~ ("on" ~> identifier) ^^ { case s ~ p => factory.install(p, s) } |
+  "uninstall" ~> identifier ~ ("from" ~> identifier) ^^ { case s ~ p => factory.uninstall(p, s) } |
+  "instantiate" ~> identifier ~ ("as" ~> identifier) ^^ { case tn ~ an => factory.instantiate(tn, an) } |
+  "destroy" ~> identifier  ^^ { case an => factory.destroy(an) } |
+  "snapshot" ~> file ^^ {case f => factory.snapshot(f)} |
   "load" ~> modelType ~ ("from" ~> file) ^^ { 
-    case Deployment ~ p => factory.createLoadDeployment(p)
-    case Credentials ~ p => factory.createLoadCredentials(p)
+    case Deployment ~ p => factory.loadDeployment(p)
+    case Credentials ~ p => factory.loadCredentials(p)
   } |
   "store" ~> modelType ~ ("to" ~> file) ^^ { 
-    case Deployment ~ path => factory.createStoreDeployment(path) 
-    case Credentials ~ path => factory.createStoreCredentials(path)
+    case Deployment ~ path => factory.storeDeployment(path) 
+    case Credentials ~ path => factory.storeCredentials(path)
   } |
   "upload" ~> file ~ ("on" ~> identifier) ~ ("at" ~> file) ^^ {
-    case l ~ a ~ r => factory.createUpload(a, l, r)
+    case l ~ a ~ r => factory.upload(a, l, r)
   } |
   "list" ~> dataType ^^ { 
-    case ArtefactType =>  factory.createListArtefactTypes() 
-    case ArtefactInstance => factory.createListArtefactInstances()
+    case ArtefactType =>  factory.listTypes() 
+    case ArtefactInstance => factory.listInstances()
   } |
   "view" ~> dataType ~ identifier ^^ { 
-    case ArtefactType ~ id => factory.createViewArtefactType(id)
-    case ArtefactInstance ~ id => factory.createViewArtefactInstance(id)
+    case ArtefactType ~ id => factory.viewType(id)
+    case ArtefactInstance ~ id => factory.viewInstance(id)
   } |
-  "deploy"  ^^^ { factory.createDeploy() }
+  "deploy"  ^^^ { factory.deploy() }
 
   /**
    * The various type of models which can be loaded/stored in different formats

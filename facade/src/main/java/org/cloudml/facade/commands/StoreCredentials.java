@@ -24,11 +24,8 @@ package org.cloudml.facade.commands;
 
 /**
  * Command to store the credentials in use in a given file
- *
- * @author Franck Chauvel
- * @since 1.0
  */
-public class StoreCredentials extends ManageableCommand {
+public class StoreCredentials extends CloudMlCommand {
 
     private final String destination;
 
@@ -38,8 +35,7 @@ public class StoreCredentials extends ManageableCommand {
      *
      * @param destination
      */
-    public StoreCredentials(CommandHandler handler, final String destination) {
-        super(handler);
+    public StoreCredentials(final String destination) {
         this.destination = destination;
     }
 
@@ -55,4 +51,11 @@ public class StoreCredentials extends ManageableCommand {
     public void execute(CommandHandler handler) {
         handler.handle(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("store credentials in %s", destination);
+    }
+    
+    
 }

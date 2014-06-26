@@ -24,56 +24,50 @@ package org.cloudml.facade.commands;
 
 /**
  * Request for installing/deploying a given software on a given environment.
- * Both the software and the environment are identified by thei.r ID
- * 
- * @author Franck Chauvel
- * 
- * @since 1.0
+ * Both the software and the environment are identified by their ID
  */
-public class Install extends ManageableCommand {
+public class Install extends CloudMlCommand {
 
-	private final String environment;
+    private final String environment;
 
-	private final String software;
+    private final String software;
 
-	/**
-	 * Create a new Install request from the id of the target environment and
-	 * the ID of the software to install
-	 * 
-	 * @param environment
-	 *            the ID of the target environment to populate
-	 * @param software
-	 *            the ID of the target software to install
-	 */
-	public Install(CommandHandler handler, String environment, String software) {
-		super(handler);
-		this.environment = environment;
-		this.software = software;
-	}
+    /**
+     * Create a new Install request from the id of the target environment and
+     * the ID of the software to install
+     *
+     * @param environment the ID of the target environment to populate
+     * @param software the ID of the target software to install
+     */
+    public Install(String environment, String software) {
+        this.environment = environment;
+        this.software = software;
+    }
 
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.Command#execute(org.cloudml.facade.commands.CommandHandler)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
+    @Override
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
 
+    /**
+     * @return the environment
+     */
+    public String getEnvironment() {
+        return environment;
+    }
 
-	/**
-	 * @return the environment
-	 */
-	public String getEnvironment() {
-		return environment;
-	}
+    /**
+     * @return the software
+     */
+    public String getSoftware() {
+        return software;
+    }
 
-
-	/**
-	 * @return the software
-	 */
-	public String getSoftware() {
-		return software;
-	}
+    @Override
+    public String toString() {
+        return String.format("install %s on %s", software, environment);
+    }
+    
+    
 
 }

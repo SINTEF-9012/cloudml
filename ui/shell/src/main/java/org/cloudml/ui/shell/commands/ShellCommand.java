@@ -26,6 +26,7 @@ package org.cloudml.ui.shell.commands;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsLexer;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsParser;
 import scala.actors.threadpool.Arrays;
@@ -135,5 +136,9 @@ public abstract class ShellCommand {
     
     public static ShellCommand showMessages(int depth) {
         return new ShowMessages(depth);
+    }
+    
+    public static ShellCommand delegate(CloudMlCommand command, boolean runInBackground) {
+        return new DelegatedCommand(command, runInBackground);
     }
 } 

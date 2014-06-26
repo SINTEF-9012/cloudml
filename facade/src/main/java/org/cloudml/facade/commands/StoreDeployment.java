@@ -25,42 +25,38 @@ package org.cloudml.facade.commands;
 /**
  * Request for storing the deployment model currently in use in a given format,
  * at a given destination (on the local disk)
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
-public class StoreDeployment extends ManageableCommand {
+public class StoreDeployment extends CloudMlCommand {
 
-	private final String destination;
+    private final String destination;
 
-	/**
-	 * Create a new Storing request, specifying the format to use and the
-	 * destination on disk
-	 * 
-	 * @param format
-	 *            the format to use
-	 * @param destination
-	 *            the destination where to store the file
-	 */
-	public StoreDeployment(CommandHandler handler, final String destination) {
-		super(handler);
-		this.destination = destination;
-	}
+    /**
+     * Create a new Storing request, specifying the format to use and the
+     * destination on disk
+     *
+     * @param destination the destination where to store the file
+     */
+    public StoreDeployment(final String destination) {
+        this.destination = destination;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.CloudMlCommand#execute(org.cloudml.facade.commands.CommandHandler)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
+    @Override
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
 
-	}
+    /**
+     * @return the destination
+     */
+    public String getDestination() {
+        return destination;
+    }
 
-	/**
-	 * @return the destination
-	 */
-	public String getDestination() {
-		return destination;
-	}
+    @Override
+    public String toString() {
+        return String.format("store deployment to %s", destination);
+    }
+    
+    
 
 }

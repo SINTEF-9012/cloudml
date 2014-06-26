@@ -24,35 +24,38 @@ package org.cloudml.facade.commands;
 
 /**
  * Request the detailed information about a given artefact instance
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
-public class ViewComponentInstance extends ManageableCommand {
-    
-    private final String componentId;
-    
+public class ViewComponentInstance extends CloudMlCommand {
+
+    private final String instanceId;
+
     /**
-     * Create a new ViewComponentInstance command from the artefact whose details
-     * are needed.
-     * 
+     * Create a new ViewComponentInstance command from the artefact whose
+     * details are needed.
+     *
      * @param componentId the ID of the needed artefact
      */
-    public ViewComponentInstance(CommandHandler handler, final String componentId) {
-        super(handler);
-        this.componentId = componentId;
+    public ViewComponentInstance(final String componentId) {
+        this.instanceId = componentId;
     }
-    
+
     /**
-     * @return the ID of the needed artefact 
+     * @return the ID of the needed artefact
      */
     public String getComponentId() {
-        return this.componentId;
+        return this.instanceId;
     }
 
     @Override
     public void execute(CommandHandler handler) {
         handler.handle(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("view instance %s", instanceId);
+    }
     
+    
+
 }

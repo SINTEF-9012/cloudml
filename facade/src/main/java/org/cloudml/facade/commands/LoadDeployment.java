@@ -23,40 +23,38 @@
 package org.cloudml.facade.commands;
 
 /**
- * Request the loading of a given deployment model. The format will be infered
+ * Request the loading of a given deployment model. The format will be inferred
  * from the extension of the given file.
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
-public class LoadDeployment extends ManageableCommand {
+public class LoadDeployment extends CloudMlCommand {
 
-	private final String pathToModel;
+    private final String pathToModel;
 
-	/**
-	 * Create a new request for loading a deployment model
-	 * 
-	 * @param pathToModel
-	 *            the local path to the deployment model
-	 */
-	public LoadDeployment(CommandHandler handler, final String pathToModel) {
-		super(handler);
-		this.pathToModel = pathToModel;
-	}
+    /**
+     * Create a new request for loading a deployment model
+     *
+     * @param pathToModel the local path to the deployment model
+     */
+    public LoadDeployment(final String pathToModel) {
+        this.pathToModel = pathToModel;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.CloudMlCommand#execute(org.cloudml.facade.commands.CommandHandler)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
 
-	/**
-	 * @return the pathToModel
-	 */
-	public String getPathToModel() {
-		return pathToModel;
-	}
+    /**
+     * @return the pathToModel
+     */
+    public String getPathToModel() {
+        return pathToModel;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("load deployment from %s", pathToModel);
+    }
+    
+        
 
 }

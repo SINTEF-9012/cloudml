@@ -24,56 +24,46 @@ package org.cloudml.facade.commands;
 
 /**
  * Request for detachment of a service provider from a service consumer.
- * 
- * @see org.cloudml.facade.commands.Attach
- * 
- * @author Franck Chauvel
- * 
- * @since 1.0
  */
-public class Detach extends ManageableCommand {
+public class Detach extends CloudMlCommand {
 
-	private final String providerId;
+    private final String providerId;
 
-	private final String consumerId;
+    private final String consumerId;
 
-	/**
-	 * Create a new Detach request from the consumer ID and the provider ID
-	 * 
-	 * @param consumerId
-	 *            the ID of the consumer
-	 * @param providerId
-	 *            teh ID of the provider
-	 */
-	public Detach(CommandHandler handler, String consumerId, String providerId) {
-		super(handler);
-		this.consumerId = consumerId;
-		this.providerId = providerId;
-	}
+    /**
+     * Create a new Detach request from the consumer ID and the provider ID
+     *
+     * @param consumerId the ID of the consumer
+     * @param providerId the ID of the provider
+     */
+    public Detach(String consumerId, String providerId) {
+        this.consumerId = consumerId;
+        this.providerId = providerId;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.cloudml.facade.commands.Command#execute(org.cloudml.facade.commands
-	 * .CommandHandler)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
+    @Override
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
 
-	/**
-	 * @return the providerId
-	 */
-	public String getProviderId() {
-		return providerId;
-	}
+    /**
+     * @return the providerId
+     */
+    public String getProviderId() {
+        return providerId;
+    }
 
-	/**
-	 * @return the consumerId
-	 */
-	public String getConsumerId() {
-		return consumerId;
-	}
+    /**
+     * @return the consumerId
+     */
+    public String getConsumerId() {
+        return consumerId;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("disconnect %s from %s", consumerId, providerId);
+    }
 
 }

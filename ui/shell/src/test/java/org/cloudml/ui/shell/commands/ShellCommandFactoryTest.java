@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import junit.framework.TestCase;
+import org.cloudml.facade.commands.Deploy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -59,7 +60,8 @@ public class ShellCommandFactoryTest extends TestCase {
         results.add(new Object[]{"messages", showMessages()});
         results.add(new Object[]{"messages 24", showMessages(24)});
         results.add(new Object[]{"history version exit", script(history(), version(), exit())});
-        
+        results.add(new Object[]{"deploy &", delegate(new Deploy(), true)});
+        results.add(new Object[]{"deploy", delegate(new Deploy(), false)});  
         return results;
     }
     

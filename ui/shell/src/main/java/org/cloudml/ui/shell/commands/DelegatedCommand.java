@@ -20,6 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 package org.cloudml.ui.shell.commands;
 
 import org.cloudml.facade.commands.CloudMlCommand;
@@ -28,32 +29,36 @@ import org.cloudml.facade.commands.CloudMlCommand;
  * Encapsulate a command object accepted by the facade. Also specifies whether
  * the inner facade command is to be run synchronously or asynchronously
  */
-public class ProxyCommand extends ShellCommand {
+public class DelegatedCommand extends ShellCommand {
 
     public static final boolean IN_BACKGROUND = true;
     
-    private final CloudMlCommand proxy;
-    private final boolean background;
+    private final CloudMlCommand command;
+    private final boolean inBackground;
 
     
-    public ProxyCommand(CloudMlCommand proxy, boolean background) {
-        this.proxy = proxy;
-        this.background = background;
+    public DelegatedCommand(CloudMlCommand command) {
+        this(command, IN_BACKGROUND);
+    }
+    
+    public DelegatedCommand(CloudMlCommand proxy, boolean background) {
+        this.command = proxy;
+        this.inBackground = background;
     } 
 
     @Override
     public void execute(ShellCommandHandler handler) {
-        handler.delegate(proxy, background);
+        handler.delegate(command, inBackground);
     }
     
     
     public boolean runInBackground() {
-        return background;
+        return inBackground;
     }
 
     @Override
     public String toString() {
-        final String text = "";
+        final String text = command.toString();
         if (runInBackground()) {
             return String.format("%s &", text);
         }

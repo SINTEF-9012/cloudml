@@ -262,7 +262,7 @@ object Runner {
     // Instantiate the facade and the shell
     val cloudML = Factory.getInstance().getCloudML()
     val shell = new Shell(cloudML)
-    CommandParser.factory_=(new CommandFactory(cloudML))
+    CommandParser.factory_=(new CommandFactory())
     
     // Check the command line arguments
     if (args.size >= 1 && args(0) == "-i") { // Interactive mode
