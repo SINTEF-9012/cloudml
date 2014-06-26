@@ -21,11 +21,15 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.ui.shell.commands;
+package org.cloudml.ui.shell.configuration.commands;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsLexer;
@@ -80,19 +84,25 @@ public abstract class ShellCommand {
      * Commands factory method
      */
     public static ShellCommand fromText(String text) {
-        ANTLRInputStream input = new ANTLRInputStream(text);
+        return parse(new ANTLRInputStream(text));
+    }
+    
+     public static ShellCommand fromFile(String pathToFile) throws FileNotFoundException, IOException {
+        final FileInputStream file = new FileInputStream(pathToFile);
+        return parse(new ANTLRInputStream(file));
+    }
 
+    private static ShellCommand parse(ANTLRInputStream input) throws RecognitionException {
         ShellCommandsLexer lexer = new ShellCommandsLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         ShellCommandsParser parser = new ShellCommandsParser(tokens);
-        ParseTree tree = parser.script(); // see the grammar ->
-
+        ParseTree tree = parser.script();
         return tree.accept(new ShellCommandBuilder());
     }
 
     public static ShellCommand script(ShellCommand... commands) {
         return new Script(Arrays.asList(commands));
-    }
+    } 
 
     public static ShellCommand exit() {
         return new Exit();
