@@ -21,43 +21,42 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.ui.shell.configuration.commands;
+
+package org.cloudml.ui.shell.terminal;
+
+import org.cloudml.ui.shell.terminal.Color;
 
 /**
- * Dump a part of history into the given file
+ * A message displayed on a terminal
  */
-public class DumpTo extends ShellCommand {
-
-    private final int depth;
-    private final String destination;
-
-    public DumpTo(String destination) {
-        this(ALL, destination);
+public class Message { 
+    
+    
+    public static Message format(String text, Object... arguments) {
+        return new Message(String.format(text, arguments));
+    } 
+    
+    private final String text;
+    
+    public Message(String text) {
+        this.text = text;
     }
-
-    public DumpTo(int depth, String destination) {
-        super(VOLATILE);
-        this.depth = depth;
-        this.destination = destination;
+    
+    public Message prepend(String prefix) {
+        return new Message(prefix + text);
     }
-
-    public boolean hasDepth() {
-        return depth != ALL;
+    
+    public Message in(Color color) {
+        return new Message(color.paint(text));
     }
-
-    private static final int ALL = -1;
-
-    @Override
-    public void execute(ShellCommandHandler handler) {
-        handler.dumpTo(depth, destination);
+    
+    public Message eol() {
+        return new Message(text + System.lineSeparator());
     }
-
+    
     @Override
     public String toString() {
-        if (hasDepth()) {
-            return String.format("dump %d to %s", depth, destination);
-        }
-        return String.format("dump to %s", destination);
+        return text;
     }
 
 }

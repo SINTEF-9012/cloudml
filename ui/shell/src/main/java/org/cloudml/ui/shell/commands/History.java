@@ -49,7 +49,7 @@ public class History extends ShellCommand {
     
     @Override
     public void execute(ShellCommandHandler handler) {
-        super.execute(handler); //To change body of generated methods, choose Tools | Templates.
+        handler.history(depth);
     }
 
     @Override

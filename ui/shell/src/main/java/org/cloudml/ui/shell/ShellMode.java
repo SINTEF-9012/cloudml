@@ -24,7 +24,10 @@ package org.cloudml.ui.shell;
 
 import java.util.Arrays;
 import java.util.List;
+import org.cloudml.facade.CloudML;
 import org.cloudml.facade.Factory;
+import org.cloudml.ui.shell.configuration.Loader;
+import org.cloudml.ui.shell.terminal.Terminal;
 
 /**
  * The CloudML shell can be run in two different modes: batch or interactive.
@@ -131,7 +134,9 @@ class BatchMode extends ShellMode {
 
     @Override
     public void start() {
-        final Shell shell = new Shell(Factory.getInstance().getCloudML());
+        final CloudML proxy = Factory.getInstance().getCloudML();
+        final Terminal device = new Terminal(Loader.getInstance().getConfiguration());
+        final Shell shell = new Shell(device, device, proxy);
         shell.execute(command);
     }
 
@@ -153,7 +158,9 @@ class InteractiveMode extends ShellMode {
 
     @Override
     public void start() {
-        new Shell(Factory.getInstance().getCloudML()).start();
+        final CloudML proxy = Factory.getInstance().getCloudML();
+        final Terminal device = new Terminal(Loader.getInstance().getConfiguration());
+        new Shell(device, device, proxy).start();
     }
 
     @Override

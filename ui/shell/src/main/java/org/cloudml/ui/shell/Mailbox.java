@@ -22,25 +22,46 @@
  */
 package org.cloudml.ui.shell;
 
+import org.cloudml.ui.shell.terminal.Terminal;
+import org.cloudml.ui.shell.terminal.Message;
 import java.util.ArrayList;
 import java.util.List;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.events.AbstractEventHandler;
 import org.cloudml.facade.events.Event;
+import org.cloudml.ui.shell.terminal.OutputDevice;
+
+import static org.cloudml.ui.shell.terminal.Message.format;
 
 /**
  * Contains all the message received by the shell
  */
 public class Mailbox {
 
-    private final Terminal terminal;
+    private final OutputDevice terminal;
     private final List<Event> content;
     private final List<CloudMlCommand> followed;
 
-    Mailbox(Terminal terminal) {
+    Mailbox(OutputDevice terminal) {
         this.terminal = terminal;
         this.content = new ArrayList<Event>();
         this.followed = new ArrayList<CloudMlCommand>();
+    }
+    
+    void showMessages(int depth) {
+         if (hasNewMessages()) {
+            final int max = (depth == -1) ? size() : depth;
+            terminal.print(format("Last messages:").eol());
+            for (int index = 1; index <= max; index++) {
+                final int reversedIndex = size() - index;
+                Event event = contents().get(reversedIndex);
+                terminal.print(format("  %03d: %s", index, event));
+            }
+        
+        } else {
+            terminal.print(format("No new message").eol());
+        
+        }
     }
 
     void followUp(CloudMlCommand command) {

@@ -20,30 +20,25 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.ui.shell.configuration.commands;
+package org.cloudml.ui.shell.terminal;
 
 /**
- * The Exit command, which quits the CloudML shell
+ * A testing output device that stores all messages send by the shell
  */
-public class Exit extends ShellCommand {
+public class Recorder implements OutputDevice {
 
-    public Exit() {
-        super(VOLATILE);
-    }
-
-    @Override
-    public void execute(ShellCommandHandler handler) {
-        handler.exit();
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        return hash;
+    private final StringBuilder buffer;
+    
+    public Recorder() {
+        this.buffer = new StringBuilder();
     }
     
-    public String toString() {
-        return "exit";
+    public String record() {
+        return buffer.toString();
     }
-
+    
+    public void print(Message message) {
+        buffer.append(message);
+    } 
+    
 }

@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.ui.shell;
+package org.cloudml.ui.shell.terminal;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,12 +37,12 @@ import org.cloudml.ui.shell.configuration.Configuration;
 /**
  * Wrap the concept of feature from which one can read or paint
  */
-class Terminal {
+public class Terminal implements InputDevice, OutputDevice {
 
     private final Configuration configuration;
     private final ConsoleReader reader;
 
-    Terminal(Configuration configuration) {
+    public Terminal(Configuration configuration) {
         try {
             this.configuration = configuration;
 
@@ -70,10 +70,9 @@ class Terminal {
      * Prompt the user for a new CloudML command
      *
      * @return the command entered by the user
-     *
-     * @throws IOException
      */
-    String prompt() {
+    @Override
+    public String prompt() {
         try {
             reader.println("");
             return reader.readLine(Color.CYAN.paint(configuration.getPrompt()));
@@ -81,10 +80,11 @@ class Terminal {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
 
-        }
+        } 
     }
 
-    void print(Message message) {
+    @Override
+    public void print(Message message) {
         try {
             reader.print(message.toString());
             reader.flush();

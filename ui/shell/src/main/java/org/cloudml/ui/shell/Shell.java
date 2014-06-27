@@ -22,22 +22,25 @@
  */
 package org.cloudml.ui.shell;
 
-import java.io.File;
+import org.cloudml.ui.shell.terminal.Terminal;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.cloudml.facade.CloudML;
 import org.cloudml.facade.commands.CloudMlCommand;
-import org.cloudml.facade.events.Event;
-import org.cloudml.ui.shell.configuration.commands.ShellCommand;
-import org.cloudml.ui.shell.configuration.commands.ShellCommandHandler;
+import org.cloudml.ui.shell.commands.Script;
+import org.cloudml.ui.shell.commands.ShellCommand;
+import org.cloudml.ui.shell.commands.ShellCommandHandler;
+import org.cloudml.ui.shell.configuration.Command;
 import org.cloudml.ui.shell.configuration.Configuration;
 import org.cloudml.ui.shell.configuration.Loader;
+import org.cloudml.ui.shell.terminal.Formatter;
+import org.cloudml.ui.shell.terminal.InputDevice;
+import org.cloudml.ui.shell.terminal.OutputDevice;
 
-import static org.cloudml.ui.shell.Message.*;
-import static org.cloudml.ui.shell.Color.*;
+import static org.cloudml.ui.shell.terminal.Message.*;
+import static org.cloudml.ui.shell.terminal.Color.*;
 
 /**
  * The CloudML Shell
@@ -52,18 +55,22 @@ public class Shell implements ShellCommandHandler {
 
     private final CloudML proxy;
     private final Configuration configuration;
-    private final List<ShellCommand> history;
-    private final Terminal terminal;
+    private final History history;
+    
+    private final InputDevice input;
+    private final Formatter output;
+    
     private final Mailbox mailbox;
 
     private boolean running;
 
-    public Shell(CloudML proxy) {
+    public Shell(InputDevice input, OutputDevice output, CloudML proxy) {
         this.proxy = proxy;
+        this.input = input;
+        this.output = new Formatter(output);
         this.configuration = Loader.getInstance().getConfiguration();
-        this.history = new ArrayList<ShellCommand>();
-        this.terminal = new Terminal(configuration);  
-        this.mailbox = new Mailbox(terminal); 
+        this.history = new History(output, configuration);   
+        this.mailbox = new Mailbox(output);  
         proxy.register(mailbox.new EventHandler());
     }
 
@@ -79,17 +86,17 @@ public class Shell implements ShellCommandHandler {
     }
 
     private void displayOpening() {
-        terminal.print(format(configuration.getVersion()).eol().in(WHITE));
-        terminal.print(format(configuration.getCopyright()).eol().in(WHITE));
-        terminal.print(format(configuration.getLogo()).eol().in(CYAN));
-        terminal.print(format(configuration.getDisclaimer()).eol().in(WHITE));
+        output.print(format(configuration.getVersion()).eol().in(WHITE));
+        output.print(format(configuration.getCopyright()).eol().in(WHITE));
+        output.print(format(configuration.getLogo()).eol().in(CYAN));
+        output.print(format(configuration.getDisclaimer()).eol().in(WHITE));
     }
 
     private String prompt() {
         if (mailbox.hasNewMessages()) {
-            terminal.print(format("%d new message(s).", mailbox.size()).eol().in(GREEN));
+            output.print(format("%d new message(s).", mailbox.size()).eol().in(GREEN));
         }
-        return terminal.prompt();
+        return input.prompt();
     }
 
     /**
@@ -98,90 +105,75 @@ public class Shell implements ShellCommandHandler {
      * @param text the text of the command to execute
      */
     public void execute(String text) {
-        final ShellCommand command = ShellCommand.fromText(text);
-        history.add(command);
-        command.execute(this);
+        if (!text.isEmpty()) {
+            final ShellCommand command = ShellCommand.fromText(text);
+            history.record(command);
+            command.execute(this);
+        } 
     }
 
     public void unknownCommand() {
-        terminal.print(format("Error, command not supported yet!").in(RED));
+        output.print(format("command not supported yet!").in(RED));
     }
 
     public void exit() {
         running = false;
-        terminal.print(format(configuration.getClosingMessage()).eol());
+        output.print(format(configuration.getClosingMessage()).eol());
     }
 
     public void version() {
-        terminal.print(format(configuration.getVersion()).eol());
+        output.print(format(configuration.getVersion()).eol());
     }
 
     public void history(int depth) {
-        final int max = (depth == -1) ? history.size() : depth;
-        for (int index = 1; index <= max; index++) {
-            final int reversedIndex = history.size() - index;
-            terminal.print(format(" %03d: %s", index, history.get(reversedIndex)).eol());
-        }
+       output.showHistory(history.selectLast(depth));
     }
 
     public void help(String subject) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (subject == null) {
+            output.showHelp(configuration.getCommands());
+        
+        } else {
+            output.showHelp(findCommandAbout(subject));
+        }
+    }
+
+    private Command findCommandAbout(String subject) {
+        for(Command each: configuration.getCommands()) {
+            if (each.getSyntax().contains(subject)) {
+                return each;
+            }
+        }
+        return null;
     }
 
     public void dumpTo(int depth, String destination) {
-        PrintStream script = null;
         try {
-            script = new PrintStream(new File(destination));
-            script.printf("#\n");
-            script.printf("# Script generated by %s\n", configuration.getVersion());
-            script.printf("# Please edit carefully\n");
-            script.printf("#\n");
-
-            final int max = (depth == -1) ? history.size() : depth;
-            for (int index = 1; index <= max; index++) {
-                final int reversedIndex = history.size() - index;
-                final ShellCommand command = history.get(reversedIndex);
-                if (command.isPersistent()) {
-                    script.println(command);
-                }
-            }
-
+            new Script(history.selectLast(depth)).toFile(destination);
+            output.success();
+            
         } catch (FileNotFoundException ex) {
-            terminal.print(format("ERROR: unable to write in file '%s'", destination).eol().in(RED));
-
-        } finally {
-            script.close();
+            output.error(format("Error: Unable to find in file '%s'. Is this path valid?", destination)); 
+         
         }
     }
 
     public void replay(String pathToScript) {
         try {
-            ShellCommand command = ShellCommand.fromFile(pathToScript);
-            command.execute(this);
+            ShellCommand script = ShellCommand.fromFile(pathToScript);
+            script.execute(this);
 
         } catch (FileNotFoundException ex) {
-            terminal.print(format("ERROR: Unable to open the script at '%s'", pathToScript).eol().in(RED));
+            output.print(format("Error: Unable to open the script at '%s'. Is this path valid?", pathToScript).eol().in(RED));
 
         } catch (IOException ex) {
-            terminal.print(format("ERROR: unexpected I/O error while reading the script at '%s'", pathToScript).eol().in(RED));
+            output.print(format("Error: Unexpected I/O error while reading the script at '%s'", pathToScript).eol().in(RED));
 
         }
     }
 
     public void showMessages(int depth) {
-        if (mailbox.hasNewMessages()) {
-            final int max = (depth == -1) ? mailbox.size() : depth;
-            terminal.print(format("Last messages:").eol());
-            for (int index = 1; index <= max; index++) {
-                final int reversedIndex = mailbox.size() - index;
-                Event event = mailbox.contents().get(reversedIndex);
-                terminal.print(format("  %03d: %s", index, event));
-            }
-        
-        } else {
-            terminal.print(format("No new message").eol());
-        
-        }
+       mailbox.showMessages(depth);
     }
 
     public void delegate(CloudMlCommand command, boolean runInBackground) {

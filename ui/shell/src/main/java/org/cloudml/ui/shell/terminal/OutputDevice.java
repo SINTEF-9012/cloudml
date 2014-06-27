@@ -20,14 +20,18 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
-
-package org.cloudml.ui.shell.commands;
+package org.cloudml.ui.shell.terminal;
 
 /**
- *
+ * Ability to show a message to the user
  */
-public class ShellCommandFactory {
+public interface OutputDevice {
+
+    /**
+     * Show a given message to the user
+     *
+     * @param message the message to show to the user
+     */
+    void print(Message message);
 
 }

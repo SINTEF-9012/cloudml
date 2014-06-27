@@ -20,31 +20,30 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
-
-package org.cloudml.ui.shell.configuration.commands;
+package org.cloudml.ui.shell.terminal;
 
 /**
- * Replay a script stored on disk
+ * Colours available on ANSI console
  */
-public class Replay extends ShellCommand {
+public enum Color {
+    BLACK("\u001B[30m"),
+    RED("\u001B[31m"),
+    GREEN("\u001B[32m"),
+    YELLOW("\u001B[33m"),
+    BLUE("\u001B[34m"),
+    PURPLE("\u001B[35m"),
+    CYAN("\u001B[36m"),
+    WHITE("\u001B[37m");
+    
+    
+    private final String flag;
 
-    private final String pathToScript;
-
-    public Replay(String pathToScript) {
-        super(PERSISTENT);
-        this.pathToScript = pathToScript;
+    private Color(String flag) {
+        this.flag = flag;
     }
 
-    @Override
-    public void execute(ShellCommandHandler handler) {
-        handler.replay(pathToScript);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("replay %s", pathToScript);
+    public String paint(String message) {
+        return flag + message + "\u001B[0m";
     }
     
 }

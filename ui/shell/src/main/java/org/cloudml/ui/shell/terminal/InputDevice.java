@@ -20,41 +20,19 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.ui.shell.configuration.commands;
+
+package org.cloudml.ui.shell.terminal;
 
 /**
- * Show the the last messages received by the shell
+ * Ability to read from the text of a shell command from user
  */
-public class ShowMessages extends ShellCommand {
+public interface InputDevice {
 
-    private static final int ALL = -1;
-
-    private final int depth;
-
-    public ShowMessages() {
-        this(ALL);
-    }
-
-    public ShowMessages(int depth) {
-        super(VOLATILE);
-        this.depth = depth;
-    }
-
-    @Override
-    public void execute(ShellCommandHandler handler) {
-        handler.showMessages(depth);
-    }
-
-    public boolean hasDepth() {
-        return depth != ALL;
-    }
-
-    @Override
-    public String toString() {
-        if (hasDepth()) {
-            return String.format("messages %d", depth);
-        }
-        return String.format("messages");
-    }
+    /**
+     * Prompt the user for a new CloudML command
+     *
+     * @return the command entered by the user
+     */
+    String prompt();
 
 }

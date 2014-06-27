@@ -63,7 +63,7 @@ public class Script extends ShellCommand implements Iterable<ShellCommand> {
         for (ShellCommand each: commands) {
             result.append(each);
             if (commands.indexOf(each) != commands.size() - 1) {
-                result.append(" ");
+                result.append(System.lineSeparator());
             }
         }
         return result.toString();

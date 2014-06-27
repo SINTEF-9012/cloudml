@@ -20,41 +20,37 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
 
-package org.cloudml.ui.shell.configuration.commands;
+
+package org.cloudml.ui.shell.terminal;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.cloudml.ui.shell.commands.ShellCommand;
+import org.cloudml.ui.shell.terminal.InputDevice;
 
 /**
- * The help command which display the help of the shell
+ * A test specific input device, which play a sequence of action 
  */
-public class Help extends ShellCommand {
+public class Scenario implements InputDevice {
 
-    private final String subject;
-
-    public Help(String subject) {
-        super(VOLATILE);
-        this.subject = subject;
+    private final List<ShellCommand> scenario;
+    private final List<ShellCommand> executed; 
+    
+    public Scenario(ShellCommand... commands) {
+        this.scenario = new ArrayList<ShellCommand>(Arrays.asList(commands));
+        this.executed = new ArrayList<ShellCommand>(this.scenario);
     }
     
-    public boolean hasSubject() {
-        return subject != null;
-    }
-
-    @Override
-    public void execute(ShellCommandHandler handler) {
-        handler.help(subject);
-    }
-
-    @Override
-    public String toString() {
-        if (hasSubject()) {
-            return String.format("help \"%s\"", subject);
+    public String prompt() {
+        if (scenario.isEmpty()) {
+            return ShellCommand.exit().toString();
         }
-        return "help";
+        final ShellCommand command = scenario.remove(0);
+        executed.add(command);
+        return command.toString();
     }
-    
-    
-    
+   
     
 }

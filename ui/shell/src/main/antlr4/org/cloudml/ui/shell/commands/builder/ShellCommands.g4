@@ -96,3 +96,8 @@ STRING
 WS
     :   [ \t\n\r]+ -> skip 
     ;
+
+LINE_COMMENT
+    : '#' ~[\r\n]* -> channel(HIDDEN)
+    ;
+

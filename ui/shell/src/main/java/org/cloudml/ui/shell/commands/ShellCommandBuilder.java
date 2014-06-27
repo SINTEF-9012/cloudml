@@ -44,6 +44,10 @@ public class ShellCommandBuilder extends ShellCommandsBaseVisitor<ShellCommand> 
         return new Script(commands);
     }
 
+    @Override
+    public ShellCommand visitDeploy(DeployContext ctx) {
+        return super.visitDeploy(ctx); //To change body of generated methods, choose Tools | Templates.
+    }
 
     @Override
     public ShellCommand visitExit(ExitContext ctx) {

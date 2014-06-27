@@ -61,6 +61,13 @@ public interface ShellCommandHandler {
     public void dumpTo(int depth, String destination);
 
     /**
+     * Show the history of commands entered by th user
+     *
+     * @param depth the depth to reach in the history
+     */
+    public void history(int depth);
+
+    /**
      * Replay the command stored in the given file
      *
      * @param pathToScript the path to the script to replay
@@ -82,4 +89,5 @@ public interface ShellCommandHandler {
      * @param runInBackground a flag to run in background or not
      */
     public void delegate(CloudMlCommand command, boolean runInBackground);
+
 }
