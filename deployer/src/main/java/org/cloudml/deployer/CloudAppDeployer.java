@@ -22,15 +22,13 @@
  */
 package org.cloudml.deployer;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.cloudml.connectors.Connector;
-import org.cloudml.connectors.ConnectorFactory;
-import org.cloudml.connectors.JCloudsConnector;
-import org.cloudml.connectors.PaaSConnector;
+import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.ConfigValet;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
@@ -202,10 +200,39 @@ public class CloudAppDeployer {
         }
     }
 
+    private void executeCommand(VMInstance owner, Connector jc, String command){
+        if(!command.equals("")){
+            if(!owner.getType().getOs().toLowerCase().contains("windows")){
+                jc.execCommand(owner.getId(), command, "ubuntu", owner.getType().getPrivateKey());
+            }else{
+                if(command != null && !command.isEmpty()){
+                    PowerShellConnector run = null;
+                    try {
+                        Thread.sleep(90000); // crappy stuff: wati for windows .... TODO
+                        String cmd="powershell  \""+command+" "+owner.getType().getPrivateKey()+" "+owner.getPublicAddress()+"\"";
+                        journal.log(Level.INFO, ">> Executing command: "+cmd);
+                        run = new PowerShellConnector(cmd);
+                        journal.log(Level.INFO, ">> STDOUT: "+run.getStandardOutput());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
     private void executeInstallCommand(InternalComponentInstance x, VMInstance owner, Connector jc) {
         unlessNotNull("Cannot install with an argument at null", x, owner, jc);
         for (Resource r : x.getType().getResources()) {
-            jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", owner.getType().getPrivateKey());
+            if(!r.getInstallCommand().equals("")){
+                if(r.getRequireCredentials()){
+                    jc.execCommand(owner.getId(), r.getInstallCommand()+" "+owner.getType().getProvider().getCredentials().getLogin()+" "+owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                }else{
+                    executeCommand(owner, jc, r.getInstallCommand());
+                }
+            }
         }
     }
 
@@ -238,7 +265,11 @@ public class CloudAppDeployer {
     private void executeRetrieveCommand(InternalComponentInstance x, VMInstance owner, Connector jc) {
         unlessNotNull("Cannot retrieve resources of null!", x, owner, jc);
         for (Resource r : x.getType().getResources()) {
-            jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", owner.getType().getPrivateKey());
+            if(!r.getRetrieveCommand().equals("")){
+                if(r.getRequireCredentials())
+                    jc.execCommand(owner.getId(), r.getRetrieveCommand()+" "+owner.getType().getProvider().getCredentials().getLogin()+""+owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                else executeCommand(owner, jc, r.getRetrieveCommand());
+            }
         }
     }
 
@@ -282,7 +313,7 @@ public class CloudAppDeployer {
 
                 for (Resource r :  host.getType().getResources()) {
                     String configurationCommand = r.getConfigureCommand();
-                    configure(jc, n, ownerVM, configurationCommand);
+                    configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                 }
                 host.asInternal().setStatus(State.CONFIGURED);
 
@@ -318,7 +349,7 @@ public class CloudAppDeployer {
 
                     for (Resource r :  serverComponent.getType().getResources()) {
                         String configurationCommand = r.getConfigureCommand();
-                        configure(jc, n, owner, configurationCommand);
+                        configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
                     }
                     if (serverComponent.isInternal()) {
                         serverComponent.asInternal().setStatus(State.CONFIGURED);
@@ -362,7 +393,7 @@ public class CloudAppDeployer {
 
                     for (Resource r : ix.getType().getResources()) {
                         String configurationCommand = r.getConfigureCommand();
-                        configure(jc, n, ownerVM, configurationCommand);
+                        configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                     }
                     ix.setStatus(State.CONFIGURED);
 
@@ -388,9 +419,11 @@ public class CloudAppDeployer {
      * @param configurationCommand the command to configure the component,
      * parameters are: IP IPDest portDest
      */
-    private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand) {
+    private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean required) {
         if (!configurationCommand.equals("")) {
-            jc.execCommand(ni.getId(), configurationCommand, "ubuntu", n.getPrivateKey());
+            if(required)
+                jc.execCommand(ni.getId(), configurationCommand+" "+ni.getType().getProvider().getCredentials().getLogin()+" "+ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
+            else executeCommand(ni, jc, configurationCommand);
         }
     }
 
@@ -405,7 +438,7 @@ public class CloudAppDeployer {
     private void start(Connector jc, VM n, VMInstance ni, String startCommand) {
         unlessNotNull("Cannot start without connector", jc, n, ni, startCommand);
         if (!startCommand.equals("")) {
-            jc.execCommand(ni.getId(), startCommand, "ubuntu", n.getPrivateKey());
+            executeCommand(ni, jc, startCommand);
         }
     }
 
@@ -537,11 +570,11 @@ public class CloudAppDeployer {
             jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
             if(r.getConfigureCommand() != null){
                 String configurationCommand = r.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jc, n, ownerVM, configurationCommand);
+                configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
             }
             if(r.getInstallCommand() != null){
                 String installationCommand = r.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jc, n, ownerVM, installationCommand);
+                configure(jc, n, ownerVM, installationCommand, r.getRequireCredentials());
             }
             jc.closeConnection();
         }

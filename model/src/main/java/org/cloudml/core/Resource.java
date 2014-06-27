@@ -32,6 +32,8 @@ public class Resource extends WithProperties {
     private String configureCommand = "";
     private String startCommand = "";
     private String stopCommand = "";
+    private Boolean requireCredentials = false;
+    private Boolean executeLocally = false;
     private Map<String, String> uploadCommand = new HashMap<String, String>();
 
     public Resource() {
@@ -80,6 +82,14 @@ public class Resource extends WithProperties {
         return uploadCommand;
     }
 
+    public Boolean getRequireCredentials(){
+        return requireCredentials;
+    }
+
+    public Boolean getExecuteLocally(){
+        return executeLocally;
+    }
+
     public void setInstallCommand(String deployingCommand) {
         this.installCommand = deployingCommand;
     }
@@ -102,6 +112,14 @@ public class Resource extends WithProperties {
 
     public void setUploadCommand(Map<String, String> paths) {
         this.uploadCommand = paths;
+    }
+
+    public void setRequireCredentials(Boolean r){
+        this.requireCredentials=r;
+    }
+
+    public void setExecuteLocally(Boolean l){
+        this.executeLocally=l;
     }
 
     @Override

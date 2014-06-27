@@ -98,6 +98,8 @@ public class BridgeToKmf {
             kr.setConfigureCommand(r.getConfigureCommand());
             kr.setStartCommand(r.getStartCommand());
             kr.setStopCommand(r.getStopCommand());
+            kr.setRequireCredentials(r.getRequireCredentials());
+            kr.setExecuteLocally(r.getExecuteLocally());
             kElement.addResources(kr);
             convertProperties(r,kr,factory);
             String kup = "";

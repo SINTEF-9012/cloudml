@@ -229,26 +229,8 @@ public class FlexiantConnector implements Connector{
     public void execCommand(String id, String command, String login, String keyPath){
         Server temp=(Server)findObjectResourceByID(id, ResourceType.SERVER);
         String ip=temp.getNics().get(0).getIpAddresses().get(0).getIpAddress();
-        if(!temp.getImageName().toLowerCase().contains("windows")){
-            SSHConnector sc=new SSHConnector(keyPath, login, ip);
-            sc.execCommandSsh(command);
-        }else{
-            if(command != null && !command.isEmpty()){
-                PowerShellConnector run = null;
-                try {
-                    Thread.sleep(90000);
-                    String cmd="powershell  \""+command+" "+keyPath+" "+ip+"\"";
-                    journal.log(Level.INFO, ">> Executing command VM: "+cmd);
-                    run = new PowerShellConnector(cmd);
-                    System.out.println("STDOUT: ");
-                    System.out.println(run.getStandardOutput());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        SSHConnector sc=new SSHConnector(keyPath, login, ip);
+        sc.execCommandSsh(command);
     }
 
 
