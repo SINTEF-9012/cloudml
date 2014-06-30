@@ -23,27 +23,30 @@
 package org.cloudml.facade.commands;
 
 /**
- * Request for generating a snapshot with jung of a runnign system.
- * 
- * @author Nicolas Ferry
- * @since 1.0
+ * Request for generating a snapshot with Jung of a running system.
  */
-public class Snapshot extends ManageableCommand {
+public class Snapshot extends CloudMlCommand {
 
-	private final String pathToSnapshot;
-	
-	public Snapshot(CommandHandler handler, String pathToSnapshot) {
-        super(handler);
-        this.pathToSnapshot=pathToSnapshot;
+    private final String pathToSnapshot;
+
+    public Snapshot(String pathToSnapshot) {
+        this.pathToSnapshot = pathToSnapshot;
     }
-	
-	@Override
-	public void execute(CommandHandler handler) {
-		handler.handle(this);
-	}
-	
-	public String getPathToSnapshot(){
-		return pathToSnapshot;
-	}
+
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
+    }
+
+    public String getPathToSnapshot() {
+        return pathToSnapshot;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("snapshot %s", pathToSnapshot);
+    }
+    
+    
 
 }

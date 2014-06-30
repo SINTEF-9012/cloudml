@@ -22,36 +22,32 @@
  */
 package org.cloudml.facade.commands;
 
-
 /**
- * Capture a request for starting a component whose ID is given
- * 
- * @author Franck Chauvel - SINTEF ICT
- * @since 1.0
+ * Starting the component whose ID is given
  */
-public class StartComponent extends ManageableCommand {
+public class StartComponent extends CloudMlCommand {
 
-	private final String componentId;
-	
-	
-	public StartComponent(CommandHandler handler, String componentId) {
-		super(handler);
-		this.componentId = componentId;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.cloudml.facade.commands.Command#execute(org.cloudml.facade.Facade)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
+    private final String componentId;
 
-	/**
-	 * @return the ID of the component to start
-	 */
-	public String getComponentId() {
-		return componentId;
-	}
+    public StartComponent(String componentId) {
+        this.componentId = componentId;
+    }
+
+    /**
+     * @return the ID of the component to start
+     */
+    public String getComponentId() {
+        return componentId;
+    }
+
+    @Override
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("start %s", componentId);
+    }
 
 }

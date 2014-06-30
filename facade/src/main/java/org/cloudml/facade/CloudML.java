@@ -39,16 +39,20 @@ public interface CloudML extends CommandHandler{
      * Require the facade to perform a new command, without blocking on it
      *
      * @param command the command to execute
+     * 
+     * @return the associated execution object
      */
-    public void fireAndForget(CloudMlCommand command);
+    public Execution fireAndForget(CloudMlCommand command);
 
     /**
      * Require the facade to perform a command, and wait for the command to be
      * complete. This is a blocking operation.
      *
-     * @param command
+     * @param command the command to execute
+     * 
+     * @return the associated execution object
      */
-    public void fireAndWait(CloudMlCommand command);
+    public Execution fireAndWait(CloudMlCommand command);
 
     /**
      * Register a new event handler.

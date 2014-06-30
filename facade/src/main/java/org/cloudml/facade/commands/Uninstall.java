@@ -25,56 +25,48 @@ package org.cloudml.facade.commands;
 /**
  * Request for uninstalling a software from a given environment, both identified
  * by their respective ID.
- * 
- * @author Franck Chauvel
- * 
- * @since 1.0
  */
-public class Uninstall extends ManageableCommand {
+public class Uninstall extends CloudMlCommand {
 
-	private final String environment;
+    private final String environment;
 
-	private final String software;
+    private final String software;
 
-	/**
-	 * Create a new uninstall request from the IDs of the software artifact
-	 * which has to be removed and the environment where it is currently running
-	 * 
-	 * @param environment
-	 *            the ID of the environment where the software to remove is
-	 *            currently running
-	 * @param software
-	 *            the ID of the software to remove
-	 */
-	public Uninstall(CommandHandler handler, final String environment, final String software) {
-		super(handler);
-		this.environment = environment;
-		this.software = software;
-	}
+    /**
+     * Create a new uninstall request from the IDs of the software artifact
+     * which has to be removed and the environment where it is currently running
+     *
+     * @param environment the ID of the environment where the software to remove
+     * is currently running
+     * @param software the ID of the software to remove
+     */
+    public Uninstall(final String environment, final String software) {
+        this.environment = environment;
+        this.software = software;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.cloudml.facade.commands.Command#execute(org.cloudml.facade.commands
-	 * .CommandHandler)
-	 */
-	public void execute(CommandHandler target) {
-		target.handle(this);
-	}
+    @Override
+    public void execute(CommandHandler target) {
+        target.handle(this);
+    }
 
-	/**
-	 * @return the environment
-	 */
-	public String getEnvironment() {
-		return environment;
-	}
+    /**
+     * @return the environment
+     */
+    public String getEnvironment() {
+        return environment;
+    }
 
-	/**
-	 * @return the software
-	 */
-	public String getSoftware() {
-		return software;
-	}
+    /**
+     * @return the software
+     */
+    public String getSoftware() {
+        return software;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("uninstall %s from %s", software, environment);
+    }
 
 }

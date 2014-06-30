@@ -20,18 +20,41 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.facade.commands;
+package org.cloudml.ui.shell.commands;
 
-abstract class ManageableCommand extends CloudMlCommand {
+/**
+ * Show the the last messages received by the shell
+ */
+public class ShowMessages extends ShellCommand {
 
-	public ManageableCommand(CommandHandler handler) {
-		super(handler);
-	}
-	
-	
-	/*public synchronized void markAsCompleted() {
-		this.isCompleted = true;
-		this.notifyAll();
-	}*/
+    private static final int ALL = -1;
+
+    private final int depth;
+
+    public ShowMessages() {
+        this(ALL);
+    }
+
+    public ShowMessages(int depth) {
+        super(VOLATILE);
+        this.depth = depth;
+    }
+
+    @Override
+    public void execute(ShellCommandHandler handler) {
+        handler.showMessages(depth);
+    }
+
+    public boolean hasDepth() {
+        return depth != ALL;
+    }
+
+    @Override
+    public String toString() {
+        if (hasDepth()) {
+            return String.format("messages %d", depth);
+        }
+        return String.format("messages");
+    }
 
 }

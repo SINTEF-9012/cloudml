@@ -199,8 +199,8 @@ public class Visu {
 					properties.setModel(new CPIMTable(V.get(0)));
 					runtimeProperties.setModel(new CPSMTable(V.get(0)));
 					
-					CommandFactory fcommand=new CommandFactory(cml);
-					CloudMlCommand load=fcommand.createLoadDeployment(result.getPath());
+					CommandFactory fcommand=new CommandFactory();
+					CloudMlCommand load=fcommand.loadDeployment(result.getPath());
 					cml.fireAndWait(load);
 					
 				} catch (FileNotFoundException e1) {
@@ -221,8 +221,8 @@ public class Visu {
 			public void actionPerformed(ActionEvent e) {
 				//cad.deploy(dmodel);
 				System.out.println("deploy");
-				CommandFactory fcommand=new CommandFactory(cml);
-				CloudMlCommand deploy=fcommand.createDeploy();
+				CommandFactory fcommand=new CommandFactory();
+				CloudMlCommand deploy=fcommand.deploy();
 				cml.fireAndWait(deploy);
 			}
 		});

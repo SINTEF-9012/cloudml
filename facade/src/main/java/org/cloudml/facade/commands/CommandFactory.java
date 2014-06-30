@@ -22,62 +22,56 @@
  */
 package org.cloudml.facade.commands;
 
+/**
+ * Factory methods to simplify the creation of CloudML commands
+ */
 public class CommandFactory {
-
-    private CommandHandler handler;
-    
-    public CommandFactory(CommandHandler handler) {
-        this.handler = handler;
-    }
 
     /**
      * Start a given artifact of the deployment model
      *
-     * @param artefactId the ID of the artifact to start
+     * @param artifactId the ID of the artifact to start
      *
-     * @see {@link StartComponent}
+     * @return the associated command object
      */
-    public CloudMlCommand createStartArtifact(final String artifactId) {
-        return new StartComponent(handler, artifactId);
+    public CloudMlCommand startComponent(final String artifactId) {
+        return new StartComponent(artifactId);
     }
 
     /**
      * Stop a given artifact of the deployment model
      *
-     * @param artefactId the ID of the artifact to stop
-     *
-     * @see {@link StopComponent}
+     * @param artifactId the ID of the artifact to stop
+     * @return the associated command object
      */
-    public CloudMlCommand createStopArtifact(final String artifactId) {
-        return new StopComponent(handler, artifactId);
+    public CloudMlCommand stopComponent(final String artifactId) {
+        return new StopComponent(artifactId);
     }
 
     /**
      * Install a given software in a given environment
      *
-     * @param environment the ID of the environment where the software shall be
-     * installed
-     * @param software the ID of the software which shall be installed
-     *
-     * @see {@link org.cloudml.facade.commands.Install}
+     * @param environmentId the ID of the environment where the software shall
+     * be installed
+     * @param softwareId the ID of the software which shall be installed
+     * @return the associated command object
      */
-    public CloudMlCommand createInstall(final String environmentId,
-            final String softwareId) {
-        return new Install(handler, environmentId, softwareId);
+    public CloudMlCommand install(final String environmentId,
+                                  final String softwareId) {
+        return new Install(environmentId, softwareId);
     }
 
     /**
      * Remove a given software from a given environment
      *
-     * @param environment the ID of the environment where the software is
+     * @param environmentId the ID of the environment where the software is
      * installed
-     * @param software the ID of the software that shall be removed
-     *
-     * @see {@link org.cloudml.facade.commands.Uninstall}
+     * @param softwareId the ID of the software that shall be removed
+     * @return the associated command object
      */
-    public CloudMlCommand createUninstall(final String environmentId,
-            final String softwareId) {
-        return new Uninstall(handler, environmentId, softwareId);
+    public CloudMlCommand uninstall(final String environmentId,
+                                    final String softwareId) {
+        return new Uninstall(environmentId, softwareId);
     }
 
     /**
@@ -86,12 +80,11 @@ public class CommandFactory {
      * @param providerId the end-point of the service provider
      *
      * @param requiredId the end-point of the service consumer
-     * 
-     * @see {@link org.cloudml.facade.commands.Attach}
+     * @return the associated command object
      */
-    public CloudMlCommand createAttach(final String providerId,
-            final String consumerId) {
-        return new Attach(handler, providerId, consumerId);
+    public CloudMlCommand attach(final String providerId,
+                                 final String requiredId) {
+        return new Attach(providerId, requiredId);
     }
 
     /**
@@ -100,36 +93,32 @@ public class CommandFactory {
      * @param providerId the end-point of the service provider
      *
      * @param requiredId the end-point of the service consumer
-     *
-     * @see {@link org.cloudml.facade.commands.Detach}
+     * @return the associated command object
      */
-    public CloudMlCommand createDetach(final String providerId,
-            final String consumerId) {
-        return new Detach(handler, consumerId, providerId);
+    public CloudMlCommand detach(final String providerId,
+                                 final String requiredId) {
+        return new Detach(requiredId, providerId);
     }
 
     /**
      * Create a new instance of a given artifact type
      *
-     * @param typeName the name (i.e., the ID) or the artifact type to
-     * instantiate
+     * @param typeId the name (i.e., the ID) or the artifact type to instantiate
      * @param instanceId the name that must be given to the instance
-     *
-     * @see {@link org.cloudml.facade.commands.Instantiate}
+     * @return the associated command object
      */
-    public CloudMlCommand createInstantiate(final String typeId, final String instanceId) {
-        return new Instantiate(handler, typeId, instanceId);
+    public CloudMlCommand instantiate(final String typeId, final String instanceId) {
+        return new Instantiate(typeId, instanceId);
     }
 
     /**
      * Destroy an instance
      *
      * @param instanceId the name of the instance to be savagely destroyed
-     *
-     * @see {@link org.cloudml.facade.commands.Destroy}
+     * @return the associated command object
      */
-    public CloudMlCommand createDestroy(final String instanceId) {
-        return new Destroy(handler, instanceId);
+    public CloudMlCommand destroy(final String instanceId) {
+        return new Destroy(instanceId);
     }
 
     /**
@@ -139,55 +128,50 @@ public class CommandFactory {
      * uploaded
      * @param localPath the local path where the resources is located
      * @param remotePath the remote path where the resources must be stored
+     * @return the associated command object
      *
-     * @link {@link org.cloudml.facade.commands.Upload}
      */
-    public CloudMlCommand createUpload(final String artifactId,
-            final String localPath, final String remotePath) {
-        return new Upload(handler, artifactId, localPath, remotePath);
+    public CloudMlCommand upload(final String artifactId,
+                                 final String localPath, final String remotePath) {
+        return new Upload(artifactId, localPath, remotePath);
     }
 
     /**
-     * Store a deployment model in a given location witha given format
+     * Store a deployment model in a given location with a given format
      *
      * @param destination the place where the model must be stored
-     * @param format the format that must be used
-     *
-     * @see {@link org.cloudml.facade.commands.StoreDeployment}
+     * @return the associated command object
      */
-    public CloudMlCommand createStoreDeployment(final String destination) {
-        return new StoreDeployment(handler, destination);
+    public CloudMlCommand storeDeployment(final String destination) {
+        return new StoreDeployment(destination);
     }
 
     /**
      * Load an existing local deployment model
      *
      * @param pathToModel the local path to the deployment model to load
-     *
-     * @see {@link org.cloudml.facade.commands.LoadDeployment}
+     * @return the associated command object
      */
-    public CloudMlCommand createLoadDeployment(final String pathToModel) {
-        return new LoadDeployment(handler, pathToModel);
+    public CloudMlCommand loadDeployment(final String pathToModel) {
+        return new LoadDeployment(pathToModel);
     }
 
     /**
      * Deploy the current CloudMLModel
      *
-     * @see {@link org.cloudml.facade.commands.Deploy}
+     * @return the associated command object
      */
-    public CloudMlCommand createDeploy() {
-        return new Deploy(handler);
+    public CloudMlCommand deploy() {
+        return new Deploy();
     }
 
     /**
      * Create a new instance of ListType command
      *
      * @return the related CloudMlCommand
-     *
-     * @see {@link ListComponents}
      */
-    public CloudMlCommand createListArtefactTypes() {
-        return new ListComponents(handler);
+    public CloudMlCommand listTypes() {
+        return new ListComponents();
     }
 
     /**
@@ -195,10 +179,9 @@ public class CommandFactory {
      *
      * @return a fresh ListComponentInstances command
      *
-     * @see {@link ListComponentInstances}
      */
-    public CloudMlCommand createListArtefactInstances() {
-        return new ListComponentInstances(handler);
+    public CloudMlCommand listInstances() {
+        return new ListComponentInstances();
     }
 
     /**
@@ -208,8 +191,8 @@ public class CommandFactory {
      * @return a command to see the detail of the artefact type with the given
      * id
      */
-    public CloudMlCommand createViewArtefactType(final String id) {
-        return new ViewComponent(handler, id);
+    public CloudMlCommand viewType(final String id) {
+        return new ViewComponent(id);
     }
 
     /**
@@ -218,19 +201,19 @@ public class CommandFactory {
      * @param id the ID of the artefact instance which is needed
      * @return a command to fetch the artefact instance with the given ID
      */
-    public CloudMlCommand createViewArtefactInstance(final String id) {
-        return new ViewComponentInstance(handler, id);
+    public CloudMlCommand viewInstance(final String id) {
+        return new ViewComponentInstance(id);
     }
 
     /**
-     * Create a new command to store the crendentials currently in used by
+     * Create a new command to store the credentials currently in used by
      * CloudML
      *
      * @param destination the place where the credentials shall be stored
      * @return the associated command to store the credentials
      */
-    public CloudMlCommand createStoreCredentials(final String destination) {
-        return new StoreCredentials(handler, destination);
+    public CloudMlCommand storeCredentials(final String destination) {
+        return new StoreCredentials(destination);
     }
 
     /**
@@ -238,20 +221,21 @@ public class CommandFactory {
      *
      * @param pathToCredentials the path to the file that contains the
      * credentials
+     *
      * @return the command to load the credentials contained in the file
      */
-    public CloudMlCommand createLoadCredentials(final String pathToCredentials) {
-        return new LoadCredentials(handler, pathToCredentials);
+    public CloudMlCommand loadCredentials(final String pathToCredentials) {
+        return new LoadCredentials(pathToCredentials);
     }
-    
+
     /**
      * Load an existing local deployment model
      *
-     * @param pathToModel the local path to the deployment model to load
+     * @param pathToSnapshot the local path to the deployment model to load
      *
-     * @see {@link org.cloudml.facade.commands.LoadDeployment}
+     * @return the associated command object
      */
-    public CloudMlCommand createSnapshot(final String pathToSnapshot) {
-        return new Snapshot(handler, pathToSnapshot);
+    public CloudMlCommand snapshot(final String pathToSnapshot) {
+        return new Snapshot(pathToSnapshot);
     }
 }

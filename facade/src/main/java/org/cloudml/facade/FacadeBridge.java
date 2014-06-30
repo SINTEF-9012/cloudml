@@ -27,8 +27,6 @@ package org.cloudml.facade;
 import java.util.Collection;
 
 import org.cloudml.core.Deployment;
-import org.cloudml.facade.CloudML;
-import org.cloudml.facade.Factory;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.CommandFactory;
 import org.cloudml.mrt.ModelRepo;
@@ -45,7 +43,7 @@ public class FacadeBridge implements ModelRepo {
     
     public FacadeBridge(){
         facade = Factory.getInstance().getCloudML();
-        factory = new CommandFactory(facade);
+        factory = new CommandFactory();
         
     }
 
@@ -58,19 +56,19 @@ public class FacadeBridge implements ModelRepo {
         CloudMlCommand command = null;
         if("LoadDeployment".equals(name)){
             
-            if(params == null || params.isEmpty()){
+            if(params == null || params.isEmpty()){ 
                 
                 return "###Waiting for Deployment Content";
                 
             }
             String param = params.iterator().next();
-            command = factory.createLoadDeployment(param);
+            command = factory.loadDeployment(param);
         }
         else if("Deploy".equals(name)){
-            command = factory.createDeploy();
+            command = factory.deploy();
         }
         else if("StartArtefact".equals(name)){
-            command = factory.createStartArtifact(params.iterator().next());
+            command = factory.startComponent(params.iterator().next());
         }
         else{
             throw new RuntimeException("Command not defined in facade");

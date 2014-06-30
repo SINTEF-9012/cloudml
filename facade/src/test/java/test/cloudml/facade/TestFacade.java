@@ -54,12 +54,12 @@ public class TestFacade extends TestCase implements EventHandler {
         CloudML cloudml = Factory.getInstance().getCloudML();
         cloudml.register(this);
 
-        CommandFactory factory = new CommandFactory(cloudml);
+        CommandFactory factory = new CommandFactory();
 
         // Send a dummy command
-        CloudMlCommand command = factory.createStartArtifact("foo");
-        cloudml.fireAndWait(command);
-        assertTrue(command.isCompleted());
+        CloudMlCommand command = factory.startComponent("foo");
+        final Execution execution = cloudml.fireAndWait(command);
+        assertTrue(execution.isCompleted());
 
 
     }

@@ -24,28 +24,21 @@ package org.cloudml.facade.commands;
 
 /**
  * Request to load a specific file containing credentials
- * 
- * @author Franck Chauvel
- * @since 1.0
  */
-public class LoadCredentials extends ManageableCommand {
-
+public class LoadCredentials extends CloudMlCommand {
     
     private final String pathToCredentials;
-    
-    
+
     /**
      * Create a new LoadCredentials command from the path of the file containing
      * the credentials.
      * 
      * @param pathToCredentials the path to file containing credentials
      */
-    public LoadCredentials(CommandHandler handler, final String pathToCredentials) {
-        super(handler);
+    public LoadCredentials(final String pathToCredentials) {
         this.pathToCredentials = pathToCredentials;
     }
-    
-    
+         
     /**
      * @return the path to the file containing the credentials
      */
@@ -57,5 +50,12 @@ public class LoadCredentials extends ManageableCommand {
     public void execute(CommandHandler handler) {        
         handler.handle(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("load credentials from %s", pathToCredentials);
+    }
+    
+    
     
 }

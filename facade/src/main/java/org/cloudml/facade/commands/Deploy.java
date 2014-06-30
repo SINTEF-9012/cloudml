@@ -24,21 +24,17 @@ package org.cloudml.facade.commands;
 
 /**
  * Deploy the current CloudMLModel
- *
- * @author Brice Morin
- * @since 1.0
  */
-public class Deploy extends ManageableCommand {
+public class Deploy extends CloudMlCommand {
 
-    
-    /**
-     * Create a deploy command to deploy the model previously loaded
-     */
-    public Deploy(CommandHandler handler) {
-        super(handler);
-    }
-    
     public void execute(CommandHandler handler) {
         handler.handle(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("deploy");
+    }
+    
+    
 }

@@ -20,26 +20,26 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
+
 package org.cloudml.facade.commands;
 
 /**
  * Capture the request for the list of available Artifact types
- * 
- * @author Franck CHAUVEL - SINTEF ICT
  */
-public class ListComponents extends ManageableCommand {
+public class ListComponents extends CloudMlCommand {
 
-    public ListComponents(CommandHandler handler) {
-        super(handler);
-    }
-    
+   
     @Override
     public void execute(CommandHandler handler) {
-        handler.handle(this);
+        handler.handle(this); 
     }
+
+    @Override
+    public String toString() {
+        return "list types";
+    }
+    
+    
     
 }
