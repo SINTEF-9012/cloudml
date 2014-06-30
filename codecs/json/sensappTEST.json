@@ -33,7 +33,9 @@
 { "eClass":"net.cloudml.core:Resource" ,
  "name":"no name",
  "downloadCommand":"wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh",
- "installCommand":"cd ~; sudo bash install_mongoDB.sh"}
+ "installCommand":"cd ~; sudo bash install_mongoDB.sh",
+ "requireCredentials":false,
+ "executeLocally":false}
 ]
 ,
 "providedPorts": [
@@ -62,7 +64,9 @@
 { "eClass":"net.cloudml.core:Resource" ,
  "name":"no name",
  "downloadCommand":"wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh",
- "installCommand":"cd ~; sudo bash install_start_sensapp.sh"}
+ "installCommand":"cd ~; sudo bash install_start_sensapp.sh",
+ "requireCredentials":false,
+ "executeLocally":false}
 ]
 ,
 "providedPorts": [
@@ -101,7 +105,9 @@
  "name":"no name",
  "downloadCommand":"wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh",
  "installCommand":"cd ~; sudo bash install_jetty.sh",
- "stopCommand":"sudo service jetty stop"}
+ "stopCommand":"sudo service jetty stop",
+ "requireCredentials":false,
+ "executeLocally":false}
 ]
 ,
 "providedExecutionPlatforms": [
@@ -136,7 +142,9 @@
  "downloadCommand":"wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json",
  "installCommand":"cd ~; sudo bash install_sensappadmin.sh",
  "startCommand":"cd ~; sudo bash start_sensappadmin.sh",
- "stopCommand":"sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart"}
+ "stopCommand":"sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart",
+ "requireCredentials":false,
+ "executeLocally":false}
 ]
 ,
 "requiredPorts": [
@@ -167,14 +175,14 @@
  "type":"internalComponents[JettySC]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"sc-182691455",
+ "name":"sc976083475",
  "owner":"internalComponentInstances[jettySC1]",
  "type":"internalComponents[JettySC]/providedExecutionPlatforms[sc]"}
 ]
 ,
-"requiredExecutionPlatformInstances":
+"requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"ml1195323685",
+ "name":"ml2074073957",
  "owner":"internalComponentInstances[jettySC1]",
  "type":"internalComponents[JettySC]/requiredExecutionPlatform[ml]"}
 }
@@ -184,19 +192,19 @@
  "type":"internalComponents[sensapp]",
 "providedPortInstances": [
 { "eClass":"net.cloudml.core:ProvidedPortInstance" ,
- "name":"rest-639544899",
+ "name":"rest-671972986",
  "type":"internalComponents[sensapp]/providedPorts[rest]"}
 ]
 ,
 "requiredPortInstances": [
 { "eClass":"net.cloudml.core:RequiredPortInstance" ,
- "name":"mongoDBRequired-923337678",
+ "name":"mongoDBRequired-1771754269",
  "type":"internalComponents[sensapp]/requiredPorts[mongoDBRequired]"}
 ]
 ,
-"requiredExecutionPlatformInstances":
+"requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"scRequired-2026811551",
+ "name":"scRequired2061673953",
  "owner":"internalComponentInstances[sensApp1]",
  "type":"internalComponents[sensapp]/requiredExecutionPlatform[scRequired]"}
 }
@@ -206,13 +214,13 @@
  "type":"internalComponents[mongoDB]",
 "providedPortInstances": [
 { "eClass":"net.cloudml.core:ProvidedPortInstance" ,
- "name":"mongoDB769247048",
+ "name":"mongoDB93541260",
  "type":"internalComponents[mongoDB]/providedPorts[mongoDB]"}
 ]
 ,
-"requiredExecutionPlatformInstances":
+"requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"sl-1824775659",
+ "name":"sl948010596",
  "owner":"internalComponentInstances[mongoDB1]",
  "type":"internalComponents[mongoDB]/requiredExecutionPlatform[sl]"}
 }
@@ -222,14 +230,14 @@
  "type":"internalComponents[JettySC]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"sc692769567",
+ "name":"sc-2098585947",
  "owner":"internalComponentInstances[jettySC2]",
  "type":"internalComponents[JettySC]/providedExecutionPlatforms[sc]"}
 ]
 ,
-"requiredExecutionPlatformInstances":
+"requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"ml1662320360",
+ "name":"ml-1944548960",
  "owner":"internalComponentInstances[jettySC2]",
  "type":"internalComponents[JettySC]/requiredExecutionPlatform[ml]"}
 }
@@ -239,13 +247,13 @@
  "type":"internalComponents[SensAppAdmin]",
 "requiredPortInstances": [
 { "eClass":"net.cloudml.core:RequiredPortInstance" ,
- "name":"restRequired1474664423",
+ "name":"restRequired-262842407",
  "type":"internalComponents[SensAppAdmin]/requiredPorts[restRequired]"}
 ]
 ,
-"requiredExecutionPlatformInstances":
+"requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"scRequired1645706818",
+ "name":"scRequired2131355539",
  "owner":"internalComponentInstances[sensAppAdmin1]",
  "type":"internalComponents[SensAppAdmin]/requiredExecutionPlatform[scRequired]"}
 }
@@ -316,7 +324,7 @@
  "type":"vms[SL]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"s1Provided-385578498",
+ "name":"s1Provided1309488529",
  "owner":"vmInstances[sensapp-sl1]",
  "type":"vms[SL]/providedExecutionPlatforms[s1Provided]"}
 ]
@@ -328,7 +336,7 @@
  "type":"vms[ML]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"m1Provided133255141",
+ "name":"m1Provided2108111230",
  "owner":"vmInstances[sensapp-ml1]",
  "type":"vms[ML]/providedExecutionPlatforms[m1Provided]"}
 ]
@@ -343,7 +351,9 @@
 "requiredPortResource":{ "eClass":"net.cloudml.core:Resource" ,
  "name":"no name",
  "downloadCommand":"wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh",
- "installCommand":"cd ~; sudo bash configure_sensappadmin.sh"}
+ "installCommand":"cd ~; sudo bash configure_sensappadmin.sh",
+ "requireCredentials":false,
+ "executeLocally":false}
 }
 ,
 { "eClass":"net.cloudml.core:Relationship" ,
@@ -356,40 +366,40 @@
 { "eClass":"net.cloudml.core:RelationshipInstance" ,
  "name":"sensAppAdminSensApp1",
  "type":"relationships[SensAppAdminSensApp]",
- "requiredPortInstance":"internalComponentInstances[sensAppAdmin1]/requiredPortInstances[restRequired1474664423]",
- "providedPortInstance":"internalComponentInstances[sensApp1]/providedPortInstances[rest-639544899]"}
+ "requiredPortInstance":"internalComponentInstances[sensAppAdmin1]/requiredPortInstances[restRequired-262842407]",
+ "providedPortInstance":"internalComponentInstances[sensApp1]/providedPortInstances[rest-671972986]"}
 ,
 { "eClass":"net.cloudml.core:RelationshipInstance" ,
  "name":"sensAppMongoDB1",
  "type":"relationships[SensAppMongoDB]",
- "requiredPortInstance":"internalComponentInstances[sensApp1]/requiredPortInstances[mongoDBRequired-923337678]",
- "providedPortInstance":"internalComponentInstances[mongoDB1]/providedPortInstances[mongoDB769247048]"}
+ "requiredPortInstance":"internalComponentInstances[sensApp1]/requiredPortInstances[mongoDBRequired-1771754269]",
+ "providedPortInstance":"internalComponentInstances[mongoDB1]/providedPortInstances[mongoDB93541260]"}
 ]
 ,
 "executesInstances": [
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn735000795",
- "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided133255141]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC1]/requiredExecutionPlatformInstances[ml1195323685]"}
+ "name":"runOn-1129684960",
+ "providedExecutionPlatformInstance":"vmInstances[sensapp-sl1]/providedExecutionPlatformInstances[s1Provided1309488529]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC2]/requiredExecutionPlatformInstance[ml-1944548960]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn1068787227",
- "providedExecutionPlatformInstance":"internalComponentInstances[jettySC1]/providedExecutionPlatformInstances[sc-182691455]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[sensApp1]/requiredExecutionPlatformInstances[scRequired-2026811551]"}
+ "name":"runOn-396766512",
+ "providedExecutionPlatformInstance":"internalComponentInstances[jettySC2]/providedExecutionPlatformInstances[sc-2098585947]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[sensAppAdmin1]/requiredExecutionPlatformInstance[scRequired2131355539]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn962734547",
- "providedExecutionPlatformInstance":"internalComponentInstances[jettySC2]/providedExecutionPlatformInstances[sc692769567]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[sensAppAdmin1]/requiredExecutionPlatformInstances[scRequired1645706818]"}
+ "name":"runOn1202166832",
+ "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided2108111230]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[mongoDB1]/requiredExecutionPlatformInstance[sl948010596]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn243733067",
- "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided133255141]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[mongoDB1]/requiredExecutionPlatformInstances[sl-1824775659]"}
+ "name":"runOn609562925",
+ "providedExecutionPlatformInstance":"internalComponentInstances[jettySC1]/providedExecutionPlatformInstances[sc976083475]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[sensApp1]/requiredExecutionPlatformInstance[scRequired2061673953]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn208460953",
- "providedExecutionPlatformInstance":"vmInstances[sensapp-sl1]/providedExecutionPlatformInstances[s1Provided-385578498]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC2]/requiredExecutionPlatformInstances[ml1662320360]"}
+ "name":"runOn1097128152",
+ "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided2108111230]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC1]/requiredExecutionPlatformInstance[ml2074073957]"}
 ]
 }

@@ -189,13 +189,13 @@
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ProvidedExecutionPlatform" eSuperTypes="#//core/ExecutionPlatform">
       <eStructuralFeatures xsi:type="ecore:EReference" name="offers" upperBound="-1"
-          eType="#//core/Property"/>
+          eType="#//core/Property" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ProvidedExecutionPlatformInstance"
         eSuperTypes="#//core/ExecutionPlatformInstance"/>
     <eClassifiers xsi:type="ecore:EClass" name="RequiredExecutionPlatform" eSuperTypes="#//core/ExecutionPlatform">
       <eStructuralFeatures xsi:type="ecore:EReference" name="demands" upperBound="-1"
-          eType="#//core/Property"/>
+          eType="#//core/Property" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="RequiredExecutionPlatformInstance"
         eSuperTypes="#//core/ExecutionPlatformInstance"/>
