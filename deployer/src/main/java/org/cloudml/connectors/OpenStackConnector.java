@@ -251,8 +251,16 @@ public class OpenStackConnector implements Connector{
                 templateBuilder.minRam(vm.getMinRam());
             if (vm.getMinCores() > 0)
                 templateBuilder.minCores(vm.getMinCores());
+
+            String region="";
+            if(vm.getRegion() != null){
+                if(!vm.getRegion().equals("")){
+                    region=vm.getRegion();
+                }
+            }
+
             if (!vm.getLocation().equals(""))
-                templateBuilder.locationId(vm.getLocation());
+                templateBuilder.locationId(region+vm.getLocation());
             if (!vm.getOs().equals(""))
                 templateBuilder.imageDescriptionMatches(vm.getOs());
             else templateBuilder.osFamily(OsFamily.UBUNTU);

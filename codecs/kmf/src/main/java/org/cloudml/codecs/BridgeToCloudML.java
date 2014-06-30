@@ -168,6 +168,9 @@ public class BridgeToCloudML {
             if (kExternalComponent.getLocation() != null) {
                 ec.setLocation(kExternalComponent.getLocation());
             }
+            if(kExternalComponent.getRegion() != null){
+                ec.setRegion(kExternalComponent.getRegion());
+            }
             if (kExternalComponent.getServiceType() != null) {
                 ec.setServiceType(kExternalComponent.getServiceType());
             }

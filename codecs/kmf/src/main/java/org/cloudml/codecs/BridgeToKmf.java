@@ -169,14 +169,19 @@ public class BridgeToKmf {
                 kNode.setGroupName(vm.getGroupName());
                 kNode.setImageId(vm.getImageId());
                 kNode.setIs64os(vm.getIs64os());
-                kNode.setLocation(vm.getLocation());
+                if(ec.getLocation() != null)
+                    kNode.setLocation(vm.getLocation());
                 kNode.setMinCores(vm.getMinCores());
                 kNode.setMinStorage(vm.getMinStorage());
                 kNode.setMinRam(vm.getMinRam());
-                kNode.setOs(vm.getOs());
+                if(((VM) ec).getOs() != null)
+                    kNode.setOs(vm.getOs());
                 kNode.setPrivateKey(vm.getPrivateKey());
-                kNode.setSecurityGroup(vm.getSecurityGroup());
+                if(((VM) ec).getSecurityGroup() != null)
+                    kNode.setSecurityGroup(vm.getSecurityGroup());
                 kNode.setSshKey(vm.getSshKey());
+                if(ec.getRegion() != null)
+                    kNode.setRegion(vm.getRegion());
 
                 vms.put(kNode.getName(), kNode);
                 initProvidedExecutionPlatforms(ec, kNode);
@@ -195,6 +200,8 @@ public class BridgeToKmf {
                     kec.setPasswd(ec.getPasswd());
                 if(ec.getLocation() != null)
                     kec.setLocation(ec.getLocation());
+                if(ec.getRegion() != null)
+                    kec.setRegion(ec.getRegion());
                 if(ec.getServiceType() != null)
                     kec.setServiceType(ec.getServiceType());
                 initProvidedExecutionPlatforms(ec, kec);

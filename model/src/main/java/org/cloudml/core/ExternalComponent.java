@@ -33,6 +33,7 @@ public class ExternalComponent extends Component {
     protected Provider provider;
     private String location;
     private String serviceType;
+    private String region;
 
     public ExternalComponent(String name) {
         super(name);
@@ -101,6 +102,10 @@ public class ExternalComponent extends Component {
         return this.location;
     }
 
+    public String getRegion(){
+        return this.region;
+    }
+
   
     public void setLogin(String login) {
         this.login = login;
@@ -120,6 +125,10 @@ public class ExternalComponent extends Component {
 
     public void setLocation(String location){
         this.location=location;
+    }
+
+    public void setRegion(String region){
+        this.region=region;
     }
 
     public void setServiceType(String type){
