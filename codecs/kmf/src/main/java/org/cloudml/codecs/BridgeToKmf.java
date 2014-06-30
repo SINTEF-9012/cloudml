@@ -513,7 +513,7 @@ public class BridgeToKmf {
             krepi.setType(((net.cloudml.core.InternalComponent) kai.getType()).getRequiredExecutionPlatform());
             convertProperties(ici.getRequiredExecutionPlatform(), krepi, factory);
             convertResources(ici.getRequiredExecutionPlatform(), krepi, factory);
-            kai.setRequiredExecutionPlatformInstances(krepi);
+            kai.setRequiredExecutionPlatformInstance(krepi);
             requiredExecutionPlatformInstances.put(calculateExecutionPlatformIdentifier(ici.getRequiredExecutionPlatform()), krepi);
         }
     }

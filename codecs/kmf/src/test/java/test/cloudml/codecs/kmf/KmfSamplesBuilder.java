@@ -177,7 +177,7 @@ class KMFSamplesBuilder {
 
     public InternalComponentInstance createInternalComponentInstance(String name, RequiredExecutionPlatformInstance krepi, InternalComponent type) {
         InternalComponentInstance internalComponentInstance = factory.createInternalComponentInstance();
-        internalComponentInstance.setRequiredExecutionPlatformInstances(krepi);
+        internalComponentInstance.setRequiredExecutionPlatformInstance(krepi);
         krepi.setOwner(internalComponentInstance);
         internalComponentInstance.setName(name);
         internalComponentInstance.setType(type);

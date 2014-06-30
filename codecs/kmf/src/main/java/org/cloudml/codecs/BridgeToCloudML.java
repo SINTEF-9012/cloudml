@@ -462,14 +462,14 @@ public class BridgeToCloudML {
     }
 
     private void initRequiredExecutionPlatformInstance(net.cloudml.core.InternalComponentInstance kInternalComponentInstance, InternalComponentInstance ai) {
-        if (kInternalComponentInstance.getRequiredExecutionPlatformInstances() != null) {
+        if (kInternalComponentInstance.getRequiredExecutionPlatformInstance() != null) {
             //assert !vmInstances.isEmpty();
             RequiredExecutionPlatformInstance repi
-                    = new RequiredExecutionPlatformInstance(kInternalComponentInstance.getRequiredExecutionPlatformInstances().getName(),
+                    = new RequiredExecutionPlatformInstance(kInternalComponentInstance.getRequiredExecutionPlatformInstance().getName(),
                                                             ai.getType().getRequiredExecutionPlatform());
             repi.getOwner().set(ai);
-            convertProperties(kInternalComponentInstance.getRequiredExecutionPlatformInstances(), repi);
-            convertResources(kInternalComponentInstance.getRequiredExecutionPlatformInstances(), repi);
+            convertProperties(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
+            convertResources(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
             requiredExecutionPlatformInstances.put(repi.getName(), repi);
             ai.setRequiredExecutionPlatform(repi);
         }

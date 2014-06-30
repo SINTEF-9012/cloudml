@@ -140,7 +140,7 @@
     <eClassifiers xsi:type="ecore:EClass" name="InternalComponentInstance" eSuperTypes="#//core/ComponentInstance">
       <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPortInstances"
           upperBound="-1" eType="#//core/RequiredPortInstance" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="requiredExecutionPlatformInstances"
+      <eStructuralFeatures xsi:type="ecore:EReference" name="requiredExecutionPlatformInstance"
           lowerBound="1" eType="#//core/RequiredExecutionPlatformInstance" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="PortInstance" eSuperTypes="#//core/CloudMLElementWithProperties">
@@ -189,13 +189,13 @@
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ProvidedExecutionPlatform" eSuperTypes="#//core/ExecutionPlatform">
       <eStructuralFeatures xsi:type="ecore:EReference" name="offers" upperBound="-1"
-          eType="#//core/Property" containment="true"/>
+          eType="#//core/Property"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ProvidedExecutionPlatformInstance"
         eSuperTypes="#//core/ExecutionPlatformInstance"/>
     <eClassifiers xsi:type="ecore:EClass" name="RequiredExecutionPlatform" eSuperTypes="#//core/ExecutionPlatform">
       <eStructuralFeatures xsi:type="ecore:EReference" name="demands" upperBound="-1"
-          eType="#//core/Property" containment="true"/>
+          eType="#//core/Property"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="RequiredExecutionPlatformInstance"
         eSuperTypes="#//core/ExecutionPlatformInstance"/>
