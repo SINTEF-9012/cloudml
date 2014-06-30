@@ -142,6 +142,8 @@ List of VMs
 		}
 ```
 For now, in the case of Flexiant the attribute **groupName is equal to the VDC name**...
+The securityCroup specified in the deployment model should already exist and be associated to your cloud account before you start the actual deployment.
+
 		
 List of VM instances
 ```json
