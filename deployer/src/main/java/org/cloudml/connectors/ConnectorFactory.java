@@ -44,10 +44,15 @@ public class ConnectorFactory {
         throw new IllegalArgumentException("No such connector");
     }
 
+    /**
+     * I had a hard-coded region of eu-west-1. Need to fix this some time
+     * @param p
+     * @return 
+     */
     public static PaaSConnector createPaaSConnector(Provider p){
         if("beanstalk".equals(p.getName().toLowerCase()) || "ebs".equals(p.getName().toLowerCase())
                 || "rds".equals(p.getName().toLowerCase()) || "sqs".equals(p.getName().toLowerCase()))
-            return new BeanstalkConnector(p.getCredentials().getLogin(), p.getCredentials().getPassword(), "");
+            return new BeanstalkConnector(p.getCredentials().getLogin(), p.getCredentials().getPassword(), "eu-west-1");
         if("cloudbees".equals(p.getName().toLowerCase()))
             return new Cloud4soaConnector(p);
         throw new IllegalArgumentException("No such connector");

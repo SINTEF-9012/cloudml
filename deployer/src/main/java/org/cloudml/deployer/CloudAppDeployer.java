@@ -194,7 +194,7 @@ public class CloudAppDeployer {
                         host.getName(),
                         "",
                         instance.getType().getProperties().valueOf("warfile"),
-                        instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : null
+                        instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
                 );
             }
         }
@@ -487,10 +487,10 @@ public class CloudAppDeployer {
         if(ec.getServiceType().toLowerCase().equals("database")){//For now we use string but this will evolve to an enum
             PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
             connector.createDBInstance(
-                    p.hasProperty("DB-Engine")?p.getProperties().valueOf("DB-Engine"):null,
-                    p.hasProperty("DB-Version")?p.getProperties().valueOf("DB-Version"):null,
+                    ec.hasProperty("DB-Engine")?ec.getProperties().valueOf("DB-Engine"):null,
+                    ec.hasProperty("DB-Version")?ec.getProperties().valueOf("DB-Version"):null,
                     eci.getName(),
-                    p.hasProperty("DB-Name")?p.getProperties().valueOf("DB-Name"):null,
+                    ec.hasProperty("DB-Name")?ec.getProperties().valueOf("DB-Name"):null,
                     ec.getLogin(),
                     ec.getPasswd(),
                     0,

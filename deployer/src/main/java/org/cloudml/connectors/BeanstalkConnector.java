@@ -299,6 +299,9 @@ public class BeanstalkConnector implements PaaSConnector {
 
     public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
             Integer allocatedSize, String dbInstanceClass) {
+        
+        if(allocatedSize<=0)   //default minimal size for rds
+            allocatedSize = 5;
 
         String groupName = dbInstanceIdentifier + "-security-group";
         CreateDBSecurityGroupRequest csg = new CreateDBSecurityGroupRequest()
