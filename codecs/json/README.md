@@ -59,8 +59,9 @@ The table below summarize for each provider supported by CloudML the value to be
 | Amazon EC2| "aws-ec2" | None                                                                           |
 | Flexiant FCO | "flexiant" |  A property called endpoint describing where can be accessed the API       |
 | CloudBees(container and database) | "CloudBees" | A property called account  (cf. listing)           |
-| Beanstalk | "" |                                                                                       |
-| Amazon RDS| "" |                                                                                       |
+| Beanstalk | "beanstalk" |                                                                                       |
+| Amazon RDS | "rds" |                                                                                       |
+| Amazon SQS | "sqs" |                                                                                       |
 
 For instance, in the case of Amazon AWS login corresponds to the your access key id whilst passwd corresponds the secret access key.
 
