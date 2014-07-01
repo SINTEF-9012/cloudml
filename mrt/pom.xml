@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.cloudml</groupId>
         <artifactId>root</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>2.0-rc0</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>model</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <version>2.0-rc0</version>
         </dependency>
         <dependency>
             <groupId>commons-jxpath</groupId>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>codecs.json</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <version>2.0-rc0</version>
         </dependency>
         
         <dependency>
