@@ -5,6 +5,17 @@ Prerequistes:
 * Credential to the deploy server in settings.xml
 * The parent POM should be at the root of the repository (otherwise git add does not work)
 
-mvn --batch-mode release:prepare -DreleaseVersion=1.0.0 -DdevelopmentVersion=1.1.0-SNAPSHOT
+$> mvn scm:validate
 
-mvn release:perform
+Under Windows, one shall set up an ssh agent to avoid that the git command hang
+waiting for a passphrase. The following commands are necessary (run on the
+git-bash):
+
+$> eval `ssh-agent`
+$> env | grep SSH
+$> ssh-add "/c/Users/franckc/.ssh/id_rsa"
+   enter passphrase : XXXXXXXX
+
+$> mvn --batch-mode release:prepare -DreleaseVersion=1.0.0 -DdevelopmentVersion=1.1.0-SNAPSHOT
+
+$> mvn release:perform
