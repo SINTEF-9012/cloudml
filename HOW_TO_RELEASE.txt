@@ -19,3 +19,7 @@ $> ssh-add "/c/Users/franckc/.ssh/id_rsa"
 $> mvn --batch-mode release:prepare -DreleaseVersion=1.0.0 -DdevelopmentVersion=1.1.0-SNAPSHOT
 
 $> mvn release:perform
+
+IF SOMETHING GOES WRONG!!!!!
+$> git reset --hard <id of the commit you want to reset to>
+$> git push origin master --force
