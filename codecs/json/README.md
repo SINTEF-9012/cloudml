@@ -51,6 +51,17 @@ login=xxxx
 passwd=xxxxx
 ```
 
+The table below summarize for each provider supported by CloudML the value to be written in the name attribute as well as  the properties that should be associated to each provider.
+
+| Provider | name | Property |
+| -------- | ---- | -------- |
+| OpenStack nova | "openstack-nova" | A property called endpoint describing where can be accessed the API|
+| Amazon EC2| "aws-ec2" | None                                                                           |
+| Flexiant FCO | "flexiant" |  A property called endpoint describing where can be accessed the API       |
+| CloudBees(container and database) | "CloudBees" | A property called account  (cf. listing)           |
+| Beanstalk | "" |                                                                                       |
+| Amazon RDS| "" |                                                                                       |
+
 For instance, in the case of Amazon AWS login corresponds to the your access key id whilst passwd corresponds the secret access key.
 
 List of internal components
