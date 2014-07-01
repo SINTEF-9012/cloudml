@@ -109,7 +109,7 @@ List of internal components instances
 					"type" : "internalComponents[granny-war]/requiredPorts[dbr]"
 				}
 			],
-			"requiredExecutionPlatformInstances" : {
+			"requiredExecutionPlatformInstance" : {
 				"eClass" : "net.cloudml.core:RequiredExecutionPlatformInstance",
 				"name" : "tomcat-592730653",
 				"owner" : "internalComponentInstances[granny-war-i]",
