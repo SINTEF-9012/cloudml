@@ -1,93 +1,0 @@
-[INFO] Scanning for projects...
-[WARNING] 
-[WARNING] Some problems were encountered while building the effective model for org.cloudml:codecs.kmf:jar:2.0-SNAPSHOT
-[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.jetbrains.kotlin:kotlin-maven-plugin @ line 109, column 21
-[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:build-helper-maven-plugin is missing. @ line 53, column 21
-[WARNING] 
-[WARNING] Some problems were encountered while building the effective model for org.cloudml:deployer:jar:2.0-SNAPSHOT
-[WARNING] 'build.plugins.plugin.version' for org.jvnet.jax-ws-commons:jaxws-maven-plugin is missing. @ line 20, column 21
-[WARNING] 
-[WARNING] Some problems were encountered while building the effective model for org.cloudml:ui.shell:jar:2.0-SNAPSHOT
-[WARNING] 'build.plugins.plugin.version' for org.scala-tools:maven-scala-plugin is missing. @ line 83, column 12
-[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ line 154, column 12
-[WARNING] 
-[WARNING] Some problems were encountered while building the effective model for org.cloudml:ui.graph:jar:2.0-SNAPSHOT
-[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ line 96, column 12
-[WARNING] 
-[WARNING] Some problems were encountered while building the effective model for org.cloudml:websocket:jar:2.0-SNAPSHOT
-[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ line 90, column 21
-[WARNING] 
-[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
-[WARNING] 
-[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
-[WARNING] 
-[INFO] ------------------------------------------------------------------------
-[INFO] Reactor Build Order:
-[INFO] 
-[INFO] CloudML :: Deployer
-[INFO] CloudML :: Facade
-[INFO] CloudML :: UI
-[INFO] CloudML :: UI :: Shell
-[INFO] CloudML :: UI :: GraphVisu
-[INFO] CloudML :: UI :: WebEditor
-[INFO] CloudML :: UI :: WebSocket
-[INFO]                                                                         
-[INFO] ------------------------------------------------------------------------
-[INFO] Building CloudML :: Deployer 2.0-SNAPSHOT
-[INFO] ------------------------------------------------------------------------
-Downloading: http://repo1.maven.org/maven2/org/jvnet/jax-ws-commons/jaxws-maven-plugin/maven-metadata.xml
-549 B           Downloaded: http://repo1.maven.org/maven2/org/jvnet/jax-ws-commons/jaxws-maven-plugin/maven-metadata.xml (549 B at 0.4 KB/sec)
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/model/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.json/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.commons/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.kmf/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.xmi/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/api/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/api/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/api/0.0.1-SNAPSHOT/api-0.0.1-SNAPSHOT.pom
-        [WARNING] The POM for eu.modaclouds.cloud4soa:api:jar:0.0.1-SNAPSHOT is missing, no dependency information available
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter/0.0.1-SNAPSHOT/adapter-0.0.1-SNAPSHOT.pom
-        [WARNING] The POM for eu.modaclouds.cloud4soa:adapter:jar:0.0.1-SNAPSHOT is missing, no dependency information available
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter-REST/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter-REST/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter-REST/0.0.1-SNAPSHOT/adapter-REST-0.0.1-SNAPSHOT.pom
-        [WARNING] The POM for eu.modaclouds.cloud4soa:adapter-REST:jar:0.0.1-SNAPSHOT is missing, no dependency information available
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/governance-ems/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/governance-ems/0.0.1-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/governance-ems/0.0.1-SNAPSHOT/governance-ems-0.0.1-SNAPSHOT.pom
-        [WARNING] The POM for eu.modaclouds.cloud4soa:governance-ems:jar:0.0.1-SNAPSHOT is missing, no dependency information available
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/model/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.json/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.commons/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.kmf/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/org/cloudml/codecs.xmi/2.0-SNAPSHOT/maven-metadata.xml
-        Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/api/0.0.1-SNAPSHOT/api-0.0.1-SNAPSHOT.jar
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter/0.0.1-SNAPSHOT/adapter-0.0.1-SNAPSHOT.jar
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/governance-ems/0.0.1-SNAPSHOT/governance-ems-0.0.1-SNAPSHOT.jar
-Downloading: http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/eu/modaclouds/cloud4soa/adapter-REST/0.0.1-SNAPSHOT/adapter-REST-0.0.1-SNAPSHOT.jar
-                                [INFO] ------------------------------------------------------------------------
-[INFO] Reactor Summary:
-[INFO] 
-[INFO] CloudML :: Deployer ............................... FAILURE [45.139s]
-[INFO] CloudML :: Facade ................................. SKIPPED
-[INFO] CloudML :: UI ..................................... SKIPPED
-[INFO] CloudML :: UI :: Shell ............................ SKIPPED
-[INFO] CloudML :: UI :: GraphVisu ........................ SKIPPED
-[INFO] CloudML :: UI :: WebEditor ........................ SKIPPED
-[INFO] CloudML :: UI :: WebSocket ........................ SKIPPED
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 47.275s
-[INFO] Finished at: Sun Apr 27 11:14:08 CEST 2014
-[INFO] Final Memory: 8M/243M
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal on project deployer: Could not resolve dependencies for project org.cloudml:deployer:jar:2.0-SNAPSHOT: The following artifacts could not be resolved: eu.modaclouds.cloud4soa:api:jar:0.0.1-SNAPSHOT, eu.modaclouds.cloud4soa:adapter:jar:0.0.1-SNAPSHOT, eu.modaclouds.cloud4soa:adapter-REST:jar:0.0.1-SNAPSHOT, eu.modaclouds.cloud4soa:governance-ems:jar:0.0.1-SNAPSHOT: Could not find artifact eu.modaclouds.cloud4soa:api:jar:0.0.1-SNAPSHOT in cloud4soa-snapshots (http://hudson.cloud4soa.eu:8080/nexus/content/repositories/cloud4soa-snapshot/) -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/DependencyResolutionException

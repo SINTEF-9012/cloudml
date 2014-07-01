@@ -14,6 +14,9 @@ jsonCodec.save(model,streamResult);
 
 Or via the Facade:
 ```java
+CloudML cml= Factory.getInstance().getCloudML();
+cml.fireAndWait(new LoadDeployment("C:\\sensappAdmin-v2.json"));
+cml.fireAndWait(new Deploy());
 ```
 
 Or via the Shell using the following commands:
