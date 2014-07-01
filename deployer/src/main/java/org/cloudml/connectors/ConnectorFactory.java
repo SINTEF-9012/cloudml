@@ -31,11 +31,11 @@ public class ConnectorFactory {
 
     public static Connector createIaaSConnector(Provider p){
         try {
-            if(p.getName().equals("aws-ec2"))
+            if(p.getName().toLowerCase().equals("aws-ec2") || p.getName().toLowerCase().equals("ec2"))
                 return new JCloudsConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
-            if(p.getName().equals("flexiant"))
+            if(p.getName().toLowerCase().equals("flexiant"))
                 return new FlexiantConnector(p.getProperties().valueOf("endPoint"), p.getCredentials().getLogin(), p.getCredentials().getPassword());
-            if(p.getName().equals("openstack-nova"))
+            if(p.getName().toLowerCase().equals("openstack-nova"))
                 return new OpenStackConnector(p.getProperties().valueOf("endPoint"), p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -45,7 +45,8 @@ public class ConnectorFactory {
     }
 
     public static PaaSConnector createPaaSConnector(Provider p){
-        if("beanstalk".equals(p.getName().toLowerCase()))
+        if("beanstalk".equals(p.getName().toLowerCase()) || "ebs".equals(p.getName().toLowerCase())
+                || "rds".equals(p.getName().toLowerCase()) || "sqs".equals(p.getName().toLowerCase()))
             return new BeanstalkConnector(p.getCredentials().getLogin(), p.getCredentials().getPassword(), "");
         if("cloudbees".equals(p.getName().toLowerCase()))
             return new Cloud4soaConnector(p);

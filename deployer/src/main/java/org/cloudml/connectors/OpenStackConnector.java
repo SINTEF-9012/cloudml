@@ -255,7 +255,7 @@ public class OpenStackConnector implements Connector{
             String region="";
             if(vm.getRegion() != null){
                 if(!vm.getRegion().equals("")){
-                    region=vm.getRegion();
+                    region=vm.getRegion()+"/";
                 }
             }
 
