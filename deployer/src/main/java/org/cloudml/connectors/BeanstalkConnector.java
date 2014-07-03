@@ -23,6 +23,7 @@
 package org.cloudml.connectors;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.logging.Level;
@@ -197,7 +198,7 @@ public class BeanstalkConnector implements PaaSConnector {
     }
 
     public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout) {
-        
+
         prepareWar(new File(warFile), versionLabel, applicationName);
         journal.log(Level.INFO, ">> Uploading War file!");
         while(timeout-- > 0){
@@ -208,18 +209,18 @@ public class BeanstalkConnector implements PaaSConnector {
                 Logger.getLogger(BeanstalkConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
             try{
-                
+
                 UpdateEnvironmentResult updateEnvironment
                         = beanstalkClient.updateEnvironment(new UpdateEnvironmentRequest()
-                                .withEnvironmentName(envName)
-                                .withVersionLabel(versionLabel));
+                        .withEnvironmentName(envName)
+                        .withVersionLabel(versionLabel));
                 journal.log(Level.INFO, ">> War uploaded!");
                 break;
             }
             catch(com.amazonaws.AmazonServiceException e){
-                
+
             }
-            
+
         }
 
     }
@@ -292,14 +293,14 @@ public class BeanstalkConnector implements PaaSConnector {
             }
             if(ips.size()>0)
                 return ips;
-            
+
         }
         return Collections.EMPTY_LIST;
     }
 
     public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
-            Integer allocatedSize, String dbInstanceClass) {
-        
+                                 Integer allocatedSize, String dbInstanceClass) {
+
         if(allocatedSize<=0)   //default minimal size for rds
             allocatedSize = 5;
 
@@ -312,7 +313,7 @@ public class BeanstalkConnector implements PaaSConnector {
         } catch (Exception e) {
             journal.log(Level.INFO, ">> Security Group " + groupName + " already exists.");
         }
-        
+
         CreateDBInstanceRequest request = new CreateDBInstanceRequest()
                 .withDBName(null)
                 .withAllocatedStorage(allocatedSize)
@@ -324,7 +325,7 @@ public class BeanstalkConnector implements PaaSConnector {
                 .withPubliclyAccessible(true)
                 .withEngineVersion(version);
         request.getDBSecurityGroups().add(groupName);
-        
+
         previousRequests.put(dbInstanceIdentifier, request);
         if (dbInstanceClass == null || dbInstanceClass.length() == 0) {
             request.setDBInstanceClass("db.t1.micro");
@@ -333,7 +334,7 @@ public class BeanstalkConnector implements PaaSConnector {
         }
         DBInstance instance = rdsClient.createDBInstance(request);
         journal.log(Level.INFO, String.format(">> RDS instance created: %s, at %s", instance.toString(),instance.getEndpoint()));
-        
+
         createdInstances.put(dbInstanceIdentifier, instance);
 
     }
@@ -378,7 +379,7 @@ public class BeanstalkConnector implements PaaSConnector {
                     .withDBSecurityGroupName(groupName);
             audbgi.setRequestCredentials(awsCredentials);
             rdsClient.authorizeDBSecurityGroupIngress(audbgi);
-            
+
         }
         rdsClient.authorizeDBSecurityGroupIngress(new AuthorizeDBSecurityGroupIngressRequest()
                 .withCIDRIP("0.0.0.0/0")
@@ -397,30 +398,30 @@ public class BeanstalkConnector implements PaaSConnector {
             } catch (InterruptedException ex) {
                 Logger.getLogger(BeanstalkConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
             try{
                 rdsClient.modifyDBInstance(request);
                 break;
             }catch(Exception e){
                 continue;
             }
-            
-            
+
+
         }
 
     }
-    
+
     public String getDBEndPoint(String dbInstanceId, int timeout){
         DescribeDBInstancesRequest ddbir = new DescribeDBInstancesRequest()
                 .withDBInstanceIdentifier(dbInstanceId);
-        System.out.print("Wainting for DB endpoints");
+        System.out.println("Waiting for DB endpoints");
         while(timeout -- > 0){
             System.out.print("-");
             DescribeDBInstancesResult ddbi = rdsClient.describeDBInstances(ddbir);
             Endpoint endpoint = ddbi.getDBInstances().get(0).getEndpoint();
             if(endpoint != null && endpoint.toString().length()!=0)
                 return endpoint.getAddress()+":"+endpoint.getPort();
-            
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
@@ -429,16 +430,16 @@ public class BeanstalkConnector implements PaaSConnector {
         }
         return "";
     }
-    
+
     public String getDBStatus(String dbInstanceId){
-         DescribeDBInstancesRequest ddbir = new DescribeDBInstancesRequest()
+        DescribeDBInstancesRequest ddbir = new DescribeDBInstancesRequest()
                 .withDBInstanceIdentifier(dbInstanceId);
-         DescribeDBInstancesResult ddbi = rdsClient.describeDBInstances(ddbir);
-         try{
-             return ddbi.getDBInstances().get(0).getStatusInfos().toString();
-         }catch(Exception e){
-             throw new RuntimeException("DBInstance not found");
-         }
+        DescribeDBInstancesResult ddbi = rdsClient.describeDBInstances(ddbir);
+        try{
+            return ddbi.getDBInstances().get(0).getStatusInfos().toString();
+        }catch(Exception e){
+            throw new RuntimeException("DBInstance not found");
+        }
     }
 
     public void deleteDBInstance(String dbInstanceIdentifier) {
@@ -446,6 +447,29 @@ public class BeanstalkConnector implements PaaSConnector {
         request.setDBInstanceIdentifier(dbInstanceIdentifier);
         rdsClient.deleteDBInstance(request);
 
+    }
+
+    public void restoreDB(String host, String port, String dbUser,String dbPass, String dbName, String local_file){
+        String executeCmd="";
+        if(System.getProperty("os.name").toLowerCase().contains("windows"))
+            executeCmd="mysql -h "+host+" -P " + port + " -u " + dbUser + " -p" + dbPass + " " + dbName + " < "+local_file;
+        else  executeCmd="mysql -h "+host+" -P " + port + " -u " + dbUser + " -p" + dbPass + " " + dbName + " < "+local_file;
+        System.out.println("run:--> "+executeCmd);
+        Process runtimeProcess = null;
+        try {
+            runtimeProcess = Runtime.getRuntime().exec(executeCmd);
+
+            int processComplete = runtimeProcess.waitFor();
+            if (processComplete == 0) {
+                System.out.println("success");
+            } else {
+                System.out.println("restore failure");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public String createQueue(String name){

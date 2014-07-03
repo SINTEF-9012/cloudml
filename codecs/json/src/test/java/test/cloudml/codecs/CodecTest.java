@@ -37,6 +37,7 @@ import org.cloudml.core.*;
 
 import static org.cloudml.core.samples.SensApp.*;
 import static org.cloudml.core.samples.PaasCloudBees.*;
+import static org.cloudml.core.samples.BeanstalkSample.*;
 
 /**
  * Unit test for simple App.
@@ -69,6 +70,7 @@ public class CodecTest
     {
         Deployment model = completeSensApp().build();
         Deployment model2 = completeCloudBeesPaaS().build();
+        Deployment model3 = createBeanstalkDeployment();
         try{
             Codec jsonCodec=new JsonCodec();
             OutputStream streamResult=new java.io.FileOutputStream("sensappTEST.json");
@@ -78,6 +80,10 @@ public class CodecTest
             Codec jsonCodecPaas=new JsonCodec();
             OutputStream streamResultPaaS=new java.io.FileOutputStream("PaaS.json");
             jsonCodecPaas.save(model2, streamResultPaaS);
+
+            Codec jsonCodecPaasBST=new JsonCodec();
+            OutputStream streamResultPaaSBST=new java.io.FileOutputStream("Beanstalk.json");
+            jsonCodecPaasBST.save(model3, streamResultPaaSBST);
         } catch (FileNotFoundException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();

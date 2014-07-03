@@ -493,9 +493,20 @@ public class CloudAppDeployer {
                     ec.hasProperty("DB-Name")?ec.getProperties().valueOf("DB-Name"):null,
                     ec.getLogin(),
                     ec.getPasswd(),
-                    0,
+                    ec.hasProperty("allocatedSize")?Integer.parseInt(ec.getProperties().valueOf("allocatedSize")):0,
                     null);
             eci.setPublicAddress(connector.getDBEndPoint(eci.getName(), 600));
+
+            //execute the configure command
+            if(!n.getType().getResources().isEmpty()){
+                for(Resource r : n.getType().getResources()){
+                    if(r.getConfigureCommand() != null){
+                        connector.restoreDB(eci.getPublicAddress(),"3306",ec.getLogin(), ec.getPasswd(),
+                                ec.hasProperty("DB-Name")?ec.getProperties().valueOf("DB-Name"):null,r.getConfigureCommand());
+                    }
+                }
+            }
+
         }
         if(ec.getServiceType().toLowerCase().equals("messagequeue")){
             PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
@@ -503,6 +514,7 @@ public class CloudAppDeployer {
             eci.setPublicAddress(url);
         }
     }
+
 
 
     /**
@@ -541,13 +553,59 @@ public class CloudAppDeployer {
                 int destinationPortNumber = server.getType().getPortNumber();
                 String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
 
-                //client resources
-                configureWithIP(clientResource, client, destinationIpAddress, ipAddress, destinationPortNumber);
-
                 //server resources
-                configureWithIP(serverResource, server, destinationIpAddress, ipAddress, destinationPortNumber);
+                //configureWithIP(serverResource, server, destinationIpAddress, ipAddress, destinationPortNumber);
+
+                //client resources
+                //configureWithIP(clientResource, client, destinationIpAddress, ipAddress, destinationPortNumber);
+                configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
             }
         }
+    }
+
+    public void configureWithIP(Resource server, Resource client, PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber){
+        Connector jcServer;
+        Connector jcClient;
+        VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
+        VM VMserver = ownerVMServer.getType();
+        VMInstance ownerVMClient = (VMInstance) getDestination(pclient.getOwner().get());//TODO:generalization for PaaS
+        VM VMClient = ownerVMServer.getType();
+        jcServer = ConnectorFactory.createIaaSConnector(VMserver.getProvider());
+        jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
+        if(server != null){
+            if(server.getRetrieveCommand() != null)
+                jcServer.execCommand(ownerVMServer.getId(), server.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
+        }
+        if(client !=null){
+            if(client.getRetrieveCommand() != null)
+                jcClient.execCommand(ownerVMClient.getId(), client.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
+        }
+        if(server != null){
+            if(server.getConfigureCommand() != null){
+                String configurationCommand = server.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials());
+            }
+        }
+        if(client != null){
+            if(client.getConfigureCommand() != null){
+                String configurationCommand = client.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
+            }
+        }
+        if(server != null){
+            if(server.getInstallCommand() != null){
+                String installationCommand = server.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials());
+            }
+        }
+        if(client != null){
+            if(client.getConfigureCommand() != null){
+                String configurationCommand = client.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
+            }
+        }
+        jcServer.closeConnection();
+        jcClient.closeConnection();
     }
 
     /**

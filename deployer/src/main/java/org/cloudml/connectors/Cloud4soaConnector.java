@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 public class Cloud4soaConnector implements PaaSConnector {
 
     public final static String CLOUDBEES = "CloudBees";
+    public final static String RDS = "BeansTalk";
     
     private ApplicationInstance ai;
     private PaasInstance pi;
@@ -80,6 +81,8 @@ public class Cloud4soaConnector implements PaaSConnector {
         
         if(provider.getName().toLowerCase().equals(CLOUDBEES.toLowerCase()))
             this.platform = CLOUDBEES;
+        if(provider.getName().toLowerCase().equals(RDS.toLowerCase()))
+            this.platform = RDS;
     }
 
     public Cloud4soaConnector(String apiKey, String securityKey, String account, String platform) {
@@ -189,6 +192,12 @@ public class Cloud4soaConnector implements PaaSConnector {
         }
             
     }
+
+
+    public void restoreDB(String host, String port, String dbUser,String dbPass, String dbName, String local_file){
+        journal.log(Level.INFO, ">> Not yet implemented");
+    }
+
 
     /**
      * Cloud4Soa does not work for Cloudbees

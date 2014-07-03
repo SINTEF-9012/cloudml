@@ -41,7 +41,9 @@ public interface PaaSConnector{
     public void deleteQueue(String name);
 
     public List<String> listQueues();
-    
+
+    public void restoreDB(String host, String port, String dbUser,String dbPass, String dbName, String local_file);
+
 //Should be part of the interface at some point
 	//public void createApplication();
 	
