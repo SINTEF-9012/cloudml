@@ -51,7 +51,7 @@ public class Message {
     }
     
     public Message eol() {
-        return new Message(text + System.lineSeparator());
+        return new Message(text + System.getProperty("line.separator"));
     }
     
     @Override
