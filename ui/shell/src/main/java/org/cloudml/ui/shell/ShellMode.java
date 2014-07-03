@@ -47,7 +47,7 @@ public abstract class ShellMode {
         return result;
     }
     
-    private static final String EOL = System.lineSeparator();
+    private static final String EOL = System.getProperty("line.separator");
     
     public static ShellMode from(String... arguments) {
         if (runInBatchMode(arguments)) {
