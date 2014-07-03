@@ -30,7 +30,7 @@ public interface PaaSConnector{
     void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel);
     
     void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
-            Integer allocatedSize, String dbInstanceClass);
+            Integer allocatedSize, String dbInstanceClass, String securityGroup);
     
     String getDBEndPoint(String dbInstanceId, int timeout);
     

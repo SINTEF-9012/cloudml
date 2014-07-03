@@ -299,7 +299,7 @@ public class BeanstalkConnector implements PaaSConnector {
     }
 
     public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
-                                 Integer allocatedSize, String dbInstanceClass) {
+                                 Integer allocatedSize, String dbInstanceClass, String securityGroup) {
 
         if(allocatedSize<=0)   //default minimal size for rds
             allocatedSize = 5;
@@ -308,11 +308,14 @@ public class BeanstalkConnector implements PaaSConnector {
         CreateDBSecurityGroupRequest csg = new CreateDBSecurityGroupRequest()
                 .withDBSecurityGroupName(groupName)
                 .withDBSecurityGroupDescription(groupName);
+
+
         try {
             rdsClient.createDBSecurityGroup(csg);
         } catch (Exception e) {
             journal.log(Level.INFO, ">> Security Group " + groupName + " already exists.");
         }
+
 
         CreateDBInstanceRequest request = new CreateDBInstanceRequest()
                 .withDBName(null)
@@ -325,6 +328,8 @@ public class BeanstalkConnector implements PaaSConnector {
                 .withPubliclyAccessible(true)
                 .withEngineVersion(version);
         request.getDBSecurityGroups().add(groupName);
+        if(!securityGroup.equals(""))
+            request.getDBSecurityGroups().add(securityGroup);
 
         previousRequests.put(dbInstanceIdentifier, request);
         if (dbInstanceClass == null || dbInstanceClass.length() == 0) {

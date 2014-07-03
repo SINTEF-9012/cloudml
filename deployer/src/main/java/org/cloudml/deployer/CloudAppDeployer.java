@@ -494,7 +494,8 @@ public class CloudAppDeployer {
                     ec.getLogin(),
                     ec.getPasswd(),
                     ec.hasProperty("allocatedSize")?Integer.parseInt(ec.getProperties().valueOf("allocatedSize")):0,
-                    null);
+                    null,
+                    ec.hasProperty("securityGroup")?ec.getProperties().valueOf("securityGroup"):"");
             eci.setPublicAddress(connector.getDBEndPoint(eci.getName(), 600));
 
             //execute the configure command

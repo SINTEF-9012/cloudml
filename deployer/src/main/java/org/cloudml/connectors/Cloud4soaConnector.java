@@ -170,7 +170,7 @@ public class Cloud4soaConnector implements PaaSConnector {
 
     @Override
     public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
-                                 Integer allocatedSize, String dbInstanceClass) {
+                                 Integer allocatedSize, String dbInstanceClass, String securityGroup) {
 
         try {
             if(engine==null || engine.equals(""))
