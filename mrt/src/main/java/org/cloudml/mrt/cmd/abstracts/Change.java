@@ -26,14 +26,15 @@ public class Change implements Comparable<Change>{
     
     public String fromPeer = "";
     
-    long timeStamp;
+    Long timeStamp;
     public Change(){
         timeStamp = System.currentTimeMillis();
     }
 
     @Override
     public int compareTo(Change o) {
-       return Long.compare(timeStamp, ((Change)o).timeStamp);
+       //return Long.compare(timeStamp, ((Change)o).timeStamp);
+        return timeStamp.compareTo(((Change)o).timeStamp);
     }
     
     public Change obtainRepr(){
