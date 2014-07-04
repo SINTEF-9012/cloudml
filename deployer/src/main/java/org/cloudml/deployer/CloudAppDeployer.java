@@ -554,17 +554,12 @@ public class CloudAppDeployer {
                 int destinationPortNumber = server.getType().getPortNumber();
                 String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
 
-                //server resources
-                //configureWithIP(serverResource, server, destinationIpAddress, ipAddress, destinationPortNumber);
-
-                //client resources
-                //configureWithIP(clientResource, client, destinationIpAddress, ipAddress, destinationPortNumber);
                 configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
             }
         }
     }
 
-    public void configureWithIP(Resource server, Resource client, PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber){
+    private void configureWithIP(Resource server, Resource client, PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber){
         Connector jcServer;
         Connector jcClient;
         VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
@@ -600,9 +595,9 @@ public class CloudAppDeployer {
             }
         }
         if(client != null){
-            if(client.getConfigureCommand() != null){
-                String configurationCommand = client.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
+            if(client.getInstallCommand() != null){
+                String installationCommand = client.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials());
             }
         }
         jcServer.closeConnection();
