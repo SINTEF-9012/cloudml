@@ -1,8 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <properties>
-        <jclouds.version>1.7.2</jclouds.version>
-    </properties>
     <artifactId>deployer</artifactId>
     <packaging>jar</packaging>
 
@@ -16,40 +13,17 @@
     <name>CloudML :: Deployer</name>
 
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.jax-ws-commons</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <sourceDestDir>src/main/java</sourceDestDir>
-                    <wsdlDirectory>src/main/resources</wsdlDirectory>
-                    <wsdlFiles>
-                        <wsdlFile>UserAdmin.wsdl</wsdlFile>
-                    </wsdlFiles>
-                    <keep>true</keep>
-                    <xnocompile>false</xnocompile>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
-
-
         <!-- CloudML module dependencies -->
         <dependency>
             <groupId>org.cloudml</groupId>
             <artifactId>model</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>connectors</artifactId>
             <version>2.0-SNAPSHOT</version>
         </dependency>
 
@@ -68,41 +42,11 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.jclouds</groupId>
-            <artifactId>jclouds-allcompute</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.provider</groupId>
-            <artifactId>aws-ec2</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.driver</groupId>
-            <artifactId>jclouds-sshj</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
             <version>0.1.48</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.6.4</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.modaclouds-cloud4soa-api</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
         <dependency>
             <groupId>org.cloudml.utils</groupId>
             <artifactId>org.cloud.utils.cloud4soa-adapter</artifactId>
@@ -126,13 +70,7 @@
             <artifactId>httpcore</artifactId>
             <version>4.2</version>
         </dependency>
-                
-        <dependency>
-            <groupId>com.cloudbees</groupId>
-            <artifactId>cloudbees-api-client</artifactId>
-            <version>1.5.6</version>
-        </dependency>
-                
+
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>

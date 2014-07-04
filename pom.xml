@@ -24,6 +24,7 @@
     <modules>
         <module>model</module>
         <module>codecs</module>
+        <module>connectors</module>
         <module>deployer</module>
         <module>facade</module>
         <module>monitoring</module>
