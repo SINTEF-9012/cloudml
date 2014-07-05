@@ -42,18 +42,29 @@ import org.cloudml.core.*;
 public class CloudMLModelComparator {
 
     private static final Logger journal = Logger.getLogger(CloudMLModelComparator.class.getName());
+
     //Attributes related to model comparison
-    private Map<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> matchingVMs = new Hashtable<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>>();
-    private List<ExternalComponentInstance<? extends ExternalComponent>> removedVMs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
-    private List<ExternalComponentInstance<? extends ExternalComponent>> addedVMs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
-    private Map<ComponentInstance<? extends Component>, ComponentInstance<? extends Component>> matchingComponents = new Hashtable<ComponentInstance<? extends Component>, ComponentInstance<? extends Component>>();
-    private List<ComponentInstance<? extends Component>> removedComponents = new ArrayList<ComponentInstance<? extends Component>>();
-    private List<ComponentInstance<? extends Component>> addedComponents = new ArrayList<ComponentInstance<? extends Component>>();
+    private Map<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> matchingECs = new Hashtable<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>>();
+    private List<ExternalComponentInstance<? extends ExternalComponent>> removedECs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
+    private List<ExternalComponentInstance<? extends ExternalComponent>> addedECs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
+
+    private Map<InternalComponentInstance, InternalComponentInstance> matchingComponents = new Hashtable<InternalComponentInstance, InternalComponentInstance>();
+    private List<InternalComponentInstance> removedComponents = new ArrayList<InternalComponentInstance>();
+    private List<InternalComponentInstance> addedComponents = new ArrayList<InternalComponentInstance>();
+
+    private List<RelationshipInstance> addedRelationships = new ArrayList<RelationshipInstance>();
     private Map<RelationshipInstance, RelationshipInstance> matchingRelationships = new Hashtable<RelationshipInstance, RelationshipInstance>();
     private List<RelationshipInstance> removedRelationships = new ArrayList<RelationshipInstance>();
-    private List<RelationshipInstance> addedRelationships = new ArrayList<RelationshipInstance>();
+
+    private List<ExecuteInstance> addedExecutes = new ArrayList<ExecuteInstance>();
+    private Map<ExecuteInstance, ExecuteInstance> matchingExecutes = new Hashtable<ExecuteInstance, ExecuteInstance>();
+    private List<ExecuteInstance> removedExecutes = new ArrayList<ExecuteInstance>();
+
+
     // The commands resulting from the diff
     private Set<String> commands = new HashSet<String>();
+
+    //The models
     private Deployment currentDM;
     private Deployment targetDM;
 
@@ -82,27 +93,28 @@ public class CloudMLModelComparator {
      * current system
      */
     public void compareCloudMLModel() {
-        compareVMs();
-        journal.log(Level.INFO, ">> Removed VMs :" + removedVMs.toString());
-        journal.log(Level.INFO, ">> Added VMs  :" + addedVMs.toString());
+        compareECs();
+        journal.log(Level.INFO, ">> Removed VMs :" + removedECs.toString());
+        journal.log(Level.INFO, ">> Added VMs  :" + addedECs.toString());
 
         compareRelationships();
-        //journal.log(Level.INFO, ">> current bindings :" + currentDM.getRelationshipInstances());
-        //journal.log(Level.INFO, ">> Matching bindings :" + matchingRelationships.toString());
         journal.log(Level.INFO, ">> Removed relationships :" + removedRelationships.toString());
         journal.log(Level.INFO, ">> Added relationships :" + addedRelationships.toString());
-
 
         compareComponents();
         journal.log(Level.INFO, ">> Removed components: " + removedComponents.toString());
         journal.log(Level.INFO, ">> Added components: " + addedComponents.toString());
+
+        compareExecutes();
+        journal.log(Level.INFO, ">> Removed executes: " + removedExecutes.toString());
+        journal.log(Level.INFO, ">> Added executes: " + addedExecutes.toString());
     }
 
     /**
      * Compares the vms between the targeted and the current deployment model
      */
-    public void compareVMs() {
-        journal.log(Level.INFO, ">> Comparing vms ...");
+    public void compareECs() {
+        journal.log(Level.INFO, ">> Comparing ExternalComponents ...");
         Boolean match = false;
         for (ExternalComponentInstance ni : currentDM.getComponentInstances().onlyExternals()) {
             secondloop:
@@ -110,7 +122,7 @@ public class CloudMLModelComparator {
                 for (ExternalComponentInstance ni2 : targetDM.getComponentInstances().onlyExternals()) {
                     match = ni.equals(ni2);
                     if (ni.equals(ni2)) {
-                        matchingVMs.put(ni, ni2);
+                        matchingECs.put(ni, ni2);
                         break secondloop;
                     }
                 }
@@ -120,18 +132,18 @@ public class CloudMLModelComparator {
             }
         }
         //add the rest
-        addVMs();
+        addECs();
     }
 
     private void removeVM(ExternalComponentInstance<? extends ExternalComponent> ni) {
-        removedVMs.add(ni);
+        removedECs.add(ni);
         //create action
 
     }
 
-    private void addVMs() {
-        addedVMs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>(targetDM.getComponentInstances().onlyExternals());
-        addedVMs.removeAll(matchingVMs.values());
+    private void addECs() {
+        addedECs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>(targetDM.getComponentInstances().onlyExternals());
+        addedECs.removeAll(matchingECs.values());
     }
 
     /**
@@ -187,12 +199,12 @@ public class CloudMLModelComparator {
      * model
      */
     public void compareComponents() {
-        journal.log(Level.INFO, ">> Comparing components ...");
+        journal.log(Level.INFO, ">> Comparing Internal Components ...");
         Boolean match = false;
-        for (ComponentInstance ni : currentDM.getComponentInstances()) {
+        for (InternalComponentInstance ni : currentDM.getComponentInstances().onlyInternals()) {
             secondloop:
             {
-                for (ComponentInstance ni2 : targetDM.getComponentInstances()) {
+                for (InternalComponentInstance ni2 : targetDM.getComponentInstances().onlyInternals()) {
                     match = ni.equals(ni2);
                     if (ni.equals(ni2)) {
                         matchingComponents.put(ni, ni2);
@@ -214,17 +226,62 @@ public class CloudMLModelComparator {
     }
 
     private void addComponents() {
-        addedComponents = new ArrayList<ComponentInstance<? extends Component>>(targetDM.getComponentInstances());
+        addedComponents = new ArrayList<InternalComponentInstance>(targetDM.getComponentInstances().onlyInternals());
         addedComponents.removeAll(matchingComponents.values());
     }
+
+    /**
+     * Compares the executeInstances between the current and target model
+     */
+    public void compareExecutes() {
+        journal.log(Level.INFO, ">> Comparing Executes Instances ...");
+        Boolean match = false;
+        for (ExecuteInstance ei : currentDM.getExecuteInstances()) {
+            secondloop:
+            {
+                for (ExecuteInstance ei2 : targetDM.getExecuteInstances()) {
+                    match = ei.equals(ei2);
+                    if (ei.equals(ei2)) {
+                        matchingExecutes.put(ei, ei2);
+                        break secondloop;
+                    }
+                }
+            }
+            if (!match) {
+                removedExecutes.add(ei);
+            }
+        }
+        //add the rest
+        addExecutes();
+    }
+
+    private void addExecutes(){
+        addedExecutes = new ArrayList<ExecuteInstance>(targetDM.getExecuteInstances());
+        addedExecutes.removeAll(matchingExecutes.values());
+        for (ExecuteInstance ei : addedExecutes) {
+            int i = currentDM.getComponentInstances().toList().indexOf(ei.getRequiredEnd().getOwner().get());
+            if (i >= 0) {
+                ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
+                ei.setRequiredEnd(((InternalComponentInstance) a).getRequiredExecutionPlatform());
+            }
+            i = currentDM.getComponentInstances().toList().indexOf(ei.getProvidedEnd().getOwner());
+            if (i >= 0) {
+                ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
+                int j = a.getProvidedExecutionPlatforms().toList().indexOf(ei.getProvidedEnd());
+                List<ProvidedExecutionPlatformInstance> l = a.getProvidedExecutionPlatforms().toList();
+                ei.setProvidedEnd(l.get(j));
+            }
+        }
+    }
+
 
     /**
      * Clean all the lists resulting from the previous comparison
      */
     private void clean() {
-        matchingVMs.clear();
-        removedVMs.clear();
-        addedVMs.clear();
+        matchingECs.clear();
+        removedECs.clear();
+        addedECs.clear();
 
         matchingComponents.clear();
         removedComponents.clear();
@@ -234,23 +291,27 @@ public class CloudMLModelComparator {
         removedRelationships.clear();
         addedRelationships.clear();
 
+        matchingExecutes.clear();
+        removedExecutes.clear();
+        addedExecutes.clear();
+
         commands.clear();
     }
 
-    public List<ComponentInstance<? extends Component>> getRemovedComponents() {
+    public List<InternalComponentInstance> getRemovedComponents() {
         return this.removedComponents;
     }
 
-    public List<ComponentInstance<? extends Component>> getAddedComponents() {
+    public List<InternalComponentInstance> getAddedComponents() {
         return this.addedComponents;
     }
 
-    public List<ExternalComponentInstance<? extends ExternalComponent>> getRemovedVMs() {
-        return this.removedVMs;
+    public List<ExternalComponentInstance<? extends ExternalComponent>> getRemovedECs() {
+        return this.removedECs;
     }
 
-    public List<ExternalComponentInstance<? extends ExternalComponent>> getAddedVMs() {
-        return this.addedVMs;
+    public List<ExternalComponentInstance<? extends ExternalComponent>> getAddedECs() {
+        return this.addedECs;
     }
 
     public List<RelationshipInstance> getRemovedRelationships() {
@@ -261,15 +322,27 @@ public class CloudMLModelComparator {
         return this.addedRelationships;
     }
 
+    public List<ExecuteInstance> getRemovedExecutes(){
+        return this.removedExecutes;
+    }
+
+    public List<ExecuteInstance> getAddedExecutes(){
+        return this.addedExecutes;
+    }
+
+    public Map<ExecuteInstance,ExecuteInstance> getMatchingExecutes(){
+        return this.matchingExecutes;
+    }
+
     public Map<RelationshipInstance, RelationshipInstance> getMatchingRelationships() {
         return this.matchingRelationships;
     }
 
-    public Map<ComponentInstance<? extends Component>, ComponentInstance<? extends Component>> getMatchingComponents() {
+    public Map<InternalComponentInstance, InternalComponentInstance> getMatchingComponents() {
         return this.matchingComponents;
     }
 
-    public Map<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> getMatchingVMs() {
-        return this.matchingVMs;
+    public Map<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> getMatchingECs() {
+        return this.matchingECs;
     }
 }

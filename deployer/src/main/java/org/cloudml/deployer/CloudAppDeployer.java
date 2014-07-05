@@ -34,9 +34,7 @@ import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
-import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
-import org.cloudml.core.collections.VMInstanceGroup;
 
 /*
  * The deployment Engine 
@@ -78,7 +76,7 @@ public class CloudAppDeployer {
             configureWithRelationships(targetModel.getRelationshipInstances());
 
             //configuration process at SaaS level
-            configureSaas(targetModel.getComponentInstances());
+            configureSaas(targetModel.getComponentInstances().onlyInternals());
 
         }
         else {
@@ -87,15 +85,15 @@ public class CloudAppDeployer {
             diff.compareCloudMLModel();
 
             //Added stuff
-            setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedVMs()).onlyExternals());
+            setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
-            configureSaas(new ComponentInstanceGroup<ComponentInstance<? extends Component>>(diff.getAddedComponents()));
+            configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
 
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
             stopInternalComponents(diff.getRemovedComponents());
-            terminateExternalServices(diff.getRemovedVMs());
+            terminateExternalServices(diff.getRemovedECs());
             updateCurrentModel(diff);
         }
     }
@@ -123,13 +121,13 @@ public class CloudAppDeployer {
         if (diff != null) {
             currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
             currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
-            currentModel.getComponentInstances().removeAll(diff.getRemovedVMs());
+            currentModel.getComponentInstances().removeAll(diff.getRemovedECs());
             alreadyDeployed.removeAll(diff.getRemovedComponents());
             alreadyStarted.removeAll(diff.getRemovedComponents());
 
             currentModel.getComponentInstances().addAll(diff.getAddedComponents());
             currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
-            currentModel.getComponentInstances().addAll(diff.getAddedVMs());
+            currentModel.getComponentInstances().addAll(diff.getAddedECs());
         }
         else {
             throw new IllegalArgumentException("Cannot update current model without comparator!");
@@ -153,7 +151,7 @@ public class CloudAppDeployer {
     }
 
     /**
-     * Prepare an component before it starts. Retrieves its resources, builds
+     * Prepare a component before it starts. Retrieves its resources, builds
      * its PaaS and installs it
      *
      * @param instance an InternalComponentInstance
@@ -378,32 +376,31 @@ public class CloudAppDeployer {
      * @param components a list of components
      * @throws MalformedURLException
      */
-    private void configureSaas(ComponentInstanceGroup<ComponentInstance<? extends Component>> components) {
+    private void configureSaas(ComponentInstanceGroup<InternalComponentInstance> components) {
         unlessNotNull("Cannot configure null!", components);
         Connector jc;
-        for (ComponentInstance x : components) {
-            if (x.isInternal() && (!alreadyStarted.contains(x))) {
-                InternalComponentInstance ix = x.asInternal();
-                ExternalComponentInstance owner = ix.externalHost();
+        for (InternalComponentInstance x : components) {
+            if (!alreadyStarted.contains(x)) {
+                ExternalComponentInstance owner = x.externalHost();
                 if (owner instanceof VMInstance) { //TODO: refactor and be more generic for external component in general
                     VMInstance ownerVM = (VMInstance) owner;
                     VM n = ownerVM.getType();
                     jc = ConnectorFactory.createIaaSConnector(n.getProvider());
                     //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
-                    for (Resource r : ix.getType().getResources()) {
+                    for (Resource r : x.getType().getResources()) {
                         String configurationCommand = r.getConfigureCommand();
                         configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                     }
-                    ix.setStatus(State.CONFIGURED);
+                    x.setStatus(State.CONFIGURED);
 
-                    for (Resource r : ix.getType().getResources()) {
+                    for (Resource r : x.getType().getResources()) {
                         String startCommand = r.getStartCommand();
                         start(jc, n, ownerVM, startCommand);
                     }
-                    ix.setStatus(State.RUNNING);
+                    x.setStatus(State.RUNNING);
 
-                    alreadyStarted.add(ix);
+                    alreadyStarted.add(x);
                     jc.closeConnection();
                 }
             }//TODO if not InternalComponent
@@ -642,7 +639,7 @@ public class CloudAppDeployer {
      */
     private void terminateExternalServices(List<ExternalComponentInstance<? extends ExternalComponent>> vms) {
         for (ExternalComponentInstance n : vms) {
-            if (n instanceof ExternalComponentInstance) {
+            if (n instanceof VMInstance) {
                 terminateVM((VMInstance) n);
             }
         }
@@ -668,11 +665,9 @@ public class CloudAppDeployer {
      * @param components a list of ComponentInstance
      * @throws MalformedURLException
      */
-    private void stopInternalComponents(List<ComponentInstance<? extends Component>> components) {//TODO: List<InternalComponentInstances>
-        for (ComponentInstance a : components) {
-            if (a instanceof InternalComponentInstance) {
+    private void stopInternalComponents(List<InternalComponentInstance> components) {//TODO: List<InternalComponentInstances>
+        for (InternalComponentInstance a : components) {
                 stopInternalComponent((InternalComponentInstance) a);
-            }
         }
     }
 
