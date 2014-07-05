@@ -71,7 +71,7 @@ public class VM extends ExternalComponent implements Visitable, CanBeValidated {
         }
         if (other instanceof VM) {
             VM otherNode = (VM) other;
-            return super.equals(other);
+            return super.equals(otherNode);
         }
         return false;
     }
