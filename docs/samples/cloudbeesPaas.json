@@ -4,7 +4,7 @@
 	"providers" : [{
 			"eClass" : "net.cloudml.core:Provider",
 			"name" : "CloudBees",
-			"credentials" : "no given credentials",
+			"credentials" : "credentialsCloudbees",
 			"properties" : [{
 					"eClass" : "net.cloudml.core:Property",
 					"name" : "account",
@@ -57,6 +57,8 @@
 			"name" : "cbdb",
 			"provider" : "providers[CloudBees]",
 			"serviceType" : "database",
+			"login" : "sintef",
+			"passwd" : "password123",
 			"providedPorts" : [{
 					"eClass" : "net.cloudml.core:ProvidedPort",
 					"name" : "db",
