@@ -22,7 +22,8 @@
  */
 package org.cloudml.monitoring.util;
 
-import org.cloudml.monitoring.metrics_observer.instance.MetricObServerInstance;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.List;
 /**
@@ -75,25 +76,59 @@ public class MonitoringAPI {
      * @param address the address on which the monitoring manager is running
      * @param metric the requested metric
      */
-    public void attachObserver(String callback, String address, String metric){
+    public void attachObserver(String callback, String address, String metric) {
 
         String url = address + "/v1/metrics/" + metric;
 
         http.postRequest(url, callback);
-
     }
+
+
 
     /**
      * This method sends an update to the monitoring manager about the state of the deployment
-     * @param address the address on which the monitoring manager is running
-     * @param deployment the state of the deployment
+     * @param address the address where the monitoring manager is running
+     * @param update the state of the deployment
      */
-    public void updateDeployment(String address, String deployment){
+    public void addInstances(String address, ModelUpdates update){
 
-       String url = address + "/v1/update";
+        String url = address + "/v1/update";
 
-       http.postRequest(url, deployment);
+        Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
 
+        String json = gson.toJson(update);
+
+        http.postRequest(url, json);
+
+    }
+
+
+    /**
+     * This method upload the deployment model in the monitoring manager
+     * @param address is the address where the monitoring manager is running
+     * @param model the state of the deployment
+     */
+    public void uploadDeployment(String address, ModelUpdates model){
+
+        String url = address + "/v1/upload";
+
+        Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
+
+        String json = gson.toJson(model);
+
+        http.postRequest(url, json);
+    }
+
+    /**
+     * This method deletes tells to the monitoring manager which instances must be removed from the deployment model
+     * @param address is the address where the monitoring manager is running
+     * @param id are the IDs of the instances to be deleted
+     */
+    public void deleteInstances(String address, String id){
+
+        String url = address + "/v1/update";
+
+        http.deleteRequest(url, id);
     }
 
 }
