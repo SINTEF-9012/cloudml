@@ -25,51 +25,52 @@ package org.cloudml.monitoring.synchronization;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
+
 import java.util.List;
 
 /**
  * @author Francesco di Forenza and Lorenzo Cianciaruso
- * This class is a copy of a class contained in the
- * Monitoring Platform they should be added in qos models and used
- * as dependencies
+ *         This class is a copy of a class contained in the
+ *         Monitoring Platform they should be added in qos models and used
+ *         as dependencies
  */
 public class ModelUpdates {
-        private List<VM> vms;
+    private List<VM> vms;
 
-        private List<Component> components;
+    private List<Component> components;
 
-        private List<ExternalComponent> externalComponents;
+    private List<ExternalComponent> externalComponents;
 
-        public ModelUpdates(List<VM> vms, List<Component> components,
-                            List<ExternalComponent> externalComponents) {
-            this.vms = vms;
-            this.components = components;
-            this.externalComponents = externalComponents;
-        }
+    public ModelUpdates(List<Component> components, List<ExternalComponent> externalComponents, List<VM> vms) {
+        this.vms = vms;
+        this.components = components;
+        this.externalComponents = externalComponents;
+    }
 
-        public List<VM> getVms() {
-            return vms;
-        }
 
-        public void setVms(List<VM> vms) {
-            this.vms = vms;
-        }
+    public List<VM> getVms() {
+        return vms;
+    }
 
-        public List<Component> getComponents() {
-            return components;
-        }
+    public void setVms(List<VM> vms) {
+        this.vms = vms;
+    }
 
-        public void setComponents(List<Component> components) {
-            this.components = components;
-        }
+    public List<Component> getComponents() {
+        return components;
+    }
 
-        public List<ExternalComponent> getExternalComponents() {
-            return externalComponents;
-        }
+    public void setComponents(List<Component> components) {
+        this.components = components;
+    }
 
-        public void setExternalComponents(List<ExternalComponent> externalComponents) {
-            this.externalComponents = externalComponents;
-        }
+    public List<ExternalComponent> getExternalComponents() {
+        return externalComponents;
+    }
+
+    public void setExternalComponents(List<ExternalComponent> externalComponents) {
+        this.externalComponents = externalComponents;
+    }
 
 
 }

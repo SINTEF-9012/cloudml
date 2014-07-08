@@ -22,18 +22,72 @@ package org.cloudml.monitoring.synchronization;
  * <http://www.gnu.org/licenses/>.
  */
 
+import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
+import org.cloudml.core.Deployment;
+import org.cloudml.core.ExternalComponentInstance;
+import org.cloudml.core.VMInstance;
+import org.cloudml.core.collections.ComponentInstanceGroup;
+import org.cloudml.core.collections.ExternalComponentInstanceGroup;
+import org.cloudml.core.collections.VMInstanceGroup;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Francesco di Forenza
- * This class receive the model changes and tranform them
- * to ensure compatibility with third parties
+ *         This class receive the model changes and tranform them
+ *         to ensure compatibility with third parties
  */
 
 public class Filter {
-    public static ModelUpdates fromCoudmlMreToModaMP() {
-    ModelUpdates translated = new ModelUpdates(null,null,null);
-    return translated;
+    public static ModelUpdates fromCloudmlToModaMP(Deployment deployment) {
+        //prepare the lists
+        List<Component> toReturnComponent = new ArrayList<Component>();
+        List<ExternalComponent> toReturnExternalComponent = new ArrayList<ExternalComponent>();
+        List<VM> toReturnVM = new ArrayList<VM>();
+
+        //get the relevant part of the model
+        ComponentInstanceGroup instances = deployment.getComponentInstances();
+
+        //go top down to remove the synched ones
+
+        //prepare the VMs list
+        VMInstanceGroup VMs = instances.onlyVMs();
+        for (VMInstance i : VMs) {
+            toReturnVM.add(fromCloudmlToModaMP(i));
+            instances.remove(i);
+        }
+
+        //prepare the ExternalComponents list
+        ExternalComponentInstanceGroup components = instances.onlyExternals();
+        for (ExternalComponentInstance i : components) {
+            toReturnExternalComponent.add(fromCloudmlToModaMP(i));
+            instances.remove(i);
+        }
+
+        //prepare the components list
+        //REALLY NECESSARY?
+
+        return new ModelUpdates(toReturnComponent, toReturnExternalComponent, toReturnVM);
     }
 
+    private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
+        VM toReturn = new VM();
+        toReturn.setId(toTranslate.getName());
+        //TODO add other fields
+        return toReturn;
+    }
+
+    private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
+        VM toReturn = new VM();
+        toReturn.setId(toTranslate.getName());
+        toReturn.setNumberOfCpus(toTranslate.getType().getMinCores());
+        toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
+        //TODO add other fields and check the current ones
+        return toReturn;
+    }
 
 
 }

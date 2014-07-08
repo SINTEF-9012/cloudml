@@ -74,7 +74,8 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
     public State getStatus() {
         return this.status;
     }
-    
+
+    //TODO these methods should be deleted as soon as nobody use them
     @Deprecated
     //USE MRT METHODS TO SET THE STATUS
     public void setStatusAsStopped() {
@@ -93,8 +94,14 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
         this.status = State.RUNNING;
     }
 
+    @Deprecated
+    //USE setStatus(State)
     public void setStatus(String state){
         this.status = State.valueOf(state);
+    }
+
+    public void setStatus (State state){
+        this.status = state;
     }
     
     @Override
