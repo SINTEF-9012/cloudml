@@ -59,10 +59,10 @@ The table below summarize for each provider supported by CloudML the value to be
 | Provider | name | Property |
 | -------- | ---- | -------- |
 | OpenStack nova | "openstack-nova" | A property called endpoint describing where can be accessed the API|
-| Amazon EC2| "aws-ec2" | None                                                                           |
+| Amazon EC2| "aws-ec2" or "ec2" | None                                                                           |
 | Flexiant FCO | "flexiant" |  A property called endpoint describing where can be accessed the API       |
 | CloudBees(container and database) | "CloudBees" | A property called account  (cf. listing)           |
-| Beanstalk | "beanstalk" |                                                                                       |
+| Beanstalk | "beanstalk" or "ebs" |                                                                                       |
 | Amazon RDS | "rds" |                                                                                       |
 | Amazon SQS | "sqs" |                                                                                       |
 
