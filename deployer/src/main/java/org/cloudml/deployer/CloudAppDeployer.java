@@ -486,6 +486,11 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
+        //Add a listener which collects and prints the changes every 0.5 second.
+        PeerStub observer = new SystemOutPeerStub("Observer");
+        Object res = null;
+        res = coordinator.process("!listenToAny ", observer);
+        journal.log(Level.INFO, res.toString());
         ComponentInstance.State state = jc.createInstance(n);
         wrapper.eSet("/componentInstances[name='"+n.getName()+"']", wrapper.makePair("status", ""+state.toString()+""));
         jc.closeConnection();

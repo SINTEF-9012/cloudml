@@ -24,9 +24,16 @@ package org.cloudml.monitoring.synchronization;
 
 /**
  * @author Francesco di Forenza
- * This class receive the model changes and translate in a format
- * compatible with the ModaClouds Monitoring Platform
+ * This class receive the model changes and tranform them
+ * to ensure compatibility with third parties
  */
 
 public class Filter {
+    public static ModelUpdates fromCoudmlMreToModaMP() {
+    ModelUpdates translated = new ModelUpdates(null,null,null);
+    return translated;
+    }
+
+
+
 }

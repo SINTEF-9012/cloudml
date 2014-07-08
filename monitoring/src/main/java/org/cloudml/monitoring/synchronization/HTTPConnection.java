@@ -1,4 +1,4 @@
-package org.cloudml.monitoring.util;
+package org.cloudml.monitoring.synchronization;
 
 /**
  * This file is part of CloudML [ http://cloudml.org ]
@@ -24,6 +24,9 @@ package org.cloudml.monitoring.util;
  */
 
 
+import org.cloudml.monitoring.synchronization.*;
+import org.cloudml.monitoring.synchronization.ModelUpdates;
+
 import java.io.*;
 import java.net.*;
 
@@ -39,6 +42,7 @@ public class HTTPConnection {
      * @return response in StringBuffer variable
      */
     public StringBuffer postRequest(String targetUrl, String parameter) {
+
         URL url;
         HttpURLConnection connection;
         try {

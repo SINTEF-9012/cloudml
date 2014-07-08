@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.monitoring.util;
+package org.cloudml.monitoring.synchronization;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
