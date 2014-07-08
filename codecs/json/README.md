@@ -189,8 +189,71 @@ List of external components
 					"owner" : "externalComponents[granny-cloudml]"
 				}
 			]
+		},{
+			"eClass" : "net.cloudml.core:ExternalComponent",
+			"name" : "cbdb",
+			"provider" : "providers[CloudBees]",
+			"serviceType" : "database",
+			"providedPorts" : [{
+					"eClass" : "net.cloudml.core:ProvidedPort",
+					"name" : "db",
+					"isLocal" : true,
+					"portNumber" : "0",
+					"component" : "externalComponents[cbdb]"
+				}
+			]
 		}
 ```
+These two external components type can be instanciated to create an application container and a database on CloudBees respectively. The listing below depict the specification of an external component type tha can be instantiated to create a MySQL database on RDS.
+
+```json
+{
+			"eClass" : "net.cloudml.core:ExternalComponent",
+			"name" : "cbdb",
+			"login" : "sintef",
+			"passwd" : "password123",
+			"serviceType" : "database",
+			"provider" : "providers[beanstalk]",
+			"resources" : [{
+					"eClass" : "net.cloudml.core:Resource",
+					"name" : "no name",
+					"configureCommand" : "sample.sql"
+				}
+			],
+			"properties" : [{
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "DB-Engine",
+					"value" : "MySQL"
+				}, {
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "DB-Version",
+					"value" : "5.6.17"
+				}, {
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "DB-Name",
+					"value" : "cbdb"
+				}, {
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "allocatedSize",
+					"value" : "5"
+				}, {
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "securityGroup",
+					"value" : "open"
+				}
+			],
+			"providedPorts" : [{
+					"eClass" : "net.cloudml.core:ProvidedPort",
+					"name" : "db",
+					"isLocal" : true,
+					"portNumber" : "0",
+					"component" : "externalComponents[cbdb]"
+				}
+			]
+		}
+
+```
+
 
 List of external component instances
 ```json
@@ -207,6 +270,7 @@ List of external component instances
 			]
 		}
 ```
+
 
 List of Relationships
 ```json
