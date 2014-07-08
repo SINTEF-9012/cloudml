@@ -35,6 +35,12 @@ import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.monitoring.status.StatusMonitor;
+import org.cloudml.mrt.Coordinator;
+import org.cloudml.mrt.PeerStub;
+import org.cloudml.mrt.SimpleModelRepo;
+import org.cloudml.mrt.cmd.CmdWrapper;
+import org.cloudml.mrt.sample.SystemOutPeerStub;
 
 /*
  * The deployment Engine 
@@ -48,6 +54,9 @@ public class CloudAppDeployer {
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
     private Deployment targetModel;
+    private CmdWrapper wrapper;
+    private Coordinator coordinator;
+    private StatusMonitor statusMonitor;
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -64,6 +73,16 @@ public class CloudAppDeployer {
         if (currentModel == null) {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
+
+            //set up the components to update the model using the mrt
+            if (coordinator == null){
+                coordinator = new Coordinator();
+            }
+            SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
+            coordinator.setModelRepo(modelRepo);
+            coordinator.start();
+            PeerStub committer = new SystemOutPeerStub("Deployer");
+            wrapper = new CmdWrapper(coordinator, committer);
 
             // Provisioning vms
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
@@ -96,6 +115,11 @@ public class CloudAppDeployer {
             terminateExternalServices(diff.getRemovedECs());
             updateCurrentModel(diff);
         }
+        /*
+        if (statusMonitor == null){
+            statusMonitor= new StatusMonitor(60, true, coordinator);
+        }
+        statusMonitor.start();*/
     }
 
     private void unlessNotNull(String message, Object... obj) {
@@ -462,7 +486,8 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        jc.createInstance(n);
+        ComponentInstance.State state = jc.createInstance(n);
+        wrapper.eSet("/componentInstances[name='"+n.getName()+"']", wrapper.makePair("status", ""+state.toString()+""));
         jc.closeConnection();
     }
 
@@ -656,7 +681,9 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        n.setStatusAsStopped();
+        wrapper.eSet("/componentInstances[name='"+n.getName()+"']", wrapper.makePair("status", ComponentInstance.State.STOPPED));
+        //old way without using mrt
+        //n.setStatusAsStopped();
     }
 
     /**

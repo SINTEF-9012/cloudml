@@ -1,4 +1,4 @@
-/**
+package org.cloudml.monitoring.status; /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
  * Copyright (C) 2012 - SINTEF ICT
@@ -20,23 +20,40 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.connectors;
 
 import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.VMInstance;
+/**
+ * @author Francesco di Forenza
+ */
+public class MonitoredVm {
+    private String id;
+    private String name;
+    private ComponentInstance.State status;
 
-public interface Connector {
-	
-	public void execCommand(String id, String command, String login, String key);
-	
-	public ComponentInstance.State createInstance(VMInstance a);
-	
-	public void destroyVM(String id);
-	
-	public void closeConnection();
+    public MonitoredVm(String id, String name, ComponentInstance.State status) {
+        this.id = id;
+        this.name = name;
+        this.status = status;
+    }
 
-	public void updateVMMetadata(VMInstance a);
-	
-	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key);
-	
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ComponentInstance.State getStatus() {
+        return status;
+    }
+
+    /**
+     * Set the status
+     *
+     * @param status
+     */
+    public void setStatus(ComponentInstance.State status) {
+        this.status = status;
+    }
 }

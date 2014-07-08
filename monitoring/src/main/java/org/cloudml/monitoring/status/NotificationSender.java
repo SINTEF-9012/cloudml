@@ -1,4 +1,4 @@
-package org.cloudml.monitoring.util;
+package org.cloudml.monitoring.status;
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
@@ -47,12 +47,10 @@ public class NotificationSender {
      * @param name name of the machine
      * @param newStatus status
      */
-    public static void updateUsingFacade(String name, ComponentInstance.State newStatus) {
+    public static void updateUsingFacade(String name, ComponentInstance.State newStatus, Coordinator coord) {
 
         //Start a coordinator, which is the main wrapper of the cloudml model
-        Coordinator coord = new Coordinator("sample://sensApp");
         journal.log(Level.INFO, "started");
-        coord.start();
 
         //Add a listener which collects and prints the changes every 0.5 second.
         PeerStub observer = new SystemOutPeerStub("Observer");

@@ -75,18 +75,24 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
         return this.status;
     }
     
+    @Deprecated
+    //USE MRT METHODS TO SET THE STATUS
     public void setStatusAsStopped() {
         this.status = State.STOPPED;
     }
-    
+
+    @Deprecated
+    //USE MRT METHODS TO SET THE STATUS
     public void setStatusAsError() {
         this.status = State.ERROR;
     }
-    
+
+    @Deprecated
+    // USE MRT METHODS TO SET THE STATUS
     public void setStatusAsRunning() {
         this.status = State.RUNNING;
     }
-    
+
     public void setStatus(String state){
         this.status = State.valueOf(state);
     }

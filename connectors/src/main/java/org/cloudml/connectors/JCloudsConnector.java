@@ -246,8 +246,9 @@ public class JCloudsConnector implements Connector{
      * @param a description of the VM to be created
      * @return
      */
-    public void createInstance(VMInstance a){
+    public ComponentInstance.State createInstance(VMInstance a){
         VM vm = a.getType();
+        ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         ComputeMetadata cm= getVMByName(a.getName());
 		/* UPDATE THE MODEL */
         if(cm != null){
@@ -307,13 +308,18 @@ public class JCloudsConnector implements Connector{
 
             } catch (RunNodesException e) {
                 e.printStackTrace();
-                a.setStatusAsError();
+                //a.setStatusAsError();
+                state = ComponentInstance.State.ERROR;
+
             }
 
             a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
             a.setId(nodeInstance.getId());
-            a.setStatusAsRunning();
+            //a.setStatusAsRunning();
+            state = ComponentInstance.State.RUNNING;
+
         }
+        return state;
     }
 
     /**

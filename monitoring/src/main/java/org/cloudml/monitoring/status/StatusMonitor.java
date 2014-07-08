@@ -1,4 +1,4 @@
-package org.cloudml.monitoring;
+package org.cloudml.monitoring.status;
  /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
@@ -27,10 +27,11 @@ import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.FlexiantConnector;
 import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.connectors.OpenStackConnector;
-import org.cloudml.monitoring.modules.FlexiantModule;
-import org.cloudml.monitoring.modules.JCloudsModule;
-import org.cloudml.monitoring.modules.Module;
-import org.cloudml.monitoring.modules.OpenStackModule;
+import org.cloudml.monitoring.status.modules.FlexiantModule;
+import org.cloudml.monitoring.status.modules.JCloudsModule;
+import org.cloudml.monitoring.status.modules.Module;
+import org.cloudml.monitoring.status.modules.OpenStackModule;
+import org.cloudml.mrt.Coordinator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ public class StatusMonitor {
     private Collection<Module> modules;
     private int refreshRate;
     private boolean active;
+    private Coordinator coord;
 
     Thread thread;
 
@@ -56,10 +58,12 @@ public class StatusMonitor {
      *
      * @param refreshRate the rate at which the monitor will collect information
      * @param active      if true the monitor will start immediately
+     * @param coord       the coordinator that will be used to update the model
      */
-    public StatusMonitor(int refreshRate, boolean active) {
+    public StatusMonitor(int refreshRate, boolean active, Coordinator coord) {
         this.refreshRate = refreshRate;
         this.active = active;
+        this.coord = coord;
         this.modules = Collections.synchronizedCollection(new ArrayList<Module>());
         thread = new Thread(new Runnable() {
             public void run() {
@@ -95,11 +99,11 @@ public class StatusMonitor {
     public void attachModule(Connector connector) {
         Module module = null;
         if (connector instanceof FlexiantConnector) {
-            module = new FlexiantModule((FlexiantConnector) connector);
+            module = new FlexiantModule((FlexiantConnector) connector, coord);
         } else if (connector instanceof OpenStackConnector) {
-            module = new OpenStackModule((OpenStackConnector) connector);
+            module = new OpenStackModule((OpenStackConnector) connector, coord);
         } else if (connector instanceof JCloudsConnector) {
-            module = new JCloudsModule((JCloudsConnector) connector);
+            module = new JCloudsModule((JCloudsConnector) connector, coord);
         } else {
             //TODO exception
             System.out.println("error");

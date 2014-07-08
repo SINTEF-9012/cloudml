@@ -21,22 +21,23 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.monitoring.modules.util;
+package org.cloudml.monitoring.status.modules.util;
 
 /**
  * @author Francesco di Forenza
  */
 
-import org.cloudml.monitoring.MonitoredVm;
-import org.cloudml.monitoring.util.NotificationSender;
+import org.cloudml.monitoring.status.MonitoredVm;
+import org.cloudml.monitoring.status.NotificationSender;
 import org.cloudml.core.ComponentInstance.State;
+import org.cloudml.mrt.Coordinator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListManager {
 
-    public static void listManager(List<MonitoredVm> flexiant, List<MonitoredVm> VMs) {
+    public static void listManager(List<MonitoredVm> flexiant, List<MonitoredVm> VMs, Coordinator coord) {
 
         List<MonitoredVm> running;
         List<MonitoredVm> deleted;
@@ -47,7 +48,7 @@ public class ListManager {
             if (position == -1) {
                 VMs.add(temp);
                 running.add(temp);
-                NotificationSender.updateUsingFacade(temp.getName(), temp.getStatus());
+                NotificationSender.updateUsingFacade(temp.getName(), temp.getStatus(), coord);
             }
             //if already exists and changed
             else {
@@ -56,7 +57,7 @@ public class ListManager {
                 State newStatus = temp.getStatus();
                 if (oldStatus != newStatus) {
                     VMs.get(position).setStatus(newStatus);
-                    NotificationSender.updateUsingFacade(temp.getName(), newStatus);
+                    NotificationSender.updateUsingFacade(temp.getName(), newStatus, coord);
                 }
             }
         }
@@ -67,7 +68,7 @@ public class ListManager {
         }
         for (MonitoredVm toDelete : deleted) {
             State newStatus = State.UNRECOGNIZED;
-            NotificationSender.updateUsingFacade(toDelete.getName(), newStatus);
+            NotificationSender.updateUsingFacade(toDelete.getName(), newStatus, coord);
             VMs.remove(toDelete);
         }
     }

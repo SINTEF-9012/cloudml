@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.monitoring.modules;
+package org.cloudml.monitoring.status.modules;
 
 import org.cloudml.connectors.Connector;
 

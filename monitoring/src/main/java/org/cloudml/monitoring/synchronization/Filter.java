@@ -1,4 +1,5 @@
-package org.cloudml.monitoring; /**
+package org.cloudml.monitoring.synchronization;
+/**
  * This file is part of CloudML [ http://cloudml.org ]
  *
  * Copyright (C) 2012 - SINTEF ICT
@@ -21,39 +22,11 @@ package org.cloudml.monitoring; /**
  * <http://www.gnu.org/licenses/>.
  */
 
-import org.cloudml.core.ComponentInstance;
 /**
  * @author Francesco di Forenza
+ * This class receive the model changes and translate in a format
+ * compatible with the ModaClouds Monitoring Platform
  */
-public class MonitoredVm {
-    private String id;
-    private String name;
-    private ComponentInstance.State status;
 
-    public MonitoredVm(String id, String name, ComponentInstance.State status) {
-        this.id = id;
-        this.name = name;
-        this.status = status;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ComponentInstance.State getStatus() {
-        return status;
-    }
-
-    /**
-     * Set the status
-     *
-     * @param status
-     */
-    public void setStatus(ComponentInstance.State status) {
-        this.status = status;
-    }
+public class Filter {
 }

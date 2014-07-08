@@ -21,17 +21,19 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.monitoring.modules;
+package org.cloudml.monitoring.status.modules;
 
 /**
  * @author Francesco di Forenza
  */
 
-import org.cloudml.monitoring.MonitoredVm;
+
+import org.cloudml.monitoring.status.MonitoredVm;
 import org.cloudml.connectors.Connector;
-import org.cloudml.connectors.JCloudsConnector;
+import org.cloudml.connectors.OpenStackConnector;
 import org.cloudml.core.ComponentInstance;
-import org.cloudml.monitoring.modules.util.ListManager;
+import org.cloudml.monitoring.status.modules.util.ListManager;
+import org.cloudml.mrt.Coordinator;
 import org.jclouds.compute.domain.NodeMetadata;
 
 import java.util.ArrayList;
@@ -39,16 +41,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class JCloudsModule implements Module {
+public class OpenStackModule implements Module {
 
     private List<MonitoredVm> VMs;
-    private JCloudsConnector connector;
+    private OpenStackConnector connector;
     private Type type;
+    private Coordinator coord;
 
-    public JCloudsModule(JCloudsConnector connector) {
+
+    public OpenStackModule(OpenStackConnector connector, Coordinator coord) {
         VMs = new ArrayList<MonitoredVm>();
         this.connector = connector;
-        this.type = Type.JCLOUDS_MONITOR;
+        this.type = Type.OPENSTACK_MONITOR;
+        this.coord=coord;
+
     }
 
     public void exec() {
@@ -61,7 +67,7 @@ public class JCloudsModule implements Module {
             MonitoredVm temp = new MonitoredVm(current.getId(), current.getName(), toState(current.getStatus()));
             list.add(temp);
         }
-        ListManager.listManager(list, VMs);
+        ListManager.listManager(list, VMs, coord);
     }
 
     //map provider syntax on CloudMl one
@@ -80,6 +86,7 @@ public class JCloudsModule implements Module {
             default:
                 return ComponentInstance.State.UNRECOGNIZED;
         }
+
     }
 
     public Type getType() {
@@ -89,6 +96,7 @@ public class JCloudsModule implements Module {
     public Connector getConnector() {
         return connector;
     }
+
 
 }
 

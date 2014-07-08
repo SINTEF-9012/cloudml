@@ -35,6 +35,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
 import com.fasterxml.jackson.databind.node.ValueNode;
+import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
 import org.cloudml.core.Property;
@@ -148,7 +149,8 @@ public class FlexiantConnector implements Connector{
         }
     }
 
-    public void createInstance(VMInstance a){
+    public ComponentInstance.State createInstance(VMInstance a){
+        ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         try {
             Server template = new Server();
             if(findResourceByName(a.getName(), ResourceType.SERVER).equals("")){
@@ -208,16 +210,20 @@ public class FlexiantConnector implements Connector{
             Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
             a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
             journal.log(Level.INFO, ">> Running VM: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
-            a.setStatusAsRunning();
+            //a.setStatusAsRunning();
+            state = ComponentInstance.State.RUNNING;
         } catch (ExtilityException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            a.setStatusAsError();
+            //a.setStatusAsError();
+            state = ComponentInstance.State.ERROR;
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            a.setStatusAsError();
+            //a.setStatusAsError();
+            state = ComponentInstance.State.ERROR;
         }
+        return state;
     }
 
     public void execCommand(VMInstance n, String command, String login, String keyPath){

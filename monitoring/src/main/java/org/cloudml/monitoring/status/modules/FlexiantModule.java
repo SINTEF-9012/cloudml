@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.monitoring.modules;
+package org.cloudml.monitoring.status.modules;
 
 /**
  * @author Francesco di Forenza
@@ -29,11 +29,12 @@ package org.cloudml.monitoring.modules;
 
 import net.flexiant.extility.Server;
 import net.flexiant.extility.ServerStatus;
-import org.cloudml.monitoring.MonitoredVm;
+import org.cloudml.monitoring.status.MonitoredVm;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.FlexiantConnector;
 import org.cloudml.core.ComponentInstance;
-import org.cloudml.monitoring.modules.util.ListManager;
+import org.cloudml.monitoring.status.modules.util.ListManager;
+import org.cloudml.mrt.Coordinator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,11 +44,14 @@ public class FlexiantModule implements Module {
     private List<MonitoredVm> VMs;
     private FlexiantConnector connector;
     private Type type;
+    private Coordinator coord;
 
-    public FlexiantModule(FlexiantConnector connector) {
+
+    public FlexiantModule(FlexiantConnector connector, Coordinator coord) {
         VMs = new ArrayList<MonitoredVm>();
         this.connector = connector;
         this.type = Type.FLEXIANT_MONITOR;
+        this.coord=coord;
     }
 
     public void exec() {
@@ -62,7 +66,7 @@ public class FlexiantModule implements Module {
                 list.add(temp);
             }
         }
-        ListManager.listManager(list, VMs);
+        ListManager.listManager(list, VMs, coord);
     }
 
     //map provider syntax on CloudMl one
