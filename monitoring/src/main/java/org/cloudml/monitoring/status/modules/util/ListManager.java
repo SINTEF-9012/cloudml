@@ -37,22 +37,17 @@ import java.util.List;
 
 public class ListManager {
 
-    public static void listManager(List<MonitoredVm> flexiant, List<MonitoredVm> VMs, Coordinator coord) {
-
-        List<MonitoredVm> running;
+    public static void listManager(List<MonitoredVm> currentCheck, List<MonitoredVm> VMs, Coordinator coord) {
         List<MonitoredVm> deleted;
-        running = new ArrayList<MonitoredVm>();
-        for (MonitoredVm temp : flexiant) {
+        for (MonitoredVm temp : currentCheck) {
             int position = indexOf(temp, VMs);
             //if machine is new
             if (position == -1) {
                 VMs.add(temp);
-                running.add(temp);
                 NotificationSender.updateUsingFacade(temp.getName(), temp.getStatus(), coord);
             }
             //if already exists and changed
             else {
-                running.add(temp);
                 State oldStatus = VMs.get(position).getStatus();
                 State newStatus = temp.getStatus();
                 if (oldStatus != newStatus) {
@@ -61,9 +56,10 @@ public class ListManager {
                 }
             }
         }
+        //this implement the diff between previous and current
         deleted = new ArrayList<MonitoredVm>();
         deleted.addAll(VMs);
-        for (MonitoredVm alive : running) {
+        for (MonitoredVm alive : currentCheck) {
             remove(alive, deleted);
         }
         for (MonitoredVm toDelete : deleted) {

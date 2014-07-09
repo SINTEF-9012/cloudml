@@ -25,6 +25,7 @@ package org.cloudml.monitoring.synchronization;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
+import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Deployment;
 import org.cloudml.core.ExternalComponentInstance;
 import org.cloudml.core.VMInstance;
@@ -74,7 +75,7 @@ public class Filter {
     }
 
     private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
-        VM toReturn = new VM();
+        ExternalComponent toReturn = new ExternalComponent();
         toReturn.setId(toTranslate.getName());
         //TODO add other fields
         return toReturn;

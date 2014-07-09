@@ -74,7 +74,7 @@ public class CloudAppDeployer {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
 
-            //set up the components to update the model using the mrt
+            //set up a coordinator and wrapper (used by connectors to update the status of VMs
             if (coordinator == null){
                 coordinator = new Coordinator();
             }
@@ -83,7 +83,10 @@ public class CloudAppDeployer {
             coordinator.start();
             PeerStub committer = new SystemOutPeerStub("Deployer");
             wrapper = new CmdWrapper(coordinator, committer);
-
+            //set up the monitoring
+            if (statusMonitor == null){
+                statusMonitor= new StatusMonitor(60, false, coordinator);
+            }
             // Provisioning vms
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
@@ -115,11 +118,8 @@ public class CloudAppDeployer {
             terminateExternalServices(diff.getRemovedECs());
             updateCurrentModel(diff);
         }
-        /*
-        if (statusMonitor == null){
-            statusMonitor= new StatusMonitor(60, true, coordinator);
-        }
-        statusMonitor.start();*/
+        //start the monitoring of VMs
+        statusMonitor.start();
     }
 
     private void unlessNotNull(String message, Object... obj) {
@@ -486,13 +486,10 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        //Add a listener which collects and prints the changes every 0.5 second.
-        PeerStub observer = new SystemOutPeerStub("Observer");
-        Object res = null;
-        res = coordinator.process("!listenToAny ", observer);
-        journal.log(Level.INFO, res.toString());
         ComponentInstance.State state = jc.createInstance(n);
         wrapper.eSet("/componentInstances[name='"+n.getName()+"']", wrapper.makePair("status", ""+state.toString()+""));
+        //monitor the new machine
+        statusMonitor.attachModule(jc);
         jc.closeConnection();
     }
 

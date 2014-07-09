@@ -1,5 +1,5 @@
 package org.cloudml.monitoring.status;
- /**
+/**
  * This file is part of CloudML [ http://cloudml.org ]
  *
  * Copyright (C) 2012 - SINTEF ICT
@@ -36,6 +36,8 @@ import org.cloudml.mrt.Coordinator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A monitor to get the status of deployed VMs
@@ -45,13 +47,12 @@ import java.util.Collections;
  */
 
 public class StatusMonitor {
-
+    private static final Logger journal = Logger.getLogger(StatusMonitor.class.getName());
     private Collection<Module> modules;
     private int refreshRate;
     private boolean active;
+    private Thread thread;
     private Coordinator coord;
-
-    Thread thread;
 
     /**
      * Create a new monitor
@@ -65,19 +66,16 @@ public class StatusMonitor {
         this.active = active;
         this.coord = coord;
         this.modules = Collections.synchronizedCollection(new ArrayList<Module>());
-        thread = new Thread(new Runnable() {
-            public void run() {
-                backgroundAgent();
-            }
-        });
-        thread.start();
+        if (active) {
+            start();
+        }
     }
 
     private void backgroundAgent() {
         while (active) {
-            System.out.println("EXECUTING");
+            journal.log(Level.INFO, "Looking for status changes..");
             //TODO put each module in a thread to deal with connection delay
-            synchronized  (modules) {
+            synchronized (modules) {
                 for (Module i : modules) {
                     i.exec();
                 }
@@ -109,14 +107,13 @@ public class StatusMonitor {
             System.out.println("error");
 
         }
-        if (module!=null)
-        {
+        if (module != null) {
             synchronized (modules) {
                 if (!modules.contains(module)) {
                     modules.add(module);
                 }
             }
-            System.out.println("MODULE ATTACHED");
+            journal.log(Level.INFO, "Module attached: " + module.getType());
         }
     }
 
@@ -130,10 +127,10 @@ public class StatusMonitor {
             for (Module i : modules) {
                 if (i.getType() == module) {
                     modules.remove(i);
+                    journal.log(Level.INFO, "Module detached: " + i.getType());
                 }
             }
         }
-        System.out.println("MODULE DETACHED");
     }
 
     /**
@@ -143,14 +140,13 @@ public class StatusMonitor {
      */
     public void detachModule(Connector connector) {
         synchronized (modules) {
-
             for (Module i : modules) {
                 if (i.getConnector() == connector) {
                     modules.remove(i);
+                    journal.log(Level.INFO, "Module detached: " + i.getType());
                 }
             }
         }
-        System.out.println("MODULE DETACHED");
     }
 
     /**
@@ -168,6 +164,7 @@ public class StatusMonitor {
     public void pause() {
         this.active = false;
         thread.interrupt();
+        journal.log(Level.INFO, "Monitoring paused");
     }
 
     /**
@@ -183,7 +180,7 @@ public class StatusMonitor {
             });
             thread.start();
         } else {
-            System.out.println("Already started");
+            journal.log(Level.INFO, "Monitoring already started. Check your code");
         }
     }
 
@@ -196,5 +193,6 @@ public class StatusMonitor {
         synchronized (modules) {
             modules = new ArrayList<Module>();
         }
+        journal.log(Level.INFO, "Monitoring stopped and history deleted");
     }
 }

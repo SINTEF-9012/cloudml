@@ -23,7 +23,6 @@ package org.cloudml.monitoring.status;
  */
 
 
-import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.PeerStub;
@@ -39,40 +38,37 @@ import java.util.logging.Logger;
  */
 
 public class NotificationSender {
-    private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
+    private static final Logger journal = Logger.getLogger(StatusMonitor.class.getName());
 
     /**
      * Update the status in the model
      *
      * @param name name of the machine
      * @param newStatus status
+     * @param coord to interact with mrt
      */
     public static void updateUsingFacade(String name, ComponentInstance.State newStatus, Coordinator coord) {
+        if ((name!=null) &&(name.contains("storm"))) {
+            /*
+            //Add a listener which collects and prints the changes every 0.5 second.
+            PeerStub observer = new SystemOutPeerStub("Observer");
+            Object res;
+            res = coord.process("!listenToAny ", observer);
+            journal.log(Level.INFO, res.toString());
+            */
 
-        //Start a coordinator, which is the main wrapper of the cloudml model
-        journal.log(Level.INFO, "started");
+            //A PeerStub identifies who launches the modifications
+            PeerStub committer = new SystemOutPeerStub("Monitoring");
 
-        //Add a listener which collects and prints the changes every 0.5 second.
-        PeerStub observer = new SystemOutPeerStub("Observer");
-        Object res;
-        res = coord.process("!listenToAny ", observer);
-        journal.log(Level.INFO, res.toString());
+            //A wrapper hides the complexity of invoking the coordinator
+            CmdWrapper wrapper = new CmdWrapper(coord, committer);
 
-        //A PeerStub identifies who launches the modifications
-        PeerStub committer = new SystemOutPeerStub("Monitoring");
+            //Update the value of status
+            journal.log(Level.INFO, "Status of: "+name+" changed in: "+newStatus+"");
+            journal.log(Level.INFO, "Updating the model..");
+            wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newStatus.toString() + ""));
 
-        //A wrapper hides the complexity of invoking the coordinator
-        CmdWrapper wrapper = new CmdWrapper(coord, committer);
-
-        //TODO the machine must exist to set the property
-
-        //Update the value of status
-        wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", newStatus));
-
-        //Check the updated value
-        res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
-        journal.log(Level.INFO, res.toString());
-
+        }
     }
 
     //this method simply print the changes of the status and can be removed if no longer useful for any demo

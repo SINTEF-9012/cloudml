@@ -111,7 +111,7 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
     
     @Override
     public boolean equals(Object other) {
-        if (other instanceof InternalComponentInstance) {
+        if (other instanceof ExternalComponentInstance) {
             ExternalComponentInstance otherCompInst = (ExternalComponentInstance) other;
             Boolean match = getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType());
             return match;
