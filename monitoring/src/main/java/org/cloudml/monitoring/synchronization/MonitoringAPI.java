@@ -83,8 +83,6 @@ public class MonitoringAPI {
         http.postRequest(url, callback);
     }
 
-
-
     /**
      * This method sends an update to the monitoring manager about the state of the deployment
      * @param address the address where the monitoring manager is running
@@ -101,7 +99,6 @@ public class MonitoringAPI {
         http.postRequest(url, json);
 
     }
-
 
     /**
      * This method upload the deployment model in the monitoring manager
