@@ -24,7 +24,18 @@ package org.cloudml.monitoring.synchronization;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
+
+import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Lorenzo Cianciaruso on 07.07.14.
@@ -44,48 +55,5 @@ public class ModelUpdatesExclusionStrategy implements ExclusionStrategy {
 
         return ( clazz == Logger.class );
     }
-/* example of using the gson serialization
-    public static void main(String[] args) {
-
-        List<VM> vms = new ArrayList<VM>();
-        List<Component> components = new ArrayList<Component>();
-        List<ExternalComponent> externalComponents = new ArrayList<ExternalComponent>();
-
-        for(int i = 0; i<1;i++){
-            VM vm = new VM();
-            vm.setId(Integer.toString(i));
-            vm.setNumberOfCpus(i);
-            vm.setUrl("abcd");
-            vms.add(vm);
-        }
-
-        for(int i = 0; i<2;i++){
-            Component component = new Component();
-            component.setId(Integer.toString(i)+"comp");
-            component.setStarted(true);
-            component.setUrl("abcd-compo");
-            components.add(component);
-        }
-
-        for(int i = 0; i<3;i++){
-            ExternalComponent externalComponent = new ExternalComponent();
-            externalComponent.setId(Integer.toString(i)+"extcomp");
-            externalComponent.setStarted(false);
-            externalComponent.setUrl("abcd-extcompo");
-            externalComponent.setCloudProvider("me");
-            externalComponents.add(externalComponent);
-        }
-
-        ModelUpdates model = new ModelUpdates(vms,components,externalComponents);
-
-        Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
-
-        String json = gson.toJson(model);
-
-        System.out.println(json);
-
-    }
-    */
-
 
 }
