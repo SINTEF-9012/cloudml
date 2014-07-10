@@ -1,4 +1,0 @@
-#
-# Generated script. Please edit carefully
-#
-replay test.txt

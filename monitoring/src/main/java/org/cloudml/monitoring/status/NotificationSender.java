@@ -43,12 +43,11 @@ public class NotificationSender {
     /**
      * Update the status in the model
      *
-     * @param name name of the machine
+     * @param name      name of the machine
      * @param newStatus status
-     * @param coord to interact with mrt
+     * @param coord     to interact with mrt
      */
     public static void updateUsingFacade(String name, ComponentInstance.State newStatus, Coordinator coord) {
-        if ((name!=null) &&(name.contains("storm"))) {
             /*
             //Add a listener which collects and prints the changes every 0.5 second.
             PeerStub observer = new SystemOutPeerStub("Observer");
@@ -56,20 +55,48 @@ public class NotificationSender {
             res = coord.process("!listenToAny ", observer);
             journal.log(Level.INFO, res.toString());
             */
+        updateStatus(name, newStatus, coord, StatusMonitor.class.getName());
 
-            //A PeerStub identifies who launches the modifications
-            PeerStub committer = new SystemOutPeerStub("Monitoring");
 
-            //A wrapper hides the complexity of invoking the coordinator
-            CmdWrapper wrapper = new CmdWrapper(coord, committer);
+    }
 
-            //Update the value of status
-            journal.log(Level.INFO, "Status of: "+name+" changed in: "+newStatus+"");
-            journal.log(Level.INFO, "Updating the model..");
+    //TODO move this method to MRT and try to remove the need to set up the coordinator
+    //A singleton set one time by the deployer should work fine
+    public static void updateStatus(String name, ComponentInstance.State newStatus, Coordinator coord, String identity) {
+        //A PeerStub identifies who launches the modifications
+        PeerStub committer = new SystemOutPeerStub(identity);
+
+        //A wrapper hides the complexity of invoking the coordinator
+        CmdWrapper wrapper = new CmdWrapper(coord, committer);
+
+        //Update the value of status
+        try {
             wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newStatus.toString() + ""));
+            journal.log(Level.INFO, "Status of: " + name + " changed in: " + newStatus + "");
+            journal.log(Level.INFO, "Updating the model..");
+        }
+        catch (org.apache.commons.jxpath.JXPathNotFoundException e){
+           //The exception is triggered when the machine doesn't exist in the model
+           // this is because the monitoring can retrieves the status of ALL the machine
+           // deployed with the the specific set of credentials and
+           // NOT ONLY the ones in the deployment model
+           //
+           // Extra problems arise with Openstack and Jclouds since the name in the model
+           // is not the name of the VMs (that is unique) but the name specified in the json
+           // in case the user deploy two times with the same json the system will
+           // update the status two times
 
+           // Example
+           // First deploy
+           // Instance name: my_machine_53f  MetaName: my_machine
+           // Second deploy
+           // Instance name: my_machine_124  MetaName: my_machine
+           // (the name is set by Openstack the MetaName is set by user)
+           // Since in the model is used the MetaName the monitoring will consider to times the machine
+          ;
         }
     }
+
 
     //this method simply print the changes of the status and can be removed if no longer useful for any demo
     public static void commandLinePrinter(String name, ComponentInstance.State newStatus, ComponentInstance.State oldStatus) {

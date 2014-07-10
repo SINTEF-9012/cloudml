@@ -35,6 +35,7 @@ import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.monitoring.status.NotificationSender;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
 import org.cloudml.mrt.Coordinator;
@@ -55,7 +56,6 @@ public class CloudAppDeployer {
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
     private Deployment targetModel;
-    private CmdWrapper wrapper;
     private Coordinator coordinator;
     private StatusMonitor statusMonitor;
 
@@ -75,19 +75,18 @@ public class CloudAppDeployer {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
 
-            //set up a coordinator and wrapper (used by connectors to update the status of VMs
+            //set up a coordinator (used to update the model)
             if (coordinator == null){
                 coordinator = new Coordinator();
             }
             SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
             coordinator.setModelRepo(modelRepo);
             coordinator.start();
-            PeerStub committer = new SystemOutPeerStub("Deployer");
-            wrapper = new CmdWrapper(coordinator, committer);
             //set up the monitoring
             if (statusMonitor == null){
                 statusMonitor= new StatusMonitor(60, false, coordinator);
             }
+
             // Provisioning vms
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
@@ -490,8 +489,8 @@ public class CloudAppDeployer {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         ComponentInstance.State state = jc.createInstance(n);
-        wrapper.eSet("/componentInstances[name='"+n.getName()+"']", wrapper.makePair("status", ""+state.toString()+""));
-        //monitor the new machine
+        NotificationSender.updateStatus(n.getName(), state, coordinator,CloudAppDeployer.class.getName());
+        //enable the monitoring of the new machine
         statusMonitor.attachModule(jc);
         jc.closeConnection();
     }
@@ -686,7 +685,7 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        wrapper.eSet("/componentInstances[name='"+n.getName()+"']", wrapper.makePair("status", ComponentInstance.State.STOPPED));
+        NotificationSender.updateStatus(n.getName(), ComponentInstance.State.STOPPED, coordinator,CloudAppDeployer.class.getName());
         //old way without using mrt
         //n.setStatusAsStopped();
     }
