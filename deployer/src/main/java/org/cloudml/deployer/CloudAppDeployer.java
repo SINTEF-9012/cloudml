@@ -36,6 +36,7 @@ import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
 import org.cloudml.monitoring.status.StatusMonitor;
+import org.cloudml.monitoring.synchronization.MonitoringSynch;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.PeerStub;
 import org.cloudml.mrt.SimpleModelRepo;
@@ -100,6 +101,8 @@ public class CloudAppDeployer {
             //configuration process at SaaS level
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
+            //send the current deployment to the monitoring platform
+            MonitoringSynch.sendCurrentDeployment("http://localhost:8170",currentModel);
         }
         else {
             journal.log(Level.INFO, ">> Updating a deployment...");

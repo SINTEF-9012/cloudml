@@ -33,18 +33,20 @@ import java.util.List;
 public class MonitoringAPI {
 
     private HTTPConnection http;
+    private String address;
 
-    public MonitoringAPI () {
-        http = new HTTPConnection();
+    public MonitoringAPI(String address) {
+        this.http = new HTTPConnection();
+        this.address = address;
     }
 
     /**
      * This method sends a request to upload a monitoring rule to the monitoring manager.
      @param rule is the monitoring rule to be uploaded
-     @param address is the address where the monitoring manager is running
+
      @return the response of the monitoring manager
      */
-    public String addMonitoringRule(String rule, String address){
+    public String addMonitoringRule(String rule){
 
         String url = address + "/v1/monitoring-rules";
 
@@ -56,10 +58,10 @@ public class MonitoringAPI {
 
     /**
      * This methods sends a request to get all the metrics available
-     * @param address is the address where the monitoring manager is running
+     *
      * @return a list of metrics
      */
-    public List<String> getMetrics(String address){
+    public List<String> getMetrics(){
 
         String url = address + "/v1/metrics";
 
@@ -73,10 +75,10 @@ public class MonitoringAPI {
     /**
      * This method sends a request to attach an observer to a specific metric
      * @param callback the address on which the observer is running
-     * @param address the address on which the monitoring manager is running
+     *
      * @param metric the requested metric
      */
-    public void attachObserver(String callback, String address, String metric) {
+    public void attachObserver(String callback, String metric) {
 
         String url = address + "/v1/metrics/" + metric;
 
@@ -85,10 +87,10 @@ public class MonitoringAPI {
 
     /**
      * This method sends an update to the monitoring manager about the state of the deployment
-     * @param address the address where the monitoring manager is running
+     *
      * @param update the state of the deployment
      */
-    public void addInstances(String address, ModelUpdates update){
+    public void addInstances(ModelUpdates update){
 
         String url = address + "/v1/update";
 
@@ -102,10 +104,10 @@ public class MonitoringAPI {
 
     /**
      * This method upload the deployment model in the monitoring manager
-     * @param address is the address where the monitoring manager is running
+     *
      * @param model the state of the deployment
      */
-    public void uploadDeployment(String address, ModelUpdates model){
+    public void uploadDeployment(ModelUpdates model){
 
         String url = address + "/v1/upload";
 
@@ -118,10 +120,10 @@ public class MonitoringAPI {
 
     /**
      * This method deletes tells to the monitoring manager which instances must be removed from the deployment model
-     * @param address is the address where the monitoring manager is running
+     *
      * @param id are the IDs of the instances to be deleted
      */
-    public void deleteInstances(String address, String id){
+    public void deleteInstances(String id){
 
         String url = address + "/v1/update";
 

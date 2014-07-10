@@ -23,15 +23,13 @@ package org.cloudml.monitoring.synchronization;
  * <http://www.gnu.org/licenses/>.
  */
 
-
-import org.cloudml.monitoring.synchronization.*;
-import org.cloudml.monitoring.synchronization.ModelUpdates;
-
 import java.io.*;
 import java.net.*;
 
 /**
  * @author Lorenzo Cianciaruso
+ * in this class are implemented the HTTp request needed to
+ * communicate with the monitoring platform.
  */
 public class HTTPConnection {
 

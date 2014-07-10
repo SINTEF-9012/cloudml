@@ -22,30 +22,21 @@
  */
 package org.cloudml.monitoring.synchronization;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import org.slf4j.Logger;
-
+import org.cloudml.core.Deployment;
 
 /**
- * Created by Lorenzo Cianciaruso on 07.07.14.
- * in this class is defined how the parsing from
- * ModelUpdates to json must be done.
+ * Created by user on 10.07.14.
+ * @author Lorenzo Cianciaruso
  */
-public class ModelUpdatesExclusionStrategy implements ExclusionStrategy {
+public class MonitoringSynch {
 
+    public static void sendCurrentDeployment(String monitoringAddress, Deployment currentDeployment){
 
-    @Override
-    public boolean shouldSkipField(FieldAttributes f) {
-        return
-                f.getName().equals("shortURI")||f.getName().equals("uri");
+        ModelUpdates updates = Filter.fromCloudmlToModaMP(currentDeployment);
+
+        MonitoringAPI request = new MonitoringAPI(monitoringAddress);
+
+        request.uploadDeployment(updates);
 
     }
-
-    @Override
-    public boolean shouldSkipClass(Class<?> clazz) {
-
-        return ( clazz == Logger.class );
-    }
-
 }
