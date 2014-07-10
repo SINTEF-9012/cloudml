@@ -34,6 +34,7 @@ public class MonitoringAPI {
 
     private HTTPConnection http;
     private String address;
+    private final String version = "v1";
 
     public MonitoringAPI(String address) {
         this.http = new HTTPConnection();
@@ -48,7 +49,7 @@ public class MonitoringAPI {
      */
     public String addMonitoringRule(String rule){
 
-        String url = address + "/v1/monitoring-rules";
+        String url = address + "/" + version + "/monitoring-rules";
 
         StringBuffer response = http.postRequest(url, rule);
 
@@ -63,7 +64,7 @@ public class MonitoringAPI {
      */
     public List<String> getMetrics(){
 
-        String url = address + "/v1/metrics";
+        String url = address + "/" + version + "/metrics";
 
         http.getRequest(url);
 
@@ -80,7 +81,7 @@ public class MonitoringAPI {
      */
     public void attachObserver(String callback, String metric) {
 
-        String url = address + "/v1/metrics/" + metric;
+        String url = address + "/" + version + "/metrics/" + metric;
 
         http.postRequest(url, callback);
     }
@@ -92,7 +93,7 @@ public class MonitoringAPI {
      */
     public void addInstances(ModelUpdates update){
 
-        String url = address + "/v1/update";
+        String url = address + "/" + version + "/update";
 
         Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
 
@@ -109,7 +110,7 @@ public class MonitoringAPI {
      */
     public void uploadDeployment(ModelUpdates model){
 
-        String url = address + "/v1/upload";
+        String url = address + "/" + version + "/upload";
 
         Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
 
@@ -125,7 +126,7 @@ public class MonitoringAPI {
      */
     public void deleteInstances(String id){
 
-        String url = address + "/v1/update";
+        String url = address + "/" + version + "/update";
 
         http.deleteRequest(url, id);
     }

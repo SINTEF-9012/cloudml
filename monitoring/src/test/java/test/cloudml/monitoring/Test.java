@@ -24,9 +24,12 @@ package test.cloudml.monitoring;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
 import junit.framework.TestCase;
 import org.cloudml.core.Deployment;
-import org.cloudml.core.ExternalComponent;
+
 import org.cloudml.core.Property;
 import org.cloudml.core.builders.DeploymentBuilder;
 import org.cloudml.core.credentials.FileCredentials;
@@ -34,6 +37,9 @@ import org.cloudml.monitoring.synchronization.Filter;
 import org.cloudml.monitoring.synchronization.ModelUpdates;
 import org.cloudml.monitoring.synchronization.ModelUpdatesExclusionStrategy;
 import org.cloudml.monitoring.synchronization.MonitoringAPI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by user on 08.07.14.
@@ -67,5 +73,42 @@ public class Test extends TestCase {
         //an instance of the monitring manager should run il localhost
         monitoringAPI.uploadDeployment("http://localhost:8170", updates);
         */
+    }
+
+    public void testUpload(){
+        List<VM> vms = new ArrayList<VM>();
+        List<Component> components = new ArrayList<Component>();
+        List<ExternalComponent> externalComponents = new ArrayList<ExternalComponent>();
+
+        for(int i = 0; i<1; i++){
+            VM vm = new VM();
+            vm.setId(Integer.toString(i));
+            vm.setNumberOfCpus(i);
+            vm.setUrl("NUOVO");
+            vms.add(vm);
+        }
+
+        for(int i = 0; i<2; i++){
+            Component component = new Component();
+            component.setId(Integer.toString(i)+"compNUOVOP");
+            component.setStarted(true);
+            component.setUrl("abcd-compoNUOVO");
+            components.add(component);
+        }
+
+        for(int i = 0; i<3; i++){
+            ExternalComponent externalComponent = new ExternalComponent();
+            externalComponent.setId(Integer.toString(i)+"extcompNUOVO");
+            externalComponent.setStarted(false);
+            externalComponent.setUrl("abcd-extcompoNUOVO");
+            externalComponent.setCloudProvider("meNUOVO");
+            externalComponents.add(externalComponent);
+        }
+
+        ModelUpdates model = new ModelUpdates(components,externalComponents,vms);
+
+        MonitoringAPI monitor = new MonitoringAPI("http://localhost:8170");
+
+        monitor.uploadDeployment(model);
     }
 }
