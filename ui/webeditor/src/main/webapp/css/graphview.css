@@ -1,0 +1,23 @@
+.nodeVM {
+    fill: #fff;
+    stroke: green;
+    stroke-width: 2.5px;
+}
+.node {
+    fill: #fff;
+    stroke: #000;
+    stroke-width: 2.5px;
+}
+.node {
+    font: 10px sans-serif;
+}
+.link {
+    fill: none;
+    stroke: #000;
+    stroke-width: 2.5px;
+}
+.executionBinding {
+    fill: none;
+    stroke: green;
+    stroke-width: 2.5px;
+}
