@@ -32,136 +32,173 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Deployment;
+import org.cloudml.mrt.cmd.CmdWrapper;
 import org.cloudml.mrt.cmd.abstracts.Change;
 import org.cloudml.mrt.cmd.abstracts.Instruction;
 import org.cloudml.mrt.cmd.abstracts.Listener;
 import org.cloudml.mrt.cmd.gen.CloudMLCmds;
 import org.cloudml.mrt.cmd.gen.Extended;
 import org.cloudml.mrt.cmd.gen.Snapshot;
+import org.cloudml.mrt.sample.SystemOutPeerStub;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- *
  * @author Hui Song
  */
 public class Coordinator {
-    
+
     public static final String ADDITIONAL_PREFIX = "!additional";
-    
+    private static final Logger journal = Logger.getLogger(Coordinator.class.getName());
+
     CommandReception reception = null;
     //JsonCodec jsonCodec = new JsonCodec();
-    CommandExecutor executor = null;    
+    CommandExecutor executor = null;
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
     JsonCodec jsonCodec = new JsonCodec();
-    
+
     Instruction lastInstruction = null;
-    
-    public Coordinator(){
-        ModelRepo  repo = new SimpleModelRepo();
+
+    public Coordinator() {
+        ModelRepo repo = new SimpleModelRepo();
         executor = new CommandExecutor(repo);
-        
+
     }
-    
-    public void setModelRepo(ModelRepo repo){
+
+    public void updateStatus(String name, ComponentInstance.State newState, String identity) {
+        //A PeerStub identifies who launches the modifications
+        PeerStub committer = new SystemOutPeerStub(identity);
+
+        //A wrapper hides the complexity of invoking the coordinator
+        CmdWrapper wrapper = new CmdWrapper(this, committer);
+
+        //Update the value of status
+        try {
+            Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
+            if (res !=null) {
+                ComponentInstance.State oldState = ComponentInstance.State.valueOf(res.toString());
+                if (oldState != newState) {
+                    journal.log(Level.INFO, "Updating the model..");
+                    wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState.toString() + ""));
+                    journal.log(Level.INFO, "Status of: " + name + " changed in: " + newState + "");
+                }
+            }
+
+        } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
+            journal.log(Level.INFO, "Machine: " + name + " not in this model");
+
+            // Problems arise with Openstack and Jclouds since the name in the model
+            // is not the name of the VMs (that is unique) but the MetaName specified in the json
+
+            // Example
+            // First deploy
+            // Instance name: my_machine_53f  MetaName: my_machine
+            // Second deploy
+            // Instance name: my_machine_124  MetaName: my_machine
+            // This cause conflict with the monitoring of status
+            ;
+        }
+    }
+
+    public void setModelRepo(ModelRepo repo) {
         this.executor.setModelRepo(repo);
     }
-    
-    public Coordinator(String initModel){
+
+    public Coordinator(String initModel) {
         this();
         Extended extended = new Extended();
         extended.name = "LoadDeployment";
         extended.params = Arrays.asList(initModel);
-        this.process(extended, new PeerStub(){
+        this.process(extended, new PeerStub() {
             @Override
             public String getID() {
                 return "RootUser";
             }
+
             @Override
             public void sendMessage(Object message) {
                 System.out.println(String.format("RootUser:>> %s", message));
             }
-            
+
         });
     }
-    
-    public void start(){
-        if(reception !=null)
+
+    public void start() {
+        if (reception != null)
             reception.start();
         notificationCentre.coordinator = this;
         notificationCentre.startListening();
     }
-    
-    public void setReception(CommandReception reception){
+
+    public void setReception(CommandReception reception) {
         this.reception = reception;
     }
-    
-    public Object process(Instruction inst, PeerStub from){
+
+    public Object process(Instruction inst, PeerStub from) {
         //Do something before, such as record every instruction
         this.lastInstruction = inst;
         inst.fromPeer = from.getID();
         return executor.execute(inst, changeList);
         //Do something after, such as...
     }
-    
-    public Object process(Listener listener, PeerStub from){
+
+    public Object process(Listener listener, PeerStub from) {
         listener.id = listener.id + from.getID();
-        if(listener.cancel){
+        if (listener.cancel) {
             notificationCentre.removeListener(listener);
-        }
-        else{
+        } else {
             listener.root = executor.repo.getRoot();
             notificationCentre.addListener(listener, from);
         }
         return null;
     }
-    
-    public String process(String cmdLiteral, PeerStub from){
-        
-        if(cmdLiteral.startsWith(ADDITIONAL_PREFIX)){
+
+    public String process(String cmdLiteral, PeerStub from) {
+
+        if (cmdLiteral.startsWith(ADDITIONAL_PREFIX)) {
             String additional = cmdLiteral.substring(ADDITIONAL_PREFIX.length());
             lastInstruction.addAdditional(additional);
             return (String) process(lastInstruction, from);
         }
-            
-        
+
+
         Yaml yaml = CloudMLCmds.INSTANCE.getYaml();
 
         String ret = "";
         for (Object cmd : yaml.loadAll(cmdLiteral)) {
             Object obj = null;
-            if(cmd instanceof Instruction)
+            if (cmd instanceof Instruction)
                 obj = process((Instruction) cmd, from);
-            else if(cmd instanceof Listener)
+            else if (cmd instanceof Listener)
                 obj = process((Listener) cmd, from);
-            if(obj!=null){
+            if (obj != null) {
                 ret += String.format("###return of %s###\n%s\n", cmd.getClass().getSimpleName(), codec(obj));
             }
         }
         return ret;
     }
-    
-    public String codec(Object object){
-        if(object instanceof Deployment){
+
+    public String codec(Object object) {
+        if (object instanceof Deployment) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                jsonCodec.save((Deployment)object, baos);
+                jsonCodec.save((Deployment) object, baos);
                 return baos.toString("UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(Coordinator.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
             }
+        } else {
+            Snapshot snapshot = new Snapshot();
+            snapshot.content = object;
+            return CloudMLCmds.INSTANCE.getYaml().dump(snapshot);
         }
-        else{
-             Snapshot snapshot = new Snapshot();
-             snapshot.content = object;
-             return CloudMLCmds.INSTANCE.getYaml().dump(snapshot);
-        }
-            
+
     }
 
 
-    
 }

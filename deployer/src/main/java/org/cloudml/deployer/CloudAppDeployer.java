@@ -35,14 +35,10 @@ import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
-import org.cloudml.monitoring.status.NotificationSender;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
 import org.cloudml.mrt.Coordinator;
-import org.cloudml.mrt.PeerStub;
 import org.cloudml.mrt.SimpleModelRepo;
-import org.cloudml.mrt.cmd.CmdWrapper;
-import org.cloudml.mrt.sample.SystemOutPeerStub;
 
 /*
  * The deployment Engine 
@@ -489,7 +485,7 @@ public class CloudAppDeployer {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         ComponentInstance.State state = jc.createInstance(n);
-        NotificationSender.updateStatus(n.getName(), state, coordinator,CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), state, CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         statusMonitor.attachModule(jc);
         jc.closeConnection();
@@ -685,7 +681,7 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        NotificationSender.updateStatus(n.getName(), ComponentInstance.State.STOPPED, coordinator,CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED, CloudAppDeployer.class.getName());
         //old way without using mrt
         //n.setStatusAsStopped();
     }

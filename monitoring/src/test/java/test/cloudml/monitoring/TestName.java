@@ -33,6 +33,10 @@ import org.cloudml.mrt.Coordinator;
 public class TestName extends TestCase {
     public void test() {
         NotificationSender.updateUsingFacade("test", ComponentInstance.State.RUNNING,new Coordinator());
+        Coordinator coordinator = new Coordinator("sample://sensApp");
+        NotificationSender.updateUsingFacade("sensapp-sl1", ComponentInstance.State.RUNNING, coordinator);
+        NotificationSender.updateUsingFacade("sensapp-sl1", ComponentInstance.State.RUNNING, coordinator);
+
     }
 }
 

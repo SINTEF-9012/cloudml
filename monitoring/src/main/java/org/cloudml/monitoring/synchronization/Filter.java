@@ -50,7 +50,9 @@ public class Filter {
         List<VM> toReturnVM = new ArrayList<VM>();
 
         //get the relevant part of the model
-        ComponentInstanceGroup instances = deployment.getComponentInstances();
+        ComponentInstanceGroup instances = new ComponentInstanceGroup();
+        instances.addAll(deployment.getComponentInstances());
+
 
         //go top down to remove the synched ones
 
