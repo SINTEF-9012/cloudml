@@ -39,7 +39,6 @@ public class ModelUpdatesExclusionStrategy implements ExclusionStrategy {
     public boolean shouldSkipField(FieldAttributes f) {
         return
                 f.getName().equals("shortURI")||f.getName().equals("uri");
-
     }
 
     @Override

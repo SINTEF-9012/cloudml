@@ -23,8 +23,11 @@ package org.cloudml.monitoring.synchronization;
  * <http://www.gnu.org/licenses/>.
  */
 
+import com.jcraft.jsch.Logger;
+
 import java.io.*;
 import java.net.*;
+import java.util.logging.Level;
 
 /**
  * @author Lorenzo Cianciaruso
@@ -32,6 +35,8 @@ import java.net.*;
  * communicate with the monitoring platform.
  */
 public class HTTPConnection {
+
+    private static final java.util.logging.Logger journal = java.util.logging.Logger.getLogger(HTTPConnection.class.getName());
 
     /**
      * This methods makes an http post request
@@ -69,7 +74,7 @@ public class HTTPConnection {
             rd.close();
             return response;
         } catch (Exception e) {
-            e.printStackTrace();
+           journal.log(Level.INFO, "Connection error");
             return null;
         }
     }
@@ -102,7 +107,7 @@ public class HTTPConnection {
             rd.close();
             return response;
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.INFO, "Connection error");
             return null;
         }
     }
@@ -137,7 +142,7 @@ public class HTTPConnection {
             rd.close();
             return response;
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.INFO, "Connection error");
             return null;
         }
     }
