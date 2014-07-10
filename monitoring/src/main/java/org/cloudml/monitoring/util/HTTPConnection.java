@@ -73,7 +73,7 @@ public class HTTPConnection {
     }
 
     /**
-     * This methods maked a get request
+     * This methods makes a get request
      * @param targetUrl target of the request
      * @return response in a StringBuffer variable
      */
@@ -85,6 +85,41 @@ public class HTTPConnection {
             url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+            connection.setUseCaches(false);
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            //Get Response
+            InputStream is = connection.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            String line;
+            StringBuffer response = new StringBuffer();
+            while ((line = rd.readLine()) != null) {
+                response.append(line);
+                response.append('\r');
+            }
+            rd.close();
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * This method makes a delete request
+     * @param targetUrl target of the request
+     * @param instance id of the instance to delete
+     * @return response in a StringBuffer variable
+     */
+    public StringBuffer deleteRequest(String targetUrl, String instance) {
+        URL url;
+        HttpURLConnection connection = null;
+        targetUrl = targetUrl + "/" + instance;
+        try {
+            //Create connection
+            url = new URL(targetUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
             connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
