@@ -78,17 +78,33 @@ public class Filter {
 
     private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
         ExternalComponent toReturn = new ExternalComponent();
+        //Component field
         toReturn.setId(toTranslate.getName());
-        //TODO add other fields
+        //External components fields
+        toReturn.setUrl(toTranslate.getPublicAddress());
+        boolean started = false;
+        if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
+            started = true;
+        }
+        toReturn.setStarted(started);
+        toReturn.setCloudProvider(toTranslate.getType().asExternal().getProvider().getName());
         return toReturn;
     }
 
     private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
         VM toReturn = new VM();
+        //Component field
         toReturn.setId(toTranslate.getName());
-        toReturn.setNumberOfCpus(toTranslate.getType().getMinCores());
+        //External component fields
+        toReturn.setUrl(toTranslate.getPublicAddress());
+        boolean started = false;
+        if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
+            started = true;
+        }
+        toReturn.setStarted(started);
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
-        //TODO add other fields and check the current ones
+        //VM fields
+        toReturn.setNumberOfCpus(toTranslate.getType().getMinCores());
         return toReturn;
     }
 
