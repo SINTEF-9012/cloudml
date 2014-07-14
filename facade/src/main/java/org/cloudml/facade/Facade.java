@@ -327,7 +327,7 @@ class Facade implements CloudML, CommandHandler {
 
             final File f = new File(command.getPathToModel());
             try {
-                deploy = (Deployment) getCodec(extension).load(new FileInputStream(f));
+                deploy = (Deployment) new JsonCodec().load(new FileInputStream(f));
                 final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
                 dispatch(message);
             } catch (FileNotFoundException ex) {
