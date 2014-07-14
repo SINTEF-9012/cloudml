@@ -115,6 +115,11 @@ public class CloudAppDeployer {
             stopInternalComponents(diff.getRemovedComponents());
             terminateExternalServices(diff.getRemovedECs());
             updateCurrentModel(diff);
+
+            //send the changes to the monitoring platform
+            MonitoringSynch.sendAddedComponents("http://localhost:8170", diff.getAddedECs());
+            MonitoringSynch.sendRemovedComponents("http://localhost:8170", diff.getRemovedECs());
+
         }
         //start the monitoring of VMs
         statusMonitor.start();

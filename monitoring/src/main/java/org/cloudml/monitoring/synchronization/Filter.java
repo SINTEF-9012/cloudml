@@ -44,15 +44,31 @@ import java.util.List;
 
 public class Filter {
     public static ModelUpdates fromCloudmlToModaMP(Deployment deployment) {
+        //get the relevant part of the model
+        //create a new list for avoid changes in the original one
+        ComponentInstanceGroup instances = new ComponentInstanceGroup();
+        instances.addAll(deployment.getComponentInstances());
+
+        //call the actual translator
+        return getModelUpdates(instances);
+
+    }
+
+    public static ModelUpdates fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> addedECs) {
+        //create a new list for avoid changes in the original one
+        ComponentInstanceGroup instances = new ComponentInstanceGroup();
+        instances.addAll(addedECs);
+
+        //call the actual translator
+        return getModelUpdates(instances);
+    }
+
+    //this is the core method the other one are just to prepare the lists for this one
+    private static ModelUpdates getModelUpdates(ComponentInstanceGroup instances) {
         //prepare the lists
         List<Component> toReturnComponent = new ArrayList<Component>();
         List<ExternalComponent> toReturnExternalComponent = new ArrayList<ExternalComponent>();
         List<VM> toReturnVM = new ArrayList<VM>();
-
-        //get the relevant part of the model
-        ComponentInstanceGroup instances = new ComponentInstanceGroup();
-        instances.addAll(deployment.getComponentInstances());
-
 
         //go top down to remove the synched ones
 
@@ -75,6 +91,8 @@ public class Filter {
 
         return new ModelUpdates(toReturnComponent, toReturnExternalComponent, toReturnVM);
     }
+
+
 
     private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
         ExternalComponent toReturn = new ExternalComponent();
@@ -107,6 +125,7 @@ public class Filter {
         toReturn.setNumberOfCpus(toTranslate.getType().getMinCores());
         return toReturn;
     }
+
 
 
 }

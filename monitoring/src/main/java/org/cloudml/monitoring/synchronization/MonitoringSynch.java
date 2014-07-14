@@ -23,6 +23,11 @@
 package org.cloudml.monitoring.synchronization;
 
 import org.cloudml.core.Deployment;
+import org.cloudml.core.ExternalComponent;
+import org.cloudml.core.ExternalComponentInstance;
+
+import javax.management.monitor.Monitor;
+import java.util.List;
 
 /**
  * Created by user on 10.07.14.
@@ -32,11 +37,25 @@ public class MonitoringSynch {
 
     public static void sendCurrentDeployment(String monitoringAddress, Deployment currentDeployment){
 
-        ModelUpdates updates = Filter.fromCloudmlToModaMP(currentDeployment);
+        ModelUpdates model = Filter.fromCloudmlToModaMP(currentDeployment);
 
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
 
-        request.uploadDeployment(updates);
+        request.uploadDeployment(model);
+
+    }
+
+    public static void sendAddedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> addedECs) {
+        ModelUpdates added = Filter.fromCloudmlToModaMP(addedECs);
+        MonitoringAPI request = new MonitoringAPI(monitoringAddress);
+        request.addInstances(added);
+
+    }
+
+    public static void sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs) {
+        ModelUpdates removed = Filter.fromCloudmlToModaMP(removedECs);
+        //MonitoringAPI request = new MonitoringAPI(monitoringAddress);
+        //request.deleteInstances(removed);
 
     }
 }
