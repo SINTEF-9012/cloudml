@@ -34,16 +34,13 @@ import org.slf4j.Logger;
  */
 public class ModelUpdatesExclusionStrategy implements ExclusionStrategy {
 
-
     @Override
     public boolean shouldSkipField(FieldAttributes f) {
-        return
-                f.getName().equals("shortURI")||f.getName().equals("uri");
+        return false;
     }
 
     @Override
     public boolean shouldSkipClass(Class<?> clazz) {
-
         return ( clazz == Logger.class );
     }
 
