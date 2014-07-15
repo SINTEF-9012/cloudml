@@ -30,9 +30,8 @@ import java.util.List;
 
 /**
  * @author Francesco di Forenza and Lorenzo Cianciaruso
- *         This class is a copy of a class contained in the
- *         Monitoring Platform they should be added in qos models and used
- *         as dependencies
+ * This class is a copy of a class contained in the Monitoring Platform
+ * it should be added as dependency
  */
 public class ModelUpdates {
     private List<VM> vms;
@@ -52,9 +51,9 @@ public class ModelUpdates {
         return vms;
     }
 
-    public void setVms(List<VM> vms) {
+    /*public void setVms(List<VM> vms) {
         this.vms = vms;
-    }
+    }*/
 
     public List<Component> getComponents() {
         return components;

@@ -43,6 +43,13 @@ import java.util.List;
  */
 
 public class Filter {
+
+    /**
+     * Convert a Deployment model from CloudMl in a format
+     * compatible with MODAClouds Monitoring Platform's APIs
+     *
+     * @param deployment the deployment model to convert
+     */
     public static ModelUpdates fromCloudmlToModaMP(Deployment deployment) {
         //get the relevant part of the model
         //create a new list for avoid changes in the original one
@@ -54,13 +61,19 @@ public class Filter {
 
     }
 
-    public static ModelUpdates fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> addedECs) {
+    /**
+     * Convert a list of ExternalCOmpnents model from CloudMl in a format
+     * compatible with MODAClouds Monitoring Platform's APIs
+     *
+     * @param listToConvert the list
+     */
+    public static ModelUpdates fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> listToConvert) {
         //create a new list for avoid changes in the original one
-        ComponentInstanceGroup instances = new ComponentInstanceGroup();
-        instances.addAll(addedECs);
+        ComponentInstanceGroup supportList = new ComponentInstanceGroup();
+        supportList.addAll(listToConvert);
 
         //call the actual translator
-        return getModelUpdates(instances);
+        return getModelUpdates(supportList);
     }
 
     //this is the core method the other one are just to prepare the lists for this one
@@ -93,7 +106,7 @@ public class Filter {
     }
 
 
-
+    //translate a single ExternalComponent
     private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
         ExternalComponent toReturn = new ExternalComponent();
         //Component field
@@ -109,6 +122,7 @@ public class Filter {
         return toReturn;
     }
 
+    //Translate a single VM
     private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
         VM toReturn = new VM();
         //Component field

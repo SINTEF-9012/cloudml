@@ -120,7 +120,8 @@ public class MonitoringAPI {
     }
 
     /**
-     * This method deletes tells to the monitoring manager which instances must be removed from the deployment model
+     * This method tells to the monitoring manager which instances must be removed
+     * from the deployment model
      *
      * @param id are the IDs of the instances to be deleted
      */

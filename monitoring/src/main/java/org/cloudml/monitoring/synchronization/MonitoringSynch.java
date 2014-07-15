@@ -26,7 +26,6 @@ import org.cloudml.core.Deployment;
 import org.cloudml.core.ExternalComponent;
 import org.cloudml.core.ExternalComponentInstance;
 
-import javax.management.monitor.Monitor;
 import java.util.List;
 
 /**

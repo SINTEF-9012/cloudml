@@ -760,7 +760,7 @@ public class CloudAppDeployer {
             VM n = ownerVM.getType();
             jc = ConnectorFactory.createIaaSConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());;
+            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());
             jc.closeConnection();
         }
     }

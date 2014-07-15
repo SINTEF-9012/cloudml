@@ -26,11 +26,14 @@ package org.cloudml.monitoring.status.modules;
 import org.cloudml.connectors.Connector;
 
 
+/**
+ * @author Francesco di Forenza
+ */
 //the module receives a connector and uses it to retrieve the status of VMs
 public interface Module {
 
     public enum Type {
-        FLEXIANT_MONITOR, JCLOUDS_MONITOR, OPENSTACK_MONITOR;
+        FLEXIANT_MONITOR, JCLOUDS_MONITOR, OPENSTACK_MONITOR
     }
 
 
