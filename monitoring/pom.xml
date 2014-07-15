@@ -68,57 +68,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.5.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-            <version>0.1.48</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
             <version>1.6.4</version>
         </dependency>
                 
         <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.modaclouds-cloud4soa-api</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.cloud4soa-adapter</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.adapter-rest</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.governance</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
             <version>4.2</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>com.cloudbees</groupId>
-            <artifactId>cloudbees-api-client</artifactId>
-            <version>1.5.6</version>
         </dependency>
                 
         <dependency>

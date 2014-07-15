@@ -55,7 +55,9 @@ import org.jclouds.compute.domain.*;
 import org.jclouds.domain.Location;
 import org.jclouds.domain.LocationBuilder;
 import org.jclouds.domain.LoginCredentials;
+import org.jclouds.ec2.EC2Api;
 import org.jclouds.ec2.compute.options.EC2TemplateOptions;
+import org.jclouds.ec2.domain.Snapshot;
 import org.jclouds.io.Payloads;
 import org.jclouds.logging.config.NullLoggingModule;
 import org.jclouds.ssh.SshClient;
@@ -64,6 +66,8 @@ import org.jclouds.sshj.config.SshjSshClientModule;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
 import static org.jclouds.Constants.*;
+import org.jclouds.ec2.features.*;
+
 /**
  * A jclouds connector 
  * @author Nicolas Ferry
@@ -76,6 +80,7 @@ public class JCloudsConnector implements Connector{
 	private ComputeService compute;
 	private String provider;
 	private ComputeServiceContext computeContext;
+    private EC2Api ec2api;
 
 	public JCloudsConnector(String provider,String login,String secretKey){
 		journal.log(Level.INFO, ">> Connecting to "+provider+" ...");
@@ -96,6 +101,7 @@ public class JCloudsConnector implements Connector{
 		ContextBuilder builder = ContextBuilder.newBuilder(provider).credentials(login, secretKey).modules(modules).overrides(overrides);
 		journal.log(Level.INFO, ">> Authenticating ...");
 		computeContext=builder.buildView(ComputeServiceContext.class);
+        ec2api=builder.buildApi(EC2Api.class);
 		//loadBalancerCtx=builder.buildView(LoadBalancerServiceContext.class);
 		compute=computeContext.getComputeService();
 		this.provider = provider;
@@ -278,11 +284,6 @@ public class JCloudsConnector implements Connector{
             else templateBuilder.osFamily(OsFamily.UBUNTU);
             templateBuilder.os64Bit(vm.getIs64os());
 
-			/*if(vm.getMinStorage() > 0 && provider.equals("aws-ec2")){
-    		Hardware hw=findHardwareByDisk(vm.getMinStorage());
-    		templateBuilder.hardwareId(hw.getId());
-    	}*/
-
             template = templateBuilder.build();
             journal.log(Level.INFO, ">> vm type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
             a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
@@ -324,6 +325,18 @@ public class JCloudsConnector implements Connector{
         compute.destroyNode(id);
     }
 
+
+    /**
+     * Create a snapshot of the volume attached to the VM
+     * @param vmi a VMInstance
+     */
+    public void createSnapshot(VMInstance vmi){
+        NodeMetadata nm=getVMById(vmi.getId());
+        ElasticBlockStoreApi ebsClient = ec2api.getElasticBlockStoreApi().get();
+        journal.log(Level.INFO, ">> Creating snapshot of VM: "+vmi.getName());
+        Snapshot snapshot = ebsClient.createSnapshotInRegion("eu-west-1", nm.getHardware().getVolumes().get(0).getId());
+        journal.log(Level.INFO, ">> Snapshot created with ID: "+snapshot.getId());
+    }
 
 	/**
 	 * Find Hardware from a provider on the basis of the disk space

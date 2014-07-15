@@ -173,10 +173,7 @@ public class FlexiantConnector implements Connector{
 
                 template.setResourceName(a.getName());
                 Nic n=new Nic();
-                //Network net=((Network)findObjectResourceByName("Default network - Default cluster", ResourceType.NETWORK));
                 n.setNetworkUUID(findResourceByName("Default network - Default cluster", ResourceType.NETWORK));
-                //n.setNetworkUUID("1886a8d4-dbfb-38f7-8a53-d9a24abbd3e8"); //TODO: to be added in the metamodel
-                //n.setNetworkUUID("89b1a8d2-42dc-3c0a-b5f1-c9f4fc5aacc8"); //TODO: to be added in the metamodel
                 n.setNetworkName(a.getName());
                 template.getNics().add(n);
 
@@ -394,6 +391,28 @@ public class FlexiantConnector implements Connector{
         journal.log(Level.INFO, ">> Not yet implemented ");
     }
 
+
+    /**
+     * create the snapshot of a disk (only feature supported now on the MODAClouds platform)
+     * @param vmi a VM instance
+     */
+    public void createSnapshot(VMInstance vmi){
+        Snapshot snapshot=new Snapshot();
+        Server temp=(Server)findObjectResourceByID(vmi.getId(), ResourceType.SERVER);
+        snapshot.setParentUUID(temp.getDisks().get(0).getResourceUUID());
+        snapshot.setResourceName(vmi.getName()+"-snapshot");
+        snapshot.setType(SnapshotType.DISK);
+        snapshot.setResourceType(ResourceType.SNAPSHOT);
+        snapshot.setClusterUUID(temp.getClusterUUID());
+
+        try {
+            Job job=service.createSnapshot(snapshot,null);
+            service.waitForJob(job.getResourceUUID(), false);
+        } catch (ExtilityException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void closeConnection() {}
 
     public void updateVMMetadata(VMInstance a) {
@@ -404,8 +423,10 @@ public class FlexiantConnector implements Connector{
 
     public void uploadFile(String sourcePath, String destinationPath,
                            String VMId, String login, String key) {
-        // TODO Auto-generated method stub
-
+        Server temp=(Server)findObjectResourceByID(VMId, ResourceType.SERVER);
+        String ip=temp.getNics().get(0).getIpAddresses().get(0).getIpAddress();
+        SSHConnector sc=new SSHConnector(key, login, ip);
+        sc.upload(sourcePath,destinationPath);
     }
 
 }
