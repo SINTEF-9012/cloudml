@@ -20,28 +20,19 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-var width = (window.innerWidth),
-height = (window.innerHeight);
 
-var force = d3.layout.force()
-	.charge(-800)
-	.linkDistance(150)
-	.size([width, height]);
-
-var svg = d3.select("body").append("svg:svg")
-	.attr("width", width)
-	.attr("height", height);
 
 var root;
 var nodes;
 var nodes2;
 var links;
 var links2;
+var svg;
 
 function cs(n, deploymentModel) {
 	deploymentModel.forEach(
 
-		function (ici) {
+	function (ici) {
 		n.push(ici);
 	});
 }
@@ -121,6 +112,18 @@ function getData(jsonString) {
 	nodes2 = f2(root);
 	links = generateLinks(root);
 	links2 = generateExecutes(root);
+	
+	var width = (window.innerWidth),
+	height = (window.innerHeight);
+
+	var force = d3.layout.force()
+		.charge(-800)
+		.linkDistance(150)
+		.size([width, height]);
+
+	svg = d3.select("body").append("svg:svg")
+		.attr("width", width)
+		.attr("height", height);
 
 	nodes.concat(nodes2).forEach(function (d, i) {
 		d.x = width / 2 + i;
@@ -225,6 +228,10 @@ function getData(jsonString) {
 		});
 
 	});
+}
+
+function reset(){
+	svg.remove();
 }
 
 function loadFile(inputDiv) {
