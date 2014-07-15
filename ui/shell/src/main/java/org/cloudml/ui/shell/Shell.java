@@ -83,6 +83,7 @@ public class Shell implements ShellCommandHandler {
         while (running) {
             execute(prompt());
         }
+        proxy.terminate();
     }
 
     private void displayOpening() {

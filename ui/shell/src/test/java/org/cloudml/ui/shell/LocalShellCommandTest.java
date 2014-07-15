@@ -90,6 +90,7 @@ public class LocalShellCommandTest extends TestCase {
                 oneOf(proxy).register(with(any(Mailbox.EventHandler.class)));
                 never(proxy).fireAndForget(with(any(CloudMlCommand.class)));
                 never(proxy).fireAndWait(with(any(CloudMlCommand.class)));
+                oneOf(proxy).terminate();
             }
         });
 
