@@ -21,9 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 package org.cloudml.connectors;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,82 +30,122 @@ import com.jcraft.jsch.*;
 
 public class SSHConnector {
 
-	private static final Logger journal = Logger.getLogger(SSHConnector.class.getName());
+    private static final Logger journal = Logger.getLogger(SSHConnector.class.getName());
 
-	String keyPath="";
-	String user="";
-	String host="";
+    String keyPath="";
+    String user="";
+    String host="";
 
-	public SSHConnector(String keyPath, String user, String host){
-		this.keyPath=keyPath;
-		this.user=user;
-		this.host=host;		
-	}
-
-
-	/**
-	 * Execute a command through SSH on the host specified in the object instance
-	 * @param command
-	 */
-	public void execCommandSsh(String command){
-		journal.log(Level.INFO, ">> executing command...");
-		journal.log(Level.INFO, ">> "+ command);
-		JSch jsch = new JSch();
-		Properties config = new Properties();
-		config.put("StrictHostKeyChecking", "no");
-		try {
-			jsch.addIdentity(keyPath);
-
-			Session session = jsch.getSession(user, host, 22);
-			session.setConfig(config);
-			session.connect(0);
-
-			Channel channel = session.openChannel("exec");
-			ChannelExec channelExec=((ChannelExec)channel);
-			channelExec.setCommand(command);
-			channelExec.setErrStream(System.err);
-			channel.setInputStream(null);
-			channel.setExtOutputStream(null);
-
-			InputStream in;
-			in = channel.getInputStream();
-			InputStream extIn=channel.getExtInputStream();
-			channel.connect();
-			byte[] tmp=new byte[2048];
-			byte[] tmp2=new byte[2048];
-			while(true){
-				while(in.available()>0 || extIn.available()>0){
-					if(in.available()>0){
-						int i=in.read(tmp, 0, 2048);
-						if(i<0)break;
-						journal.log(Level.INFO, ">> "+ new String(tmp, 0, i));
-					}
-					if(extIn.available()>0){
-						int i=extIn.read(tmp2, 0, 2048);
-						if(i<0)break;
-						journal.log(Level.INFO, ">> "+ new String(tmp2, 0, i));
-					}
-				}
-				if(channel.isClosed()){
-					journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
-					break;
-				}
-				try{Thread.sleep(1000);}catch(Exception ee){ee.printStackTrace();}
-			}
+    public SSHConnector(String keyPath, String user, String host){
+        this.keyPath=keyPath;
+        this.user=user;
+        this.host=host;
+    }
 
 
+    /**
+     * Execute a command through SSH on the host specified in the object instance
+     * @param command
+     */
+    public void execCommandSsh(String command){
+        journal.log(Level.INFO, ">> executing command...");
+        journal.log(Level.INFO, ">> "+ command);
+        JSch jsch = new JSch();
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+        try {
+            jsch.addIdentity(keyPath);
 
-			channel.disconnect();
-			session.disconnect();
+            Session session = jsch.getSession(user, host, 22);
+            session.setConfig(config);
+            session.connect(0);
 
-		} catch (JSchException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			journal.log(Level.SEVERE,"File access error");
-		}
-	}
+            Channel channel = session.openChannel("exec");
+            ChannelExec channelExec=((ChannelExec)channel);
+            channelExec.setCommand(command);
+            channelExec.setErrStream(System.err);
+            channel.setInputStream(null);
+            channel.setExtOutputStream(null);
+
+            InputStream in;
+            in = channel.getInputStream();
+            InputStream extIn=channel.getExtInputStream();
+            channel.connect();
+            byte[] tmp=new byte[2048];
+            byte[] tmp2=new byte[2048];
+            while(true){
+                while(in.available()>0 || extIn.available()>0){
+                    if(in.available()>0){
+                        int i=in.read(tmp, 0, 2048);
+                        if(i<0)break;
+                        journal.log(Level.INFO, ">> "+ new String(tmp, 0, i));
+                    }
+                    if(extIn.available()>0){
+                        int i=extIn.read(tmp2, 0, 2048);
+                        if(i<0)break;
+                        journal.log(Level.INFO, ">> "+ new String(tmp2, 0, i));
+                    }
+                }
+                if(channel.isClosed()){
+                    journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
+                    break;
+                }
+                try{Thread.sleep(1000);}catch(Exception ee){ee.printStackTrace();}
+            }
+
+
+
+            channel.disconnect();
+            session.disconnect();
+
+        } catch (JSchException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            journal.log(Level.SEVERE,"File access error");
+        }
+    }
+
+
+    public void upload(String sourcePath, String destinationPath){
+        journal.log(Level.INFO, ">> upload command..."+host+" "+ sourcePath + "->" + destinationPath);
+        JSch jsch = new JSch();
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+
+        try{
+            jsch.addIdentity(keyPath);
+            Session session = jsch.getSession(user, host, 22);
+            session.setConfig(config);
+            session.connect(0);
+
+            Channel channel = session.openChannel("sftp");
+            channel.connect();
+            ChannelSftp channelSftp = (ChannelSftp) channel;
+            String[] path= destinationPath.split("/");
+            String directory="";
+            for(int i = 0; i < (path.length - 1); i ++){
+                directory += path[i]+"/";
+            }
+            channelSftp.cd(directory);
+            File f1 = new File(sourcePath);
+            if(path[path.length-1].equals(""))
+                channelSftp.put(new FileInputStream(f1), sourcePath);
+            else channelSftp.put(new FileInputStream(f1), path[path.length - 1]);
+            channelSftp.exit();
+            session.disconnect();
+        } catch (JSchException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            journal.log(Level.SEVERE,"File access error");
+        } catch (SftpException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
