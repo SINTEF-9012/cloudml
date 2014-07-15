@@ -109,6 +109,8 @@ public class Filter {
     //translate a single ExternalComponent
     private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
         ExternalComponent toReturn = new ExternalComponent();
+        //KB entity field
+        toReturn.setUri(toTranslate.getName());
         //Component field
         toReturn.setId(toTranslate.getName());
         //External components fields
@@ -125,6 +127,8 @@ public class Filter {
     //Translate a single VM
     private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
         VM toReturn = new VM();
+        //KB entity field
+        toReturn.setUri(toTranslate.getName());
         //Component field
         toReturn.setId(toTranslate.getName());
         //External component fields
