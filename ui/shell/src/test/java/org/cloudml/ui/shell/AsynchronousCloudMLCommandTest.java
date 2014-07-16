@@ -102,6 +102,7 @@ public class AsynchronousCloudMLCommandTest {
                 oneOf(proxy).register(with(any(Mailbox.EventHandler.class)));
                 oneOf(proxy).fireAndForget(with(any(CloudMlCommand.class)));
                 never(proxy).fireAndWait(with(any(CloudMlCommand.class)));
+                oneOf(proxy).terminate();
             }
         });
 

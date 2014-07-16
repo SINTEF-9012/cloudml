@@ -22,6 +22,10 @@
  */
 package org.cloudml.ui.shell;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.LogManager;
+
 /**
  * Entry point of the CloudML shell
  */
@@ -29,12 +33,16 @@ public class Main {
 
     public static void main(String arguments[]) {
         try {
+            final InputStream inputStream=Main.class.getClassLoader().getResourceAsStream("logging.properties");
+            LogManager.getLogManager().readConfiguration(inputStream);
             ShellMode.from(arguments).start();
         
         } catch (IllegalArgumentException ex) {
             System.out.println(ex.getMessage());
             System.out.println(ShellMode.usage());  
         
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     

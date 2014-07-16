@@ -39,6 +39,7 @@ import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
 import org.jclouds.ContextBuilder;
 
+
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
@@ -47,7 +48,10 @@ import org.jclouds.compute.domain.*;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.io.Payloads;
 import org.jclouds.logging.config.NullLoggingModule;
+import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.openstack.nova.v2_0.compute.options.NovaTemplateOptions;
+import org.jclouds.openstack.nova.v2_0.features.ImageApi;
+import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
 import static org.jclouds.compute.options.RunScriptOptions.Builder.overrideLoginCredentials;
@@ -64,6 +68,7 @@ public class OpenStackConnector implements Connector{
     private ComputeServiceContext computeContext;
     private ComputeService novaComputeService;
     private final String endpoint;
+    private NovaApi serverApi;
 
     public OpenStackConnector(String endPoint,String provider,String login,String secretKey){
         this.endpoint=endPoint;
@@ -76,10 +81,15 @@ public class OpenStackConnector implements Connector{
                 .credentials(login, secretKey)
                 .modules(modules);
 
+        ContextBuilder builderCinder=ContextBuilder.newBuilder("openstack-cinder")
+                .endpoint(endPoint)
+                .credentials(login, secretKey)
+                .modules(modules);
 
         journal.log(Level.INFO, ">> Authenticating ...");
         computeContext=builder.buildView(ComputeServiceContext.class);
         novaComputeService= computeContext.getComputeService();
+        serverApi=builder.buildApi(NovaApi.class);
     }
 
     /**
@@ -118,6 +128,18 @@ public class OpenStackConnector implements Connector{
     public void closeConnection(){
         novaComputeService.getContext().close();
         journal.log(Level.INFO, ">> Closing connection ...");
+    }
+
+    /**
+     * Create a snapshot of the volume attached to the VM
+     * @param vmi a VMInstance
+     */
+    public void createSnapshot(VMInstance vmi){
+        NodeMetadata nm=getVMById(vmi.getId());
+        ServerApi serverApi1=serverApi.getServerApiForZone(vmi.getType().getRegion());
+        journal.log(Level.INFO, ">> Creating snapshot of VM: "+vmi.getName());
+        String id=serverApi1.createImageFromServer(vmi.getName()+"-snapshot",nm.getId().split("/")[1]);
+        journal.log(Level.INFO, ">> Snapshot created with ID: "+id);
     }
 
     /**
@@ -243,8 +265,16 @@ public class OpenStackConnector implements Connector{
 
             TemplateBuilder templateBuilder = novaComputeService.templateBuilder();
 
+            if(vm.getRegion() == null)
+                journal.log(Level.INFO, ">> Merde: " );
+
             if(!vm.getImageId().equals("")){
-                templateBuilder.imageId(vm.getImageId());
+                if(vm.getRegion() != null && (!vm.getRegion().equals(""))){
+                    journal.log(Level.INFO, ">> Region: " +vm.getRegion());
+                    templateBuilder.imageId(vm.getRegion()+"/"+vm.getImageId());
+                }else{
+                    templateBuilder.imageId(vm.getImageId());
+                }
             }
 
             journal.log(Level.INFO, ">> Provisioning a VM ...");
