@@ -97,7 +97,7 @@ public class CloudAppDeployer {
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
             //send the current deployment to the monitoring platform
-            MonitoringSynch.sendCurrentDeployment("http://localhost:8170",currentModel);
+            MonitoringSynch.sendCurrentDeployment("http://192.168.11.6:8170",currentModel);
         }
         else {
             journal.log(Level.INFO, ">> Updating a deployment...");
@@ -117,8 +117,8 @@ public class CloudAppDeployer {
             updateCurrentModel(diff);
 
             //send the changes to the monitoring platform
-            MonitoringSynch.sendAddedComponents("http://localhost:8170", diff.getAddedECs());
-            MonitoringSynch.sendRemovedComponents("http://localhost:8170", diff.getRemovedECs());
+            MonitoringSynch.sendAddedComponents("http://192.168.11.6:8170", diff.getAddedECs());
+            MonitoringSynch.sendRemovedComponents("http://192.168.11.6:8170", diff.getRemovedECs());
 
         }
         //start the monitoring of VMs
