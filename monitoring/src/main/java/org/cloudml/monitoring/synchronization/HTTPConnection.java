@@ -23,11 +23,8 @@ package org.cloudml.monitoring.synchronization;
  * <http://www.gnu.org/licenses/>.
  */
 
-import com.jcraft.jsch.Logger;
-
 import java.io.*;
 import java.net.*;
-import java.util.logging.Level;
 
 /**
  * @author Lorenzo Cianciaruso
@@ -36,19 +33,17 @@ import java.util.logging.Level;
  */
 public class HTTPConnection {
 
-    private static final java.util.logging.Logger journal = java.util.logging.Logger.getLogger(HTTPConnection.class.getName());
-
     /**
      * This methods makes an http post request
      * @param targetUrl target of the request
      * @param parameter body of the request
      * @return response in StringBuffer variable
      */
-    public StringBuffer postRequest(String targetUrl, String parameter) {
+    public StringBuffer postRequest(String targetUrl, String parameter) throws Exception{
 
         URL url;
         HttpURLConnection connection;
-        try {
+
             //Create connection
             url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
@@ -73,10 +68,7 @@ public class HTTPConnection {
             }
             rd.close();
             return response;
-        } catch (Exception e) {
-           journal.log(Level.INFO, "Connection error");
-            return null;
-        }
+
     }
 
     /**
@@ -84,10 +76,10 @@ public class HTTPConnection {
      * @param targetUrl target of the request
      * @return response in a StringBuffer variable
      */
-    public StringBuffer getRequest(String targetUrl){
+    public StringBuffer getRequest(String targetUrl) throws Exception{
         URL url;
         HttpURLConnection connection = null;
-        try {
+
             //Create connection
             url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
@@ -106,10 +98,7 @@ public class HTTPConnection {
             }
             rd.close();
             return response;
-        } catch (Exception e) {
-            journal.log(Level.INFO, "Connection error");
-            return null;
-        }
+
     }
 
     /**
@@ -118,11 +107,11 @@ public class HTTPConnection {
      * @param instance id of the instance to delete
      * @return response in a StringBuffer variable
      */
-    public StringBuffer deleteRequest(String targetUrl, String instance) {
+    public StringBuffer deleteRequest(String targetUrl, String instance) throws Exception{
         URL url;
         HttpURLConnection connection = null;
         targetUrl = targetUrl + "/" + instance;
-        try {
+
             //Create connection
             url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
@@ -141,9 +130,6 @@ public class HTTPConnection {
             }
             rd.close();
             return response;
-        } catch (Exception e) {
-            journal.log(Level.INFO, "Connection error");
-            return null;
-        }
+
     }
 }

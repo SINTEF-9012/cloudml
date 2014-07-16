@@ -26,6 +26,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
+import java.util.logging.Level;
+
 /**
  * Created by user on 10.06.14.
  * @author Lorenzo Cianciaruso
@@ -35,6 +37,7 @@ public class MonitoringAPI {
     private HTTPConnection http;
     private String address;
     private final String version = "v1";
+    private static final java.util.logging.Logger journal = java.util.logging.Logger.getLogger(MonitoringAPI.class.getName());
 
     public MonitoringAPI(String address) {
         this.http = new HTTPConnection();
@@ -51,7 +54,13 @@ public class MonitoringAPI {
 
         String url = address + "/" + version + "/monitoring-rules";
 
-        StringBuffer response = http.postRequest(url, rule);
+        StringBuffer response = null;
+        try {
+            response = http.postRequest(url, rule);
+        } catch (Exception e) {
+            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+            return null;
+        }
 
         return response.toString();
 
@@ -66,7 +75,12 @@ public class MonitoringAPI {
 
         String url = address + "/" + version + "/metrics";
 
-        http.getRequest(url);
+        try {
+            http.getRequest(url);
+        } catch (Exception e) {
+            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+            return null;
+        }
 
         //TODO parse results
 
@@ -83,7 +97,12 @@ public class MonitoringAPI {
 
         String url = address + "/" + version + "/metrics/" + metric;
 
-        http.postRequest(url, callback);
+        try {
+            http.postRequest(url, callback);
+        } catch (Exception e) {
+            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+
+        }
     }
 
     /**
@@ -99,7 +118,12 @@ public class MonitoringAPI {
 
         String json = gson.toJson(update);
 
-        http.postRequest(url, json);
+        try {
+            http.postRequest(url, json);
+        } catch (Exception e) {
+            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+
+        }
 
     }
 
@@ -116,7 +140,12 @@ public class MonitoringAPI {
 
         String json = gson.toJson(model);
 
-        http.postRequest(url, json);
+        try {
+            http.postRequest(url, json);
+        } catch (Exception e) {
+            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+
+        }
     }
 
     /**
@@ -129,7 +158,12 @@ public class MonitoringAPI {
 
         String url = address + "/" + version + "/update";
 
-        http.deleteRequest(url, id);
+        try {
+            http.deleteRequest(url, id);
+        } catch (Exception e) {
+            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+
+        }
     }
 
 }
