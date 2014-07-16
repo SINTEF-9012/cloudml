@@ -35,11 +35,8 @@ import java.util.List;
 public class MonitoringSynch {
 
     public static void sendCurrentDeployment(String monitoringAddress, Deployment currentDeployment){
-
         ModelUpdates model = Filter.fromCloudmlToModaMP(currentDeployment);
-
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
-
         request.uploadDeployment(model);
 
     }
