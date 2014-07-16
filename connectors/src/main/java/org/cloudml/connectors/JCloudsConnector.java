@@ -330,12 +330,13 @@ public class JCloudsConnector implements Connector{
      * Create a snapshot of the volume attached to the VM
      * @param vmi a VMInstance
      */
-    public void createSnapshot(VMInstance vmi){
+    public String createSnapshot(VMInstance vmi){
         NodeMetadata nm=getVMById(vmi.getId());
         ElasticBlockStoreApi ebsClient = ec2api.getElasticBlockStoreApi().get();
         journal.log(Level.INFO, ">> Creating snapshot of VM: "+vmi.getName());
         Snapshot snapshot = ebsClient.createSnapshotInRegion("eu-west-1", nm.getHardware().getVolumes().get(0).getId());
         journal.log(Level.INFO, ">> Snapshot created with ID: "+snapshot.getId());
+        return snapshot.getId();
     }
 
 	/**
