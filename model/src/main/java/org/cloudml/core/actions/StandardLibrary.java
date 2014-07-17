@@ -22,18 +22,11 @@
  */
 package org.cloudml.core.actions;
 
-import org.cloudml.core.Component;
-import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.InternalComponent;
-import org.cloudml.core.InternalComponentInstance;
-import org.cloudml.core.Port;
-import org.cloudml.core.PortInstance;
-import org.cloudml.core.ProvidedPortInstance;
-import org.cloudml.core.Relationship;
-import org.cloudml.core.RequiredPortInstance;
-import org.cloudml.core.VMInstance;
+import org.cloudml.core.*;
+import org.cloudml.core.collections.InternalComponentInstanceGroup;
 
+import java.util.List;
+import java.util.Map;
 
 
 public class StandardLibrary {
@@ -112,4 +105,11 @@ public class StandardLibrary {
         return new FindComponentTypeProviding(this, bindingType).applyTo(deployment);
     }
 
+    public ComponentInstance replicateComponentInstance(Deployment deployment, ComponentInstance c, ExternalComponentInstance eci){
+        return new ReplicateComponentInstance(this, c, eci).applyTo(deployment);
+    }
+
+    public Map<InternalComponentInstance, InternalComponentInstance> replicateSubGraph(Deployment deployment, InternalComponentInstanceGroup list){
+        return new ReplicateSubGraph(this, list).applyTo(deployment);
+    }
 }

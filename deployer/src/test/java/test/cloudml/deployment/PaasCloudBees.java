@@ -22,6 +22,7 @@
  */
 package test.cloudml.deployment;
 
+import org.cloudml.connectors.FlexiantConnector;
 import org.cloudml.deployer.samples.*;
 import org.cloudml.codecs.JsonCodec;
 import javax.xml.xpath.XPath;
@@ -105,7 +106,6 @@ public class PaasCloudBees
         
         //CloudAppDeployer deployer = new CloudAppDeployer();
         //deployer.deploy(dm);
-        
     }
     
     public static Deployment createCloudBeesDeployment(){         

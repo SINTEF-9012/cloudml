@@ -32,8 +32,10 @@ import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.ConfigValet;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
+import org.cloudml.core.actions.StandardLibrary;
 import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
+import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
@@ -804,4 +806,42 @@ public class CloudAppDeployer {
             return null;
         }
     }
+
+    /**
+     * Method to scale out a VM within the same provider
+     * Create a snapshot of the VM and then configure the bindings
+     * @param vmi an instance of VM
+     */
+    public void scaleOut(VMInstance vmi){
+        Connector c=ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+
+        //1. update the deployment model
+        InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmi);
+        StandardLibrary lib=new StandardLibrary();
+        ComponentInstance ci= lib.replicateComponentInstance(currentModel,vmi,null);
+        lib.replicateSubGraph(currentModel,icig);
+
+        //2. create snapshot of an instance
+        String ID=c.createSnapshot(vmi);
+
+        //3. instantiate the new instance using the newly created snapshot
+        VM existingVM=ci.asExternal().asVM().getType();
+        VM v=new VM(existingVM.getName()+"-fromSnapshot",existingVM.getProvider());
+        v.setGroupName(existingVM.getGroupName());
+        v.setImageId(ID);
+        v.setLocation(existingVM.getLocation());
+        v.setMinRam(existingVM.getMinRam());
+        v.setMinCores(existingVM.getMinCores());
+        v.setMinStorage(existingVM.getMinStorage());
+        v.setSecurityGroup(existingVM.getSecurityGroup());
+        v.setSshKey(existingVM.getSshKey());
+        v.setPrivateKey(existingVM.getPrivateKey());
+        v.setProvider(existingVM.getProvider());
+        currentModel.getComponents().add(v);
+        ci.setType(v);
+
+        //4. configure the new VM
+        //TODO
+    }
+
 }

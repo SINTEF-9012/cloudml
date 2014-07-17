@@ -38,6 +38,8 @@ import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.Vertex;
 import org.cloudml.codecs.XmiCodec;
 import org.cloudml.codecs.commons.Codec;
+import org.cloudml.connectors.Connector;
+import org.cloudml.connectors.ConnectorFactory;
 import org.cloudml.core.*;
 import org.cloudml.deployer.CloudAppDeployer;
 import org.cloudml.connectors.JCloudsConnector;
@@ -461,12 +463,27 @@ class Facade implements CloudML, CommandHandler {
     }
 
     @Override
-    public void handle(Snapshot command) {
-        dispatch(new Message(command, Category.INFORMATION, "Generating snapshot ..."));
+    public void handle(ShotImage command) {
+        dispatch(new Message(command, Category.INFORMATION, "Generating image ..."));
         DrawnIconVertexDemo g = new DrawnIconVertexDemo(deploy);
         ArrayList<Vertex> v = g.drawFromDeploymentModel();
         File f = new File(command.getPathToSnapshot());
         g.writeServerJPEGImage(f);
+    }
+
+    @Override
+    public void handle(Snapshot command){
+        dispatch(new Message(command, Category.INFORMATION, "Generating snapshot ..."));
+        VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        Connector c =ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+        c.createSnapshot(vmi);
+    }
+
+    @Override
+    public void handle(ScaleOut command){
+        dispatch(new Message(command, Category.INFORMATION, "Scaling out VM: "+command.getVmId()));
+        VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        deployer.scaleOut(vmi);
     }
 
     /**

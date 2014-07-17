@@ -80,12 +80,6 @@ public class OpenStackConnector implements Connector{
                 .endpoint(endPoint)
                 .credentials(login, secretKey)
                 .modules(modules);
-
-        ContextBuilder builderCinder=ContextBuilder.newBuilder("openstack-cinder")
-                .endpoint(endPoint)
-                .credentials(login, secretKey)
-                .modules(modules);
-
         journal.log(Level.INFO, ">> Authenticating ...");
         computeContext=builder.buildView(ComputeServiceContext.class);
         novaComputeService= computeContext.getComputeService();
@@ -134,12 +128,13 @@ public class OpenStackConnector implements Connector{
      * Create a snapshot of the volume attached to the VM
      * @param vmi a VMInstance
      */
-    public void createSnapshot(VMInstance vmi){
+    public String createSnapshot(VMInstance vmi){
         NodeMetadata nm=getVMById(vmi.getId());
         ServerApi serverApi1=serverApi.getServerApiForZone(vmi.getType().getRegion());
         journal.log(Level.INFO, ">> Creating snapshot of VM: "+vmi.getName());
         String id=serverApi1.createImageFromServer(vmi.getName()+"-snapshot",nm.getId().split("/")[1]);
         journal.log(Level.INFO, ">> Snapshot created with ID: "+id);
+        return id;
     }
 
     /**

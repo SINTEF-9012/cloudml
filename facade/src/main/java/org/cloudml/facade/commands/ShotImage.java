@@ -23,14 +23,14 @@
 package org.cloudml.facade.commands;
 
 /**
- * Created by nicolasf on 16.07.14.
+ * Request for generating a snapshot with Jung of a running system.
  */
-public class Snapshot extends CloudMlCommand {
+public class ShotImage extends CloudMlCommand {
 
-    private final String vmId;
+    private final String pathToSnapshot;
 
-    public Snapshot(String vmId) {
-        this.vmId = vmId;
+    public ShotImage(String pathToSnapshot) {
+        this.pathToSnapshot = pathToSnapshot;
     }
 
     @Override
@@ -38,15 +38,15 @@ public class Snapshot extends CloudMlCommand {
         handler.handle(this);
     }
 
-    public String getVmId() {
-        return vmId;
+    public String getPathToSnapshot() {
+        return pathToSnapshot;
     }
 
     @Override
     public String toString() {
-        return String.format("snapshot %s", vmId);
+        return String.format("shot %s", pathToSnapshot);
     }
-
-
+    
+    
 
 }

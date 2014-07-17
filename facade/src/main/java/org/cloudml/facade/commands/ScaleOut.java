@@ -23,13 +23,13 @@
 package org.cloudml.facade.commands;
 
 /**
- * Created by nicolasf on 16.07.14.
+ * Created by nicolasf on 17.07.14.
  */
-public class Snapshot extends CloudMlCommand {
+public class ScaleOut extends CloudMlCommand {
 
     private final String vmId;
 
-    public Snapshot(String vmId) {
+    public ScaleOut(String vmId) {
         this.vmId = vmId;
     }
 
@@ -46,7 +46,5 @@ public class Snapshot extends CloudMlCommand {
     public String toString() {
         return String.format("snapshot %s", vmId);
     }
-
-
 
 }

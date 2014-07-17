@@ -30,13 +30,15 @@ action
     |   'instantiate' type=ID 'as' instance=ID              # Instantiate
     |   'list' level                                        # List
     |   'load' kind 'from' PATH                             # Load                                       
-    |   'snapshot' 'to' PATH                                # Snapshot
+    |   'shot' 'to' PATH                                    # ShotImage
     |   'start' ID                                          # Start
     |   'stop' ID                                           # Stop
     |   'store' kind 'to' PATH                              # Store
     |   'uninstall' component=ID 'from' platform=ID         # Uninstall
     |   'upload' local=PATH 'on' ID 'at' remote=PATH        # Upload
     |   'view' level ID                                     # View
+    |   'snapshot' ID                                       # Snapshot
+    |   'scale out' ID                                      # ScaleOut
     ;
 
 kind
@@ -65,7 +67,7 @@ LETTER
     ;
 
 ID      
-    :   LETTER(LETTER|DIGIT)+;
+    :   LETTER(LETTER|DIGIT|'-'|PATH_SEPARATOR)+;
 
 INTEGER
     :   DIGIT+
@@ -100,4 +102,5 @@ WS
 LINE_COMMENT
     : '#' ~[\r\n]* -> channel(HIDDEN)
     ;
+
 

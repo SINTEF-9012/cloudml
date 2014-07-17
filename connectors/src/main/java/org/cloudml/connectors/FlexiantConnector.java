@@ -402,7 +402,8 @@ public class FlexiantConnector implements Connector{
      * create the snapshot of a disk (only feature supported now on the MODAClouds platform)
      * @param vmi a VM instance
      */
-    public void createSnapshot(VMInstance vmi){
+    public String createSnapshot(VMInstance vmi){
+        journal.log(Level.INFO, ">> Creating a snapshot of VM id: "+vmi.getId());
         Snapshot snapshot=new Snapshot();
         Server temp=(Server)findObjectResourceByID(vmi.getId(), ResourceType.SERVER);
         snapshot.setParentUUID(temp.getDisks().get(0).getResourceUUID());
@@ -417,6 +418,8 @@ public class FlexiantConnector implements Connector{
         } catch (ExtilityException e) {
             e.printStackTrace();
         }
+        journal.log(Level.INFO, ">> Snapshot created with id: "+vmi.getName()+"-snapshot");
+        return vmi.getName()+"-snapshot";
     }
 
     public void closeConnection() {}

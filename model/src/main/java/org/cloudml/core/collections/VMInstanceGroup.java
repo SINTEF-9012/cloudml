@@ -40,7 +40,16 @@ public class VMInstanceGroup extends NamedElementGroup<VMInstance> {
     public VMInstanceGroup(Collection<VMInstance> content) {
         super(content);  
     }    
-    
+
+    public VMInstance withID(String id){
+        for(VMInstance i : this){
+            if(i.getId().equals(id)){
+                return i;
+            }
+        }
+        return null;
+    }
+
     public VMInstanceGroup ofType(VM vm) {
         final ArrayList<VMInstance> selectedInstances = new ArrayList<VMInstance>();
         for (VMInstance instance : this) {  

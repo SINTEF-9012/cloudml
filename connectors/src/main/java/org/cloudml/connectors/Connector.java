@@ -38,5 +38,7 @@ public interface Connector {
 	public void updateVMMetadata(VMInstance a);
 	
 	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key);
+
+    public String createSnapshot(VMInstance a);
 	
 }
