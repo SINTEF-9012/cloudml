@@ -229,13 +229,24 @@ public class CommandFactory {
     }
 
     /**
-     * Load an existing local deployment model
+     * Create a snapshot of a VM
      *
-     * @param pathToSnapshot the local path to the deployment model to load
+     * @param id the id of the VM instance
      *
      * @return the associated command object
      */
-    public CloudMlCommand snapshot(final String pathToSnapshot) {
-        return new Snapshot(pathToSnapshot);
+    public CloudMlCommand snapshot(final String id) {
+        return new Snapshot(id);
+    }
+
+    /**
+     * Scale out a VM
+     *
+     * @param id of the VM
+     *
+     * @return the associated command object
+     */
+    public CloudMlCommand scaleOut(final String id) {
+        return new ScaleOut(id);
     }
 }

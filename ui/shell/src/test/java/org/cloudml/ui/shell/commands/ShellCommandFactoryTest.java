@@ -78,7 +78,7 @@ public class ShellCommandFactoryTest extends TestCase {
         results.add(new Object[]{"store credentials to c:\\Users\\franckc\\credentials", delegate(new StoreCredentials("c:\\Users\\franckc\\credentials"), false)});
         results.add(new Object[]{"store deployment to c:\\Users\\franckc\\sensapp.json", delegate(new StoreDeployment("c:\\Users\\franckc\\sensapp.json"), false)});
         results.add(new Object[]{"upload c:\\sensapp.json on foo at /home/sensapp.json", delegate(new Upload("c:\\sensapp.json", "foo", "/home/sensapp.json"), false)});
-        results.add(new Object[]{"snapshot to /home/sensapp.json", delegate(new Snapshot("/home/sensapp.json"), false)});
+        results.add(new Object[]{"shot to /home/sensapp.json", delegate(new ShotImage("/home/sensapp.json"), false)});
         
         return results;
     }

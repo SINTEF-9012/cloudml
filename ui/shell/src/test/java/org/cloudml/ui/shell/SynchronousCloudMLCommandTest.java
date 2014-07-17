@@ -43,7 +43,6 @@ import org.junit.runners.Parameterized;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.jmock.Expectations.any;
 
 /**
  * Check that CloudML actions are properly delegated to the facade
@@ -81,9 +80,9 @@ public class SynchronousCloudMLCommandTest {
         testCases.add(new Object[]{"list instances", new ListComponentInstances()}); 
         testCases.add(new Object[]{"view type", new ViewComponent("foo")}); 
         testCases.add(new Object[]{"view instance", new ViewComponentInstance("foo")}); 
-        testCases.add(new Object[]{"destory", new Destroy("foo")}); 
+        testCases.add(new Object[]{"destroy", new Destroy("foo")});
         testCases.add(new Object[]{"instantiate", new Instantiate("foo", "foo #1")}); 
-        testCases.add(new Object[]{"snapshot", new Snapshot("foo.png")}); 
+        testCases.add(new Object[]{"shot", new ShotImage("foo.png")});
         testCases.add(new Object[]{"upload", new Upload("foo", "afile.sh", "home/afile.sh")}); 
     
         return testCases;
