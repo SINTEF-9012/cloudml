@@ -56,6 +56,7 @@ public class CloudAppDeployer {
     private Deployment targetModel;
     private Coordinator coordinator;
     private StatusMonitor statusMonitor;
+    private final String monitoringPlatformAddress = "http://192.168.11.6:8170";
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -99,7 +100,7 @@ public class CloudAppDeployer {
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
             //send the current deployment to the monitoring platform
-            MonitoringSynch.sendCurrentDeployment("http://192.168.11.6:8170",currentModel);
+            MonitoringSynch.sendCurrentDeployment(monitoringPlatformAddress,currentModel);
         }
         else {
             journal.log(Level.INFO, ">> Updating a deployment...");
@@ -119,8 +120,8 @@ public class CloudAppDeployer {
             updateCurrentModel(diff);
 
             //send the changes to the monitoring platform
-            MonitoringSynch.sendAddedComponents("http://192.168.11.6:8170", diff.getAddedECs());
-            MonitoringSynch.sendRemovedComponents("http://192.168.11.6:8170", diff.getRemovedECs());
+            MonitoringSynch.sendAddedComponents(monitoringPlatformAddress, diff.getAddedECs());
+            MonitoringSynch.sendRemovedComponents(monitoringPlatformAddress, diff.getRemovedECs());
 
         }
         //start the monitoring of VMs

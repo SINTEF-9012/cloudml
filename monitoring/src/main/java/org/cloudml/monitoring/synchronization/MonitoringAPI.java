@@ -63,7 +63,6 @@ public class MonitoringAPI {
         }
 
         return response.toString();
-
     }
 
     /**
@@ -101,8 +100,8 @@ public class MonitoringAPI {
             http.postRequest(url, callback);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
-
         }
+        journal.log(Level.INFO, "Observer attached");
     }
 
     /**
@@ -122,9 +121,9 @@ public class MonitoringAPI {
             http.postRequest(url, json);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
-
         }
-
+        journal.log(Level.INFO, "Added component sent to "+address);
+        printComponentname(update);
     }
 
     /**
@@ -144,8 +143,9 @@ public class MonitoringAPI {
             http.postRequest(url, json);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
-
         }
+        journal.log(Level.INFO, "Current deployment sent to "+address);
+        printComponentname(model);
     }
 
     /**
@@ -162,7 +162,19 @@ public class MonitoringAPI {
             http.deleteRequest(url, id);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
+        }
+        journal.log(Level.INFO, "Removed component sent to "+address);
+    }
 
+    private void printComponentname(ModelUpdates model){
+        for(int i=0;i<model.getComponents().size();i++){
+            journal.log(Level.INFO, "Component name: "+model.getComponents().get(i).getId());
+        }
+        for(int i=0;i<model.getExternalComponents().size();i++){
+            journal.log(Level.INFO, "ExternalComponent name: "+model.getExternalComponents().get(i).getId());
+        }
+        for(int i=0;i<model.getVms().size();i++){
+            journal.log(Level.INFO, "VM name: "+model.getVms().get(i).getId());
         }
     }
 
