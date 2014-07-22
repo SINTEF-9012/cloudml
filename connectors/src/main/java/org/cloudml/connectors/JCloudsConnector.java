@@ -339,6 +339,43 @@ public class JCloudsConnector implements Connector{
         return snapshot.getId();
     }
 
+    /**
+     * Create an image of a VM
+     * @param vmi the VMInstance to use
+     * @return  id of the image
+     */
+    public String createImage(VMInstance vmi){
+        AMIApi ami=ec2api.getAMIApi().get();
+        journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
+        String id=ami.createImageInRegion("eu-west-1",vmi.getName()+"-image",vmi.getId().split("/")[1]);//TODO: check the region
+        String status="";
+        while (!status.toLowerCase().equals("available")){
+            Image i=compute.getImage("eu-west-1/"+id);
+            status=i.getStatus().name();
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        journal.log(Level.INFO, ">> Image created with ID: "+id);
+        return "eu-west-1/"+id;
+    }
+
+    /**
+     * Transform a snapshot into an image
+     * @param vmi the VMInstance to use
+     * @param snapshotID identifier of the snapshot
+     * @return id of the image
+     */
+    public String snapshotToImage(VMInstance vmi, String snapshotID){
+        AMIApi ami=ec2api.getAMIApi().get();
+        journal.log(Level.INFO, ">> Creating an image from snapshot: "+snapshotID);
+        String id=ami.registerUnixImageBackedByEbsInRegion("eu-west-1",vmi.getName()+"-image",snapshotID);
+        journal.log(Level.INFO, ">> Image created with ID: "+id);
+        return id;
+    }
+
 	/**
 	 * Find Hardware from a provider on the basis of the disk space
 	 * @param minDisk minimum disk space available
