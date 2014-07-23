@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -53,6 +54,8 @@ import org.jclouds.openstack.nova.v2_0.features.ImageApi;
 import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
+
+import static org.jclouds.compute.options.RunScriptOptions.Builder.blockOnComplete;
 import static org.jclouds.compute.options.RunScriptOptions.Builder.overrideLoginCredentials;
 
 import static org.jclouds.compute.predicates.NodePredicates.runningInGroup;
@@ -124,16 +127,47 @@ public class OpenStackConnector implements Connector{
     }
 
     /**
-     * Create a snapshot of the volume attached to the VM
+     * Create an image of the VM
      * @param vmi a VMInstance
+     * @return id of the image
      */
-    public String createSnapshot(VMInstance vmi){
+    public String createImage(VMInstance vmi){
         NodeMetadata nm=getVMById(vmi.getId());
         ServerApi serverApi1=serverApi.getServerApiForZone(vmi.getType().getRegion());
-        journal.log(Level.INFO, ">> Creating snapshot of VM: "+vmi.getName());
-        String id=serverApi1.createImageFromServer(vmi.getName()+"-snapshot",nm.getId().split("/")[1]);
-        journal.log(Level.INFO, ">> Snapshot created with ID: "+id);
+        journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
+        String id=serverApi1.createImageFromServer(vmi.getName()+"-image",nm.getId().split("/")[1]);
+        String status="";
+        while (!status.toLowerCase().equals("available")){
+            Image i=novaComputeService.getImage(vmi.getType().getRegion()+"/"+id);
+            status=i.getStatus().name();
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        journal.log(Level.INFO, ">> Image created with ID: "+id);
         return id;
+    }
+
+    /**
+     * Create a snapshot of the volume attached to the VM
+     * @param vmi
+     * @return id of the snapshot
+     */
+    public String createSnapshot(VMInstance vmi){
+        return createImage(vmi);
+    }
+
+    /**
+     * Check if an image exist
+     * @param imageID the id of the image
+     * @return
+     */
+    public Boolean imageIsAvailable(String imageID){
+        if(novaComputeService.getImage(imageID) != null)
+            return true;
+        return false;
     }
 
     /**
@@ -259,7 +293,7 @@ public class OpenStackConnector implements Connector{
             TemplateBuilder templateBuilder = novaComputeService.templateBuilder();
 
             if(vm.getRegion() == null)
-                journal.log(Level.INFO, ">> Merde: " );
+                journal.log(Level.INFO, ">> No Region " );
 
             if(!vm.getImageId().equals("")){
                 if(vm.getRegion() != null && (!vm.getRegion().equals(""))){
@@ -291,11 +325,6 @@ public class OpenStackConnector implements Connector{
             else templateBuilder.osFamily(OsFamily.UBUNTU);
             templateBuilder.os64Bit(vm.getIs64os());
 
-			/*if(vm.getMinStorage() > 0 && provider.equals("aws-ec2")){
-    		Hardware hw=findHardwareByDisk(vm.getMinStorage());
-    		templateBuilder.hardwareId(hw.getId());
-    	}*/
-
             template = templateBuilder.build();
             journal.log(Level.INFO, ">> VM type: " + template.getHardware().getId() + " on location: " + template.getLocation().getId());
             a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
@@ -304,15 +333,16 @@ public class OpenStackConnector implements Connector{
 
             template.getOptions().as(NovaTemplateOptions.class).keyPairName(vm.getSshKey());
             template.getOptions().as(NovaTemplateOptions.class).securityGroups(vm.getSecurityGroup());
-            template.getOptions().as(NovaTemplateOptions.class).userMetadata("Name", a.getName());
             template.getOptions().as(NovaTemplateOptions.class).overrideLoginUser(a.getName());
+            ArrayList<String> names=new ArrayList<String>();
+            names.add(a.getName());
+            template.getOptions().as(NovaTemplateOptions.class).nodeNames(names);
 
             template.getOptions().blockUntilRunning(true);
 
             try {
                 Set<? extends NodeMetadata> nodes = novaComputeService.createNodesInGroup(groupName, 1, template);
                 nodeInstance = nodes.iterator().next();
-
                 journal.log(Level.INFO, ">> Running VM: "+nodeInstance.getName()+" Id: "+ nodeInstance.getId() +" with public address: "+nodeInstance.getPublicAddresses() +
                         " on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
 
