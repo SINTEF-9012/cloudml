@@ -120,7 +120,12 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitScaleOut(ShellCommandsParser.ScaleOutContext ctx) {
-        return new Snapshot(ctx.ID().getText());
+        return new ScaleOut(ctx.ID().getText());
+    }
+
+    @Override
+    public CloudMlCommand visitImage(ShellCommandsParser.ImageContext ctx) {
+        return new Image(ctx.ID().getText());
     }
 
     @Override

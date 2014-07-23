@@ -95,6 +95,7 @@ public class OpenStackConnector implements Connector{
      */
     public ComputeMetadata getVMByName(String name){
         for(ComputeMetadata n : novaComputeService.listNodes()){
+            journal.log(Level.INFO, ">> Name: " +n.getName());
             if(n.getName() != null &&  n.getName().equals(name))
                 return n;
         }
@@ -132,21 +133,32 @@ public class OpenStackConnector implements Connector{
      * @return id of the image
      */
     public String createImage(VMInstance vmi){
-        NodeMetadata nm=getVMById(vmi.getId());
-        ServerApi serverApi1=serverApi.getServerApiForZone(vmi.getType().getRegion());
-        journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
-        String id=serverApi1.createImageFromServer(vmi.getName()+"-image",nm.getId().split("/")[1]);
-        String status="";
-        while (!status.toLowerCase().equals("available")){
-            Image i=novaComputeService.getImage(vmi.getType().getRegion()+"/"+id);
-            status=i.getStatus().name();
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        String id="";
+        Image i = checkIfImageExist(vmi.getName()+"-image");
+        if(i == null){
+            NodeMetadata nm=getVMById(vmi.getId());
+            ServerApi serverApi1=serverApi.getServerApiForZone(vmi.getType().getRegion());
+            journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
+            id=serverApi1.createImageFromServer(vmi.getName()+"-image",nm.getId().split("/")[1]);
+            String status="";
+            while (!status.toLowerCase().equals("available")){
+                Image im=novaComputeService.getImage(vmi.getType().getRegion()+"/"+id);
+                status=im.getStatus().name();
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+            journal.log(Level.INFO, ">> Image created with ID: "+id);
+        }else{
+            id=i.getId().split("/")[1];
         }
-        journal.log(Level.INFO, ">> Image created with ID: "+id);
+        try {
+            Thread.sleep(6000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return id;
     }
 
@@ -165,6 +177,7 @@ public class OpenStackConnector implements Connector{
      * @return
      */
     public Boolean imageIsAvailable(String imageID){
+        journal.log(Level.INFO, ">> Check if an image with this ID is available: "+imageID);
         if(novaComputeService.getImage(imageID) != null)
             return true;
         return false;
@@ -267,10 +280,35 @@ public class OpenStackConnector implements Connector{
     public void updateVMMetadata(VMInstance a){
         ComputeMetadata cm= getVMByName(a.getName());
         if(cm != null){
-            a.setPublicAddress(getVMById(cm.getId()).getPublicAddresses().iterator().next());
+            if(((NodeMetadata)cm).getPublicAddresses().size() > 0)
+                a.setPublicAddress(((NodeMetadata)cm).getPublicAddresses().iterator().next());
             a.setId(cm.getId());
         }
     }
+
+
+    /**
+     * retrieve the list of images avaialbels
+     * @return the list of available images
+     */
+    public Set<? extends Image> listOfImages(){
+        return novaComputeService.listImages();
+    }
+
+    /**
+     * Search for an image with that name
+     * @param name name if the image
+     * @return an Image
+     */
+    public Image checkIfImageExist(String name){
+        for(Image i : listOfImages()){
+            journal.log(Level.INFO, ">> ID: " +i.getId());
+            if(i.getName().equals(name))
+                return i;
+        }
+        return null;
+    }
+
 
     /**
      * Provision a VM
@@ -295,12 +333,20 @@ public class OpenStackConnector implements Connector{
             if(vm.getRegion() == null)
                 journal.log(Level.INFO, ">> No Region " );
 
+            checkIfImageExist("RegionOne/e58e18d0-ffee-4f3b-832e-45d716d761cf");
+
             if(!vm.getImageId().equals("")){
-                if(vm.getRegion() != null && (!vm.getRegion().equals(""))){
+                String fullId="";
+                if((vm.getRegion() != null) && (!vm.getRegion().equals(""))){
                     journal.log(Level.INFO, ">> Region: " +vm.getRegion());
-                    templateBuilder.imageId(vm.getRegion()+"/"+vm.getImageId());
+                    fullId=vm.getRegion()+"/"+vm.getImageId();
                 }else{
-                    templateBuilder.imageId(vm.getImageId());
+                    fullId=vm.getImageId();
+                }
+                if(imageIsAvailable(fullId)){
+                    templateBuilder.imageId(fullId);
+                }else{
+                    journal.log(Level.INFO, ">> There is no image with the following ID: " +fullId);
                 }
             }
 
@@ -337,6 +383,9 @@ public class OpenStackConnector implements Connector{
             ArrayList<String> names=new ArrayList<String>();
             names.add(a.getName());
             template.getOptions().as(NovaTemplateOptions.class).nodeNames(names);
+            ArrayList<String> sgNames=new ArrayList<String>();
+            sgNames.add(vm.getSecurityGroup());
+            template.getOptions().as(NovaTemplateOptions.class).securityGroupNames(sgNames);
 
             template.getOptions().blockUntilRunning(true);
 

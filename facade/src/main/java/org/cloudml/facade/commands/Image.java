@@ -20,26 +20,33 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.connectors;
+package org.cloudml.facade.commands;
 
-import org.cloudml.core.VMInstance;
+/**
+ * Created by nicolasf on 23.07.14.
+ */
+public class Image extends CloudMlCommand {
 
-public interface Connector {
-	
-	public void execCommand(String id, String command, String login, String key);
-	
-	public void createInstance(VMInstance a);
-	
-	public void destroyVM(String id);
-	
-	public void closeConnection();
+    private final String vmId;
 
-	public void updateVMMetadata(VMInstance a);
-	
-	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key);
+    public Image(String vmId) {
+        this.vmId = vmId;
+    }
 
-    public String createSnapshot(VMInstance a);
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
+    }
 
-    public String createImage(VMInstance a);
-	
+    public String getVmId() {
+        return vmId;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("create image from %s", vmId);
+    }
+
+
+
 }

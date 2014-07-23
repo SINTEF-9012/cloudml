@@ -72,5 +72,7 @@ public interface CommandHandler {
     public void handle(Snapshot command);
 
     public void handle(ScaleOut command);
+
+    public void handle(Image command);
     
 }

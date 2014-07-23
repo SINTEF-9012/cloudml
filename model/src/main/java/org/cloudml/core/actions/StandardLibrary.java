@@ -109,7 +109,7 @@ public class StandardLibrary {
         return new ReplicateComponentInstance(this, c, eci).applyTo(deployment);
     }
 
-    public Map<InternalComponentInstance, InternalComponentInstance> replicateSubGraph(Deployment deployment, InternalComponentInstanceGroup list){
-        return new ReplicateSubGraph(this, list).applyTo(deployment);
+    public Map<InternalComponentInstance, InternalComponentInstance> replicateSubGraph(Deployment deployment, InternalComponentInstanceGroup list, VMInstance vmi){
+        return new ReplicateSubGraph(this, list, vmi).applyTo(deployment);
     }
 }

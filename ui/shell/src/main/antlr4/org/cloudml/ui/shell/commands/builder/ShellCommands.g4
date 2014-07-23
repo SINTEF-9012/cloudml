@@ -39,6 +39,7 @@ action
     |   'view' level ID                                     # View
     |   'snapshot' ID                                       # Snapshot
     |   'scale out' ID                                      # ScaleOut
+    |   'create image from'  ID                             # Image
     ;
 
 kind
@@ -67,7 +68,8 @@ LETTER
     ;
 
 ID      
-    :   LETTER(LETTER|DIGIT|'-'|PATH_SEPARATOR)+;
+    :   LETTER(LETTER|DIGIT|'-'|PATH_SEPARATOR)+
+    ;
 
 INTEGER
     :   DIGIT+

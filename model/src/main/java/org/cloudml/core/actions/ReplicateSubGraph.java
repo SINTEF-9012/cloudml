@@ -38,16 +38,25 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
 
     private final InternalComponentInstanceGroup graph;
     private Map<InternalComponentInstance, InternalComponentInstance> mapping;
+    private VMInstance host;
 
-    public ReplicateSubGraph(StandardLibrary library, InternalComponentInstanceGroup graph) {
+    public ReplicateSubGraph(StandardLibrary library, InternalComponentInstanceGroup graph, VMInstance host) {
         super(library);
-        this.graph=graph;
+        this.graph=rejectIfInvalid(graph);
+        this.host=host;
+    }
+
+    private InternalComponentInstanceGroup rejectIfInvalid(InternalComponentInstanceGroup graph) {
+        if (graph == null) {
+            throw new IllegalArgumentException("'null' is not a valid component instance for duplication");
+        }
+        return graph;
     }
 
     @Override
     public Map<InternalComponentInstance, InternalComponentInstance> applyTo(Deployment target) {
         for(InternalComponentInstance ci: graph){
-            mapping.put(ci,getLibrary().replicateComponentInstance(target, ci, ci.asInternal().getHost().asExternal()).asInternal());
+            mapping.put(ci,getLibrary().replicateComponentInstance(target, ci, host).asInternal());
         }
         manageDependencies(target);
 
@@ -58,7 +67,7 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
         for(RelationshipInstance ri: target.getRelationshipInstances()){
             if(mapping.containsKey(ri.getClientComponent())){
                 final String name = getLibrary().createUniqueRelationshipInstanceName(target, ri.getType());
-                if(mapping.containsKey(ri.getServerComponent())){
+                if(mapping.containsKey(ri.getServerComponent())){ //TODO: move this in a method
                     aRelationshipInstance()
                             .named(name)
                             .from(mapping.get(ri.getClientComponent()).getType().getName(),
