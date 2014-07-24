@@ -110,7 +110,8 @@ public class Filter {
     private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
         ExternalComponent toReturn = new ExternalComponent();
         //KB entity field
-        toReturn.setUri(toTranslate.getName());
+        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
+        toReturn.setUri(uri);
         //Component field
         toReturn.setId(toTranslate.getName());
         //External components fields
@@ -128,7 +129,8 @@ public class Filter {
     private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
         VM toReturn = new VM();
         //KB entity field
-        toReturn.setUri(toTranslate.getName());
+        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
+        toReturn.setUri(uri);
         //Component field
         toReturn.setId(toTranslate.getName());
         //External component fields
