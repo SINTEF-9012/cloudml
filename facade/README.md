@@ -43,7 +43,7 @@ The available commands are available in the Java package `org.cloudml.facade.com
  list component            | list the compoment types available in the current model | Yes | ListComponent
  load credentials          | load the credentials needed to access CloudProviders | |   LoadCredentials
  load deployment           | load a CloudML deployment model | Yes | LoadDeployment
- snaphot                   | create a visual snapshot of the deployment model | Yes | Snapshot
+ shot                      | create a visual snapshot of the deployment model | Yes | Shot
  start component           | Start a given component instance               | | StartComponent
  stop component            | Stop a given component  instance               | | StopComponent
  store credentials         | Store the credentials in use on disk           | | Store credentials
@@ -52,6 +52,7 @@ The available commands are available in the Java package `org.cloudml.facade.com
  upload                    | Upload a file on one of the VM described in the model | yes | Upload
  view component            | Show the details of a given component type | yes | ViewComponent
  view component instance   | Show the details of a given component instance | Yes | ViewComponentInstance
+ snapshot                  | Create a snapshot of a given VM | Yes | Snapshot
  
 ## Events ##
 
