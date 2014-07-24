@@ -98,10 +98,11 @@ public class MonitoringAPI {
 
         try {
             http.postRequest(url, callback);
+            journal.log(Level.INFO, "Observer attached");
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
         }
-        journal.log(Level.INFO, "Observer attached");
+
     }
 
     /**
@@ -119,11 +120,12 @@ public class MonitoringAPI {
 
         try {
             http.postRequest(url, json);
+            journal.log(Level.INFO, "Added component sent to "+address);
+            printComponentname(update);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
         }
-        journal.log(Level.INFO, "Added component sent to "+address);
-        printComponentname(update);
+
     }
 
     /**
@@ -141,11 +143,12 @@ public class MonitoringAPI {
 
         try {
             http.postRequest(url, json);
+            journal.log(Level.INFO, "Current deployment sent to "+address);
+            printComponentname(model);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
         }
-        journal.log(Level.INFO, "Current deployment sent to "+address);
-        printComponentname(model);
+
     }
 
     /**

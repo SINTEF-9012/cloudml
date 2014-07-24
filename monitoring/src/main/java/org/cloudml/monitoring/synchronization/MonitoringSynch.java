@@ -34,6 +34,12 @@ import java.util.List;
  */
 public class MonitoringSynch {
 
+    /**
+     * This method activates the transformation from CloudML's model to the Monitoring Platform's model
+     * and then send the current deployment to the MP
+     * @param monitoringAddress address of the monitoring platform
+     * @param currentDeployment current deployment model
+     */
     public static void sendCurrentDeployment(String monitoringAddress, Deployment currentDeployment){
         ModelUpdates model = Filter.fromCloudmlToModaMP(currentDeployment);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
@@ -41,6 +47,12 @@ public class MonitoringSynch {
 
     }
 
+    /**
+     * This method activates the transformation from CloudML's model to the Monitoring Platform's model
+     * and then send the added components to the MP
+     * @param monitoringAddress address of the monitoring platform
+     * @param addedECs added components
+     */
     public static void sendAddedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> addedECs) {
         ModelUpdates added = Filter.fromCloudmlToModaMP(addedECs);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
@@ -48,6 +60,12 @@ public class MonitoringSynch {
 
     }
 
+    /**
+     * This method activates the transformation from CloudML's model to the Monitoring Platform's model
+     * and then send the removed components to the MP
+     * @param monitoringAddress address of the monitoring platform
+     * @param removedECs removed components
+     */
     public static void sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs) {
         ModelUpdates removed = Filter.fromCloudmlToModaMP(removedECs);
         //MonitoringAPI request = new MonitoringAPI(monitoringAddress);
