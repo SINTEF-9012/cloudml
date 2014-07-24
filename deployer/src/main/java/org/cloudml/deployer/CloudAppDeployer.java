@@ -25,6 +25,7 @@ package org.cloudml.deployer;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,10 +38,9 @@ import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
-import org.cloudml.monitoring.status.StatusMonitor;
-import org.cloudml.monitoring.synchronization.MonitoringSynch;
-import org.cloudml.mrt.Coordinator;
-import org.cloudml.mrt.SimpleModelRepo;
+import org.jclouds.compute.domain.Image;
+
+import static org.cloudml.core.builders.Commons.anExternalComponentInstance;
 
 /*
  * The deployment Engine 
@@ -54,9 +54,6 @@ public class CloudAppDeployer {
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
     private Deployment targetModel;
-    private Coordinator coordinator;
-    private StatusMonitor statusMonitor;
-    private final String monitoringPlatformAddress = "http://192.168.11.6:8170";
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -74,18 +71,6 @@ public class CloudAppDeployer {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
 
-            //set up a coordinator (used to update the model)
-            if (coordinator == null){
-                coordinator = new Coordinator();
-            }
-            SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
-            coordinator.setModelRepo(modelRepo);
-            coordinator.start();
-            //set up the monitoring
-            if (statusMonitor == null){
-                statusMonitor= new StatusMonitor(60, false, coordinator);
-            }
-
             // Provisioning vms
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
@@ -99,8 +84,6 @@ public class CloudAppDeployer {
             //configuration process at SaaS level
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
-            //send the current deployment to the monitoring platform
-            MonitoringSynch.sendCurrentDeployment(monitoringPlatformAddress,currentModel);
         }
         else {
             journal.log(Level.INFO, ">> Updating a deployment...");
@@ -118,14 +101,7 @@ public class CloudAppDeployer {
             stopInternalComponents(diff.getRemovedComponents());
             terminateExternalServices(diff.getRemovedECs());
             updateCurrentModel(diff);
-
-            //send the changes to the monitoring platform
-            MonitoringSynch.sendAddedComponents(monitoringPlatformAddress, diff.getAddedECs());
-            MonitoringSynch.sendRemovedComponents(monitoringPlatformAddress, diff.getRemovedECs());
-
         }
-        //start the monitoring of VMs
-        statusMonitor.start();
     }
 
     private void unlessNotNull(String message, Object... obj) {
@@ -318,14 +294,8 @@ public class CloudAppDeployer {
         }
     }
 
-    /**
-     * Build the paas of an component instance
-     *
-     * @param x An component instance
-     * @throws MalformedURLException
-     */
-    private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
-        unlessNotNull("Cannot deploy null", x, relationships);
+
+    private void buildExecutes(InternalComponentInstance x){
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
 
@@ -333,8 +303,11 @@ public class CloudAppDeployer {
         jc = ConnectorFactory.createIaaSConnector(n.getProvider());
 
         ComponentInstance host=x.getHost();
+
         if (!alreadyDeployed.contains(host)){
             if(host.isInternal()){
+                buildExecutes(host.asInternal());
+                journal.log(Level.INFO, ">> Installing host: "+host.getName());
                 executeRetrieveCommand(host.asInternal(), ownerVM, jc);
                 executeInstallCommand(host.asInternal(), ownerVM, jc);
                 host.asInternal().setStatus(State.INSTALLED);
@@ -355,6 +328,24 @@ public class CloudAppDeployer {
                 alreadyDeployed.add(host);
             }
         }
+    }
+
+
+    /**
+     * Build the paas of an component instance
+     *
+     * @param x An component instance
+     * @throws MalformedURLException
+     */
+    private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
+        unlessNotNull("Cannot deploy null", x, relationships);
+        VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
+        VM n = ownerVM.getType();
+
+        Connector jc;
+        jc = ConnectorFactory.createIaaSConnector(n.getProvider());
+
+        buildExecutes(x);
 
         for (RelationshipInstance bi : relationships) {
             if (bi.getRequiredEnd().getType().isMandatory() && x.getRequiredPorts().contains(bi.getRequiredEnd())) {
@@ -492,10 +483,7 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        ComponentInstance.State state = jc.createInstance(n);
-        coordinator.updateStatus(n.getName(), state, CloudAppDeployer.class.getName());
-        //enable the monitoring of the new machine
-        statusMonitor.attachModule(jc);
+        jc.createInstance(n);
         jc.closeConnection();
     }
 
@@ -689,9 +677,7 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED, CloudAppDeployer.class.getName());
-        //old way without using mrt
-        //n.setStatusAsStopped();
+        n.setStatusAsStopped();
     }
 
     /**
@@ -702,7 +688,7 @@ public class CloudAppDeployer {
      */
     private void stopInternalComponents(List<InternalComponentInstance> components) {//TODO: List<InternalComponentInstances>
         for (InternalComponentInstance a : components) {
-                stopInternalComponent((InternalComponentInstance) a);
+            stopInternalComponent((InternalComponentInstance) a);
         }
     }
 
@@ -763,7 +749,7 @@ public class CloudAppDeployer {
             VM n = ownerVM.getType();
             jc = ConnectorFactory.createIaaSConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());
+            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());;
             jc.closeConnection();
         }
     }
@@ -815,21 +801,64 @@ public class CloudAppDeployer {
      */
     public void scaleOut(VMInstance vmi){
         Connector c=ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-
-        //1. update the deployment model
-        InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmi);
         StandardLibrary lib=new StandardLibrary();
-        ComponentInstance ci= lib.replicateComponentInstance(currentModel,vmi,null);
-        lib.replicateSubGraph(currentModel,icig);
 
-        //2. create snapshot of an instance
-        String ID=c.createSnapshot(vmi);
+        //1. create snapshot of an instance
+        String ID=c.createImage(vmi); //TODO: should check if the image already exist
 
-        //3. instantiate the new instance using the newly created snapshot
+        //2. instantiate the new VM using the newly created snapshot
+        //VMInstance ci= lib.replicateComponentInstance(currentModel,vmi,null).asExternal().asVM();
+        VM existingVM=vmi.asExternal().asVM().getType();
+        VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
+        if(v == null){//in case a type for the snapshot has already been created
+            String name=lib.createUniqueComponentInstanceName(currentModel,existingVM);
+            v=new VM(name+"-fromImage",existingVM.getProvider());
+            v.setGroupName(existingVM.getGroupName());
+            v.setRegion(existingVM.getRegion());
+            v.setImageId(ID);
+            v.setLocation(existingVM.getLocation());
+            v.setMinRam(existingVM.getMinRam());
+            v.setMinCores(existingVM.getMinCores());
+            v.setMinStorage(existingVM.getMinStorage());
+            v.setSecurityGroup(existingVM.getSecurityGroup());
+            v.setSshKey(existingVM.getSshKey());
+            v.setPrivateKey(existingVM.getPrivateKey());
+            v.setProvider(existingVM.getProvider());
+            v.setProvidedExecutionPlatforms(existingVM.getProvidedExecutionPlatforms().toList());
+            currentModel.getComponents().add(v);
+        }
+        VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
+        c.createInstance(ci);
+
+
+        //3. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
+        duplicateHostedGraph(vmi,ci);
+
+        //4. configure the new VM
+        //TODO
+    }
+
+
+    private void duplicateHostedGraph(VMInstance vmiSource,VMInstance vmiDestination){
+        InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
+        StandardLibrary lib=new StandardLibrary();
+        lib.replicateSubGraph(currentModel,icig,vmiDestination);
+    }
+
+    /**
+     * To scale our a VM on another provider (kind of bursting)
+     * @param vmi the vm instance to scale out
+     * @param provider the provider where we want to burst
+     */
+    public void scaleOut(VMInstance vmi, Provider provider){
+        Connector c=ConnectorFactory.createIaaSConnector(provider);
+        StandardLibrary lib=new StandardLibrary();
+
+        VMInstance ci= lib.replicateComponentInstance(targetModel,vmi,null).asExternal().asVM();
         VM existingVM=ci.asExternal().asVM().getType();
-        VM v=new VM(existingVM.getName()+"-fromSnapshot",existingVM.getProvider());
+        VM v=new VM(existingVM.getName()+"-scaled",existingVM.getProvider());
         v.setGroupName(existingVM.getGroupName());
-        v.setImageId(ID);
+        v.setImageId(existingVM.getImageId());
         v.setLocation(existingVM.getLocation());
         v.setMinRam(existingVM.getMinRam());
         v.setMinCores(existingVM.getMinCores());
@@ -837,12 +866,14 @@ public class CloudAppDeployer {
         v.setSecurityGroup(existingVM.getSecurityGroup());
         v.setSshKey(existingVM.getSshKey());
         v.setPrivateKey(existingVM.getPrivateKey());
-        v.setProvider(existingVM.getProvider());
-        currentModel.getComponents().add(v);
+        v.setProvider(provider);
+        targetModel.getComponents().add(v);
         ci.setType(v);
+        c.createInstance(ci.asExternal().asVM());
 
-        //4. configure the new VM
-        //TODO
+        duplicateHostedGraph(vmi,ci);
+
+        deploy(targetModel);
     }
 
 }
