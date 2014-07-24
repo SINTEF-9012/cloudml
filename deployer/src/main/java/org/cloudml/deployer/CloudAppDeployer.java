@@ -38,6 +38,10 @@ import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.monitoring.status.StatusMonitor;
+import org.cloudml.monitoring.synchronization.MonitoringSynch;
+import org.cloudml.mrt.Coordinator;
+import org.cloudml.mrt.SimpleModelRepo;
 import org.jclouds.compute.domain.Image;
 
 import static org.cloudml.core.builders.Commons.anExternalComponentInstance;
@@ -54,6 +58,9 @@ public class CloudAppDeployer {
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
     private Deployment targetModel;
+    private Coordinator coordinator;
+    private StatusMonitor statusMonitor;
+    private final String monitoringPlatformAddress = "http://192.168.11.6:8170";
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -71,6 +78,18 @@ public class CloudAppDeployer {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
 
+            //set up a coordinator (used to update the model)
+            if (coordinator == null){
+                coordinator = new Coordinator();
+            }
+            SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
+            coordinator.setModelRepo(modelRepo);
+            coordinator.start();
+            //set up the monitoring
+            if (statusMonitor == null){
+                statusMonitor= new StatusMonitor(60, false, coordinator);
+            }
+
             // Provisioning vms
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
@@ -84,6 +103,8 @@ public class CloudAppDeployer {
             //configuration process at SaaS level
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
+            //send the current deployment to the monitoring platform
+            MonitoringSynch.sendCurrentDeployment(monitoringPlatformAddress,currentModel);
         }
         else {
             journal.log(Level.INFO, ">> Updating a deployment...");
@@ -101,7 +122,14 @@ public class CloudAppDeployer {
             stopInternalComponents(diff.getRemovedComponents());
             terminateExternalServices(diff.getRemovedECs());
             updateCurrentModel(diff);
+
+            //send the changes to the monitoring platform
+            MonitoringSynch.sendAddedComponents(monitoringPlatformAddress, diff.getAddedECs());
+            MonitoringSynch.sendRemovedComponents(monitoringPlatformAddress, diff.getRemovedECs());
+
         }
+        //start the monitoring of VMs
+        statusMonitor.start();
     }
 
     private void unlessNotNull(String message, Object... obj) {
@@ -483,7 +511,10 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        jc.createInstance(n);
+        ComponentInstance.State state = jc.createInstance(n);
+        coordinator.updateStatus(n.getName(), state, CloudAppDeployer.class.getName());
+        //enable the monitoring of the new machine
+        statusMonitor.attachModule(jc);
         jc.closeConnection();
     }
 
@@ -677,7 +708,9 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        n.setStatusAsStopped();
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED, CloudAppDeployer.class.getName());
+        //old way without using mrt
+        //n.setStatusAsStopped();
     }
 
     /**
@@ -813,19 +846,19 @@ public class CloudAppDeployer {
         if(v == null){//in case a type for the snapshot has already been created
             String name=lib.createUniqueComponentInstanceName(currentModel,existingVM);
             v=new VM(name+"-fromImage",existingVM.getProvider());
-            v.setGroupName(existingVM.getGroupName());
+        v.setGroupName(existingVM.getGroupName());
             v.setRegion(existingVM.getRegion());
-            v.setImageId(ID);
-            v.setLocation(existingVM.getLocation());
-            v.setMinRam(existingVM.getMinRam());
-            v.setMinCores(existingVM.getMinCores());
-            v.setMinStorage(existingVM.getMinStorage());
-            v.setSecurityGroup(existingVM.getSecurityGroup());
-            v.setSshKey(existingVM.getSshKey());
-            v.setPrivateKey(existingVM.getPrivateKey());
-            v.setProvider(existingVM.getProvider());
+        v.setImageId(ID);
+        v.setLocation(existingVM.getLocation());
+        v.setMinRam(existingVM.getMinRam());
+        v.setMinCores(existingVM.getMinCores());
+        v.setMinStorage(existingVM.getMinStorage());
+        v.setSecurityGroup(existingVM.getSecurityGroup());
+        v.setSshKey(existingVM.getSshKey());
+        v.setPrivateKey(existingVM.getPrivateKey());
+        v.setProvider(existingVM.getProvider());
             v.setProvidedExecutionPlatforms(existingVM.getProvidedExecutionPlatforms().toList());
-            currentModel.getComponents().add(v);
+        currentModel.getComponents().add(v);
         }
         VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
         c.createInstance(ci);
