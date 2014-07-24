@@ -40,7 +40,7 @@ public class ReplicateComponentInstance extends AbstractAction<ComponentInstance
     public ReplicateComponentInstance(StandardLibrary library, ComponentInstance<? extends Component> instance, ExternalComponentInstance host) {
         super(library);
         this.instance = rejectIfInvalid(instance);
-        this.host = rejectIfInvalid(host).asExternal();
+        this.host = host;
     }
 
     private ComponentInstance<? extends Component> rejectIfInvalid(ComponentInstance<? extends Component> c) {

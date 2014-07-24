@@ -480,10 +480,22 @@ class Facade implements CloudML, CommandHandler {
     }
 
     @Override
+    public void handle(Image command){
+        dispatch(new Message(command, Category.INFORMATION, "Generating an image ..."));
+        VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        Connector c =ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+        c.createImage(vmi);
+    }
+
+    @Override
     public void handle(ScaleOut command){
         dispatch(new Message(command, Category.INFORMATION, "Scaling out VM: "+command.getVmId()));
         VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
-        deployer.scaleOut(vmi);
+        if(vmi == null){
+            dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
+        }else{
+            deployer.scaleOut(vmi);
+        }
     }
 
     /**

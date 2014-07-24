@@ -86,6 +86,7 @@ In addition to the above commands, the CloudML shell also provides a set of comm
 | deploy | `deploy` | Effectively deploy the deployment model in memory. |
 | upload | `upload <file> on <vm-id> at <file>`  | Upload the selected file on the given VM, at the given place |
 | snapshot | `snapshot <vm-id>`  | Create a snapshot of the given VM |
+| create image | `create image from <vm-id>`  | Create an image of the given VM |
 
 Some of these commands may take some time to be completed (_e.g._, uploading a file on a given node), and one may want to run them as a background task. The CloudML shell let you do so so by appending a `&` symbol at the end of the command.
 

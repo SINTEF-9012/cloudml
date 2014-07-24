@@ -95,6 +95,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
      * return the linux VM.
      */
     public ExternalComponentInstance<? extends ExternalComponent> externalHost() {
+        System.out.println(this.getName());
         final ComponentInstance<? extends Component> directHost = getHost();
         if (directHost.isInternal()) {
             return directHost.asInternal().externalHost(); 

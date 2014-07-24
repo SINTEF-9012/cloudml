@@ -90,7 +90,7 @@ public class SSHConnector {
                     journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
                     break;
                 }
-                try{Thread.sleep(1000);}catch(Exception ee){ee.printStackTrace();}
+                try{Thread.sleep(1500);}catch(Exception ee){ee.printStackTrace();}
             }
 
 

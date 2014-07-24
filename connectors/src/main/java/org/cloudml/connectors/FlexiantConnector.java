@@ -401,6 +401,7 @@ public class FlexiantConnector implements Connector{
     /**
      * create the snapshot of a disk (only feature supported now on the MODAClouds platform)
      * @param vmi a VM instance
+     * @return id of the snapshot
      */
     public String createSnapshot(VMInstance vmi){
         journal.log(Level.INFO, ">> Creating a snapshot of VM id: "+vmi.getId());
@@ -420,6 +421,38 @@ public class FlexiantConnector implements Connector{
         }
         journal.log(Level.INFO, ">> Snapshot created with id: "+vmi.getName()+"-snapshot");
         return vmi.getName()+"-snapshot";
+    }
+
+    /**
+     * Create an image of the specified VM
+     * @param vmi a VM instance
+     * @return id of the image
+     */
+    public String createImage(VMInstance vmi){
+        journal.log(Level.INFO, ">> Creating an image of VM id: "+vmi.getId());
+        Image image=new Image();
+        Server temp=(Server)findObjectResourceByID(vmi.getId(), ResourceType.SERVER);
+        image.setBaseUUID(temp.getDisks().get(0).getResourceUUID());
+        image.setClusterUUID(temp.getClusterUUID());
+        image.setResourceName(vmi.getName()+"-image");
+        image.setResourceType(ResourceType.IMAGE);
+        image.setVdcUUID(temp.getVdcUUID());
+
+        try {
+            Job job1=service.changeServerStatus(temp.getResourceUUID(),ServerStatus.STOPPED,true,null,null);
+            service.waitForJob(job1.getResourceUUID(), false);
+
+            Job job2=service.createImage(image, null);
+            service.waitForJob(job2.getResourceUUID(), false);
+
+            Job job3=service.changeServerStatus(temp.getResourceUUID(),ServerStatus.RUNNING,true,null,null);
+            service.waitForJob(job3.getResourceUUID(), false);
+        } catch (ExtilityException e) {
+            e.printStackTrace();
+        }
+
+        journal.log(Level.INFO, ">> Image created with id: "+vmi.getName()+"-image");
+        return vmi.getName()+"-image";
     }
 
     public void closeConnection() {}

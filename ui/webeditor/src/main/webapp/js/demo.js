@@ -304,12 +304,12 @@ function addExecutionPort(obj){
 			instance.addEndpoint("flowchartWindow_"+obj.name, sourceDestEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/providedExecutionPlatformInstances["+tab[j].name +"]"});
 		}
 	}
-	var tab = obj['requiredExecutionPlatformInstances'];
+	var tab = obj['requiredExecutionPlatformInstance'];
 	if(tab !== null && (typeof tab !== "undefined")){
 		targetEndpoint.overlays[0][1].label = tab.name;
 		var stringType = (obj['eClass'].split(":")[1]+"s").uncapitalizes(2);
 		console.log(stringType+" plop");
-		instance.addEndpoint("flowchartWindow_"+obj.name, targetEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/requiredExecutionPlatformInstances["+tab.name +"]"});
+		instance.addEndpoint("flowchartWindow_"+obj.name, targetEndpoint, { anchor:"Continuous", uuid:stringType+"["+obj.name+"]/requiredExecutionPlatformInstance["+tab.name +"]"});
 	}
 }
 
