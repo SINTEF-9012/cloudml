@@ -433,6 +433,7 @@ public class BridgeToKmf {
                 net.cloudml.core.VMInstance kni = factory.createVMInstance();
                 kni.setName(ni.getName());
                 kni.setPublicAddress(ni.getPublicAddress());
+                kni.setId(ni.getId());
                 kni.setType(vms.get(ni.getType().getName()));
                 convertProperties(ni, kni, factory);
 
