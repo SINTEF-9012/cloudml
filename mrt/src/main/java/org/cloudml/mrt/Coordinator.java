@@ -90,17 +90,6 @@ public class Coordinator {
 
         } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
             journal.log(Level.INFO, "Machine: " + name + " not in this model");
-
-            // Problems arise with Openstack and Jclouds since the name in the model
-            // is not the name of the VMs (that is unique) but the MetaName specified in the json
-
-            // Example
-            // First deploy
-            // Instance name: my_machine_53f  MetaName: my_machine
-            // Second deploy
-            // Instance name: my_machine_124  MetaName: my_machine
-            // This cause conflict with the monitoring of status
-            ;
         }
     }
 

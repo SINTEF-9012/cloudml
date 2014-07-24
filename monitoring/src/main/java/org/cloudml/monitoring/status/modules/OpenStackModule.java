@@ -64,7 +64,7 @@ public class OpenStackModule implements Module {
         Iterator<NodeMetadata> iterator = jCloudsNodes.iterator();
         while (iterator.hasNext()) {
             NodeMetadata current = iterator.next();
-            String name = (current.getUserMetadata().get("Name"));
+            String name = (current.getName());
             MonitoredVm temp = new MonitoredVm(current.getId(), name, toState(current.getStatus()));
             list.add(temp);
         }
