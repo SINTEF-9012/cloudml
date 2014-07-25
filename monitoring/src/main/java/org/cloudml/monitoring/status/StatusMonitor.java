@@ -184,6 +184,6 @@ public class StatusMonitor {
         synchronized (modules) {
             modules = new ArrayList<Module>();
         }
-        journal.log(Level.INFO, "Monitoring stopped and history deleted");
+        journal.log(Level.INFO, ">> Monitoring stopped and history deleted");
     }
 }

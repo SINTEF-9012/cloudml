@@ -82,7 +82,7 @@ public class Coordinator {
             if (res !=null) {
                 ComponentInstance.State oldState = ComponentInstance.State.valueOf(res.toString());
                 if (oldState != newState) {
-                    journal.log(Level.INFO, "Updating the model..");
+                    journal.log(Level.INFO, ">>Updating the model..");
                     wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState.toString() + ""));
                     journal.log(Level.INFO, "Status of: " + name + " changed in: " + newState + "");
                 }

@@ -119,8 +119,8 @@ public class MonitoringAPI {
         String json = gson.toJson(update);
 
         try {
+            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+" ...");
             http.postRequest(url, json);
-            journal.log(Level.INFO, "Added component sent to "+address);
             printComponentname(update);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
@@ -142,8 +142,8 @@ public class MonitoringAPI {
         String json = gson.toJson(model);
 
         try {
+            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+" ...");
             http.postRequest(url, json);
-            journal.log(Level.INFO, "Current deployment sent to "+address);
             printComponentname(model);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
@@ -158,15 +158,13 @@ public class MonitoringAPI {
      * @param id are the IDs of the instances to be deleted
      */
     public void deleteInstances(String id){
-
         String url = address + "/" + version + "/update";
-
         try {
+            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+" ...");
             http.deleteRequest(url, id);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
         }
-        journal.log(Level.INFO, "Removed component sent to "+address);
     }
 
     private void printComponentname(ModelUpdates model){
