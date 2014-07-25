@@ -109,7 +109,13 @@ public class StatusMonitor {
         }
         if (module != null) {
             synchronized (modules) {
-                if (!modules.contains(module)) {
+                boolean contains = false;
+                for (Module m : modules){
+                    if (m.getType()==module.getType()){
+                        contains = true;
+                    }
+                }
+                if (!contains) {
                     modules.add(module);
                 }
             }
@@ -120,12 +126,12 @@ public class StatusMonitor {
     /**
      * Remove a module from the monitor
      *
-     * @param module pick one from the enum
+     * @param type pick one from the enum
      */
-    public void detachModule(FlexiantModule.Type module) {
+    public void detachModule(Module.Type type) {
         synchronized (modules) {
             for (Module i : modules) {
-                if (i.getType() == module) {
+                if (i.getType() == type) {
                     modules.remove(i);
                     journal.log(Level.INFO, "Module detached: " + i.getType());
                 }
@@ -133,21 +139,6 @@ public class StatusMonitor {
         }
     }
 
-    /**
-     * Remove a module from the monitor
-     *
-     * @param connector pick one from the enum
-     */
-    public void detachModule(Connector connector) {
-        synchronized (modules) {
-            for (Module i : modules) {
-                if (i.getConnector() == connector) {
-                    modules.remove(i);
-                    journal.log(Level.INFO, "Module detached: " + i.getType());
-                }
-            }
-        }
-    }
 
     /**
      * Change the monitor frequency (in seconds)
