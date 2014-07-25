@@ -25,7 +25,6 @@ package org.cloudml.deployer;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,14 +37,12 @@ import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.monitoring.status.StatusConfiguration;
 import org.cloudml.monitoring.status.StatusMonitor;
+import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
-import org.cloudml.monitoring.util.ConfigurationLoader;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.SimpleModelRepo;
-import org.jclouds.compute.domain.Image;
-
-import static org.cloudml.core.builders.Commons.anExternalComponentInstance;
 
 /*
  * The deployment Engine 
@@ -76,7 +73,8 @@ public class CloudAppDeployer {
         unlessNotNull("Cannot deploy null!", targetModel);
         this.targetModel = targetModel;
         //set up the monitoring
-        ConfigurationLoader.MonitoringProperties monProp = ConfigurationLoader.load();
+        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
+        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
         if (currentModel == null) {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
@@ -88,9 +86,9 @@ public class CloudAppDeployer {
             SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
             coordinator.setModelRepo(modelRepo);
             coordinator.start();
-            if (monProp.getActivated() && statusMonitor == null) {
+            if (statusMonitorProperties.getActivated() && statusMonitor == null) {
                 statusMonitorActive = true;
-                statusMonitor = new StatusMonitor(monProp.getFrequency(), false, coordinator);
+                statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
             }
 
             // Provisioning vms
@@ -107,8 +105,8 @@ public class CloudAppDeployer {
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
             //send the current deployment to the monitoring platform
-            if (monProp.isMonitoringPlatformGiven()) {
-                MonitoringSynch.sendCurrentDeployment(monProp.getIpAddress(), currentModel);
+            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
+                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
             }
         } else {
             journal.log(Level.INFO, ">> Updating a deployment...");
@@ -128,9 +126,9 @@ public class CloudAppDeployer {
             updateCurrentModel(diff);
 
             //send the changes to the monitoring platform
-            if (monProp.isMonitoringPlatformGiven()) {
-                MonitoringSynch.sendAddedComponents(monProp.getIpAddress(), diff.getAddedECs());
-                MonitoringSynch.sendRemovedComponents(monProp.getIpAddress(), diff.getRemovedECs());
+            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
+                MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs());
+                MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs());
             }
         }
         //start the monitoring of VMs

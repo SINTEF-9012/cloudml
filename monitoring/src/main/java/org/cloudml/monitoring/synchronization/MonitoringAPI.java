@@ -119,7 +119,7 @@ public class MonitoringAPI {
         String json = gson.toJson(update);
 
         try {
-            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+" ...");
+            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             http.postRequest(url, json);
             printComponentname(update);
         } catch (Exception e) {
@@ -142,7 +142,7 @@ public class MonitoringAPI {
         String json = gson.toJson(model);
 
         try {
-            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+" ...");
+            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             http.postRequest(url, json);
             printComponentname(model);
         } catch (Exception e) {
@@ -160,7 +160,7 @@ public class MonitoringAPI {
     public void deleteInstances(String id){
         String url = address + "/" + version + "/update";
         try {
-            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+" ...");
+            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             http.deleteRequest(url, id);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");

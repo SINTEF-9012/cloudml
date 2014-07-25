@@ -1,4 +1,4 @@
-package org.cloudml.monitoring.util;
+package org.cloudml.monitoring.status;
 
 /**
  * This file is part of CloudML [ http://cloudml.org ]
@@ -23,7 +23,6 @@ package org.cloudml.monitoring.util;
  * <http://www.gnu.org/licenses/>.
  */
 
-import org.cloudml.monitoring.status.StatusMonitor;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,13 +35,12 @@ import java.util.logging.Logger;
  * Created by Francesco di Forenza
  */
 
-public class ConfigurationLoader {
+public class StatusConfiguration {
     private static final Logger journal = Logger.getLogger(StatusMonitor.class.getName());
-    public static class MonitoringProperties{
+    public static class StatusMonitorProperties {
         private boolean activated;
         private int frequency;
-        private boolean monitoringPlatformGiven;
-        private String ipAddress;
+
 
         public boolean getActivated() {
             return activated;
@@ -52,32 +50,23 @@ public class ConfigurationLoader {
             return frequency;
         }
 
-        public boolean isMonitoringPlatformGiven() {
-            return monitoringPlatformGiven;
-        }
 
-        public String getIpAddress() {
-            return ipAddress;
-        }
-
-        public MonitoringProperties(boolean activated, int frequency, boolean monitoringPlatformGiven, String ipAddress) {
+        public StatusMonitorProperties(boolean activated, int frequency) {
             this.activated = activated;
             this.frequency = frequency;
-            this.monitoringPlatformGiven = monitoringPlatformGiven;
-            this.ipAddress = ipAddress;
+
         }
-        public MonitoringProperties(){
+        public StatusMonitorProperties(){
             this.activated = false;
             this.frequency = 60;
-            this.monitoringPlatformGiven = false;
-            this.ipAddress = "localhost";
+
         }
     }
-    public static MonitoringProperties load() {
+    public static StatusMonitorProperties load() {
 
         Properties prop = new Properties();
         InputStream input = null;
-        MonitoringProperties properties = new MonitoringProperties();
+        StatusMonitorProperties properties = new StatusMonitorProperties();
         try {
 
             input = new FileInputStream("monitoring.properties");
@@ -88,13 +77,11 @@ public class ConfigurationLoader {
             // get the property
             boolean activated= Boolean.parseBoolean((prop.getProperty("activated")));
             int frequency = Integer.parseInt((prop.getProperty("frequency")));
-            boolean monitoringPlatformGiven = Boolean.parseBoolean(((prop.getProperty("use"))));
-            String ipAddress = ((prop.getProperty("address")));
 
-            properties = new MonitoringProperties(activated, frequency, monitoringPlatformGiven, ipAddress);
+            properties = new StatusMonitorProperties(activated, frequency);
 
         } catch (IOException ex) {
-            journal.log(Level.INFO, ">> Monitoring.properties not found using default values");
+            journal.log(Level.INFO, ">> monitoring.properties not found status monitor not in use");
         } finally {
             if (input != null) {
                 try {
