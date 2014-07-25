@@ -60,7 +60,8 @@ public class CloudAppDeployer {
     private Deployment currentModel;
     private Deployment targetModel;
     private Coordinator coordinator;
-    private StatusMonitor statusMonitor;
+    private boolean statusMonitorActive;
+    private StatusMonitor statusMonitor; //always check if active
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -81,14 +82,15 @@ public class CloudAppDeployer {
             this.currentModel = targetModel;
 
             //set up a coordinator (used to update the model)
-            if (coordinator == null){
+            if (coordinator == null) {
                 coordinator = new Coordinator();
             }
             SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
             coordinator.setModelRepo(modelRepo);
             coordinator.start();
-            if (statusMonitor == null){
-                statusMonitor= new StatusMonitor(monProp.getFrequency(), false, coordinator);
+            if (monProp.getActivated() && statusMonitor == null) {
+                statusMonitorActive = true;
+                statusMonitor = new StatusMonitor(monProp.getFrequency(), false, coordinator);
             }
 
             // Provisioning vms
@@ -105,10 +107,10 @@ public class CloudAppDeployer {
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
             //send the current deployment to the monitoring platform
-            if (monProp.isMonitoringPlatformGiven()){
-            MonitoringSynch.sendCurrentDeployment(monProp.getIpAddress(),currentModel);}
-        }
-        else {
+            if (monProp.isMonitoringPlatformGiven()) {
+                MonitoringSynch.sendCurrentDeployment(monProp.getIpAddress(), currentModel);
+            }
+        } else {
             journal.log(Level.INFO, ">> Updating a deployment...");
             CloudMLModelComparator diff = new CloudMLModelComparator(currentModel, targetModel);
             diff.compareCloudMLModel();
@@ -132,7 +134,7 @@ public class CloudAppDeployer {
             }
         }
         //start the monitoring of VMs
-        if (monProp.getActivated()){
+        if (statusMonitorActive) {
             statusMonitor.start();
         }
     }
@@ -144,8 +146,7 @@ public class CloudAppDeployer {
                     throw new IllegalArgumentException(message);
                 }
             }
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(message);
         }
     }
@@ -167,8 +168,7 @@ public class CloudAppDeployer {
             currentModel.getComponentInstances().addAll(diff.getAddedComponents());
             currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
             currentModel.getComponentInstances().addAll(diff.getAddedECs());
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Cannot update current model without comparator!");
         }
     }
@@ -193,7 +193,7 @@ public class CloudAppDeployer {
      * Prepare a component before it starts. Retrieves its resources, builds
      * its PaaS and installs it
      *
-     * @param instance an InternalComponentInstance
+     * @param instance   an InternalComponentInstance
      * @param components a list of components
      * @throws MalformedURLException
      */
@@ -220,8 +220,7 @@ public class CloudAppDeployer {
 
                 instance.setStatus(State.INSTALLED);
                 jc.closeConnection();
-            }
-            else{ // If the destination is a PaaS platform
+            } else { // If the destination is a PaaS platform
                 ExternalComponent ownerType = (ExternalComponent) host.getType();
                 Provider p = ownerType.getProvider();
                 PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
@@ -237,19 +236,19 @@ public class CloudAppDeployer {
         }
     }
 
-    private void executeCommand(VMInstance owner, Connector jc, String command){
-        if(!command.equals("")){
-            if(!owner.getType().getOs().toLowerCase().contains("windows")){
+    private void executeCommand(VMInstance owner, Connector jc, String command) {
+        if (!command.equals("")) {
+            if (!owner.getType().getOs().toLowerCase().contains("windows")) {
                 jc.execCommand(owner.getId(), command, "ubuntu", owner.getType().getPrivateKey());
-            }else{
-                if(command != null && !command.isEmpty()){
+            } else {
+                if (command != null && !command.isEmpty()) {
                     PowerShellConnector run = null;
                     try {
                         Thread.sleep(90000); // crappy stuff: wati for windows .... TODO
-                        String cmd="powershell  \""+command+" "+owner.getType().getPrivateKey()+" "+owner.getPublicAddress()+"\"";
-                        journal.log(Level.INFO, ">> Executing command: "+cmd);
+                        String cmd = "powershell  \"" + command + " " + owner.getType().getPrivateKey() + " " + owner.getPublicAddress() + "\"";
+                        journal.log(Level.INFO, ">> Executing command: " + cmd);
                         run = new PowerShellConnector(cmd);
-                        journal.log(Level.INFO, ">> STDOUT: "+run.getStandardOutput());
+                        journal.log(Level.INFO, ">> STDOUT: " + run.getStandardOutput());
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {
@@ -263,10 +262,10 @@ public class CloudAppDeployer {
     private void executeInstallCommand(InternalComponentInstance x, VMInstance owner, Connector jc) {
         unlessNotNull("Cannot install with an argument at null", x, owner, jc);
         for (Resource r : x.getType().getResources()) {
-            if(!r.getInstallCommand().equals("")){
-                if(r.getRequireCredentials()){
-                    jc.execCommand(owner.getId(), r.getInstallCommand()+" "+owner.getType().getProvider().getCredentials().getLogin()+" "+owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
-                }else{
+            if (!r.getInstallCommand().equals("")) {
+                if (r.getRequireCredentials()) {
+                    jc.execCommand(owner.getId(), r.getInstallCommand() + " " + owner.getType().getProvider().getCredentials().getLogin() + " " + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                } else {
                     executeCommand(owner, jc, r.getInstallCommand());
                 }
             }
@@ -277,10 +276,10 @@ public class CloudAppDeployer {
      * Upload resources associated to an internal component on a specified
      * external component
      *
-     * @param x the internal component with upload commands
+     * @param x     the internal component with upload commands
      * @param owner the external component on which the resources are about to
-     * be uploaded
-     * @param jc the connector used to upload
+     *              be uploaded
+     * @param jc    the connector used to upload
      */
     private void executeUploadCommands(InternalComponentInstance x, VMInstance owner, Connector jc) {
         unlessNotNull("Cannot upload with an argument at null", x, owner, jc);
@@ -294,17 +293,17 @@ public class CloudAppDeployer {
     /**
      * Retrieve the resources associated to an InternalComponent
      *
-     * @param x the internalComponent we want to retrieve the resource
+     * @param x     the internalComponent we want to retrieve the resource
      * @param owner the externalComponent on which the resources will be
-     * downloaded
-     * @param jc the connector used to trigger the commands
+     *              downloaded
+     * @param jc    the connector used to trigger the commands
      */
     private void executeRetrieveCommand(InternalComponentInstance x, VMInstance owner, Connector jc) {
         unlessNotNull("Cannot retrieve resources of null!", x, owner, jc);
         for (Resource r : x.getType().getResources()) {
-            if(!r.getRetrieveCommand().equals("")){
-                if(r.getRequireCredentials())
-                    jc.execCommand(owner.getId(), r.getRetrieveCommand()+" "+owner.getType().getProvider().getCredentials().getLogin()+""+owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+            if (!r.getRetrieveCommand().equals("")) {
+                if (r.getRequireCredentials())
+                    jc.execCommand(owner.getId(), r.getRetrieveCommand() + " " + owner.getType().getProvider().getCredentials().getLogin() + "" + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
                 else executeCommand(owner, jc, r.getRetrieveCommand());
             }
         }
@@ -321,31 +320,30 @@ public class CloudAppDeployer {
         if (component instanceof InternalComponentInstance) {
             InternalComponentInstance internalComponent = (InternalComponentInstance) component;
             return internalComponent.externalHost();
-        }
-        else {
+        } else {
             return (ExternalComponentInstance) component;
         }
     }
 
 
-    private void buildExecutes(InternalComponentInstance x){
+    private void buildExecutes(InternalComponentInstance x) {
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
 
         Connector jc;
         jc = ConnectorFactory.createIaaSConnector(n.getProvider());
 
-        ComponentInstance host=x.getHost();
+        ComponentInstance host = x.getHost();
 
-        if (!alreadyDeployed.contains(host)){
-            if(host.isInternal()){
+        if (!alreadyDeployed.contains(host)) {
+            if (host.isInternal()) {
                 buildExecutes(host.asInternal());
-                journal.log(Level.INFO, ">> Installing host: "+host.getName());
+                journal.log(Level.INFO, ">> Installing host: " + host.getName());
                 executeRetrieveCommand(host.asInternal(), ownerVM, jc);
                 executeInstallCommand(host.asInternal(), ownerVM, jc);
                 host.asInternal().setStatus(State.INSTALLED);
 
-                for (Resource r :  host.getType().getResources()) {
+                for (Resource r : host.getType().getResources()) {
                     String configurationCommand = r.getConfigureCommand();
                     configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                 }
@@ -395,11 +393,11 @@ public class CloudAppDeployer {
                         jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
                     }
 
-                    if ( serverComponent.isInternal()) {
+                    if (serverComponent.isInternal()) {
                         serverComponent.asInternal().setStatus(State.INSTALLED);
                     }
 
-                    for (Resource r :  serverComponent.getType().getResources()) {
+                    for (Resource r : serverComponent.getType().getResources()) {
                         String configurationCommand = r.getConfigureCommand();
                         configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
                     }
@@ -464,16 +462,16 @@ public class CloudAppDeployer {
     /**
      * Configure a component
      *
-     * @param jc a connector
-     * @param n A VM type
-     * @param ni a VM instance
+     * @param jc                   a connector
+     * @param n                    A VM type
+     * @param ni                   a VM instance
      * @param configurationCommand the command to configure the component,
-     * parameters are: IP IPDest portDest
+     *                             parameters are: IP IPDest portDest
      */
     private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean required) {
         if (!configurationCommand.equals("")) {
-            if(required)
-                jc.execCommand(ni.getId(), configurationCommand+" "+ni.getType().getProvider().getCredentials().getLogin()+" "+ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
+            if (required)
+                jc.execCommand(ni.getId(), configurationCommand + " " + ni.getType().getProvider().getCredentials().getLogin() + " " + ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
             else executeCommand(ni, jc, configurationCommand);
         }
     }
@@ -481,9 +479,9 @@ public class CloudAppDeployer {
     /**
      * start a component
      *
-     * @param jc a connector
-     * @param n A VM type
-     * @param ni a VM instance
+     * @param jc           a connector
+     * @param n            A VM type
+     * @param ni           a VM instance
      * @param startCommand the command to start the component
      */
     private void start(Connector jc, VM n, VMInstance ni, String startCommand) {
@@ -495,14 +493,15 @@ public class CloudAppDeployer {
 
     /**
      * Provision the VMs and upload the model with informations about the VM
-     *
+     * <p/>
      * Added: Also deal with PaaS platforms
+     *
      * @param ems A list of vms
      */
     private void setExternalServices(ExternalComponentInstanceGroup ems) {
         for (ExternalComponentInstance n : ems) {
-            if(n instanceof VMInstance)
-                provisionAVM((VMInstance)n);
+            if (n instanceof VMInstance)
+                provisionAVM((VMInstance) n);
             else
                 provisionAPlatform(n);
         }
@@ -519,14 +518,16 @@ public class CloudAppDeployer {
         ComponentInstance.State state = jc.createInstance(n);
         coordinator.updateStatus(n.getName(), state, CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
-        statusMonitor.attachModule(jc);
+        if (statusMonitorActive) {
+            statusMonitor.attachModule(jc);
+        }
         jc.closeConnection();
     }
 
     /**
      * Provision a platform.
      * So far (with only two examples of BeansTalk and CloudBees), the main PaaS
-     * platforms are not necessary to be provisioned before deployment, so this 
+     * platforms are not necessary to be provisioned before deployment, so this
      * method is basically used to launch a DB
      *
      * @param n: an external component instance for the platform
@@ -536,40 +537,39 @@ public class CloudAppDeployer {
         ExternalComponent ec = eci.getType();
         Provider p = eci.getType().getProvider();
 
-        if(ec.getServiceType() == null)
+        if (ec.getServiceType() == null)
             return;
-        if(ec.getServiceType().toLowerCase().equals("database")){//For now we use string but this will evolve to an enum
+        if (ec.getServiceType().toLowerCase().equals("database")) {//For now we use string but this will evolve to an enum
             PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
             connector.createDBInstance(
-                    ec.hasProperty("DB-Engine")?ec.getProperties().valueOf("DB-Engine"):null,
-                    ec.hasProperty("DB-Version")?ec.getProperties().valueOf("DB-Version"):null,
+                    ec.hasProperty("DB-Engine") ? ec.getProperties().valueOf("DB-Engine") : null,
+                    ec.hasProperty("DB-Version") ? ec.getProperties().valueOf("DB-Version") : null,
                     eci.getName(),
-                    ec.hasProperty("DB-Name")?ec.getProperties().valueOf("DB-Name"):null,
+                    ec.hasProperty("DB-Name") ? ec.getProperties().valueOf("DB-Name") : null,
                     ec.getLogin(),
                     ec.getPasswd(),
-                    ec.hasProperty("allocatedSize")?Integer.parseInt(ec.getProperties().valueOf("allocatedSize")):0,
+                    ec.hasProperty("allocatedSize") ? Integer.parseInt(ec.getProperties().valueOf("allocatedSize")) : 0,
                     null,
-                    ec.hasProperty("securityGroup")?ec.getProperties().valueOf("securityGroup"):"");
+                    ec.hasProperty("securityGroup") ? ec.getProperties().valueOf("securityGroup") : "");
             eci.setPublicAddress(connector.getDBEndPoint(eci.getName(), 600));
 
             //execute the configure command
-            if(!n.getType().getResources().isEmpty()){
-                for(Resource r : n.getType().getResources()){
-                    if(r.getConfigureCommand() != null){
-                        connector.restoreDB(eci.getPublicAddress(),"3306",ec.getLogin(), ec.getPasswd(),
-                                ec.hasProperty("DB-Name")?ec.getProperties().valueOf("DB-Name"):null,r.getConfigureCommand());
+            if (!n.getType().getResources().isEmpty()) {
+                for (Resource r : n.getType().getResources()) {
+                    if (r.getConfigureCommand() != null) {
+                        connector.restoreDB(eci.getPublicAddress(), "3306", ec.getLogin(), ec.getPasswd(),
+                                ec.hasProperty("DB-Name") ? ec.getProperties().valueOf("DB-Name") : null, r.getConfigureCommand());
                     }
                 }
             }
 
         }
-        if(ec.getServiceType().toLowerCase().equals("messagequeue")){
+        if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
             PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
-            String url=connector.createQueue(n.getName());
+            String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
         }
     }
-
 
 
     /**
@@ -582,22 +582,21 @@ public class CloudAppDeployer {
         //Configure on the basis of the relationships
         //parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
         for (RelationshipInstance bi : relationships) {
-            if(bi.getProvidedEnd().getOwner().get().isExternal()){  //For DB
-                for(Resource res : bi.getType().getResources()){
+            if (bi.getProvidedEnd().getOwner().get().isExternal()) {  //For DB
+                for (Resource res : bi.getType().getResources()) {
                     ConfigValet valet = ConfigValet.createValet(bi, res);
-                    if(valet != null)
+                    if (valet != null)
                         valet.config();
                 }
                 ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
                 Component client = clienti.getType();
                 ComponentInstance pltfi = getDestination(clienti);
-                ExternalComponent pltf = (ExternalComponent)pltfi.getType();
+                ExternalComponent pltf = (ExternalComponent) pltfi.getType();
 
                 PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
                 connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
 
-            }
-            else if (bi.getRequiredEnd().getType().isRemote()) {
+            } else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
                 ProvidedPortInstance server = bi.getProvidedEnd();
 
@@ -613,7 +612,7 @@ public class CloudAppDeployer {
         }
     }
 
-    private void configureWithIP(Resource server, Resource client, PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber){
+    private void configureWithIP(Resource server, Resource client, PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
         Connector jcServer;
         Connector jcClient;
         VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
@@ -622,34 +621,34 @@ public class CloudAppDeployer {
         VM VMClient = ownerVMServer.getType();
         jcServer = ConnectorFactory.createIaaSConnector(VMserver.getProvider());
         jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
-        if(server != null){
-            if(server.getRetrieveCommand() != null)
+        if (server != null) {
+            if (server.getRetrieveCommand() != null)
                 jcServer.execCommand(ownerVMServer.getId(), server.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
         }
-        if(client !=null){
-            if(client.getRetrieveCommand() != null)
+        if (client != null) {
+            if (client.getRetrieveCommand() != null)
                 jcClient.execCommand(ownerVMClient.getId(), client.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
         }
-        if(server != null){
-            if(server.getConfigureCommand() != null){
+        if (server != null) {
+            if (server.getConfigureCommand() != null) {
                 String configurationCommand = server.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials());
             }
         }
-        if(client != null){
-            if(client.getConfigureCommand() != null){
+        if (client != null) {
+            if (client.getConfigureCommand() != null) {
                 String configurationCommand = client.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
             }
         }
-        if(server != null){
-            if(server.getInstallCommand() != null){
+        if (server != null) {
+            if (server.getInstallCommand() != null) {
                 String installationCommand = server.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials());
             }
         }
-        if(client != null){
-            if(client.getInstallCommand() != null){
+        if (client != null) {
+            if (client.getInstallCommand() != null) {
                 String installationCommand = client.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials());
             }
@@ -661,10 +660,10 @@ public class CloudAppDeployer {
     /**
      * Configuration with parameters IP, IPDest, PortDest
      *
-     * @param r resources for configuration
-     * @param i port of the component to be CONFIGURED
-     * @param destinationIpAddress IP of the server
-     * @param ipAddress IP of the client
+     * @param r                     resources for configuration
+     * @param i                     port of the component to be CONFIGURED
+     * @param destinationIpAddress  IP of the server
+     * @param ipAddress             IP of the client
      * @param destinationPortNumber port of the server
      * @throws MalformedURLException
      */
@@ -676,11 +675,11 @@ public class CloudAppDeployer {
             jc = ConnectorFactory.createIaaSConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
             jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
-            if(r.getConfigureCommand() != null){
+            if (r.getConfigureCommand() != null) {
                 String configurationCommand = r.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
             }
-            if(r.getInstallCommand() != null){
+            if (r.getInstallCommand() != null) {
                 String installationCommand = r.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jc, n, ownerVM, installationCommand, r.getRequireCredentials());
             }
@@ -787,7 +786,8 @@ public class CloudAppDeployer {
             VM n = ownerVM.getType();
             jc = ConnectorFactory.createIaaSConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());;
+            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());
+            ;
             jc.closeConnection();
         }
     }
@@ -818,8 +818,7 @@ public class CloudAppDeployer {
     private ExternalComponentInstance findDestinationWhenNoRequiredExecutionPlatformSpecified(InternalComponentInstance a) {
         if (getDestination(a) != null) {
             return getDestination(a);
-        }
-        else {
+        } else {
             for (RelationshipInstance b : currentModel.getRelationshipInstances()) {
                 if (a.getRequiredPorts().contains(b.getRequiredEnd()) && b.getRequiredEnd().getType().isLocal()) {
                     return getDestination(b.getProvidedEnd().getOwner().get());
@@ -835,66 +834,68 @@ public class CloudAppDeployer {
     /**
      * Method to scale out a VM within the same provider
      * Create a snapshot of the VM and then configure the bindings
+     *
      * @param vmi an instance of VM
      */
-    public void scaleOut(VMInstance vmi){
-        Connector c=ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-        StandardLibrary lib=new StandardLibrary();
+    public void scaleOut(VMInstance vmi) {
+        Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+        StandardLibrary lib = new StandardLibrary();
 
         //1. create snapshot of an instance
-        String ID=c.createImage(vmi); //TODO: should check if the image already exist
+        String ID = c.createImage(vmi); //TODO: should check if the image already exist
 
         //2. instantiate the new VM using the newly created snapshot
         //VMInstance ci= lib.replicateComponentInstance(currentModel,vmi,null).asExternal().asVM();
-        VM existingVM=vmi.asExternal().asVM().getType();
-        VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
-        if(v == null){//in case a type for the snapshot has already been created
-            String name=lib.createUniqueComponentInstanceName(currentModel,existingVM);
-            v=new VM(name+"-fromImage",existingVM.getProvider());
-        v.setGroupName(existingVM.getGroupName());
+        VM existingVM = vmi.asExternal().asVM().getType();
+        VM v = currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName() + "-fromImage");
+        if (v == null) {//in case a type for the snapshot has already been created
+            String name = lib.createUniqueComponentInstanceName(currentModel, existingVM);
+            v = new VM(name + "-fromImage", existingVM.getProvider());
+            v.setGroupName(existingVM.getGroupName());
             v.setRegion(existingVM.getRegion());
-        v.setImageId(ID);
-        v.setLocation(existingVM.getLocation());
-        v.setMinRam(existingVM.getMinRam());
-        v.setMinCores(existingVM.getMinCores());
-        v.setMinStorage(existingVM.getMinStorage());
-        v.setSecurityGroup(existingVM.getSecurityGroup());
-        v.setSshKey(existingVM.getSshKey());
-        v.setPrivateKey(existingVM.getPrivateKey());
-        v.setProvider(existingVM.getProvider());
+            v.setImageId(ID);
+            v.setLocation(existingVM.getLocation());
+            v.setMinRam(existingVM.getMinRam());
+            v.setMinCores(existingVM.getMinCores());
+            v.setMinStorage(existingVM.getMinStorage());
+            v.setSecurityGroup(existingVM.getSecurityGroup());
+            v.setSshKey(existingVM.getSshKey());
+            v.setPrivateKey(existingVM.getPrivateKey());
+            v.setProvider(existingVM.getProvider());
             v.setProvidedExecutionPlatforms(existingVM.getProvidedExecutionPlatforms().toList());
-        currentModel.getComponents().add(v);
+            currentModel.getComponents().add(v);
         }
-        VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
+        VMInstance ci = lib.provision(currentModel, v).asExternal().asVM();
         c.createInstance(ci);
 
 
         //3. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
-        duplicateHostedGraph(vmi,ci);
+        duplicateHostedGraph(vmi, ci);
 
         //4. configure the new VM
         //TODO
     }
 
 
-    private void duplicateHostedGraph(VMInstance vmiSource,VMInstance vmiDestination){
-        InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
-        StandardLibrary lib=new StandardLibrary();
-        lib.replicateSubGraph(currentModel,icig,vmiDestination);
+    private void duplicateHostedGraph(VMInstance vmiSource, VMInstance vmiDestination) {
+        InternalComponentInstanceGroup icig = currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
+        StandardLibrary lib = new StandardLibrary();
+        lib.replicateSubGraph(currentModel, icig, vmiDestination);
     }
 
     /**
      * To scale our a VM on another provider (kind of bursting)
-     * @param vmi the vm instance to scale out
+     *
+     * @param vmi      the vm instance to scale out
      * @param provider the provider where we want to burst
      */
-    public void scaleOut(VMInstance vmi, Provider provider){
-        Connector c=ConnectorFactory.createIaaSConnector(provider);
-        StandardLibrary lib=new StandardLibrary();
+    public void scaleOut(VMInstance vmi, Provider provider) {
+        Connector c = ConnectorFactory.createIaaSConnector(provider);
+        StandardLibrary lib = new StandardLibrary();
 
-        VMInstance ci= lib.replicateComponentInstance(targetModel,vmi,null).asExternal().asVM();
-        VM existingVM=ci.asExternal().asVM().getType();
-        VM v=new VM(existingVM.getName()+"-scaled",existingVM.getProvider());
+        VMInstance ci = lib.replicateComponentInstance(targetModel, vmi, null).asExternal().asVM();
+        VM existingVM = ci.asExternal().asVM().getType();
+        VM v = new VM(existingVM.getName() + "-scaled", existingVM.getProvider());
         v.setGroupName(existingVM.getGroupName());
         v.setImageId(existingVM.getImageId());
         v.setLocation(existingVM.getLocation());
@@ -909,7 +910,7 @@ public class CloudAppDeployer {
         ci.setType(v);
         c.createInstance(ci.asExternal().asVM());
 
-        duplicateHostedGraph(vmi,ci);
+        duplicateHostedGraph(vmi, ci);
 
         deploy(targetModel);
     }
