@@ -40,6 +40,7 @@ import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
+import org.cloudml.monitoring.util.ConfigurationLoader;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.SimpleModelRepo;
 import org.jclouds.compute.domain.Image;
@@ -60,7 +61,6 @@ public class CloudAppDeployer {
     private Deployment targetModel;
     private Coordinator coordinator;
     private StatusMonitor statusMonitor;
-    private final String monitoringPlatformAddress = "http://192.168.11.6:8170";
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -74,6 +74,8 @@ public class CloudAppDeployer {
     public void deploy(Deployment targetModel) {
         unlessNotNull("Cannot deploy null!", targetModel);
         this.targetModel = targetModel;
+        //set up the monitoring
+        ConfigurationLoader.MonitoringProperties monProp = ConfigurationLoader.load();
         if (currentModel == null) {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
@@ -85,9 +87,8 @@ public class CloudAppDeployer {
             SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
             coordinator.setModelRepo(modelRepo);
             coordinator.start();
-            //set up the monitoring
             if (statusMonitor == null){
-                statusMonitor= new StatusMonitor(60, false, coordinator);
+                statusMonitor= new StatusMonitor(monProp.getFrequency(), false, coordinator);
             }
 
             // Provisioning vms
@@ -104,7 +105,8 @@ public class CloudAppDeployer {
             configureSaas(targetModel.getComponentInstances().onlyInternals());
 
             //send the current deployment to the monitoring platform
-            MonitoringSynch.sendCurrentDeployment(monitoringPlatformAddress,currentModel);
+            if (monProp.isMonitoringPlatformGiven()){
+            MonitoringSynch.sendCurrentDeployment(monProp.getIpAddress(),currentModel);}
         }
         else {
             journal.log(Level.INFO, ">> Updating a deployment...");
@@ -124,12 +126,15 @@ public class CloudAppDeployer {
             updateCurrentModel(diff);
 
             //send the changes to the monitoring platform
-            MonitoringSynch.sendAddedComponents(monitoringPlatformAddress, diff.getAddedECs());
-            MonitoringSynch.sendRemovedComponents(monitoringPlatformAddress, diff.getRemovedECs());
-
+            if (monProp.isMonitoringPlatformGiven()) {
+                MonitoringSynch.sendAddedComponents(monProp.getIpAddress(), diff.getAddedECs());
+                MonitoringSynch.sendRemovedComponents(monProp.getIpAddress(), diff.getRemovedECs());
+            }
         }
         //start the monitoring of VMs
-        statusMonitor.start();
+        if (monProp.getActivated()){
+            statusMonitor.start();
+        }
     }
 
     private void unlessNotNull(String message, Object... obj) {
