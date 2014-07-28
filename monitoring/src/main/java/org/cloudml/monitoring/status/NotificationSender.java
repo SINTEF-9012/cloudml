@@ -28,6 +28,7 @@ import org.cloudml.mrt.Coordinator;
 
 /**
  * @author Francesco di Forenza
+ * this class contatins all the possible way in which a change in the status can be notified
  */
 
 public class NotificationSender {

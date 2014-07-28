@@ -30,14 +30,10 @@ import java.util.List;
 
 /**
  * @author Francesco di Forenza and Lorenzo Cianciaruso
- * This class is a copy of a class contained in the Monitoring Platform
- * it should be added as dependency
  */
 public class ModelUpdates {
     private List<VM> vms;
-
     private List<Component> components;
-
     private List<ExternalComponent> externalComponents;
 
     public ModelUpdates(List<Component> components, List<ExternalComponent> externalComponents, List<VM> vms) {
@@ -51,24 +47,12 @@ public class ModelUpdates {
         return vms;
     }
 
-    /*public void setVms(List<VM> vms) {
-        this.vms = vms;
-    }*/
-
     public List<Component> getComponents() {
         return components;
     }
 
-    public void setComponents(List<Component> components) {
-        this.components = components;
-    }
-
     public List<ExternalComponent> getExternalComponents() {
         return externalComponents;
-    }
-
-    public void setExternalComponents(List<ExternalComponent> externalComponents) {
-        this.externalComponents = externalComponents;
     }
 
 

@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Created by user on 10.06.14.
  * @author Lorenzo Cianciaruso
  */
 public class MonitoringAPI {

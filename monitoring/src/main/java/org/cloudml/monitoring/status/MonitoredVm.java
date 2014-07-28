@@ -24,6 +24,7 @@ package org.cloudml.monitoring.status; /**
 import org.cloudml.core.ComponentInstance;
 /**
  * @author Francesco di Forenza
+ * this class contains a definition of VM used only in this package
  */
 public class MonitoredVm {
     private String id;

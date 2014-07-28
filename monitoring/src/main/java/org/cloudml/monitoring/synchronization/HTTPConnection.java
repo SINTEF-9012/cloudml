@@ -28,7 +28,7 @@ import java.net.*;
 
 /**
  * @author Lorenzo Cianciaruso
- * in this class are implemented the HTTp request needed to
+ * in this class are implemented the HTTP requests needed to
  * communicate with the monitoring platform.
  */
 public class HTTPConnection {

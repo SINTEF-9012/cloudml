@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 
 /**
  * Created by Francesco di Forenza
+ * this class loads the configuration file
  */
 
 public class StatusConfiguration {

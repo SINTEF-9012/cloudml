@@ -44,6 +44,7 @@ import java.util.logging.Logger;
  * A push notification is send when the status change
  *
  * @author Francesco di Forenza
+ * this class is the main wrapper to monito the status
  */
 
 public class StatusMonitor {

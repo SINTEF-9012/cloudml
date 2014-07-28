@@ -29,7 +29,6 @@ import org.cloudml.core.ExternalComponentInstance;
 import java.util.List;
 
 /**
- * Created by user on 10.07.14.
  * @author Lorenzo Cianciaruso
  */
 public class MonitoringSynch {

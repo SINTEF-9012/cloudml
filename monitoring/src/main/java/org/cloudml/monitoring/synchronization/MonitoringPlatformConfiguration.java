@@ -31,7 +31,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 /**
  * Created by Francesco di Forenza
+ * this class loads the configuration file
  */
+
 
 public class MonitoringPlatformConfiguration {
     private static final Logger journal = Logger.getLogger(MonitoringAPI.class.getName());
