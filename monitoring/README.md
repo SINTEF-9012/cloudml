@@ -62,8 +62,3 @@ If there is the need to send also the InternalComponents to the Monitoring Platf
 
 This subfolder contains a metric observer that can be used to retrieve monitoring data in CloudML.
 This functionality is not yet exploited by CLoudML. In case some work has to be done on the observer is better to check if a newer version exists and the observer can be imported as Maven dependency.
-
-#Util
-This folder contains a SocketClient no longer used fro the monitoring activity. Can be removed.
-
-
