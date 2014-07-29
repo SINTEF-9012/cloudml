@@ -24,7 +24,7 @@ Implementation notes (READ CAREFULLY IN CASE YOU WANT TO CHANGE SOMETHING):
 The StatusMonitor offers all the methods to start and pause the monitoring of status and to flush the cache. 
 There are some modules (one for each provider) in the modules folder. The module is the one that retrieves the status information.
 Inside each module is also performed the mapping between the names of statuses used by the provider and the ones used in Cloudml.
-In case a new provider is added to Cloudml a new module should be created and used with the same logic used for the others.
+In case a new provider is added to Cloudml a new module should be created and used with the same logic of the others.
 
 #Synchronization
 
@@ -38,12 +38,18 @@ use=true
 address=http://192.168.11.6:8170
 ```
 At the end of deployment and after each change in deployment model the model is sent to the MODAClouds Monitoring Platform so that the monitoring activity can be update accordingly.
+
+Here more in details the various classes:
+
 The class MonitoringSynch contains three methods to send:
 - the entire model (used during monitoring platform bootstrapping)
 - the added external components (used at runtime)
 - the removed internal components (use at runtime)
+
 The class Filter is the one in which the actual mapping from CLoudML’s model to Monitoring Platform’s is performed.
+
 Two extra classes ModelUpdates and ModelUpdatesExclusionStrategy are uses as support to create the Json.
+
 The class Monitoring API offers a mapping of the APIs of the Monitoring Platform in order to facilitate the use from CloudML. (This aspect is not exploited for the moment)
 
 Implementation notes (READ CAREFULLY IN CASE YOU WANT TO CHANGE SOMETHING):
