@@ -1,13 +1,15 @@
 This package contains all the code related to the monitoring activity. It's divided in sub-folders, one sub-folder per functionality.
+
 # Status
 The goal of the classes in this sub-folder is to monitor the status of a deployed machine.
 These components need that a configuration file named monitoring.properties is loaded in the root folder of Cloudml
 
 Here an example of this file:
-
-activated=true
+```
+#STATUS MONITOR PROPERTIES
+activated=true 
 frequency=60
-
+```
 According to what is specified in the file the components will start the monitoring, in case of changes, will update the model.
 
 Here more in detail the way in which it work:
@@ -27,12 +29,14 @@ In case a new provider is added to Cloudml a new module should be created and us
 #Synchronization
 
 The classes in this folder manage the communication from CloudML to the MODAClouds monitoring platform
-These components need that a configuration file named monitoringPlatform.properties is loaded in the root folder of Cloudml
-Here an example of this file:
+These components need that a configuration file named monitoringPlatform.properties is loaded in the root folder of Cloudml.
 
+Here an example of this file:
+```
+#MONITORING PLATFORM PROPERTIES
 use=true
 address=http://192.168.11.6:8170
-
+```
 At the end of deployment and after each change in deployment model the model is sent to the MODAClouds Monitoring Platform so that the monitoring activity can be update accordingly.
 The class MonitoringSynch contains three methods to send:
 - the entire model (used during monitoring platform bootstrapping)
@@ -51,5 +55,9 @@ If there is the need to send also the InternalComponents to the Monitoring Platf
 #MetricObserver
 
 This subfolder contains a metric observer that can be used to retrieve monitoring data in CloudML.
+This functionality is not yet exploited by CLoudML. In case some work has to be done on the observer is better to check if a newer version exists and the observer can be imported as Maven dependency.
+
+#Util
+This folder contains a SocketClient no longer used fro the monitoring activity. Can be removed.
 
 
