@@ -22,11 +22,10 @@
  */
 package org.cloudml.core.actions;
 
-import org.cloudml.core.Component;
-import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.ExternalComponentInstance;
+import org.cloudml.core.*;
 import org.cloudml.core.builders.ComponentInstanceBuilder;
+import org.cloudml.core.builders.InternalComponentInstanceBuilder;
+
 import static org.cloudml.core.builders.Commons.*;
 
 /**
@@ -54,7 +53,14 @@ public class ReplicateComponentInstance extends AbstractAction<ComponentInstance
     public ComponentInstance applyTo(Deployment target) {
         ComponentInstance result=null;
         if(instance.isInternal()){
-            result=getLibrary().install(target, instance.asInternal().getType(), host);
+            final String instanceName = getLibrary().createUniqueComponentInstanceName(target, instance.asInternal().getType());
+            InternalComponentInstanceBuilder builder = anInternalComponentInstance()
+                    .named(instanceName)
+                    .ofType(instance.asInternal().getType().getName())
+                    .hostedBy(host.getName());
+            builder.integrateIn(target);
+
+            result = target.getComponentInstances().onlyInternals().firstNamed(instanceName);
         }
         if(instance.isExternal()){
             result=getLibrary().provision(target, instance.getType());

@@ -154,7 +154,7 @@ public class OpenStackConnector implements Connector{
             id=i.getId().split("/")[1];
         }
         try {
-            Thread.sleep(7000);
+            Thread.sleep(30000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

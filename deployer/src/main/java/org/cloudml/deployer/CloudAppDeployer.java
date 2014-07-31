@@ -24,8 +24,7 @@ package org.cloudml.deployer;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,7 +48,7 @@ import static org.cloudml.core.builders.Commons.anExternalComponentInstance;
  */
 public class CloudAppDeployer {
 
-    private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
+    private static final Logger journal = Logger.getLogger(CloudAppDeployer.class.getName());
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
@@ -328,6 +327,7 @@ public class CloudAppDeployer {
                 alreadyDeployed.add(host);
             }
         }
+        jc.closeConnection();
     }
 
 
@@ -355,6 +355,9 @@ public class CloudAppDeployer {
                     owner = ownerVM;
                 }
                 if (!alreadyDeployed.contains(serverComponent)) {
+                    for (Resource r : serverComponent.getType().getResources()) {
+                        executeUploadCommands(x,owner,jc);
+                    }
                     for (Resource r : serverComponent.getType().getResources()) {
                         jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
                     }
@@ -437,9 +440,9 @@ public class CloudAppDeployer {
      * @param configurationCommand the command to configure the component,
      * parameters are: IP IPDest portDest
      */
-    private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean required) {
+    private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean keyRequired) {
         if (!configurationCommand.equals("")) {
-            if(required)
+            if(keyRequired)
                 jc.execCommand(ni.getId(), configurationCommand+" "+ni.getType().getProvider().getCredentials().getLogin()+" "+ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
             else executeCommand(ni, jc, configurationCommand);
         }
@@ -587,33 +590,33 @@ public class CloudAppDeployer {
         jcServer = ConnectorFactory.createIaaSConnector(VMserver.getProvider());
         jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
         if(server != null){
-            if(server.getRetrieveCommand() != null)
+            if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals(""))
                 jcServer.execCommand(ownerVMServer.getId(), server.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
         }
         if(client !=null){
-            if(client.getRetrieveCommand() != null)
+            if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals(""))
                 jcClient.execCommand(ownerVMClient.getId(), client.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
         }
         if(server != null){
-            if(server.getConfigureCommand() != null){
+            if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
                 String configurationCommand = server.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials());
             }
         }
         if(client != null){
-            if(client.getConfigureCommand() != null){
+            if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
                 String configurationCommand = client.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
             }
         }
         if(server != null){
-            if(server.getInstallCommand() != null){
+            if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
                 String installationCommand = server.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials());
             }
         }
         if(client != null){
-            if(client.getInstallCommand() != null){
+            if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
                 String installationCommand = client.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials());
             }
@@ -805,9 +808,8 @@ public class CloudAppDeployer {
 
         //1. create snapshot of an instance
         String ID=c.createImage(vmi); //TODO: should check if the image already exist
-
+        c.closeConnection();
         //2. instantiate the new VM using the newly created snapshot
-        //VMInstance ci= lib.replicateComponentInstance(currentModel,vmi,null).asExternal().asVM();
         VM existingVM=vmi.asExternal().asVM().getType();
         VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
         if(v == null){//in case a type for the snapshot has already been created
@@ -828,21 +830,65 @@ public class CloudAppDeployer {
             currentModel.getComponents().add(v);
         }
         VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
-        c.createInstance(ci);
-
+        Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
+        c2.createInstance(ci);
+        c2.closeConnection();
 
         //3. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
-        duplicateHostedGraph(vmi,ci);
+        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
 
         //4. configure the new VM
-        //TODO
+        //execute the configuration bindings
+        Set<ComponentInstance> listOfAllComponentImpacted= new HashSet<ComponentInstance>();
+        for(InternalComponentInstance ici: duplicatedGraph.values()){
+            for(ProvidedPortInstance ppi: ici.getProvidedPorts()){
+                RelationshipInstanceGroup rig=currentModel.getRelationshipInstances().whereEitherEndIs(ppi);
+                manageDuplicatedRelationships(rig, listOfAllComponentImpacted);
+            }
+            for(RequiredPortInstance rpi: ici.getRequiredPorts()){
+                RelationshipInstanceGroup rig=currentModel.getRelationshipInstances().whereEitherEndIs(rpi);
+                manageDuplicatedRelationships(rig, listOfAllComponentImpacted);
+            }
+        }
+
+        //execute configure commands on the components
+        for(ComponentInstance ici: listOfAllComponentImpacted){
+            if(ici.isInternal()){
+                c2=ConnectorFactory.createIaaSConnector(v.getProvider());
+                for(Resource r: ici.getType().getResources()){
+                    configure(c2, ci.getType(), ici.asInternal().externalHost().asVM(), r.getConfigureCommand(),false);
+                }
+                c2.closeConnection();
+            }
+        }
+
+        //execute start commands on the components
+        for(ComponentInstance ici: listOfAllComponentImpacted){
+            if(ici.isInternal()){
+                c2=ConnectorFactory.createIaaSConnector(v.getProvider());
+                for(Resource r: ici.getType().getResources()){
+                    start(c2,ci.getType(),ici.asInternal().externalHost().asVM(),r.getStartCommand());
+                }
+                c2.closeConnection();
+            }
+        }
     }
 
 
-    private void duplicateHostedGraph(VMInstance vmiSource,VMInstance vmiDestination){
+    private void manageDuplicatedRelationships(RelationshipInstanceGroup rig, Set<ComponentInstance> listOfAllComponentImpacted){
+        if(rig != null){
+            configureWithRelationships(rig);
+            for(RelationshipInstance ri: rig){
+                listOfAllComponentImpacted.add(ri.getClientComponent());
+                listOfAllComponentImpacted.add(ri.getServerComponent());
+            }
+        }
+    }
+
+    private Map<InternalComponentInstance, InternalComponentInstance> duplicateHostedGraph(VMInstance vmiSource,VMInstance vmiDestination){
         InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
         StandardLibrary lib=new StandardLibrary();
-        lib.replicateSubGraph(currentModel,icig,vmiDestination);
+        return lib.replicateSubGraph(currentModel, icig, vmiDestination);
     }
 
     /**

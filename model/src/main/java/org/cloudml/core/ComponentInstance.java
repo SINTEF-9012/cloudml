@@ -66,8 +66,8 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
     }
     private final OptionalOwner<Deployment> owner;
     private T type;
-    private final ProvidedPortInstanceGroup providedPorts;
-    private final ProvidedExecutionPlatformInstanceGroup providedExecutionPlatforms;
+    private ProvidedPortInstanceGroup providedPorts;
+    private ProvidedExecutionPlatformInstanceGroup providedExecutionPlatforms;
 
     public ComponentInstance(String name, T type) {
         super(name);
@@ -174,6 +174,10 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
         return this.providedPorts;
     }
 
+    public void setProvidedPorts(ProvidedPortInstanceGroup ppig){
+        this.providedPorts=ppig;
+    }
+
     public T getType() {
         return this.type;
     }
@@ -187,6 +191,10 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
 
     public ProvidedExecutionPlatformInstanceGroup getProvidedExecutionPlatforms() {
         return providedExecutionPlatforms;
+    }
+
+    public void setProvidedExecutionPlatforms(ProvidedExecutionPlatformInstanceGroup pepig){
+        this.providedExecutionPlatforms=pepig;
     }
 
     @Override

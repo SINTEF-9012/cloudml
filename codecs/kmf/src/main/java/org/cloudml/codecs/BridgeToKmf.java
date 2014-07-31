@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.credentials.NoCredentials;
+import org.cloudml.core.samples.SensApp;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
@@ -149,6 +150,9 @@ public class BridgeToKmf {
         convertResources(ei, kExecute, factory);
 
         kExecute.setName(ei.getName());
+        assert (ei.getProvidedEnd() != null);
+        net.cloudml.core.ProvidedExecutionPlatformInstance o=providedExecutionPlatformInstances.get(calculateExecutionPlatformIdentifier(ei.getProvidedEnd()));
+        assert (o != null);
         kExecute.setProvidedExecutionPlatformInstance(providedExecutionPlatformInstances.get(calculateExecutionPlatformIdentifier(ei.getProvidedEnd())));
         kExecute.setRequiredExecutionPlatformInstance(requiredExecutionPlatformInstances.get(calculateExecutionPlatformIdentifier(ei.getRequiredEnd())));
 
