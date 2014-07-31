@@ -86,8 +86,6 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
                             .to(mapping.get(ri.getServerComponent()).getName(),
                                     mapping.get(ri.getServerComponent()).getProvidedPorts().ofType(ri.getProvidedEnd().getType()).getType().getName())
                             .ofType(ri.getType().getName()));
-                    journal.log(Level.INFO, ">> Relationship created between two new elements from:"+ mapping.get(ri.getClientComponent()).getName()+":"+mapping.get(ri.getClientComponent()).asInternal().getRequiredPorts().ofType(ri.getRequiredEnd().getType()).getType().getName()+"to"+
-                            mapping.get(ri.getServerComponent()).getName()+":"+ mapping.get(ri.getServerComponent()).getProvidedPorts().ofType(ri.getProvidedEnd().getType()).getType().getName());
                 }else{
                     rib.put(name, aRelationshipInstance()
                             .named(name)
@@ -96,8 +94,6 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
                             .to(ri.getServerComponent().getName(),
                                     ri.getProvidedEnd().getType().getName())
                             .ofType(ri.getType().getName()));
-                    journal.log(Level.INFO, ">> Relationship created  from:"+ mapping.get(ri.getClientComponent()).getName()+":"+mapping.get(ri.getClientComponent()).asInternal().getRequiredPorts().ofType(ri.getRequiredEnd().getType()).getType().getName()+"to"+
-                            ri.getServerComponent().getName()+":"+ ri.getProvidedEnd().getName());
                 }
             }else if(mapping.containsKey(ri.getServerComponent())){
                 rib.put(name, aRelationshipInstance()
@@ -107,8 +103,6 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
                         .to(mapping.get(ri.getServerComponent()).getName(),
                                 mapping.get(ri.getServerComponent()).getProvidedPorts().ofType(ri.getProvidedEnd().getType()).getType().getName())
                         .ofType(ri.getType().getName()));
-                journal.log(Level.INFO, ">> Relationship created between two new elements from:"+ ri.getClientComponent().getName()+":"+ri.getRequiredEnd().getName()+"to"+
-                        mapping.get(ri.getServerComponent()).getName()+":"+ mapping.get(ri.getServerComponent()).getProvidedPorts().ofType(ri.getProvidedEnd().getType()).getType().getName());
             }
         }
         for(String name: rib.keySet()){

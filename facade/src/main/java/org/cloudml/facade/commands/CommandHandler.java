@@ -74,5 +74,7 @@ public interface CommandHandler {
     public void handle(ScaleOut command);
 
     public void handle(Image command);
+
+    public void handle(Reset command);
     
 }

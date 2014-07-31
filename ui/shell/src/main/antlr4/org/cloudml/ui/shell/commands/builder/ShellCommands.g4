@@ -40,6 +40,7 @@ action
     |   'snapshot' ID                                       # Snapshot
     |   'scale out' ID                                      # ScaleOut
     |   'create image from'  ID                             # Image
+    |   'reset deployment'                                  # Reset
     ;
 
 kind
