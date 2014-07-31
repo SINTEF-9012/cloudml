@@ -20,17 +20,36 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-.nodeVM {
+
+.tmpNodeSymbol{
+    text-anchor: middle;
+    dominant-baseline: central;
+    font-family: "FontAwesome";
+    font-size: 20px;
+}
+
+.tmpToggleFoldSymbol{
+    text-anchor: start;
+    dominant-baseline: central;
+    font-family: "FontAwesome";
+    font-size: 15px;
+}
+.hidden {
+    fill: none;
+    stroke: none;
+}
+.externalComponent {
     fill: #fff;
     stroke: green;
     stroke-width: 2.5px;
 }
-.node {
+
+.internalComponent {
     fill: #fff;
     stroke: #000;
     stroke-width: 2.5px;
 }
-.node {
+.internalComponent {
     font: 10px sans-serif;
 }
 .link {
@@ -42,4 +61,33 @@
     fill: none;
     stroke: green;
     stroke-width: 2.5px;
+}
+text {
+    cursor: pointer;
+}
+circle{
+    cursor: pointer;
+}
+
+.executionArrow {
+    fill: green;
+    viewBox: '0 -5 10 10';
+    refX: 6;
+    markerWidth: 4;
+    markerHeight: 4;
+    orient: auto;
+}
+
+.relationshipArrow {
+    fill: black;
+    viewBox: '0 -5 10 10';
+    refX: 6;
+    markerWidth: 4;
+    markerHeight: 4;
+    orient: auto;
+}
+
+
+.folded{
+    fill: steelblue;
 }

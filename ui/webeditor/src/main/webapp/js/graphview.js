@@ -23,215 +23,488 @@
 
 
 var root;
-var nodes;
-var nodes2;
-var links;
-var links2;
+var allNodesGroup;
+var force;
+var intCompInstances;
+var extCompInstances;
+var executesLinks;
+var relationshipLinks;
 var svg;
 
-function cs(n, deploymentModel) {
-	deploymentModel.forEach(
+var graphNodes;
+var graphEdges;
 
-	function (ici) {
-		n.push(ici);
-	});
+function loadInNodesArray(nodesArray, componentInstances) {
+    componentInstances.forEach(
+
+        function (componentInstance) {
+            nodesArray.push(componentInstance);
+        });
 }
 
-function flatten(deploymentModel) {
-	var nodes = [];
-	if (deploymentModel.internalComponentInstances != null) {
-		cs(nodes, deploymentModel.internalComponentInstances);
-	}
-	return nodes;
+function getInternalComponentInstances(deploymentModel) {
+    var instancesArray = [];
+    if (deploymentModel.internalComponentInstances != null) {
+        loadInNodesArray(instancesArray, deploymentModel.internalComponentInstances);
+    }
+    return instancesArray;
 }
 
-function f2(deploymentModel) {
-	var nodes2 = [];
-	if (deploymentModel.vmInstances != null) {
-		cs(nodes2, deploymentModel.vmInstances);
-	}
-	if (deploymentModel.externalComponentInstances != null) {
-		cs(nodes2, deploymentModel.externalComponentInstances);
-	}
-	return nodes2;
+function getExternalComponentInstances(deploymentModel) {
+    var instancesArray = [];
+    if (deploymentModel.vmInstances != null) {
+        loadInNodesArray(instancesArray, deploymentModel.vmInstances);
+    }
+    if (deploymentModel.externalComponentInstances != null) {
+        loadInNodesArray(instancesArray, deploymentModel.externalComponentInstances);
+    }
+    return instancesArray;
 }
 
-function generateLinks(deploymentModel) {
-	var links = [];
-	deploymentModel.executesInstances.forEach(
+function generateExecutesLinks(deploymentModel) {
+    var links = [];
+    deploymentModel.executesInstances.forEach(
 
-		function (d, i) {
-		var tempLink = {
-			source : null,
-			target : null
-		};
-		tempLink.source = findSource(d.providedExecutionPlatformInstance, deploymentModel);
-		tempLink.left = false;
-		tempLink.target = findTarget(d.requiredExecutionPlatformInstance, deploymentModel);
-		tempLink.right = true;
-		if (tempLink.source !== null && tempLink.target !== null) {
-			links.push(tempLink);
-		}
-	});
-	return links;
+        function (d, i) {
+            var tempLink = {
+                source : null,
+                target : null
+            };
+            tempLink.id = d.name;
+            tempLink.source = findSource(d.providedExecutionPlatformInstance, deploymentModel);
+            tempLink.left = false;
+            tempLink.target = findTarget(d.requiredExecutionPlatformInstance, deploymentModel);
+            tempLink.right = true;
+            if (tempLink.source !== null && tempLink.target !== null) {
+                links.push(tempLink);
+            }
+        });
+    return links;
 }
 
-function generateExecutes(deploymentModel) {
-	var links = [];
-	deploymentModel.relationshipInstances.forEach(
+function generateRelationshipLinks(deploymentModel) {
+    var links = [];
+    deploymentModel.relationshipInstances.forEach(
 
-		function (d, i) {
-		var tempLink = {
-			source : null,
-			target : null
-		};
-		tempLink.source = findSource(d.providedPortInstance, deploymentModel);
-		tempLink.target = findTarget(d.requiredPortInstance, deploymentModel);
-		if (tempLink.source !== null && tempLink.target !== null) {
-			links.push(tempLink);
-		} else {
-			window.alert("bouhaaa");
-		}
-	});
-	return links;
+        function (d, i) {
+            var tempLink = {
+                source : null,
+                target : null
+            };
+            tempLink.id = d.name;
+            tempLink.source = findSource(d.providedPortInstance, deploymentModel);
+            tempLink.target = findTarget(d.requiredPortInstance, deploymentModel);
+            if (tempLink.source !== null && tempLink.target !== null) {
+                tempLink.source.outgoingLinks == null ? tempLink.source.outgoingLinks = [tempLink] : tempLink.source.outgoingLinks.push(tempLink);
+                tempLink.target.incomingLinks == null ? tempLink.target.incomingLinks = [tempLink] : tempLink.target.incomingLinks.push(tempLink);
+                links.push(tempLink);
+            } else {
+                window.alert("bouhaaa");
+            }
+        });
+    return links;
 }
+
 
 function findSource(refSource, deploymentModel) {
-	var temp = refSource.split("/");
-	return getJSON(deploymentModel, "/" + temp[0]);
+    var temp = refSource.split("/");
+    return getJSON(deploymentModel, "/" + temp[0]);
 }
 
 function findTarget(refTarget, deploymentModel) {
-	var temp = refTarget.split("/");
-	return getJSON(deploymentModel, "/" + temp[0]);
+    var temp = refTarget.split("/");
+    return getJSON(deploymentModel, "/" + temp[0]);
 }
 
 function getData(jsonString) {
 	root = eval('(' + jsonString + ')');
-	nodes = flatten(root);
-	nodes2 = f2(root);
-	links = generateLinks(root);
-	links2 = generateExecutes(root);
 	
-	var width = (window.innerWidth),
-	height = (window.innerHeight);
+	intCompInstances = getInternalComponentInstances(root);
+    extCompInstances = getExternalComponentInstances(root);
+    executesLinks = generateExecutesLinks(root);
+    relationshipLinks = generateRelationshipLinks(root);
 
-	var force = d3.layout.force()
-		.charge(-800)
-		.linkDistance(150)
-		.size([width, height]);
+    var width = (window.innerWidth),
+        height = (window.innerHeight);
 
-	svg = d3.select("body").append("svg:svg")
-		.attr("width", width)
-		.attr("height", height);
+    force = d3.layout.force()
+    .charge(-800)
+    .linkDistance(150)
+    .size([width, height]);
 
-	nodes.concat(nodes2).forEach(function (d, i) {
-		d.x = width / 2 + i;
-		d.y = height / 2 + 100 * d.depth;
-	});
+    svg = d3.select("body").append("svg:svg")
+    .attr("width", width)
+    .attr("height", height);
 
-	root.fixed = true;
-	root.x = width / 2;
-	root.y = height / 2;
+    intCompInstances.concat(extCompInstances).forEach(function (d, i) {
+        d.x = width / 2 + i;
+        d.y = height / 2 + 100 * d.depth;
+    });
 
-	force.nodes(nodes.concat(nodes2))
-	.links(links.concat(links2))
-	.start();
+    root.fixed = true;
+    root.x = width / 2;
+    root.y = height / 2;
+    
+    // define arrow markers for graph links
+    svg.append('svg:defs').append('svg:marker')
+    .attr('id', 'execute-arrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow');
+    
+    svg.append('svg:defs').append('svg:marker')
+    .attr('id', 'relationship-arrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow');
 
-	// define arrow markers for graph links
-	svg.append('svg:defs').append('svg:marker')
-	.attr('id', 'end-arrow')
-	.attr('viewBox', '0 -5 10 10')
-	.attr('refX', 6)
-	.attr('markerWidth', 4)
-	.attr('markerHeight', 4)
-	.attr('orient', 'auto')
-	.append('svg:path')
-	.attr('d', 'M0,-5L10,0L0,5')
-	.attr('fill', '#000');
+    var layoutIntCompInstances = intCompInstances;
+    for(i=0;i<layoutIntCompInstances.length;i++){
+        layoutIntCompInstances[i].isFolded = false;
+        layoutIntCompInstances[i].foldedSubNodes = [];
+        layoutIntCompInstances[i].foldedSubEdges = [];
+        layoutIntCompInstances[i].type = "InternalComponent";
+    }
+    
+    var layoutExtCompInstances = extCompInstances;
+    
+    for(i=0;i<layoutExtCompInstances.length;i++){
+        layoutExtCompInstances[i].isFolded = false;
+        layoutExtCompInstances[i].foldedSubNodes = [];
+        layoutExtCompInstances[i].foldedSubEdges = [];
+        layoutExtCompInstances[i].type = "ExternalComponent";
+    }
+    
+    graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
+    
+    var layoutExecuteLinks = executesLinks;
+    for(i=0;i<layoutExecuteLinks.length;i++){
+        layoutExecuteLinks[i].isFolded = false;
+        layoutExecuteLinks[i].type = "ExecuteLink";
+        layoutExecuteLinks[i]._target = [];
+    }
+    
+    var layoutRelationshipLinks = relationshipLinks;
+    for(i=0;i<layoutRelationshipLinks.length;i++){
+        layoutRelationshipLinks[i].isFolded = false;
+        layoutRelationshipLinks[i].type = "RelationshipLink";
+        layoutRelationshipLinks[i]._target = [];
+    }
+    
+    graphEdges = layoutExecuteLinks.concat(layoutRelationshipLinks);
+    
+    force
+    .nodes(graphNodes)
+    .links(graphEdges)
+    .start();
+    
+    svg.append('svg:g').attr("class", "nodes");
+    svg.append('svg:g').attr("class", "edges");
+    
+    update();
+}
 
-	svg.append('svg:defs').append('svg:marker')
-	.attr('id', 'start-arrow')
-	.attr('viewBox', '0 -5 10 10')
-	.attr('refX', 4)
-	.attr('markerWidth', 4)
-	.attr('markerHeight', 4)
-	.attr('orient', 'auto')
-	.append('svg:path')
-	.attr('d', 'M10,-5L0,0L10,5')
-	.attr('fill', '#000');
+function update(){
+    var nodeObjects = force.nodes();
+    var linkObjects = force.links();
+    
+//    console.log(nodeObjects);
+//    console.log(linkObjects);
+    
+    allNodesGroup = svg.select('.nodes');
+    
+    var nodeDataReference = allNodesGroup.selectAll('g').data(nodeObjects);
+    
+    // remove deleted nodes from graph
+    nodeDataReference.exit().remove();
+    
+    var nodeGroup = nodeDataReference
+    .enter()
+    .append('svg:g')
+    .attr("class", "singleNode")
+    .attr("id", function(d) {
+        return d.name;
+    });
+    
+//    console.log("exit selection of nodeDataReference");
+//    nodeGroup.selectAll('g').exit();
+    
+    nodeGroup.append("svg:circle")
+    .attr("r", 25.5)
+    .attr("class", function (d) {
+        return d.type=="InternalComponent" ? "internalComponent" : "externalComponent";
+    })
+    .call(force.drag);
+    
+    // show symbols (for now - later - TODO: icons)
+    nodeGroup.append('svg:text')
+    .attr('class', 'tmpNodeSymbol')
+    .text(function (d) {
+        return d.type=="InternalComponent" ? '\uf013' : '\uf0c2';
+    })
+    .call(force.drag);
+    
+    var foldedText = nodeGroup.append('svg:text')
+    .attr('class', 'tmpToggleFoldSymbol')
+    .attr('dx','5')
+    .attr('dy','-5')
+    .call(force.drag);
+    
+    // show node IDs
+    nodeGroup.append('svg:text')
+    .attr('x', '0')
+    .attr('y', '30')
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
+    .attr('font-family', 'sans-serif')
+    .attr('font-size', '10px')
+    .text(function (d, i) {
+        return d.name;
+    });
+    
+    
+    svg.selectAll('.tmpToggleFoldSymbol')
+    .text(function (d) {
+        return d.isFolded ? '\uf150' : ''; //'\uf0aa';
+    });
+    
+    svg.selectAll('.tmpNodeSymbol')
+    .attr('dx', function(d) {
+        return d.isFolded ? '-5' : '0';
+    });
+    
+    // add listener for mouseclick for folding
+    nodeGroup.on("click", toggleFoldNode);
+    
+    
+    var path = svg.select(".edges").selectAll('path');
+    path = path.data(linkObjects);
+    
+    path.exit().remove();
 
-	var circle = svg.append('svg:g').selectAll('g');
-	circle = circle.data(nodes.concat(nodes2));
-	circle.selectAll('circle');
+    path.enter().append('svg:path')
+    .attr('class', function (d, i) {
+        return d.type == "ExecuteLink" ? "executionBinding" : "link";
+    })
+    .attr("id", function(d) {
+        return d.id;
+    })
+    .style('marker-start', '')
+    .style('marker-end', function(d) {
+        return d.type == "ExecuteLink" ? 'url(#execute-arrow)' : 'url(#relationship-arrow)';
+    });
 
-	var path = svg.append('svg:g').selectAll('path');
-	path = path.data(links.concat(links2));
+    
 
-	path.enter().append('svg:path')
-	.attr('class', function (d, i) {
-		return i < links.length ? "executionBinding" : "link";
-	})
-	.style('marker-start', '')
-	.style('marker-end', 'url(#end-arrow)');
+    d3.select("text")
+    .on("mouseover", function () {
+        d3.event.preventDefault();
 
-	var g = circle.enter()
-		.append('svg:g');
+    });
+    
+    var allSingleNodes = svg.selectAll(".singleNode");
+    
+    force.on("tick", function (e) {
 
-	var node = g.append("svg:circle")
-		.attr("r", 25.5)
-		.attr("class", function (d, i) {
-			return i < nodes.length ? "node" : "nodeVM";
-		})
-		.call(force.drag);
+        path.attr('d', function (d) {
+            var deltaX = d.target.x - d.source.x,
+                deltaY = d.target.y - d.source.y,
+                dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+                normX = deltaX / dist,
+                normY = deltaY / dist,
+                sourcePadding = 25,
+                targetPadding = 28,
+                sourceX = d.source.x + (sourcePadding * normX),
+                sourceY = d.source.y + (sourcePadding * normY),
+                targetX = d.target.x - (targetPadding * normX),
+                targetY = d.target.y - (targetPadding * normY);
 
-	// show node IDs
-	g.append('svg:text')
-	.attr('text-anchor', 'middle')
-	.attr('dominant-baseline', 'central')
-	.attr('font-family', 'FontAwesome')
-	.attr('font-size', '20px')
-	.text(function (d, i) {
-		return i < nodes.length ? '\uf013' : '\uf0c2';
-	});
+            return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+        });
 
-	g.append('svg:text')
-	.attr('x', '0')
-	.attr('y', '30')
-	.attr('text-anchor', 'middle')
-	.attr('dominant-baseline', 'central')
-	.attr('font-family', 'sans-serif')
-	.attr('font-size', '10px')
-	.text(function (d, i) {
-		return d.name;
-	});
+        allSingleNodes.attr('transform', function (d) {
+            return 'translate(' + d.x + ',' + d.y + ')';
+        });
 
-	force.on("tick", function (e) {
+    });
+}
 
-		path.attr('d', function (d) {
-			var deltaX = d.target.x - d.source.x,
-			deltaY = d.target.y - d.source.y,
-			dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
-			normX = deltaX / dist,
-			normY = deltaY / dist,
-			sourcePadding = 25,
-			targetPadding = 28,
-			sourceX = d.source.x + (sourcePadding * normX),
-			sourceY = d.source.y + (sourcePadding * normY),
-			targetX = d.target.x - (targetPadding * normX),
-			targetY = d.target.y - (targetPadding * normY);
-			return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
-		});
+function toggleFoldNode(nodeToToggle){
+    
+    // so that we won't fold while dragging
+    if (d3.event.defaultPrevented) return;
+    
+    if(nodeToToggle.isFolded){
+        // we should unfold the node
+        unfoldNode(nodeToToggle);
+    }else{
+        // we should fold the node
+        foldNode(nodeToToggle);
+    }
+    
+    // refresh the force layout
+    force.start();
+    update();
+}
 
-		circle.attr('transform', function (d) {
-			return 'translate(' + d.x + ',' + d.y + ')';
-		});
+function foldNode(nodeToFold){
+    nodeToFold.isFolded=true;
+        
+    var edgesNodesToFold = findEdgesAndNodesToFold(nodeToFold);
+    if(edgesNodesToFold.edgesToFold.length==0 && edgesNodesToFold.nodesToFold.length == 0){
+        nodeToFold.isFolded = false;
+        return;
+    }
+    hideEdges(edgesNodesToFold.edgesToFold);
 
-	});
+    for(i=0;i<edgesNodesToFold.edgesToFold.length;++i){
+        nodeToFold.foldedSubEdges.push(edgesNodesToFold.edgesToFold[i]);
+    }
+
+    hideNodes(edgesNodesToFold.nodesToFold);
+    for(i=0;i<edgesNodesToFold.nodesToFold.length;++i){
+        nodeToFold.foldedSubNodes.push(edgesNodesToFold.nodesToFold[i]);
+    }
+
+    recalculateEdges(nodeToFold);
+}
+
+function unfoldNode(nodeToUnfold){
+    nodeToUnfold.isFolded=false;
+    var foldedNodesToCheck = [];
+    var currentlyEvaluatedFoldedNode;
+    
+    // unfold the folded sub-nodes of the currently unfolded node
+    while(nodeToUnfold.foldedSubNodes.length >0){
+        currentlyEvaluatedFoldedNode = nodeToUnfold.foldedSubNodes.pop();
+        graphNodes.push(currentlyEvaluatedFoldedNode);
+        foldedNodesToCheck.push(currentlyEvaluatedFoldedNode);
+    }
+    
+    // update the force layout
+    force.nodes(graphNodes);
+
+    // unfold the folded sub-edges of the currently unfolded node
+    while(nodeToUnfold.foldedSubEdges.length >0){
+        graphEdges.push(nodeToUnfold.foldedSubEdges.pop());
+    }
+    
+    foldedNodesToCheck.push(nodeToUnfold);
+    
+    // undo the redirecting of the edges due to folding of nodes
+    while(foldedNodesToCheck.length>0){
+        var currentlyCheckedNode = foldedNodesToCheck.pop();
+        for(i=0;i<graphEdges.length;++i){
+            if(graphEdges[i]._target.length > 0){
+                if(graphEdges[i]._target[graphEdges[i]._target.length-1] == currentlyCheckedNode){
+                    graphEdges[i].target = graphEdges[i]._target.pop();
+                }
+            }
+
+        }
+    }
+    // update the edges of the force layout
+    force.links(graphEdges);
+}
+
+//returns an object containing arrays with the nodes and edges to fold
+function findEdgesAndNodesToFold(aNode){
+
+    var edgesToFold=[];
+    var nodesToFold=[];
+    var nodesToCheck=[aNode];
+
+    // evaluate (at least) the input node for edges and sub-nodes to fold (hide)
+    // in case we find any sub-nodes to fold - we also check their sub-sub-nodes
+    while(nodesToCheck.length>0){
+        var currentlyCheckedNode = nodesToCheck.pop();
+        
+        // we check each of the edges in the graph
+        for(i=0;i<graphEdges.length;++i){
+            
+            // if the node being evaluated is a source of a certain edge in the graph
+            if(graphEdges[i].source == currentlyCheckedNode){
+                
+                // in case it is not in the list of edges to fold (hide) - add it
+                if(edgesToFold.indexOf(graphEdges[i])==-1)
+                    edgesToFold.push(graphEdges[i]);
+                
+                // in case the edge's target is not in the nodes to fold (hide) - add it
+                if(nodesToFold.indexOf(graphEdges[i].target)==-1)
+                    nodesToFold.push(graphEdges[i].target);
+                
+                // in case the edge's target is not in the list of nodes to evaluate - add it
+                if(nodesToCheck.indexOf(graphEdges[i].target)==-1)
+                    nodesToCheck.push(graphEdges[i].target);
+            }
+        }
+    }
+    
+    // result contains both the nodes and the edges that need to be folded (hidden) from the graph
+    var result={};
+    result.nodesToFold = nodesToFold;
+    result.edgesToFold = edgesToFold;
+    
+    return result;
+}
+
+//recalculate the edges in the graph when a node is folded
+function recalculateEdges(aNode){
+    var currentEdge;
+    for(i=0;i<graphEdges.length;++i){
+        currentEdge = graphEdges[i];
+        
+        var index = aNode.foldedSubNodes.indexOf(currentEdge.target)
+        // if the target of the currently evaluated edge is one of the folded sub-nodes of the evaluated node
+        if(index != -1){
+            // redirect it to the currently evaluated node
+            // but keeping the reference to the folded sub-node
+            currentEdge._target.push(currentEdge.target);
+            currentEdge.target = aNode;
+        }
+    }
+}
+
+function hideEdges(edgesToFold){
+    var currentEdgeIndex;
+    var currentEdge;
+    for(i=0;i<edgesToFold.length;++i){
+        currentEdgeIndex=graphEdges.indexOf(edgesToFold[i]);
+        currentEdge = graphEdges[currentEdgeIndex];
+        
+        // remove edge from the graph data
+        var svgEdgeElement = svg.select("#" + currentEdge.id);
+        svgEdgeElement.remove();
+        graphEdges.splice(currentEdgeIndex,1);
+    }
+}
+
+function hideNodes(nodesToFold){
+    var currentNodeIndex;
+    var currentNode;
+    for(i=0;i<nodesToFold.length;++i){
+        currentNodeIndex = graphNodes.indexOf(nodesToFold[i]);
+        currentNode = graphNodes[currentNodeIndex];
+        
+        // remove node from the graph data
+        var svgNodeElement = svg.select("#" + currentNode.name);
+        svgNodeElement.remove();
+        graphNodes.splice(currentNodeIndex,1);
+    }
 }
 
 function reset(){
-	svg.remove();
+    svg.remove();
 }
 
 function loadFile(inputDiv) {
