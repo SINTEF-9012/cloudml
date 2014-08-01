@@ -129,6 +129,7 @@ function findTarget(refTarget, deploymentModel) {
 }
 
 function getData(jsonString) {
+    d3.selectAll("svg").remove();
 	root = eval('(' + jsonString + ')');
 	
 	intCompInstances = getInternalComponentInstances(root);
@@ -203,6 +204,7 @@ function getData(jsonString) {
     for(i=0;i<layoutExecuteLinks.length;i++){
         layoutExecuteLinks[i].isFolded = false;
         layoutExecuteLinks[i].type = "ExecuteLink";
+        layoutExecuteLinks[i]._source = [];
         layoutExecuteLinks[i]._target = [];
     }
     
@@ -210,6 +212,7 @@ function getData(jsonString) {
     for(i=0;i<layoutRelationshipLinks.length;i++){
         layoutRelationshipLinks[i].isFolded = false;
         layoutRelationshipLinks[i].type = "RelationshipLink";
+        layoutRelationshipLinks[i]._source = [];
         layoutRelationshipLinks[i]._target = [];
     }
     
@@ -249,9 +252,6 @@ function update(){
     .attr("id", function(d) {
         return d.name;
     });
-    
-//    console.log("exit selection of nodeDataReference");
-//    nodeGroup.selectAll('g').exit();
     
     nodeGroup.append("svg:circle")
     .attr("r", 25.5)
@@ -368,7 +368,6 @@ function toggleFoldNode(nodeToToggle){
     
     // refresh the force layout
     force.start();
-    console.log("updating");
     update();
 }
 
@@ -420,6 +419,13 @@ function unfoldNode(nodeToUnfold){
     while(foldedNodesToCheck.length>0){
         var currentlyCheckedNode = foldedNodesToCheck.pop();
         for(i=0;i<graphEdges.length;++i){
+            
+            if(graphEdges[i]._source.length > 0){
+                if(graphEdges[i]._source[graphEdges[i]._source.length-1] == currentlyCheckedNode){
+                    graphEdges[i].source = graphEdges[i]._source.pop();
+                }
+            }
+            
             if(graphEdges[i]._target.length > 0){
                 if(graphEdges[i]._target[graphEdges[i]._target.length-1] == currentlyCheckedNode){
                     graphEdges[i].target = graphEdges[i]._target.pop();
@@ -438,32 +444,55 @@ function findEdgesAndNodesToFold(aNode){
     var edgesToFold=[];
     var nodesToFold=[];
     var nodesToCheck=[aNode];
-
+    var nodeHost = findNodeHost(aNode);
     // evaluate (at least) the input node for edges and sub-nodes to fold (hide)
     // in case we find any sub-nodes to fold - we also check their sub-sub-nodes
     while(nodesToCheck.length>0){
         var currentlyCheckedNode = nodesToCheck.pop();
         
         // we check each of the edges in the graph
-        for(i=0;i<graphEdges.length;++i){
-            
-            // if the node being evaluated is a source of a certain edge in the graph
-            if(graphEdges[i].source == currentlyCheckedNode){
+        graphEdges.forEach(function(edge){
+            if(edge.source == currentlyCheckedNode){
                 
                 // in case it is not in the list of edges to fold (hide) - add it
-                if(edgesToFold.indexOf(graphEdges[i])==-1){
-                    edgesToFold.push(graphEdges[i]);
+                if(edgesToFold.indexOf(edge)==-1){
+                    var edgeTargetNodeHost = findNodeHost(edge.target);
+                    if(nodeHost == edgeTargetNodeHost){
+                        edgesToFold.push(edge);
+                        // in case the edge's target is not in the nodes to fold (hide) - add it
+                        if(nodesToFold.indexOf(edge.target)==-1){
+                            nodesToFold.push(edge.target);
+                        }
+                        // in case the edge's target is not in the list of nodes to evaluate - add it
+                        if(nodesToCheck.indexOf(edge.target)==-1){
+                            nodesToCheck.push(edge.target);
+                        }
+                    }
                 }
                 
-                // in case the edge's target is not in the nodes to fold (hide) - add it
-                if(nodesToFold.indexOf(graphEdges[i].target)==-1)
-                    nodesToFold.push(graphEdges[i].target);
                 
-                // in case the edge's target is not in the list of nodes to evaluate - add it
-                if(nodesToCheck.indexOf(graphEdges[i].target)==-1)
-                    nodesToCheck.push(graphEdges[i].target);
             }
-        }
+        });
+//        for(i=0;i<graphEdges.length;++i){
+//            
+//            // if the node being evaluated is a source of a certain edge in the graph
+//            if(graphEdges[i].source == currentlyCheckedNode){
+//                
+//                // in case it is not in the list of edges to fold (hide) - add it
+//                if(edgesToFold.indexOf(graphEdges[i])==-1){
+//                    findNodeHost()
+//                    edgesToFold.push(graphEdges[i]);
+//                }
+//                
+//                // in case the edge's target is not in the nodes to fold (hide) - add it
+//                if(nodesToFold.indexOf(graphEdges[i].target)==-1)
+//                    nodesToFold.push(graphEdges[i].target);
+//                
+//                // in case the edge's target is not in the list of nodes to evaluate - add it
+//                if(nodesToCheck.indexOf(graphEdges[i].target)==-1)
+//                    nodesToCheck.push(graphEdges[i].target);
+//            }
+//        }
     }
     
     // result contains both the nodes and the edges that need to be folded (hidden) from the graph
@@ -475,17 +504,25 @@ function findEdgesAndNodesToFold(aNode){
 }
 
 function findNodeHost(aNode){
+    var result = [];
     var currentlyCheckedNode = aNode;
-    while(currentlyCheckedNode){
-        graphEdges.forEach(function(edge){
-//            if(edge.target == currentlyCheckedNode && edge.source.type == "ExternalComponent"){
-//                return currentlyCheckedNode;
-//            }else{
-//                currentlyCheckedNode = edge.source;
-//            }
-        });
+    var firstCycleFlag = true;
+    if(aNode.type == "ExternalComponent"){
+        return aNode;
+    }else{
+        for(i=0;i<graphEdges.length;i++){
+            var edge = graphEdges[i];
+            if(edge.target == aNode && edge.type == "ExecuteLink"){
+                // we have found the host but it could be an internal component
+                if(edge.source.type == "InternalComponent"){
+//                    console.log("found internal component host. continuing search: ", edge.source.name);
+                    return findNodeHost(edge.source);
+                }
+                return edge.source;
+            }
+        }
+        console.log("error", "No execution binding found for the clicked node. Check model for errors. " + aNode.name);
     }
-    
 }
 
 //recalculate the edges in the graph when a node is folded
@@ -494,13 +531,22 @@ function recalculateEdges(aNode){
     for(i=0;i<graphEdges.length;++i){
         currentEdge = graphEdges[i];
         
-        var index = aNode.foldedSubNodes.indexOf(currentEdge.target)
+        var currentEdgeTargetIndex = aNode.foldedSubNodes.indexOf(currentEdge.target);
         // if the target of the currently evaluated edge is one of the folded sub-nodes of the evaluated node
-        if(index != -1){
+        if(currentEdgeTargetIndex != -1){
             // redirect it to the currently evaluated node
             // but keeping the reference to the folded sub-node
             currentEdge._target.push(currentEdge.target);
             currentEdge.target = aNode;
+        }
+        
+        var currentEdgeSourceIndex = aNode.foldedSubNodes.indexOf(currentEdge.source);
+        
+        if(currentEdgeSourceIndex != -1){
+            // redirect it to the currently evaluated node
+            // but keeping the reference to the folded sub-node
+            currentEdge._source.push(currentEdge.source);
+            currentEdge.source = aNode;
         }
     }
 }
@@ -517,8 +563,6 @@ function hideEdges(edgesToFold){
             function() {
                 return this.id == currentEdge.id;
         });
-        console.log("removing...");
-        console.log(svgEdgeElement);
         
         svgEdgeElement.remove();
         graphEdges.splice(currentEdgeIndex,1);
@@ -535,19 +579,15 @@ function hideNodes(nodesToFold){
         // remove node from the graph data
         var svgNodeElement = svg.selectAll(".singleNode").filter(
             function() {
-                console.log(this.id + "==" + currentNode.name);
                 return this.id == currentNode.name;
         });
-//        var svgNodeElement = svg.select("#" + currentNode.name);
-        console.log("removing node...");
-        console.log(svgNodeElement);
         svgNodeElement.remove();
         graphNodes.splice(currentNodeIndex,1);
     }
 }
 
 function reset(){
-    svg.remove();
+    svg.remove(); 
 }
 
 function loadFile(inputDiv) {
