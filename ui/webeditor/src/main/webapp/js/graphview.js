@@ -34,6 +34,18 @@ var svg;
 var graphNodes;
 var graphEdges;
 
+//var RdYlGn = {
+//3: ["#fc8d59","#ffffbf","#91cf60"],
+//4: ["#d7191c","#fdae61","#a6d96a","#1a9641"],
+//5: ["#d7191c","#fdae61","#ffffbf","#a6d96a","#1a9641"],
+//6: ["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"],
+//7: ["#d73027","#fc8d59","#fee08b","#ffffbf","#d9ef8b","#91cf60","#1a9850"],
+//8: ["#d73027","#f46d43","#fdae61","#fee08b","#d9ef8b","#a6d96a","#66bd63","#1a9850"],
+//9: ["#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850"],
+//10: ["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"],
+//11: ["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"]
+//};
+
 function loadInNodesArray(nodesArray, componentInstances) {
     componentInstances.forEach(
 
@@ -211,19 +223,21 @@ function getData(jsonString) {
     svg.append('svg:g').attr("class", "nodes");
     svg.append('svg:g').attr("class", "edges");
     
+//    var scale = d3.scale.log().domain([0, 100]);
+//    scale.domain([0, 0.5, 1].map(scale.invert));
+//    scale.range(["green", "yellow", "red"]);
+//    
+//    for(int i=0;i<100;i++){
+//        
+//    }
+    
     update();
 }
 
 function update(){
-    var nodeObjects = force.nodes();
-    var linkObjects = force.links();
-    
-//    console.log(nodeObjects);
-//    console.log(linkObjects);
-    
     allNodesGroup = svg.select('.nodes');
     
-    var nodeDataReference = allNodesGroup.selectAll('g').data(nodeObjects);
+    var nodeDataReference = allNodesGroup.selectAll('g').data(graphNodes);
     
     // remove deleted nodes from graph
     nodeDataReference.exit().remove();
@@ -268,7 +282,7 @@ function update(){
     .attr('dominant-baseline', 'central')
     .attr('font-family', 'sans-serif')
     .attr('font-size', '10px')
-    .text(function (d, i) {
+    .text(function (d) {
         return d.name;
     });
     
@@ -288,7 +302,7 @@ function update(){
     
     
     var path = svg.select(".edges").selectAll('path');
-    path = path.data(linkObjects);
+    path = path.data(graphEdges);
     
     path.exit().remove();
 
@@ -354,6 +368,7 @@ function toggleFoldNode(nodeToToggle){
     
     // refresh the force layout
     force.start();
+    console.log("updating");
     update();
 }
 
@@ -436,8 +451,9 @@ function findEdgesAndNodesToFold(aNode){
             if(graphEdges[i].source == currentlyCheckedNode){
                 
                 // in case it is not in the list of edges to fold (hide) - add it
-                if(edgesToFold.indexOf(graphEdges[i])==-1)
+                if(edgesToFold.indexOf(graphEdges[i])==-1){
                     edgesToFold.push(graphEdges[i]);
+                }
                 
                 // in case the edge's target is not in the nodes to fold (hide) - add it
                 if(nodesToFold.indexOf(graphEdges[i].target)==-1)
@@ -456,6 +472,20 @@ function findEdgesAndNodesToFold(aNode){
     result.edgesToFold = edgesToFold;
     
     return result;
+}
+
+function findNodeHost(aNode){
+    var currentlyCheckedNode = aNode;
+    while(currentlyCheckedNode){
+        graphEdges.forEach(function(edge){
+//            if(edge.target == currentlyCheckedNode && edge.source.type == "ExternalComponent"){
+//                return currentlyCheckedNode;
+//            }else{
+//                currentlyCheckedNode = edge.source;
+//            }
+        });
+    }
+    
 }
 
 //recalculate the edges in the graph when a node is folded
@@ -483,7 +513,13 @@ function hideEdges(edgesToFold){
         currentEdge = graphEdges[currentEdgeIndex];
         
         // remove edge from the graph data
-        var svgEdgeElement = svg.select("#" + currentEdge.id);
+        var svgEdgeElement = svg.selectAll(".executionBinding, .link").filter(
+            function() {
+                return this.id == currentEdge.id;
+        });
+        console.log("removing...");
+        console.log(svgEdgeElement);
+        
         svgEdgeElement.remove();
         graphEdges.splice(currentEdgeIndex,1);
     }
@@ -497,7 +533,14 @@ function hideNodes(nodesToFold){
         currentNode = graphNodes[currentNodeIndex];
         
         // remove node from the graph data
-        var svgNodeElement = svg.select("#" + currentNode.name);
+        var svgNodeElement = svg.selectAll(".singleNode").filter(
+            function() {
+                console.log(this.id + "==" + currentNode.name);
+                return this.id == currentNode.name;
+        });
+//        var svgNodeElement = svg.select("#" + currentNode.name);
+        console.log("removing node...");
+        console.log(svgNodeElement);
         svgNodeElement.remove();
         graphNodes.splice(currentNodeIndex,1);
     }
@@ -538,3 +581,5 @@ function loadFile(inputDiv) {
 		getData(fr.result);
 	}
 }
+
+
