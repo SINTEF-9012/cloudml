@@ -39,17 +39,27 @@
     stroke: none;
 }
 .externalComponent {
-    fill: #fff;
+    fill: white;
     stroke: green;
     stroke-width: 2.5px;
 }
 
 .internalComponent {
-    fill: #fff;
+    fill: white;
     stroke: #000;
     stroke-width: 2.5px;
 }
-.internalComponent {
+circle.selectionCircle {
+    fill:none;
+    stroke: none;
+}
+circle.selectionCircle.selected {
+    fill: none;
+    stroke: red;
+    stroke-width: 1px;
+    transition: stroke 0.3s linear;
+}
+.internalComponentText {
     font: 10px sans-serif;
 }
 .link {
@@ -87,7 +97,28 @@ circle{
     orient: auto;
 }
 
+svg g.nodes circle.internalComponent.hover, g.nodes circle.externalComponent.hover {
+    fill: steelblue;  
+    fill-opacity: .3;
+    transition: fill 0.5s linear;
+    
+    /*
+    -moz-transition: background-color 2s linear; 
+    -webkit-transition: background-color 2s linear; 
+    -o-transition: background-color 2s linear;
+    -ms-transition: background-color 2s linear; 
+    */
+}
+/*
+svg g.nodes .selected {
+    stroke: grey;
+    color: grey ;
+    fill: grey;
+}
+*/
 
-.folded{
-    fill: steelblue;
+.brush .extent {
+  fill-opacity: .1;
+  stroke: #fff;
+  shape-rendering: crispEdges;
 }
