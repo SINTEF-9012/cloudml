@@ -21,18 +21,19 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.monitoring.modules;
+package org.cloudml.monitoring.status.modules;
 
 /**
  * @author Francesco di Forenza
  */
 
 
-import org.cloudml.monitoring.MonitoredVm;
+import org.cloudml.monitoring.status.MonitoredVm;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.OpenStackConnector;
 import org.cloudml.core.ComponentInstance;
-import org.cloudml.monitoring.modules.util.ListManager;
+import org.cloudml.monitoring.status.modules.util.ListManager;
+import org.cloudml.mrt.Coordinator;
 import org.jclouds.compute.domain.NodeMetadata;
 
 import java.util.ArrayList;
@@ -45,11 +46,15 @@ public class OpenStackModule implements Module {
     private List<MonitoredVm> VMs;
     private OpenStackConnector connector;
     private Type type;
+    private Coordinator coord;
 
-    public OpenStackModule(OpenStackConnector connector) {
+
+    public OpenStackModule(OpenStackConnector connector, Coordinator coord) {
         VMs = new ArrayList<MonitoredVm>();
         this.connector = connector;
         this.type = Type.OPENSTACK_MONITOR;
+        this.coord=coord;
+
     }
 
     public void exec() {
@@ -59,10 +64,11 @@ public class OpenStackModule implements Module {
         Iterator<NodeMetadata> iterator = jCloudsNodes.iterator();
         while (iterator.hasNext()) {
             NodeMetadata current = iterator.next();
-            MonitoredVm temp = new MonitoredVm(current.getId(), current.getName(), toState(current.getStatus()));
+            String name = (current.getName());
+            MonitoredVm temp = new MonitoredVm(current.getId(), name, toState(current.getStatus()));
             list.add(temp);
         }
-        ListManager.listManager(list, VMs);
+        ListManager.listManager(list, VMs, coord);
     }
 
     //map provider syntax on CloudMl one

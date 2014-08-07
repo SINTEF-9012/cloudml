@@ -36,32 +36,46 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
         /**
          * The node is in transition.
          */
-        PENDING,
+        PENDING ("PENDING"),
         /**
          * The node is visible, and in the process of being deleted.
          * Available on jCLouds only.
          */
-        TERMINATED,
+        TERMINATED ("TERMINATED"),
         /**
          * The node is deployed, but suspended or stopped.
          */
-        STOPPED,
+        STOPPED ("STOPPED"),
         /**
          * The node is available for requests
          */
-        RUNNING,
+        RUNNING ("RUNNING"),
         /**
          * There is an error on the node
          */
-        ERROR,
+        ERROR ("ERROR"),
         /**
          * The state of the node is unrecognized.
          */
-        UNRECOGNIZED,
+        UNRECOGNIZED ("UNRECOGNIZED"),
         /**
          * This status is available only on Flexiant
          */
-        RECOVERY;
+        RECOVERY ("RECOVERY");
+
+        private final String name;
+
+        private State(String s) {
+            name = s;
+        }
+
+        public boolean equalsName(String otherName){
+            return (otherName == null)? false:name.equals(otherName);
+        }
+
+        public String toString(){
+            return name;
+        }
 
     }
     private final OptionalOwner<Deployment> owner;

@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Property;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
@@ -308,7 +309,8 @@ public class OpenStackConnector implements Connector{
      * @param a description of the VM to be created
      * @return
      */
-    public void createInstance(VMInstance a){
+    public ComponentInstance.State createInstance(VMInstance a){
+        ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         VM vm = a.getType();
         ComputeMetadata cm= getVMByName(a.getName());
 		/* UPDATE THE MODEL */
@@ -388,7 +390,8 @@ public class OpenStackConnector implements Connector{
 
             } catch (RunNodesException e) {
                 e.printStackTrace();
-                a.setStatusAsError();
+                //a.setStatusAsError();
+                state = ComponentInstance.State.ERROR;
             }
 
             if(nodeInstance.getPublicAddresses().iterator().hasNext()){
@@ -398,8 +401,10 @@ public class OpenStackConnector implements Connector{
             }
 
             a.setId(nodeInstance.getId());
-            a.setStatusAsRunning();
+            //a.setStatusAsRunning();
+            state = ComponentInstance.State.RUNNING;
         }
+        return state;
     }
 
     /**

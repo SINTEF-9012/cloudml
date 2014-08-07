@@ -1,4 +1,4 @@
-package org.cloudml.monitoring.util;
+package org.cloudml.monitoring.synchronization;
 
 /**
  * This file is part of CloudML [ http://cloudml.org ]
@@ -23,12 +23,13 @@ package org.cloudml.monitoring.util;
  * <http://www.gnu.org/licenses/>.
  */
 
-
 import java.io.*;
 import java.net.*;
 
 /**
  * @author Lorenzo Cianciaruso
+ * in this class are implemented the HTTP requests needed to
+ * communicate with the monitoring platform.
  */
 public class HTTPConnection {
 
@@ -38,10 +39,11 @@ public class HTTPConnection {
      * @param parameter body of the request
      * @return response in StringBuffer variable
      */
-    public StringBuffer postRequest(String targetUrl, String parameter) {
+    public StringBuffer postRequest(String targetUrl, String parameter) throws Exception{
+
         URL url;
         HttpURLConnection connection;
-        try {
+
             //Create connection
             url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
@@ -66,10 +68,7 @@ public class HTTPConnection {
             }
             rd.close();
             return response;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+
     }
 
     /**
@@ -77,10 +76,10 @@ public class HTTPConnection {
      * @param targetUrl target of the request
      * @return response in a StringBuffer variable
      */
-    public StringBuffer getRequest(String targetUrl){
+    public StringBuffer getRequest(String targetUrl) throws Exception{
         URL url;
         HttpURLConnection connection = null;
-        try {
+
             //Create connection
             url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
@@ -99,10 +98,7 @@ public class HTTPConnection {
             }
             rd.close();
             return response;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+
     }
 
     /**
@@ -111,11 +107,11 @@ public class HTTPConnection {
      * @param instance id of the instance to delete
      * @return response in a StringBuffer variable
      */
-    public StringBuffer deleteRequest(String targetUrl, String instance) {
+    public StringBuffer deleteRequest(String targetUrl, String instance) throws Exception{
         URL url;
         HttpURLConnection connection = null;
         targetUrl = targetUrl + "/" + instance;
-        try {
+
             //Create connection
             url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
@@ -134,9 +130,6 @@ public class HTTPConnection {
             }
             rd.close();
             return response;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+
     }
 }
