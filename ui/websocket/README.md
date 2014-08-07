@@ -72,6 +72,21 @@ We first list some examples below for a quick view of what the commands look lik
 !listenToAny
 ```
 
+- Create a snapshot of a VM:
+```yaml
+!extended { name: Snapshot, params: [xyz] }
+```
+
+- Create an image of a VM:
+```yaml
+!extended { name: Image, params: [xyz] }
+```
+
+- Scale out a VM
+```yaml
+!extended { name: ScaleOut, params: [xyz] }
+```
+
 The samples above are the simpliest but most frequently used ones. We will show the command syntax, which supports more complex, and therefore powerful, commands.
 
 ## YAML and XPath
