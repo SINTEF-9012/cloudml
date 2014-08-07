@@ -57,9 +57,7 @@ public class FacadeBridge implements ModelRepo {
         if("LoadDeployment".equals(name)){
             
             if(params == null || params.isEmpty()){ 
-                
                 return "###Waiting for Deployment Content";
-                
             }
             String param = params.iterator().next();
             command = factory.loadDeployment(param);
@@ -69,6 +67,15 @@ public class FacadeBridge implements ModelRepo {
         }
         else if("StartArtefact".equals(name)){
             command = factory.startComponent(params.iterator().next());
+        }
+        else if("ScaleOut".equals(name)){
+            command = factory.scaleOut(params.iterator().next());
+        }
+        else if("Image".equals(name)){
+            command = factory.image(params.iterator().next());
+        }
+        else if("Snapshot".equals(name)){
+            command = factory.snapshot(params.iterator().next());
         }
         else{
             throw new RuntimeException("Command not defined in facade");
