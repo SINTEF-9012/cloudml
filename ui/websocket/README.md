@@ -6,12 +6,12 @@ The CloudML WebSocket Server is a Java application distributed as an executable 
 # Starting CloudML WebSocket Server
 The server can be started by simply executing the following command. There is no deployment model loaded when the server start. By default the server listen on port 9000.
 ```shell
-java -jar cloudml-websocket.jar
+java -jar cloudml-WebSocket.jar
 ```
 
 You can change this port number using the following command.
 ```shell
-java -jar cloudml-websocket.jar portnumber
+java -jar cloudml-WebSocket.jar portnumber
 ```
 
 # WebSocket commands
@@ -70,6 +70,21 @@ We first list some examples below for a quick view of what the commands look lik
 
 ```yaml
 !listenToAny
+```
+
+- Create a snapshot of a VM:
+```yaml
+!extended { name: Snapshot, params: [id] }
+```
+
+- Create an image of a VM:
+```yaml
+!extended { name: Image, params: [id] }
+```
+
+- Scale out a VM
+```yaml
+!extended { name: ScaleOut, params: [id] }
 ```
 
 The samples above are the simpliest but most frequently used ones. We will show the command syntax, which supports more complex, and therefore powerful, commands.

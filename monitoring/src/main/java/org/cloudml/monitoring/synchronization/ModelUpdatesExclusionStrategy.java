@@ -1,4 +1,4 @@
-package org.cloudml.monitoring; /**
+/**
  * This file is part of CloudML [ http://cloudml.org ]
  *
  * Copyright (C) 2012 - SINTEF ICT
@@ -20,40 +20,28 @@ package org.cloudml.monitoring; /**
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+package org.cloudml.monitoring.synchronization;
 
-import org.cloudml.core.ComponentInstance;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import org.slf4j.Logger;
+
+
 /**
- * @author Francesco di Forenza
+ * Created by Lorenzo Cianciaruso on 07.07.14.
+ * in this class is defined how the parsing from
+ * ModelUpdates to json must be done.
  */
-public class MonitoredVm {
-    private String id;
-    private String name;
-    private ComponentInstance.State status;
+public class ModelUpdatesExclusionStrategy implements ExclusionStrategy {
 
-    public MonitoredVm(String id, String name, ComponentInstance.State status) {
-        this.id = id;
-        this.name = name;
-        this.status = status;
+    @Override
+    public boolean shouldSkipField(FieldAttributes f) {
+        return false;
     }
 
-    public String getId() {
-        return id;
+    @Override
+    public boolean shouldSkipClass(Class<?> clazz) {
+        return ( clazz == Logger.class );
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public ComponentInstance.State getStatus() {
-        return status;
-    }
-
-    /**
-     * Set the status
-     *
-     * @param status
-     */
-    public void setStatus(ComponentInstance.State status) {
-        this.status = status;
-    }
 }

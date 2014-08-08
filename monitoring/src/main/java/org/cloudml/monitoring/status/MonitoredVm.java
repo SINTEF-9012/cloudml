@@ -1,6 +1,4 @@
-package org.cloudml.monitoring.util;
-
-/**
+package org.cloudml.monitoring.status; /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
  * Copyright (C) 2012 - SINTEF ICT
@@ -23,36 +21,40 @@ package org.cloudml.monitoring.util;
  * <http://www.gnu.org/licenses/>.
  */
 
-import java.net.URI;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.handshake.ServerHandshake;
-
+import org.cloudml.core.ComponentInstance;
 /**
- * @author Lorenzo Cianciaruso
+ * @author Francesco di Forenza
+ * this class contains a definition of VM used only in this package
  */
-public class SocketClient extends WebSocketClient {
-    public SocketClient(URI serverURI, Draft draft) {
-        super(serverURI, draft);
+public class MonitoredVm {
+    private String id;
+    private String name;
+    private ComponentInstance.State status;
+
+    public MonitoredVm(String id, String name, ComponentInstance.State status) {
+        this.id = id;
+        this.name = name;
+        this.status = status;
     }
 
-    @Override
-    public void onOpen(ServerHandshake handshakedata) {
-        System.out.println("onOpen");
-        send("!getSnapshot\n" +
-                "  path : /\n");
+    public String getId() {
+        return id;
     }
 
-    @Override
-    public void onMessage(String message) {
-        System.out.println(message);
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public void onClose(int code, String reason, boolean remote) {
+    public ComponentInstance.State getStatus() {
+        return status;
     }
 
-    @Override
-    public void onError(Exception ex) {
+    /**
+     * Set the status
+     *
+     * @param status
+     */
+    public void setStatus(ComponentInstance.State status) {
+        this.status = status;
     }
 }

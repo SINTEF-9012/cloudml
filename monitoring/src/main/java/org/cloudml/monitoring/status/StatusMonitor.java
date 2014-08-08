@@ -1,5 +1,5 @@
-package org.cloudml.monitoring;
- /**
+package org.cloudml.monitoring.status;
+/**
  * This file is part of CloudML [ http://cloudml.org ]
  *
  * Copyright (C) 2012 - SINTEF ICT
@@ -27,53 +27,56 @@ import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.FlexiantConnector;
 import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.connectors.OpenStackConnector;
-import org.cloudml.monitoring.modules.FlexiantModule;
-import org.cloudml.monitoring.modules.JCloudsModule;
-import org.cloudml.monitoring.modules.Module;
-import org.cloudml.monitoring.modules.OpenStackModule;
+import org.cloudml.monitoring.status.modules.FlexiantModule;
+import org.cloudml.monitoring.status.modules.JCloudsModule;
+import org.cloudml.monitoring.status.modules.Module;
+import org.cloudml.monitoring.status.modules.OpenStackModule;
+import org.cloudml.mrt.Coordinator;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A monitor to get the status of deployed VMs
  * A push notification is send when the status change
  *
  * @author Francesco di Forenza
+ * this class is the main wrapper to monito the status
  */
 
 public class StatusMonitor {
-
+    private static final Logger journal = Logger.getLogger(StatusMonitor.class.getName());
     private Collection<Module> modules;
     private int refreshRate;
     private boolean active;
-
-    Thread thread;
+    private Thread thread;
+    private Coordinator coord;
 
     /**
      * Create a new monitor
      *
      * @param refreshRate the rate at which the monitor will collect information
      * @param active      if true the monitor will start immediately
+     * @param coord       the coordinator that will be used to update the model
      */
-    public StatusMonitor(int refreshRate, boolean active) {
+    public StatusMonitor(int refreshRate, boolean active, Coordinator coord) {
         this.refreshRate = refreshRate;
         this.active = active;
+        this.coord = coord;
         this.modules = Collections.synchronizedCollection(new ArrayList<Module>());
-        thread = new Thread(new Runnable() {
-            public void run() {
-                backgroundAgent();
-            }
-        });
-        thread.start();
+        if (active) {
+            start();
+        }
     }
 
     private void backgroundAgent() {
         while (active) {
-            System.out.println("EXECUTING");
+            journal.log(Level.INFO, "Looking for status changes..");
             //TODO put each module in a thread to deal with connection delay
-            synchronized  (modules) {
+            synchronized (modules) {
                 for (Module i : modules) {
                     i.exec();
                 }
@@ -95,59 +98,48 @@ public class StatusMonitor {
     public void attachModule(Connector connector) {
         Module module = null;
         if (connector instanceof FlexiantConnector) {
-            module = new FlexiantModule((FlexiantConnector) connector);
+            module = new FlexiantModule((FlexiantConnector) connector, coord);
         } else if (connector instanceof OpenStackConnector) {
-            module = new OpenStackModule((OpenStackConnector) connector);
+            module = new OpenStackModule((OpenStackConnector) connector, coord);
         } else if (connector instanceof JCloudsConnector) {
-            module = new JCloudsModule((JCloudsConnector) connector);
+            module = new JCloudsModule((JCloudsConnector) connector, coord);
         } else {
             //TODO exception
             System.out.println("error");
 
         }
-        if (module!=null)
-        {
+        if (module != null) {
             synchronized (modules) {
-                if (!modules.contains(module)) {
+                boolean contains = false;
+                for (Module m : modules){
+                    if (m.getType()==module.getType()){
+                        contains = true;
+                    }
+                }
+                if (!contains) {
                     modules.add(module);
                 }
             }
-            System.out.println("MODULE ATTACHED");
+            journal.log(Level.INFO, "Module attached: " + module.getType());
         }
     }
 
     /**
      * Remove a module from the monitor
      *
-     * @param module pick one from the enum
+     * @param type pick one from the enum
      */
-    public void detachModule(FlexiantModule.Type module) {
+    public void detachModule(Module.Type type) {
         synchronized (modules) {
             for (Module i : modules) {
-                if (i.getType() == module) {
+                if (i.getType() == type) {
                     modules.remove(i);
+                    journal.log(Level.INFO, "Module detached: " + i.getType());
                 }
             }
         }
-        System.out.println("MODULE DETACHED");
     }
 
-    /**
-     * Remove a module from the monitor
-     *
-     * @param connector pick one from the enum
-     */
-    public void detachModule(Connector connector) {
-        synchronized (modules) {
-
-            for (Module i : modules) {
-                if (i.getConnector() == connector) {
-                    modules.remove(i);
-                }
-            }
-        }
-        System.out.println("MODULE DETACHED");
-    }
 
     /**
      * Change the monitor frequency (in seconds)
@@ -164,6 +156,7 @@ public class StatusMonitor {
     public void pause() {
         this.active = false;
         thread.interrupt();
+        journal.log(Level.INFO, "Monitoring paused");
     }
 
     /**
@@ -179,7 +172,7 @@ public class StatusMonitor {
             });
             thread.start();
         } else {
-            System.out.println("Already started");
+            journal.log(Level.INFO, "Monitoring already started. Check your code");
         }
     }
 
@@ -192,5 +185,6 @@ public class StatusMonitor {
         synchronized (modules) {
             modules = new ArrayList<Module>();
         }
+        journal.log(Level.INFO, ">> Monitoring stopped and history deleted");
     }
 }

@@ -20,54 +20,40 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.monitoring.util;
+package org.cloudml.monitoring.synchronization;
 
-/**
- * Created by user on 07.07.14.
- */
 import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
 
 import java.util.List;
 
+/**
+ * @author Francesco di Forenza and Lorenzo Cianciaruso
+ */
 public class ModelUpdates {
-
     private List<VM> vms;
-
     private List<Component> components;
-
     private List<ExternalComponent> externalComponents;
 
-    public ModelUpdates(List<VM> vms, List<Component> components,
-                        List<ExternalComponent> externalComponents) {
+    public ModelUpdates(List<Component> components, List<ExternalComponent> externalComponents, List<VM> vms) {
         this.vms = vms;
         this.components = components;
         this.externalComponents = externalComponents;
     }
 
+
     public List<VM> getVms() {
         return vms;
-    }
-
-    public void setVms(List<VM> vms) {
-        this.vms = vms;
     }
 
     public List<Component> getComponents() {
         return components;
     }
 
-    public void setComponents(List<Component> components) {
-        this.components = components;
-    }
-
     public List<ExternalComponent> getExternalComponents() {
         return externalComponents;
     }
 
-    public void setExternalComponents(List<ExternalComponent> externalComponents) {
-        this.externalComponents = externalComponents;
-    }
 
 }

@@ -21,64 +21,67 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.cloudml.monitoring.modules;
+package org.cloudml.monitoring.status.modules;
 
 /**
  * @author Francesco di Forenza
  */
 
-import org.cloudml.monitoring.MonitoredVm;
+import net.flexiant.extility.Server;
+import net.flexiant.extility.ServerStatus;
+import org.cloudml.monitoring.status.MonitoredVm;
 import org.cloudml.connectors.Connector;
-import org.cloudml.connectors.JCloudsConnector;
+import org.cloudml.connectors.FlexiantConnector;
 import org.cloudml.core.ComponentInstance;
-import org.cloudml.monitoring.modules.util.ListManager;
-import org.jclouds.compute.domain.NodeMetadata;
+import org.cloudml.monitoring.status.modules.util.ListManager;
+import org.cloudml.mrt.Coordinator;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-public class JCloudsModule implements Module {
+public class FlexiantModule implements Module {
 
     private List<MonitoredVm> VMs;
-    private JCloudsConnector connector;
+    private FlexiantConnector connector;
     private Type type;
+    private Coordinator coord;
 
-    public JCloudsModule(JCloudsConnector connector) {
+
+    public FlexiantModule(FlexiantConnector connector, Coordinator coord) {
         VMs = new ArrayList<MonitoredVm>();
         this.connector = connector;
-        this.type = Type.JCLOUDS_MONITOR;
+        this.type = Type.FLEXIANT_MONITOR;
+        this.coord=coord;
     }
 
     public void exec() {
         List<MonitoredVm> list = new ArrayList<MonitoredVm>();
-        //get all servers
-        Set<NodeMetadata> jCloudsNodes = (Set<NodeMetadata>) connector.listOfVMs();
-        Iterator<NodeMetadata> iterator = jCloudsNodes.iterator();
-        while (iterator.hasNext()) {
-            NodeMetadata current = iterator.next();
-            MonitoredVm temp = new MonitoredVm(current.getId(), current.getName(), toState(current.getStatus()));
-            list.add(temp);
+        //Get all servers
+        List<Object> flexiantServers;
+        flexiantServers = connector.getListServer();
+        if (flexiantServers != null) {
+            for (Object o : flexiantServers) {
+                Server server = (Server) o;
+                MonitoredVm temp = new MonitoredVm(server.getResourceUUID(), server.getResourceName(), toState(server.getStatus()));
+                list.add(temp);
+            }
         }
-        ListManager.listManager(list, VMs);
+        ListManager.listManager(list, VMs, coord);
     }
 
     //map provider syntax on CloudMl one
-    private ComponentInstance.State toState(NodeMetadata.Status status){
+    private ComponentInstance.State toState(ServerStatus status){
         switch (status){
             case ERROR:
                 return ComponentInstance.State.ERROR;
             case RUNNING:
                 return ComponentInstance.State.RUNNING;
-            case SUSPENDED:
+            case STOPPED:
                 return ComponentInstance.State.STOPPED;
-            case TERMINATED:
-                return ComponentInstance.State.TERMINATED;
-            case PENDING:
-                return ComponentInstance.State.PENDING;
+            case RECOVERY:
+                return ComponentInstance.State.RECOVERY;
             default:
-                return ComponentInstance.State.UNRECOGNIZED;
+                return ComponentInstance.State.PENDING;
         }
     }
 

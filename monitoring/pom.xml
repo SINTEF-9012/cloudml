@@ -1,8 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <properties>
-        <jclouds.version>1.7.2</jclouds.version>
-    </properties>
     <artifactId>monitoring</artifactId>
     <packaging>jar</packaging>
 
@@ -14,7 +12,6 @@
     </parent>
 
     <name>CloudML :: Monitoring</name>
-
 
     <dependencies>
 
@@ -37,11 +34,7 @@
             <version>2.0-SNAPSHOT</version>
         </dependency>
 
-        <dependency>
-            <groupId>it.polimi.modaclouds.qos-models</groupId>
-            <artifactId>qos-models</artifactId>
-            <version>2.0.2</version>
-        </dependency>
+        <!--ModaClouds module dependencies -->
 
         <dependency>
             <groupId>it.polimi.modaclouds.monitoring</groupId>
@@ -50,117 +43,35 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.jclouds</groupId>
-            <artifactId>jclouds-allcompute</artifactId>
-            <version>${jclouds.version}</version>
+            <groupId>it.polimi.modaclouds.qos-models</groupId>
+            <artifactId>qos-models</artifactId>
+            <version>2.0.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.jclouds.provider</groupId>
-            <artifactId>aws-ec2</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
+        <!-- External dependecies TO CHECK AND CLEAN -->
 
-        <dependency>
-            <groupId>org.apache.jclouds.driver</groupId>
-            <artifactId>jclouds-sshj</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.6.4</version>
-        </dependency>
-                
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
             <version>4.2</version>
         </dependency>
-                
+
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
             <version>1.4.1</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>3.0.4.RELEASE</version>
         </dependency>
 
         <dependency>
             <groupId>org.java-websocket</groupId>
             <artifactId>Java-WebSocket</artifactId>
             <version>1.3.0</version>
-        </dependency> 
-                
-        <dependency>
-            <groupId>commons-jxpath</groupId>
-            <artifactId>commons-jxpath</artifactId>
-            <version>1.3</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.jclouds.api</groupId>
-            <artifactId>openstack-keystone</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.api</groupId>
-            <artifactId>openstack-nova</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.labs</groupId>
-            <artifactId>openstack-swift</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.api</groupId>
-            <artifactId>openstack-cinder</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.api</groupId>
-            <artifactId>openstack-trove</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.labs</groupId>
-            <artifactId>openstack-glance</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.labs</groupId>
-            <artifactId>openstack-marconi</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.labs</groupId>
-            <artifactId>openstack-neutron</artifactId>
-            <version>${jclouds.version}</version>
-        </dependency>
 
     </dependencies>
 
     <repositories>
-      
-        <repository>
-            <id>thirdparty</id>
-            <name>thingml-snapshot</name>
-            <url>http://maven.thingml.org/thirdparty/</url>
-        </repository>
-
         <repository>
             <id>deib-polimi-releases</id>
             <url>https://github.com/deib-polimi/deib-polimi-mvn-repo/raw/master/releases</url>
@@ -171,5 +82,6 @@
             <url>https://github.com/deib-polimi/deib-polimi-mvn-repo/raw/master/snapshots</url>
         </repository>
     </repositories>
- 
+
+
 </project>

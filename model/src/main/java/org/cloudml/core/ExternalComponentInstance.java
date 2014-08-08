@@ -74,21 +74,34 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
     public State getStatus() {
         return this.status;
     }
-    
+
+    //TODO these methods should be deleted as soon as nobody use them
+    @Deprecated
+    //USE MRT METHODS TO SET THE STATUS
     public void setStatusAsStopped() {
         this.status = State.STOPPED;
     }
-    
+
+    @Deprecated
+    //USE MRT METHODS TO SET THE STATUS
     public void setStatusAsError() {
         this.status = State.ERROR;
     }
-    
+
+    @Deprecated
+    // USE MRT METHODS TO SET THE STATUS
     public void setStatusAsRunning() {
         this.status = State.RUNNING;
     }
-    
+
+    @Deprecated
+    //USE setStatus(State)
     public void setStatus(String state){
         this.status = State.valueOf(state);
+    }
+
+    public void setStatus (State state){
+        this.status = state;
     }
     
     @Override
@@ -98,7 +111,7 @@ public class ExternalComponentInstance<T extends ExternalComponent> extends Comp
     
     @Override
     public boolean equals(Object other) {
-        if (other instanceof InternalComponentInstance) {
+        if (other instanceof ExternalComponentInstance) {
             ExternalComponentInstance otherCompInst = (ExternalComponentInstance) other;
             Boolean match = getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType());
             return match;

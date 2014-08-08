@@ -20,25 +20,23 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+package test.cloudml.monitoring;
 
-package org.cloudml.monitoring.modules;
+import junit.framework.TestCase;
+import org.cloudml.core.ComponentInstance;
+import org.cloudml.monitoring.status.NotificationSender;
+import org.cloudml.mrt.Coordinator;
 
-import org.cloudml.connectors.Connector;
+/**
+ * Created by user on 08.07.14.
+ */
+public class TestName extends TestCase {
+    public void test() {
+        NotificationSender.updateUsingFacade("test", ComponentInstance.State.RUNNING,new Coordinator());
+        Coordinator coordinator = new Coordinator("sample://sensApp");
+        NotificationSender.updateUsingFacade("sensapp-sl1", ComponentInstance.State.RUNNING, coordinator);
+        NotificationSender.updateUsingFacade("sensapp-sl1", ComponentInstance.State.RUNNING, coordinator);
 
-
-//the module receives a connector and uses it to retrieve the status of VMs
-public interface Module {
-
-    public enum Type {
-        FLEXIANT_MONITOR, JCLOUDS_MONITOR, OPENSTACK_MONITOR;
     }
-
-
-    public void exec();
-
-    public Type getType();
-
-    public Connector getConnector();
-
-
 }
+

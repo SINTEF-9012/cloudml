@@ -20,27 +20,28 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.connectors;
 
-import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.VMInstance;
+package org.cloudml.monitoring.status.modules;
 
-public interface Connector {
-	
-	public void execCommand(String id, String command, String login, String key);
-	
-	public ComponentInstance.State createInstance(VMInstance a);
-	
-	public void destroyVM(String id);
-	
-	public void closeConnection();
+import org.cloudml.connectors.Connector;
 
-	public void updateVMMetadata(VMInstance a);
-	
-	public void uploadFile(String sourcePath, String destinationPath, String nodeId, String login, String key);
 
-    public String createSnapshot(VMInstance a);
+/**
+ * @author Francesco di Forenza
+ */
+//the module receives a connector and uses it to retrieve the status of VMs
+public interface Module {
 
-    public String createImage(VMInstance a);
-	
+    public enum Type {
+        FLEXIANT_MONITOR, JCLOUDS_MONITOR, OPENSTACK_MONITOR
+    }
+
+
+    public void exec();
+
+    public Type getType();
+
+    public Connector getConnector();
+
+
 }
