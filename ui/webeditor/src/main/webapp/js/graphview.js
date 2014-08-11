@@ -36,13 +36,16 @@ var graphEdges;
 var width = (window.innerWidth),
     height = (window.innerHeight);
 var brush;
+var contextMenu;
 
 var colorScale = d3.scale.linear()
 .domain([1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
 .range(["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"]);
 
-var loadDispatcher;
-var shiftKey;
+//var loadDispatcher;
+//var shiftKey;
+
+var displayingContextMenu = false;
 /*
 var RdYlGn = {
     3: ["#fc8d59","#ffffbf","#91cf60"],
@@ -143,12 +146,48 @@ function findTarget(refTarget, deploymentModel) {
 }
 
 
+function addContextMenuItems(contextMenuElement){
+    addExecuteContextMenuItems(contextMenuElement);
+    addRelationshipContextMenuItems(contextMenuElement);
+    addExtCompContextMenuItems(contextMenuElement);
+    addIntCompContextMenuItems(contextMenuElement);
+}
+
+function addAnyNodeContextMenuItems(contextMenuElement){
+    contextMenuElement.append('li')
+    .attr('class', 'executeInstanceMI')
+    .attr('id', 'executeInstanceMI1')
+    .text('Fold')
+    ;
+}
+
+function addExecuteContextMenuItems(contextMenuElement){
+    contextMenuElement.append('li')
+    .attr('class', 'executeInstanceMI')
+    .attr('id', 'executeInstanceMI1')
+    .text('Fold')
+    ;
+
+
+}
+function addRelationshipContextMenuItems(contextMenuElement){
+
+}
+function addExtCompContextMenuItems(contextMenuElement){
+
+}
+function addIntCompContextMenuItems(contextMenuElement){
+
+}
+
 /***********************************************
 * Initialisation of the graph
 ************************************************/
 
 function getData(jsonString) {
+    // remove the svg and the selection area (brush)
     d3.selectAll("svg").remove();
+    brush = null;
     root = eval('(' + jsonString + ')');
 
     intCompInstances = getInternalComponentInstances(root);
@@ -164,8 +203,13 @@ function getData(jsonString) {
     svg = d3.select("body").append("svg:svg")
     .attr("width", width)
     .attr("height", height)
-    .on("keydown.brush", function (){shiftKey = d3.event.shiftKey;})
-    .on("keyup.brush", function (){shiftKey = d3.event.shiftKey;})
+    .on('click', function(){
+        d3.select('#context_menu').remove();
+        d3.event.stopPropagation();
+    })
+    .on('contextmenu', function(){
+        d3.event.preventDefault();
+    })
     ;
 
     ////////////////////////  experimental code
@@ -305,20 +349,24 @@ function update(){
                 'container' : 'body',
                 'placement' : 'auto right',
                 'title'     : d.name,
+                // template for the popover includes the identifier of each of the elements
                 'template'  : '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content" id="popover_content_' + d.name + '"></div></div>',
-                //                'content'   : getNodeState(d),
-                //                'delay'     : {show: 500, hide: 100},
                 'html'      : true,
                 'trigger'   : 'manual'
             }
         )
         // listeners for the popover enabling it to stay shown when hovered over
         .on("mouseenter", function () {
+            // in case there is an open context menu we do not display popovers
+            if($('#context_menu').length > 0){
+                return;
+            }
             var _this = this;
             $(this).popover("show");
-            $(".popover").on("mouseleave", function () {
+            $(".popover")
+            .on("mouseleave", function () {
                 $(_this).popover('hide');
-            });
+            })
         })
         .on("mouseleave", function () {
             var _this = this;
@@ -365,23 +413,32 @@ function update(){
         observer.observe(target, config);
     })
 
+    .on('contextmenu', function(node) {
+
+        generateContextMenuForNode(this, node);
+        d3.event.preventDefault();
+    })
     ;
 
-//    var drag = d3.behavior.drag()
-//    .on("drag", function(d, i) {
-//        console.log("drag");
-//        d.px += d3.event.dx;
-//        d.py += d3.event.dy;
-//        d.x += d3.event.dx;
-//        d.y += d3.event.dy;
-//        tick();
-//    })
-//    .on("dragend", function(d, i){
-//        console.log("dragend");
-//        svg.selectAll('.selectionCircle .internalComponent .externalComponent .tmpNodeSymbol .tmpToggleFoldSymbol').call(force.drag);
-//    });
+    ////////////////////////  experimental code
+    //    var drag = d3.behavior.drag()
+    //    .on("drag", function(d, i) {
+    //        console.log("drag");
+    //        d.px += d3.event.dx;
+    //        d.py += d3.event.dy;
+    //        d.x += d3.event.dx;
+    //        d.y += d3.event.dy;
+    //        tick();
+    //    })
+    //    .on("dragend", function(d, i){
+    //        console.log("dragend");
+    //        svg.selectAll('.selectionCircle .internalComponent .externalComponent .tmpNodeSymbol .tmpToggleFoldSymbol').call(force.drag);
+    //    });
+    ////////////////////////
 
+    // define the node selection area
     if(!brush){
+        // put brush area in the background so that the nodes and edges are on top of (and not inside) it
         brush = svg.insert("g", "g.nodes")
         .datum(function() { 
             return {selected: false, previouslySelected: false}; 
@@ -390,8 +447,8 @@ function update(){
         .call(d3.svg.brush()
               .x(d3.scale.identity().domain([0, width]))
               .y(d3.scale.identity().domain([0, height]))
-              .on("brushstart", function(d) {
-                  nodeGroup.each(function(d) { d.previouslySelected = shiftKey && d.selected; });
+              .on("brushstart", function(){
+
               })
               .on("brush", function() {
                   var extent = d3.event.target.extent();
@@ -403,8 +460,14 @@ function update(){
                       )
                       .selectAll('.selectionCircle')
                       .classed("selected", function() {
-                          return (extent[0][0] <= d.x && d.x < extent[1][0]
-                                  && extent[0][1] <= d.y && d.y < extent[1][1]);
+                          if(d3.event.sourceEvent.shiftKey){
+                              return this.classList.contains("selected") || 
+                                  (extent[0][0] <= d.x && d.x < extent[1][0]
+                                   && extent[0][1] <= d.y && d.y < extent[1][1]);
+                          }else{
+                              return (extent[0][0] <= d.x && d.x < extent[1][0]
+                                   && extent[0][1] <= d.y && d.y < extent[1][1]);
+                          }
                       })
                   })
 
@@ -473,7 +536,20 @@ function update(){
     });
 
     // add listener for mouseclick for folding
-    nodeGroup.on("click", toggleFoldNode);
+    nodeGroup.on("click", function(d){
+        var e = d3.event;
+        // toggle selection of a node if shift/ctrl key is pressed
+        if(e.shiftKey || e.ctrlKey){
+            d3.select(this).selectAll('.selectionCircle')
+            .classed("selected", function(d){
+                return this.classList.contains('selected') ? false : true ;
+            });
+        }else{
+            // if shift/ctrl is not pressed - simply fold the node
+            toggleFoldNode(d);
+            clearCurrentSelection();
+        }
+    });
 
     var path = svg.select(".edges").selectAll('path');
     path = path.data(graphEdges);
@@ -492,15 +568,191 @@ function update(){
         return d._type == "ExecuteLink" ? 'url(#execute-arrow)' : 'url(#relationship-arrow)';
     });
 
+    path.on('click', function(){
+        d3.select('#context_menu').remove();
+        d3.event.stopPropagation();
+    })
+    .on('contextmenu', function(){
+        d3.event.preventDefault();
+    });
 
 
     d3.selectAll("text")
     .on("mouseover", function () {
         d3.event.preventDefault();
-
     });
 
     force.on("tick", tick);
+}
+
+// generates the list item (<li>) for the context menu options of all of the nodes
+function addContextOptionsAllNodes(contextMenu, element, node){
+
+    // context menu item for Fold/Unfold node
+    contextMenu.append('li')
+    .attr('class', 'contextOption')
+    .attr('id', function(){
+        node.isFolded ? 'unfoldNodeCMI' : 'foldNodeCMI';
+    })
+    .style('cursor', 'pointer')
+    .on('click', function(d){
+        toggleFoldNode(node);
+        clearCurrentSelection();
+        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+        d3.event.stopPropagation();
+        d3.select('#context_menu').remove();
+    })
+    .text(function(){
+        return node.isFolded ? 'Unfold node' : 'Fold node';
+    });
+
+
+    contextMenu.append('hr');
+
+
+    contextMenu.append('li')
+    .attr('class', 'contextOption')
+    .attr('id', 'foldSelectionCMI')
+    .style('cursor', 'pointer')
+    .on('click', function(d){
+        foldSelectionOfNodes(d3.selectAll('.selected'));
+        clearCurrentSelection();
+        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+        d3.event.stopPropagation();
+        d3.select('#context_menu').remove();
+    })
+    .text('Fold selection');
+
+
+
+    contextMenu.append('li')
+    .attr('class', 'contextOption')
+    .attr('id', 'unfoldSelectionCMI')
+    .style('cursor', 'pointer')
+    .on('click', function(d){
+        unfoldSelectionOfNodes(d3.selectAll('.selected'));
+        clearCurrentSelection();
+        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+        d3.event.stopPropagation();
+        d3.select('#context_menu').remove();
+    })
+    .text('Unfold selection');
+}
+
+// unfolds the current selection of nodes
+function unfoldSelectionOfNodes(nodesSelection){
+    if(nodesSelection[0].length ==0){
+        return;
+    }
+    var selectedNodesDatums = [];
+    for(i=0;i<nodesSelection[0].length;++i){
+        var nodeDatum = d3.select(nodesSelection[0][i].parentNode).datum();
+        if(nodeDatum.isFolded){
+            toggleFoldNode(nodeDatum);
+        }
+    }
+}
+
+// folds the current selection of nodes
+function foldSelectionOfNodes(nodesSelection){
+    if(nodesSelection[0].length ==0){
+        return;
+    }
+    var selectedNodesDatums = [];
+    for(i=0;i<nodesSelection[0].length;++i){
+        var nodeDatum = d3.select(nodesSelection[0][i].parentNode).datum();
+        selectedNodesDatums.push(nodeDatum);
+    }
+
+    while(selectedNodesDatums.length>0){
+        var currentDatum = selectedNodesDatums.pop();
+
+        if(currentDatum.isFolded)
+            continue;
+
+        if(getNodeDatumHostFromSelection(currentDatum, selectedNodesDatums).length > 0){
+            // if the host of the node of the datum is in the selection, we will check it anyways
+            continue;
+        }
+
+        toggleFoldNode(currentDatum);
+
+        var index;
+        // remove the already folded sub-nodes as they are no longer bound
+        for(i=0;i<currentDatum.foldedSubNodes.length;++i){
+            index = selectedNodesDatums.indexOf(currentDatum.foldedSubNodes[i]);
+            if(index > -1){
+                selectedNodesDatums.splice(index,1);
+            }
+        }
+    }
+}
+
+function getNodeDatumHostFromSelection(datum, selection){
+    // no parent - datum represents a host
+    if(datum._type == 'ExternalComponent')
+        return [];
+    
+    var result = [];
+    var edge;
+    var edgeSourceHost = findNodeHost(datum);
+    // check if the host of the node is in the selection
+    if(selection.indexOf(edgeSourceHost) > -1){
+        result.push(edgeSourceHost);
+    }
+    return result;
+}
+
+// generates the list item (<li>) for the context menu options of the external components
+function addContextOptionsExternalComponents(contextMenu, element, node){
+    if(node._type == 'ExternalComponent'){
+        contextMenu.append('hr');
+        contextMenu.append('li')
+        .attr('class', 'contextOption')
+        .attr('id', 'scaleOutNode')
+        .style('cursor', 'pointer')
+        .on('click', function(d){
+            scaleOutNode(node);
+            // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+            d3.event.stopPropagation();
+            d3.select('#context_menu').remove();
+        })
+        .text('Scale out');
+    }
+}
+
+// dummy function (for now) for scaling out
+function scaleOutNode(node){window.alert("scaled out dummy")}
+
+// generate the context menu and, accordingly, the specific items associated with a certain node
+function generateContextMenuForNode(element, node){
+    // if any popover is open for the current element - hide it
+    $(element).popover('hide');
+
+    // if there is another context menu open - remove it too
+    d3.select('#context_menu').remove();
+
+    var mousePosition = d3.mouse(element.parentNode);
+
+    var contextMenu = d3.select('body').append('ul')
+    .attr('id', 'context_menu')
+    .attr('class', 'contextMenu')
+    .style('left', mousePosition[0] + "px")
+    .style('top', mousePosition[1] + "px")
+    .on('mouseleave', function() {
+        d3.select('#context_menu').remove();
+    })
+    ;
+
+    addContextOptionsAllNodes(contextMenu, element, node);
+    addContextOptionsExternalComponents(contextMenu, element, node);
+
+
+
+}
+
+function clearCurrentSelection(){
+    d3.selectAll('.selected').classed('selected', false);
 }
 
 function tick (e) {
@@ -752,7 +1004,8 @@ function hideNodes(nodesToFold){
 }
 
 function reset(){
-    svg.remove(); 
+    svg.remove();
+    brush = null;
 }
 
 function loadFile(inputDiv) {
@@ -787,7 +1040,7 @@ function loadFile(inputDiv) {
     }
 }
 
-// test function only
+////////////////////////  experimental code
 //function randomlyChangeLoad(){
 //    var colorCode = colorScale(Math.random());
 //    var tmp = svg.selectAll("circle.externalComponent");
@@ -803,5 +1056,5 @@ function loadFile(inputDiv) {
 //    //    var colorCode = colorScale(Math.random());
 //    //    chosenCircle.style('fill', colorCode);
 //}
-
+////////////////////////  
 
