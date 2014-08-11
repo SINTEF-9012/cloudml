@@ -97,14 +97,16 @@ public class CloudMLModelComparator {
         journal.log(Level.INFO, ">> Removed VMs :" + removedECs.toString());
         journal.log(Level.INFO, ">> Added VMs  :" + addedECs.toString());
 
-        compareRelationships();
-        journal.log(Level.INFO, ">> Removed relationships :" + removedRelationships.toString());
-        journal.log(Level.INFO, ">> Added relationships :" + addedRelationships.toString());
+        
 
         compareComponents();
         journal.log(Level.INFO, ">> Removed components: " + removedComponents.toString());
         journal.log(Level.INFO, ">> Added components: " + addedComponents.toString());
 
+        compareRelationships();
+        journal.log(Level.INFO, ">> Removed relationships :" + removedRelationships.toString());
+        journal.log(Level.INFO, ">> Added relationships :" + addedRelationships.toString());
+        
         compareExecutes();
         journal.log(Level.INFO, ">> Removed executes: " + removedExecutes.toString());
         journal.log(Level.INFO, ">> Added executes: " + addedExecutes.toString());
@@ -121,21 +123,21 @@ public class CloudMLModelComparator {
             {
                 for (ExternalComponentInstance ni2 : targetDM.getComponentInstances().onlyExternals()) {
                     match = ni.equals(ni2);
-                    if (ni.equals(ni2)) {
+                    if (match) {
                         matchingECs.put(ni, ni2);
                         break secondloop;
                     }
                 }
             }
             if (!match) {
-                removeVM(ni);
+                removeEC(ni);
             }
         }
         //add the rest
         addECs();
     }
 
-    private void removeVM(ExternalComponentInstance<? extends ExternalComponent> ni) {
+    private void removeEC(ExternalComponentInstance<? extends ExternalComponent> ni) {
         removedECs.add(ni);
         //create action
 
@@ -184,7 +186,7 @@ public class CloudMLModelComparator {
                     ni.setRequiredEnd(((InternalComponentInstance) a).getRequiredPorts().toList().get(j));
                 }
             }
-            i = currentDM.getComponentInstances().toList().indexOf(ni.getProvidedEnd().getOwner());
+            i = currentDM.getComponentInstances().toList().indexOf(ni.getProvidedEnd().getOwner().get());
             if (i >= 0) {
                 ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
                 int j = a.getProvidedPorts().toList().indexOf(ni.getProvidedEnd());
@@ -264,7 +266,7 @@ public class CloudMLModelComparator {
                 ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
                 ei.setRequiredEnd(((InternalComponentInstance) a).getRequiredExecutionPlatform());
             }
-            i = currentDM.getComponentInstances().toList().indexOf(ei.getProvidedEnd().getOwner());
+            i = currentDM.getComponentInstances().toList().indexOf(ei.getProvidedEnd().getOwner().get());
             if (i >= 0) {
                 ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
                 int j = a.getProvidedExecutionPlatforms().toList().indexOf(ei.getProvidedEnd());

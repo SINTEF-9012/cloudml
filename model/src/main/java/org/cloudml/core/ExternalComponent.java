@@ -142,7 +142,7 @@ public class ExternalComponent extends Component {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof ExternalComponent) {
+        if (other != null && other instanceof ExternalComponent) {
             ExternalComponent otherComp = (ExternalComponent) other;
             return isNamed(otherComp.getName());
         }

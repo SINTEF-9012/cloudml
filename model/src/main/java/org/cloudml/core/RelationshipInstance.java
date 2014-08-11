@@ -145,7 +145,10 @@ public class RelationshipInstance extends WithResources implements DeploymentEle
     public boolean equals(Object other) {
         if (other instanceof RelationshipInstance) {
             RelationshipInstance otherBinding = (RelationshipInstance) other;
-            return (requiredEnd.equals(otherBinding.getRequiredEnd()) && providedEnd.equals(otherBinding.getProvidedEnd()));
+            return (
+                    ((requiredEnd == null && otherBinding.getRequiredEnd() == null) || requiredEnd.equals(otherBinding.getRequiredEnd())) && 
+                    ((providedEnd == null && otherBinding.getProvidedEnd() == null) || providedEnd.equals(otherBinding.getProvidedEnd()))
+                   );
         }
         else {
             return false;

@@ -46,7 +46,8 @@ public class RequiredExecutionPlatformInstance extends ExecutionPlatformInstance
         if (other == null) {
             return false;
         }
-
+        
+        //TODO: getOwner.equals may be troublesome, because they are not directly the owners, but Optionals of owners
         if (other instanceof RequiredExecutionPlatformInstance) {
             RequiredExecutionPlatformInstance otherNode = (RequiredExecutionPlatformInstance) other;
             return getName().equals(otherNode.getName()) && this.getOwner().equals(otherNode.getOwner());
