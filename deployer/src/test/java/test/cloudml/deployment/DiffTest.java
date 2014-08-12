@@ -36,12 +36,14 @@ import junit.framework.TestCase;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.core.Deployment;
+import org.cloudml.core.InternalComponent;
 import org.cloudml.core.InternalComponentInstance;
+import org.cloudml.core.RelationshipInstance;
 import org.cloudml.deployer.CloudMLModelComparator;
 
 /**
  *
- * @author huis
+ * @author Hui Song
  */
 public class DiffTest extends TestCase{
     
@@ -49,22 +51,79 @@ public class DiffTest extends TestCase{
         new DiffTest().testComparator();
     }
     
-    public void testComparator() throws FileNotFoundException{
+    public Deployment current = null;
+    public Deployment target = null;
+    
+    @Override
+    public void setUp() throws FileNotFoundException{
         Codec codec = new JsonCodec();
         Codec codec2 = new JsonCodec();
         InputStream stream = null;
         stream = new FileInputStream(new File("c:\\temp\\sensapp-v2.json"));
-        Deployment current = (Deployment) codec.load(stream);
+        current = (Deployment) codec.load(stream);
         stream = new FileInputStream("c:\\temp\\sensapp-v2.json");
-        Deployment target = (Deployment) codec2.load(stream);
+        target = (Deployment) codec2.load(stream);
 
-        InternalComponentInstance ici = target.getComponentInstances().onlyInternals().firstNamed("sensApp1");
-
-        ici.setName("sensApp-modified-1");
+    }
+    
+    /**
+     * Change the name of the Internal Component Instance sensApp1
+     * Since *name* works as the id of the instance, this change should be regarded
+     * as "removing one component instance and adding a new one". Therefore, the
+     * relationship instances and execution instances are changed as well.
+     * @throws FileNotFoundException 
+     */
+    public void testNameOfOneInCompChanged(){
+        
+        String nameBeforeChange = "sensApp1";
+        String nameToChange = "sensApp-modified-1";
+        
+        InternalComponentInstance ici = target.getComponentInstances().onlyInternals().firstNamed(nameBeforeChange);
+        ici.setName(nameToChange);
 
         CloudMLModelComparator cmc = new CloudMLModelComparator(current, target);
         cmc.compareCloudMLModel();
-            
+        checkOneComponentInstanceChanged(cmc, nameBeforeChange, nameToChange);            
         
+    }
+    
+    public void testTypeOfOneInCompChanged() {
+        String nameBeforeChange = "sensapp";
+        String nameAfterChange = "sensapp-modified";
+        String instanceName = "sensApp1";
+        InternalComponent ic = target.getComponents().onlyInternals().firstNamed(nameBeforeChange);
+        ic.setName(nameAfterChange);
+        CloudMLModelComparator cmc = new CloudMLModelComparator(current, target);
+        cmc.compareCloudMLModel();
+        checkOneComponentInstanceChanged(cmc, instanceName, instanceName);
+    }
+
+    private void checkOneComponentInstanceChanged(CloudMLModelComparator cmc, String nameBeforeChange, String nameToChange) {
+        assertEquals(0, cmc.getAddedECs().size());
+        assertEquals(0, cmc.getRemovedECs().size());
+        assertEquals(1, cmc.getRemovedComponents().size());
+        assertEquals(nameBeforeChange, cmc.getRemovedComponents().get(0).getName());
+        assertEquals(1, cmc.getAddedComponents().size());
+        assertEquals(nameToChange, cmc.getAddedComponents().get(0).getName());
+        
+        assertEquals(2, cmc.getRemovedRelationships().size());
+        assertTrue(
+                nameBeforeChange.equals(cmc.getRemovedRelationships().get(0).getServerComponent().getName()) ||
+                        nameBeforeChange.equals(cmc.getRemovedRelationships().get(1).getServerComponent().getName())
+        );
+        assertEquals(2, cmc.getAddedRelationships().size());
+        for(RelationshipInstance ri : cmc.getAddedRelationships()){
+            assertTrue(
+                    (
+                            nameToChange.equals(ri.getServerComponent().getName()) &&
+                                    ri.getClientComponent().getOwner().getValue() == current
+                            )
+                            ||
+                            (
+                                    nameToChange.equals(ri.getClientComponent().getName()) &&
+                                            ri.getServerComponent().getOwner().getValue() == current
+                                    )
+            );
+        }
     }
 }
