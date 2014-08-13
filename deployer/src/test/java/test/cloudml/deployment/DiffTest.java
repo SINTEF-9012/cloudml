@@ -32,13 +32,21 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
 import junit.framework.TestCase;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.codecs.commons.Codec;
+import org.cloudml.core.ComponentInstance;
+import org.cloudml.core.ComponentInstance.State;
 import org.cloudml.core.Deployment;
 import org.cloudml.core.InternalComponent;
 import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.core.RelationshipInstance;
+import org.cloudml.core.VMInstance;
+import org.cloudml.core.samples.SensApp;
+import org.cloudml.deployer.CloudMLElementComparator;
+import org.cloudml.deployer.CloudMLElementComparator.ElementUpdate;
 import org.cloudml.deployer.CloudMLModelComparator;
 
 /**
@@ -124,6 +132,64 @@ public class DiffTest extends TestCase{
                                             ri.getServerComponent().getOwner().getValue() == current
                                     )
             );
+        }
+    }
+    
+    public void testElementCompareInSensApp(){
+        String vmName = "sensapp-sl1";
+        VMInstance ici = target.getComponentInstances().onlyVMs().firstNamed(vmName);
+        
+        ici.setProperty("newProp", "aValue");
+        ici.getType().setOs("windows");
+        
+        CloudMLModelComparator cmc = new CloudMLModelComparator(current, target);
+        cmc.compareCloudMLModel();
+        
+        List<ElementUpdate> li = cmc.getAllEcUpdates();
+        
+        assertEquals(2, li.size());
+        
+        assertEquals(ici, li.iterator().next().element);
+        assertEquals("type/os", li.iterator().next().path);
+
+        
+    }
+    
+    public void testSignleElementCompare(){
+        Deployment dm = SensApp.completeSensApp().build();
+        VMInstance vmi = dm.getComponentInstances().onlyVMs().firstNamed(SensApp.SENSAPP_VM);
+        vmi.setProperty("testprop", "some value");
+        
+        Deployment dm2 = SensApp.completeSensApp().build();
+        VMInstance vmi2 = dm2.getComponentInstances().onlyVMs().firstNamed(SensApp.SENSAPP_VM);
+        vmi2.getType().setOs("windows");
+        vmi2.setStatus(ComponentInstance.State.ERROR);
+        vmi2.setProperty("test", "someValue");
+        
+        CloudMLElementComparator cec = new CloudMLElementComparator(vmi, vmi2);
+        
+       
+        Collection<CloudMLElementComparator.ElementUpdate> updates = cec.compare();
+        
+        assertEquals(4, updates.size());
+        for(CloudMLElementComparator.ElementUpdate u : updates){
+            if("type/os".equals(u.path)){
+                assertEquals("windows", u.newValue);
+                continue;
+            }
+            else if("status".equals(u.path)){
+                assertEquals(State.STOPPED, u.oldValue);
+                continue;
+            }
+            else if("properties/test".equals(u.path)){
+                assertNull(u.oldValue);
+                continue;
+            }
+            else if("properties/testprop".equals(u.path)){
+                assertTrue(vmi == u.element);
+                continue;
+            }
+            fail(String.format("%s should not be here", u));
         }
     }
 }
