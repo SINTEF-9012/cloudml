@@ -86,7 +86,8 @@ public class DiffTest extends TestCase{
         String nameBeforeChange = "sensApp1";
         String nameToChange = "sensApp-modified-1";
         
-        InternalComponentInstance ici = target.getComponentInstances().onlyInternals().firstNamed(nameBeforeChange);
+        InternalComponentInstance ici = target.getComponentInstances()
+                .onlyInternals().firstNamed(nameBeforeChange);
         ici.setName(nameToChange);
 
         CloudMLModelComparator cmc = new CloudMLModelComparator(current, target);
@@ -95,17 +96,30 @@ public class DiffTest extends TestCase{
         
     }
     
+    /**
+     * Change the name of a component's type. Now the component is not considered to 
+     * be the same one as before (not sure if this the most reasonable behaviour), 
+     * and the comparing result should be the same as only changing the instance name.
+     */
     public void testTypeOfOneInCompChanged() {
         String nameBeforeChange = "sensapp";
         String nameAfterChange = "sensapp-modified";
         String instanceName = "sensApp1";
-        InternalComponent ic = target.getComponents().onlyInternals().firstNamed(nameBeforeChange);
+        InternalComponent ic = target.getComponents()
+                .onlyInternals().firstNamed(nameBeforeChange);
         ic.setName(nameAfterChange);
         CloudMLModelComparator cmc = new CloudMLModelComparator(current, target);
         cmc.compareCloudMLModel();
         checkOneComponentInstanceChanged(cmc, instanceName, instanceName);
     }
 
+    /**
+     * Common checking method after changing an internal component's name or its 
+     * type name.
+     * @param cmc
+     * @param nameBeforeChange
+     * @param nameToChange 
+     */
     private void checkOneComponentInstanceChanged(CloudMLModelComparator cmc, String nameBeforeChange, String nameToChange) {
         assertEquals(0, cmc.getAddedECs().size());
         assertEquals(0, cmc.getRemovedECs().size());
@@ -117,27 +131,28 @@ public class DiffTest extends TestCase{
         assertEquals(2, cmc.getRemovedRelationships().size());
         assertTrue(
                 nameBeforeChange.equals(cmc.getRemovedRelationships().get(0).getServerComponent().getName()) ||
-                        nameBeforeChange.equals(cmc.getRemovedRelationships().get(1).getServerComponent().getName())
+                nameBeforeChange.equals(cmc.getRemovedRelationships().get(1).getServerComponent().getName())
         );
         assertEquals(2, cmc.getAddedRelationships().size());
         for(RelationshipInstance ri : cmc.getAddedRelationships()){
             assertTrue(
                     (
                             nameToChange.equals(ri.getServerComponent().getName()) &&
-                                    ri.getClientComponent().getOwner().getValue() == current
-                            )
-                            ||
-                            (
-                                    nameToChange.equals(ri.getClientComponent().getName()) &&
-                                            ri.getServerComponent().getOwner().getValue() == current
-                                    )
+                            ri.getClientComponent().getOwner().getValue() == current
+                    )
+                    ||
+                    (
+                            nameToChange.equals(ri.getClientComponent().getName()) &&
+                            ri.getServerComponent().getOwner().getValue() == current
+                    )
             );
         }
     }
     
     public void testElementCompareInSensApp(){
         String vmName = "sensapp-sl1";
-        VMInstance ici = target.getComponentInstances().onlyVMs().firstNamed(vmName);
+        VMInstance ici = target.getComponentInstances()
+                .onlyVMs().firstNamed(vmName);
         
         ici.setProperty("newProp", "aValue");
         ici.getType().setOs("windows");
@@ -155,13 +170,20 @@ public class DiffTest extends TestCase{
         
     }
     
+    /**
+     * Check the changes between matched components, relations, and execute
+     * instances
+     */
     public void testSignleElementCompare(){
         Deployment dm = SensApp.completeSensApp().build();
-        VMInstance vmi = dm.getComponentInstances().onlyVMs().firstNamed(SensApp.SENSAPP_VM);
+        VMInstance vmi = dm.getComponentInstances()
+                .onlyVMs().firstNamed(SensApp.SENSAPP_VM);
         vmi.setProperty("testprop", "some value");
         
         Deployment dm2 = SensApp.completeSensApp().build();
-        VMInstance vmi2 = dm2.getComponentInstances().onlyVMs().firstNamed(SensApp.SENSAPP_VM);
+        VMInstance vmi2 = dm2.getComponentInstances()
+                .onlyVMs().firstNamed(SensApp.SENSAPP_VM);
+        
         vmi2.getType().setOs("windows");
         vmi2.setStatus(ComponentInstance.State.ERROR);
         vmi2.setProperty("test", "someValue");

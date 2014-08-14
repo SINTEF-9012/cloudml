@@ -91,7 +91,9 @@ public class CloudMLElementComparator {
         
     }
     
-    private boolean allProperties = true;
+    
+    private boolean compareProperties = true;
+    private boolean compareResources = true;
     private Collection<String> toCompare = null;
     private ArrayList<ElementUpdate> updates = new ArrayList<ElementUpdate>();
     private Object current = null;
@@ -113,7 +115,7 @@ public class CloudMLElementComparator {
         this.current = current;
         this.target = target;
         this.toCompare = toCompareDefault.get(current.getClass().getSimpleName());
-        if(allProperties){
+        if(compareProperties){
             ArrayList<String> newList = new ArrayList<String>();
             newList.addAll(this.toCompare);
             this.toCompare = newList;
