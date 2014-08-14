@@ -249,18 +249,31 @@ instruction !extended{
 }
 ```
 
-We have supported ```LoadDeployment```, ```Deploy```, and ```Start```, three Facade commands.
+We have supported the facade commands including ```LoadDeployment```, ```Deploy```, ```Start```, ```Snapshot```, ```Image``` and ```ScaleOut```.
+
+```Deploy``` command does not need any parameter, and therefore it can be invoked simply as:
+
+```
+!extended { named: Deploy }
+```
+
+All the other commands require a single parameter, and therefore can be invoked as follows.
+
+```
+!extended { name: Snapshot, params: [xyz] }
+```
+
+Where ```xyz``` is the id of a Virtual Machine, and it is the sole parameter required by command ```Snapshot```. 
 
 If the last params is too long (or too structural) for yaml, you can send a supplimentary command just after an extended command, started with a ```!additional```. The content following this tag is treated as plain text, not yaml.
 
-For example: the following too commands together load a deployment model from the input json string:
+For example: the following two commands together load a deployment model from the input json string:
 ```
 !extended { name : LoadDeployment }
 ```
 
 ```
 !additional
-json-string:{
 json-string:{
    "eClass" : "net.cloudml.core:CloudMLModel",
    "name" : "cloudbees-deployment",
