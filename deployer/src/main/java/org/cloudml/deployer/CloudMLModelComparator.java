@@ -47,7 +47,7 @@ public class CloudMLModelComparator {
     private Map<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> matchingECs = new Hashtable<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>>();
     private List<ExternalComponentInstance<? extends ExternalComponent>> removedECs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
     private List<ExternalComponentInstance<? extends ExternalComponent>> addedECs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
-
+    
     private Map<InternalComponentInstance, InternalComponentInstance> matchingComponents = new Hashtable<InternalComponentInstance, InternalComponentInstance>();
     private List<InternalComponentInstance> removedComponents = new ArrayList<InternalComponentInstance>();
     private List<InternalComponentInstance> addedComponents = new ArrayList<InternalComponentInstance>();
@@ -60,6 +60,10 @@ public class CloudMLModelComparator {
     private Map<ExecuteInstance, ExecuteInstance> matchingExecutes = new Hashtable<ExecuteInstance, ExecuteInstance>();
     private List<ExecuteInstance> removedExecutes = new ArrayList<ExecuteInstance>();
 
+    private List<CloudMLElementComparator> ecComparator = null;
+    private List<CloudMLElementComparator> icComparator = null;
+    private List<CloudMLElementComparator> rlComparator = null;
+    private List<CloudMLElementComparator> exComparator = null;
 
     // The commands resulting from the diff
     private Set<String> commands = new HashSet<String>();
@@ -97,14 +101,16 @@ public class CloudMLModelComparator {
         journal.log(Level.INFO, ">> Removed VMs :" + removedECs.toString());
         journal.log(Level.INFO, ">> Added VMs  :" + addedECs.toString());
 
-        compareRelationships();
-        journal.log(Level.INFO, ">> Removed relationships :" + removedRelationships.toString());
-        journal.log(Level.INFO, ">> Added relationships :" + addedRelationships.toString());
+        
 
         compareComponents();
         journal.log(Level.INFO, ">> Removed components: " + removedComponents.toString());
         journal.log(Level.INFO, ">> Added components: " + addedComponents.toString());
 
+        compareRelationships();
+        journal.log(Level.INFO, ">> Removed relationships :" + removedRelationships.toString());
+        journal.log(Level.INFO, ">> Added relationships :" + addedRelationships.toString());
+        
         compareExecutes();
         journal.log(Level.INFO, ">> Removed executes: " + removedExecutes.toString());
         journal.log(Level.INFO, ">> Added executes: " + addedExecutes.toString());
@@ -121,21 +127,21 @@ public class CloudMLModelComparator {
             {
                 for (ExternalComponentInstance ni2 : targetDM.getComponentInstances().onlyExternals()) {
                     match = ni.equals(ni2);
-                    if (ni.equals(ni2)) {
+                    if (match) {
                         matchingECs.put(ni, ni2);
                         break secondloop;
                     }
                 }
             }
             if (!match) {
-                removeVM(ni);
+                removeEC(ni);
             }
         }
         //add the rest
         addECs();
     }
 
-    private void removeVM(ExternalComponentInstance<? extends ExternalComponent> ni) {
+    private void removeEC(ExternalComponentInstance<? extends ExternalComponent> ni) {
         removedECs.add(ni);
         //create action
 
@@ -184,7 +190,7 @@ public class CloudMLModelComparator {
                     ni.setRequiredEnd(((InternalComponentInstance) a).getRequiredPorts().toList().get(j));
                 }
             }
-            i = currentDM.getComponentInstances().toList().indexOf(ni.getProvidedEnd().getOwner());
+            i = currentDM.getComponentInstances().toList().indexOf(ni.getProvidedEnd().getOwner().get());
             if (i >= 0) {
                 ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
                 int j = a.getProvidedPorts().toList().indexOf(ni.getProvidedEnd());
@@ -264,7 +270,7 @@ public class CloudMLModelComparator {
                 ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
                 ei.setRequiredEnd(((InternalComponentInstance) a).getRequiredExecutionPlatform());
             }
-            i = currentDM.getComponentInstances().toList().indexOf(ei.getProvidedEnd().getOwner());
+            i = currentDM.getComponentInstances().toList().indexOf(ei.getProvidedEnd().getOwner().get());
             if (i >= 0) {
                 ComponentInstance a = currentDM.getComponentInstances().toList().get(i);
                 int j = a.getProvidedExecutionPlatforms().toList().indexOf(ei.getProvidedEnd());
@@ -296,6 +302,11 @@ public class CloudMLModelComparator {
         addedExecutes.clear();
 
         commands.clear();
+        
+        this.ecComparator = null;
+        this.icComparator = null;
+        this.exComparator = null;
+        this.rlComparator = null;
     }
 
     public List<InternalComponentInstance> getRemovedComponents() {
@@ -344,5 +355,86 @@ public class CloudMLModelComparator {
 
     public Map<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> getMatchingECs() {
         return this.matchingECs;
+    }
+    
+    public List<CloudMLElementComparator> getEcComparator(){
+        if(this.ecComparator!=null)
+            return this.ecComparator;
+        this.ecComparator = new ArrayList<CloudMLElementComparator>();
+        for(Map.Entry<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> entry: getMatchingECs().entrySet()){
+            
+            CloudMLElementComparator comparator = new CloudMLElementComparator(entry.getKey(), entry.getValue());
+            comparator.compare();
+            this.ecComparator.add(comparator);
+        }
+        return this.ecComparator;
+    }
+    
+    public List<CloudMLElementComparator.ElementUpdate> getAllEcUpdates(){
+        List<CloudMLElementComparator.ElementUpdate> allUpdates = new ArrayList<CloudMLElementComparator.ElementUpdate>();
+        for(CloudMLElementComparator c : this.getEcComparator()){
+            allUpdates.addAll(c.getUpdates());
+        }
+        return allUpdates;
+    }
+    
+    public List<CloudMLElementComparator> getIcComparator(){
+        if(this.icComparator!=null)
+            return this.icComparator;
+        this.icComparator = new ArrayList<CloudMLElementComparator>();
+        for(Map.Entry<InternalComponentInstance, InternalComponentInstance> entry: this.getMatchingComponents().entrySet()){
+            CloudMLElementComparator comparator = new CloudMLElementComparator(entry.getKey(), entry.getValue());
+            comparator.compare();
+            this.icComparator.add(comparator);
+        }
+        return this.icComparator;
+    }
+    
+    public List<CloudMLElementComparator.ElementUpdate> getAllIcUpdates(){
+        List<CloudMLElementComparator.ElementUpdate> allUpdates = new ArrayList<CloudMLElementComparator.ElementUpdate>();
+        for(CloudMLElementComparator c : this.getIcComparator()){
+            allUpdates.addAll(c.getUpdates());
+        }
+        return allUpdates;
+    }
+    
+    public List<CloudMLElementComparator> getRlComparator(){
+        if(this.rlComparator!=null)
+            return this.rlComparator;
+        this.rlComparator = new ArrayList<CloudMLElementComparator>();
+        for(Map.Entry<RelationshipInstance, RelationshipInstance> entry: this.getMatchingRelationships().entrySet()){
+            CloudMLElementComparator comparator = new CloudMLElementComparator(entry.getKey(), entry.getValue());
+            comparator.compare();
+            this.rlComparator.add(comparator);
+        }
+        return this.rlComparator;
+    }
+    
+    public List<CloudMLElementComparator.ElementUpdate> getAllRlUpdates(){
+        List<CloudMLElementComparator.ElementUpdate> allUpdates = new ArrayList<CloudMLElementComparator.ElementUpdate>();
+        for(CloudMLElementComparator c : this.getRlComparator()){
+            allUpdates.addAll(c.getUpdates());
+        }
+        return allUpdates;
+    }
+    
+    public List<CloudMLElementComparator> getExComparator(){
+        if(this.exComparator!=null)
+            return this.exComparator;
+        this.exComparator = new ArrayList<CloudMLElementComparator>();
+        for(Map.Entry<ExecuteInstance, ExecuteInstance> entry: this.getMatchingExecutes().entrySet()){
+            CloudMLElementComparator comparator = new CloudMLElementComparator(entry.getKey(), entry.getValue());
+            comparator.compare();
+            this.exComparator.add(comparator);
+        }
+        return this.exComparator;
+    }
+    
+    public List<CloudMLElementComparator.ElementUpdate> getAllExUpdates(){
+        List<CloudMLElementComparator.ElementUpdate> allUpdates = new ArrayList<CloudMLElementComparator.ElementUpdate>();
+        for(CloudMLElementComparator c : this.getExComparator()){
+            allUpdates.addAll(c.getUpdates());
+        }
+        return allUpdates;
     }
 }

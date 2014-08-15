@@ -143,4 +143,28 @@ public class ExecuteInstance extends WithResources implements DeploymentElement,
         }
         this.providedEnd = end;
     }
+    
+    @Override
+    public boolean equals(Object other){
+        if(this == other)
+            return true;
+        if(other == null || !(other instanceof ExecuteInstance))
+            return false;
+        ExecuteInstance otherEI = (ExecuteInstance) other;
+        
+        boolean reqMatch = false;
+        if(this.getRequiredEnd() == null && otherEI.getRequiredEnd()==null)
+            reqMatch = true;
+        else if(this.getRequiredEnd()!=null && otherEI.getRequiredEnd()!=null)
+            reqMatch = this.getRequiredEnd().equals(otherEI.getRequiredEnd());
+        
+        boolean prvMatch = false;
+        if(this.getProvidedEnd() == null && otherEI.getProvidedEnd() == null)
+            prvMatch = true;
+        else if(this.getProvidedEnd()!=null && otherEI.getProvidedEnd()!=null)
+            prvMatch = this.getProvidedEnd().equals(otherEI.getProvidedEnd());
+        
+        return reqMatch && prvMatch;
+      
+    }
 }

@@ -66,6 +66,24 @@ public class Optional<O> {
     public final boolean isUndefined() {
         return !isDefined();
     }
+    @Override
+    public boolean equals(Object other){
+        if (this == other)
+            return true;
+        
+        if(other instanceof Optional){
+            Optional otherOptional = (Optional) other;
+            if(this.isDefined() && otherOptional.isDefined())
+                return this.get().equals(otherOptional.get());
+            else if(this.isUndefined() && otherOptional.isUndefined())
+                return true;
+            else
+                return false;
+        }
+        else
+            return false;
+            
+    }
     
 }
 
