@@ -81,11 +81,15 @@ public class CloudMLElementComparator {
         
     }
     
-    public static final Map<String, Collection<String>> toCompareDefault = new HashMap<String, Collection<String>>();
+    public static final Map<String, Collection<String>> toCompareDefault = 
+            new HashMap<String, Collection<String>>();
     static{
         toCompareDefault.put(
                 "VMInstance", 
-                Arrays.asList("ips", "status", "type/os"));
+                Arrays.asList("ips", "status", "type/os", "type/location", 
+                        "type/minRam", "type/maxRam", "type/minStorage", 
+                        "type/maxStorage", "type/minCores", "type/maxCores"
+                ));
         toCompareDefault.put("InternalComponentInstance", 
                 Arrays.asList("status"));
         
@@ -93,7 +97,7 @@ public class CloudMLElementComparator {
     
     
     private boolean compareProperties = true;
-    private boolean compareResources = true;
+    private boolean compareResources = false; //Not Supported yet
     private Collection<String> toCompare = null;
     private ArrayList<ElementUpdate> updates = new ArrayList<ElementUpdate>();
     private Object current = null;
@@ -135,6 +139,14 @@ public class CloudMLElementComparator {
             catch(Exception e){
                 e.printStackTrace();
             }
+        }
+        
+        if(compareResources){
+            ArrayList<String> newList = new ArrayList<String>();
+            newList.addAll(this.toCompare);
+            this.toCompare = newList;
+            
+            
         }
     }
     
