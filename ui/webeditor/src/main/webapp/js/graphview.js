@@ -22,6 +22,9 @@
  */
 
 
+/// NOTE: duplicate variable with the one in demo.js; used in order to enable for reuse of websocket.js
+var currentJSON;
+
 var root;
 var allNodesGroup;
 var force;
@@ -72,28 +75,31 @@ function loadInNodesArray(nodesArray, componentInstances) {
         });
 }
 
-function getInternalComponentInstances(deploymentModel) {
+function getInternalComponentInstances(depModel) {
     var instancesArray = [];
-    if (deploymentModel.internalComponentInstances != null) {
-        loadInNodesArray(instancesArray, deploymentModel.internalComponentInstances);
+    if (depModel.internalComponentInstances != null) {
+        loadInNodesArray(instancesArray, depModel.internalComponentInstances);
     }
     return instancesArray;
 }
 
-function getExternalComponentInstances(deploymentModel) {
+function getExternalComponentInstances(depModel) {
     var instancesArray = [];
-    if (deploymentModel.vmInstances != null) {
-        loadInNodesArray(instancesArray, deploymentModel.vmInstances);
+    if (depModel.vmInstances != null) {
+        loadInNodesArray(instancesArray, depModel.vmInstances);
     }
-    if (deploymentModel.externalComponentInstances != null) {
-        loadInNodesArray(instancesArray, deploymentModel.externalComponentInstances);
+    if (depModel.externalComponentInstances != null) {
+        loadInNodesArray(instancesArray, depModel.externalComponentInstances);
     }
     return instancesArray;
 }
 
-function generateExecutesLinks(deploymentModel) {
+function generateExecutesLinks(depModel) {
+    //    console.log("START deployment model");
+    //    console.log(depModel);
+    //    console.log("END deployment model");
     var links = [];
-    deploymentModel.executesInstances.forEach(
+    depModel.executesInstances.forEach(
 
         function (d, i) {
             var tempLink = {
@@ -101,9 +107,9 @@ function generateExecutesLinks(deploymentModel) {
                 target : null
             };
             tempLink.id = d.name;
-            tempLink.source = findSource(d.providedExecutionPlatformInstance, deploymentModel);
+            tempLink.source = findSource(d.providedExecutionPlatformInstance, depModel);
             tempLink.left = false;
-            tempLink.target = findTarget(d.requiredExecutionPlatformInstance, deploymentModel);
+            tempLink.target = findTarget(d.requiredExecutionPlatformInstance, depModel);
             tempLink.right = true;
             if (tempLink.source != null && tempLink.target != null) {
                 links.push(tempLink);
@@ -112,9 +118,9 @@ function generateExecutesLinks(deploymentModel) {
     return links;
 }
 
-function generateRelationshipLinks(deploymentModel) {
+function generateRelationshipLinks(depModel) {
     var links = [];
-    deploymentModel.relationshipInstances.forEach(
+    depModel.relationshipInstances.forEach(
 
         function (d, i) {
             var tempLink = {
@@ -122,8 +128,8 @@ function generateRelationshipLinks(deploymentModel) {
                 target : null
             };
             tempLink.id = d.name;
-            tempLink.source = findSource(d.providedPortInstance, deploymentModel);
-            tempLink.target = findTarget(d.requiredPortInstance, deploymentModel);
+            tempLink.source = findSource(d.providedPortInstance, depModel);
+            tempLink.target = findTarget(d.requiredPortInstance, depModel);
             if (tempLink.source != null && tempLink.target != null) {
                 tempLink.source.outgoingLinks == null ? tempLink.source.outgoingLinks = [tempLink] : tempLink.source.outgoingLinks.push(tempLink);
                 tempLink.target.incomingLinks == null ? tempLink.target.incomingLinks = [tempLink] : tempLink.target.incomingLinks.push(tempLink);
@@ -135,16 +141,15 @@ function generateRelationshipLinks(deploymentModel) {
     return links;
 }
 
-function findSource(refSource, deploymentModel) {
+function findSource(refSource, depModel) {
     var temp = refSource.split("/");
-    return getJSON(deploymentModel, "/" + temp[0]);
+    return getJSON(depModel, "/" + temp[0]);
 }
 
-function findTarget(refTarget, deploymentModel) {
+function findTarget(refTarget, depModel) {
     var temp = refTarget.split("/");
-    return getJSON(deploymentModel, "/" + temp[0]);
+    return getJSON(depModel, "/" + temp[0]);
 }
-
 
 function addContextMenuItems(contextMenuElement){
     addExecuteContextMenuItems(contextMenuElement);
@@ -161,39 +166,167 @@ function addAnyNodeContextMenuItems(contextMenuElement){
     ;
 }
 
-function addExecuteContextMenuItems(contextMenuElement){
-    contextMenuElement.append('li')
-    .attr('class', 'executeInstanceMI')
-    .attr('id', 'executeInstanceMI1')
-    .text('Fold')
-    ;
+function getInstanceType(instanceName){
+    console.log(instanceName);
+    if(typeof instanceName == 'undefined' || instanceName == null)
+        return null;
+    for(i=0;i<intCompInstances.length;++i){
+        console.log(intCompInstances[i].name);
+        if(intCompInstances[i].name == instanceName){
+            return "internalComponentInstances";
+        }
+    }
 
-
+    for(i=0;i<extCompInstances.length;++i){
+        console.log(extCompInstances[i].name);
+        if(extCompInstances[i].name == instanceName){
+            if(extCompInstances[i].name.indexOf("vms") >=0)
+                return "vmInstances";
+            else
+                return "externalComponentInstances"; // should not ever happen since we don't differentiate right now
+        }
+    }
 }
-function addRelationshipContextMenuItems(contextMenuElement){
 
-}
-function addExtCompContextMenuItems(contextMenuElement){
 
-}
-function addIntCompContextMenuItems(contextMenuElement){
 
-}
 
 /***********************************************
 * Initialisation of the graph
 ************************************************/
 
-function getData(jsonString) {
+function setValueInJSON(jsonObject, propertyPath, newValue) {
+    propertyPath = validate_input(jsonObject, propertyPath);
+    if (propertyPath.length === 0) {
+        throw("Invalid JSON pointer for set.")
+    }
+    return traverseAndSet(jsonObject, propertyPath, newValue);
+}
+
+function traverseAndSet(jsonObject, propertyPath, newValue) {
+    var propertySubPath = propertyPath.shift();
+    var subPathSplit = propertySubPath.split("[");
+
+    //filtering
+    if (propertySubPath.indexOf("[") >= 0) {
+        // we have an XPath expression with a predicate for an attribute (i.e. expression similar to: "/containmentCollection[attribute='attributeValue']"; there could be additional levels of depth)
+
+        //        console.log("1. part:", propertySubPath);
+        //        console.log("1.1 obj:",obj);
+        //        console.log("1.1 tmp[0]:",tmp[0]);
+        var containmentCollection = subPathSplit[0];
+        if (!jsonObject.hasOwnProperty(containmentCollection)) {
+            //            console.log("returning null");
+            return null;
+        }
+        var predicateAttributeValueSplit = subPathSplit[1].split("=");
+        //        console.log("1.1 temp2 = tmp[1].split=:",tmp[1]);
+
+        // the attribute from the predicate that we check (usually would be the 'name' of the node)
+        var attribute = predicateAttributeValueSplit[0];
+        //        console.log("1.2 attribute:", attribute);
+        var attrValueExpressionSplit = predicateAttributeValueSplit[1].split("]");
+        //        console.log("1.3 temp3:", temp3);
+        var attributeValueSplit = attrValueExpressionSplit[0].split("'");
+        //        console.log("1.4 temp4:", temp4);
+
+        // the attribute value from the predicate we check against to find the node
+        var attributeValue = attributeValueSplit[1];
+        //        console.log("val: ", val);
+
+        for (var i = 0; i < jsonObject[containmentCollection].length; i++) {
+            // check if the current element of the node containment group even has the attribute
+            if (jsonObject[containmentCollection][i].hasOwnProperty(attribute)) {
+                // check if the current element of the node containment group's attribute value is the same as in the predicate expression ([attribute='attributeValue'])
+                if (jsonObject[containmentCollection][i][attribute] == attributeValue) {
+                    // we have found the exact node we need to set the new value to
+                    var debug = traverseAndSet(jsonObject[containmentCollection][i], propertyPath, newValue);
+                    //                    console.log("debug:",debug);
+                    return debug;
+                }
+            }
+        }
+        // if we don't find a matching node, we return null
+        return null;
+
+    }else{
+        // we have a simple XPath expression without a predicate (i.e. expression of the kind: "attribute")
+
+        // check if the JSON object contains this attribute at all
+        if (!jsonObject.hasOwnProperty(propertySubPath)) {
+            return null;
+        }
+    }
+
+    if (propertyPath.length !== 0) { // keep traversin!
+        console.log("jsonObject at the time of recursion n:");
+        console.log(jsonObject);
+        console.log("propertySubPath at the time of recursion n:");
+        console.log(propertySubPath);
+        return traverseAndSet(jsonObject[propertySubPath], propertyPath, newValue);
+    }
+
+    // in case we call this method with 2 attributes
+    if (typeof newValue === "undefined") {
+        // just reading
+        return jsonObject[propertySubPath];
+    }
+
+    // set new value, return old value
+    var old_value = jsonObject[propertySubPath];
+
+    // when called with a 'null' as the newValue - we want to delete the attribute
+    if (newValue === null) {
+        // we delete the attribute
+        delete jsonObject[propertySubPath];
+    } else {
+        // we change the attribute value
+        jsonObject[propertySubPath] = newValue;
+        console.log("jsonObject at the time of setting the new value:");
+        console.log(jsonObject);
+        console.log("propertySubPath at the time of setting the new value:");
+        console.log(propertySubPath);
+    }
+    // ... and return the old value
+    return old_value;
+}
+
+function graphViewUpdateJSON(parent, propertyId, newValue){
+    console.log("parent, propertyId, newValue: ", parent, propertyId, newValue);
+    if(parent.indexOf("/") >= 0){
+        if(parent.indexOf("componentInstances") >=0){
+
+            /*
+            TODO: in the POJO metamodel, the internal and external component instances and the VM instances are stored in a common collection called "componentInstances". This collection is also used within the XPath expressions that we define to extract information from the CloudML server. On the other hand, in the JSON serialization we have separate collections for these types of objects which are then propagated to the actual data. This inconsistency causes a lot of problems associated with finding particular instances and changing their properties and should not occur. Is it better to use a single representation or should we leave it as is?
+            */
+
+            parent = parent.replace("componentInstances", "vmInstances");
+            var xpath="";
+            if(parent.length <= 1){
+                xpath = parent + propertyId;
+            }else{
+                xpath = parent + "/" + propertyId;
+
+            }
+            var res = setValueInJSON(root, xpath, newValue);
+        }
+        update();
+        console.log(root);
+    }
+}
+
+function getData(inputJSONString) {
     // remove the svg and the selection area (brush)
     d3.selectAll("svg").remove();
     brush = null;
-    root = eval('(' + jsonString + ')');
+    root = eval('(' + inputJSONString + ')');
+    currentJSON = inputJSONString;
 
     intCompInstances = getInternalComponentInstances(root);
     extCompInstances = getExternalComponentInstances(root);
     executesLinks = generateExecutesLinks(root);
     relationshipLinks = generateRelationshipLinks(root);
+
 
     force = d3.layout.force()
     .charge(-800)
@@ -267,11 +400,32 @@ function getData(jsonString) {
     var layoutExtCompInstances = extCompInstances;
 
     for(i=0;i<layoutExtCompInstances.length;i++){
+        layoutExtCompInstances[i].status = 'UNKNOWN';
+        layoutExtCompInstances[i].properties = {cpu : 0, 'cpu-timestamp' : 0};
         layoutExtCompInstances[i].isFolded = false;
         layoutExtCompInstances[i].foldedSubNodes = [];
         layoutExtCompInstances[i].foldedSubEdges = [];
         layoutExtCompInstances[i]._type = "ExternalComponent";
     }
+
+    /*
+     For each of the external component instances we define an observer for the attributes
+     'properties' and 'state' so that any changes to their values will affect the associated
+     popover content
+    */
+    layoutExtCompInstances.forEach(function(d){
+        watch(d, ['properties', 'status'], function(){
+            var svgNodeElement = svg.selectAll(".singleNode").filter(
+                function() {
+                    return this.id == d.name;
+                }
+            );
+            svgNodeElement.attr("data-content", function(d){
+                return getNodePopover(d);
+            });
+        });
+    });
+
 
     graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
 
@@ -304,11 +458,13 @@ function getData(jsonString) {
     update();
 }
 
-function getNodeState(node){
+function getNodePopover(node){
     var result = "";
     result += 'type: ';
     result += node.type;
+
     result += '<br/>';
+
     result += "sub-nodes: ";
     if(node.foldedSubNodes.length>0){
         for(i=0;i<node.foldedSubNodes.length;++i){
@@ -321,9 +477,23 @@ function getNodeState(node){
 
         }
     }
+
+    if(typeof node.status != "undefined"){
+        result += '<br/>';
+        result += 'status: ';
+        result += node.status;
+    }
+
+    if(typeof node.properties != "undefined"){
+        if(typeof node.properties.cpu != "undefined"){
+            result += '<br/>';
+            result += 'cpu load (%): ';
+            result += node.properties.cpu;
+        }
+    }
+
     return result;
 }
-
 
 function update(){
     allNodesGroup = svg.select('.nodes');
@@ -340,7 +510,7 @@ function update(){
     .attr({
         'class'           :   'singleNode',
         'id'              :   function(d) { return d.name; },
-        'data-content'    :   function(d){ return getNodeState(d) }
+        'data-content'    :   function(d){ return getNodePopover(d) }
     })
     .each(function (d){
         // define a popover for each of the elements
@@ -466,7 +636,7 @@ function update(){
                                    && extent[0][1] <= d.y && d.y < extent[1][1]);
                           }else{
                               return (extent[0][0] <= d.x && d.x < extent[1][0]
-                                   && extent[0][1] <= d.y && d.y < extent[1][1]);
+                                      && extent[0][1] <= d.y && d.y < extent[1][1]);
                           }
                       })
                   })
@@ -585,172 +755,6 @@ function update(){
     force.on("tick", tick);
 }
 
-// generates the list item (<li>) for the context menu options of all of the nodes
-function addContextOptionsAllNodes(contextMenu, element, node){
-
-    // context menu item for Fold/Unfold node
-    contextMenu.append('li')
-    .attr('class', 'contextOption')
-    .attr('id', function(){
-        node.isFolded ? 'unfoldNodeCMI' : 'foldNodeCMI';
-    })
-    .style('cursor', 'pointer')
-    .on('click', function(d){
-        toggleFoldNode(node);
-        clearCurrentSelection();
-        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
-        d3.event.stopPropagation();
-        d3.select('#context_menu').remove();
-    })
-    .text(function(){
-        return node.isFolded ? 'Unfold node' : 'Fold node';
-    });
-
-
-    contextMenu.append('hr');
-
-
-    contextMenu.append('li')
-    .attr('class', 'contextOption')
-    .attr('id', 'foldSelectionCMI')
-    .style('cursor', 'pointer')
-    .on('click', function(d){
-        foldSelectionOfNodes(d3.selectAll('.selected'));
-        clearCurrentSelection();
-        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
-        d3.event.stopPropagation();
-        d3.select('#context_menu').remove();
-    })
-    .text('Fold selection');
-
-
-
-    contextMenu.append('li')
-    .attr('class', 'contextOption')
-    .attr('id', 'unfoldSelectionCMI')
-    .style('cursor', 'pointer')
-    .on('click', function(d){
-        unfoldSelectionOfNodes(d3.selectAll('.selected'));
-        clearCurrentSelection();
-        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
-        d3.event.stopPropagation();
-        d3.select('#context_menu').remove();
-    })
-    .text('Unfold selection');
-}
-
-// unfolds the current selection of nodes
-function unfoldSelectionOfNodes(nodesSelection){
-    if(nodesSelection[0].length ==0){
-        return;
-    }
-    var selectedNodesDatums = [];
-    for(i=0;i<nodesSelection[0].length;++i){
-        var nodeDatum = d3.select(nodesSelection[0][i].parentNode).datum();
-        if(nodeDatum.isFolded){
-            toggleFoldNode(nodeDatum);
-        }
-    }
-}
-
-// folds the current selection of nodes
-function foldSelectionOfNodes(nodesSelection){
-    if(nodesSelection[0].length ==0){
-        return;
-    }
-    var selectedNodesDatums = [];
-    for(i=0;i<nodesSelection[0].length;++i){
-        var nodeDatum = d3.select(nodesSelection[0][i].parentNode).datum();
-        selectedNodesDatums.push(nodeDatum);
-    }
-
-    while(selectedNodesDatums.length>0){
-        var currentDatum = selectedNodesDatums.pop();
-
-        if(currentDatum.isFolded)
-            continue;
-
-        if(getNodeDatumHostFromSelection(currentDatum, selectedNodesDatums).length > 0){
-            // if the host of the node of the datum is in the selection, we will check it anyways
-            continue;
-        }
-
-        toggleFoldNode(currentDatum);
-
-        var index;
-        // remove the already folded sub-nodes as they are no longer bound
-        for(i=0;i<currentDatum.foldedSubNodes.length;++i){
-            index = selectedNodesDatums.indexOf(currentDatum.foldedSubNodes[i]);
-            if(index > -1){
-                selectedNodesDatums.splice(index,1);
-            }
-        }
-    }
-}
-
-function getNodeDatumHostFromSelection(datum, selection){
-    // no parent - datum represents a host
-    if(datum._type == 'ExternalComponent')
-        return [];
-    
-    var result = [];
-    var edge;
-    var edgeSourceHost = findNodeHost(datum);
-    // check if the host of the node is in the selection
-    if(selection.indexOf(edgeSourceHost) > -1){
-        result.push(edgeSourceHost);
-    }
-    return result;
-}
-
-// generates the list item (<li>) for the context menu options of the external components
-function addContextOptionsExternalComponents(contextMenu, element, node){
-    if(node._type == 'ExternalComponent'){
-        contextMenu.append('hr');
-        contextMenu.append('li')
-        .attr('class', 'contextOption')
-        .attr('id', 'scaleOutNode')
-        .style('cursor', 'pointer')
-        .on('click', function(d){
-            scaleOutNode(node);
-            // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
-            d3.event.stopPropagation();
-            d3.select('#context_menu').remove();
-        })
-        .text('Scale out');
-    }
-}
-
-// dummy function (for now) for scaling out
-function scaleOutNode(node){window.alert("scaled out dummy")}
-
-// generate the context menu and, accordingly, the specific items associated with a certain node
-function generateContextMenuForNode(element, node){
-    // if any popover is open for the current element - hide it
-    $(element).popover('hide');
-
-    // if there is another context menu open - remove it too
-    d3.select('#context_menu').remove();
-
-    var mousePosition = d3.mouse(element.parentNode);
-
-    var contextMenu = d3.select('body').append('ul')
-    .attr('id', 'context_menu')
-    .attr('class', 'contextMenu')
-    .style('left', mousePosition[0] + "px")
-    .style('top', mousePosition[1] + "px")
-    .on('mouseleave', function() {
-        d3.select('#context_menu').remove();
-    })
-    ;
-
-    addContextOptionsAllNodes(contextMenu, element, node);
-    addContextOptionsExternalComponents(contextMenu, element, node);
-
-
-
-}
-
 function clearCurrentSelection(){
     d3.selectAll('.selected').classed('selected', false);
 }
@@ -797,9 +801,9 @@ function toggleFoldNode(nodeToToggle){
             return this.id == nodeToToggle.name;
         }
     );
-
+    // update the popover for the SVG element
     svgNodeElement.attr("data-content", function(d){
-        return getNodeState(nodeToToggle)
+        return getNodePopover(nodeToToggle)
     });
 
     // refresh the force layout
@@ -1039,6 +1043,195 @@ function loadFile(inputDiv) {
         getData(fr.result);
     }
 }
+
+/***********************************************
+* Context menu related functions
+************************************************/
+
+// generate the context menu and, accordingly, the specific items associated with a certain node
+function generateContextMenuForNode(element, node){
+    // if any popover is open for the current element - hide it
+    $(element).popover('hide');
+
+    // if there is another context menu open - remove it too
+    d3.select('#context_menu').remove();
+
+    var mousePosition = d3.mouse(element.parentNode);
+
+    var contextMenu = d3.select('body').append('ul')
+    .attr('id', 'context_menu')
+    .attr('class', 'contextMenu')
+    .style('left', mousePosition[0] + "px")
+    .style('top', mousePosition[1] + "px")
+    .on('mouseleave', function() {
+        d3.select('#context_menu').remove();
+    })
+    ;
+
+    addContextOptionsAllNodes(contextMenu, element, node);
+    addContextOptionsExternalComponents(contextMenu, element, node);
+
+
+
+}
+
+// generates the list item (<li>) for the context menu options of all of the nodes
+function addContextOptionsAllNodes(contextMenu, element, node){
+
+    // context menu item for Fold/Unfold node
+    contextMenu.append('li')
+    .attr('class', 'contextOption')
+    .attr('id', function(){
+        node.isFolded ? 'unfoldNodeCMI' : 'foldNodeCMI';
+    })
+    .style('cursor', 'pointer')
+    .on('click', function(d){
+        toggleFoldNode(node);
+        clearCurrentSelection();
+        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+        d3.event.stopPropagation();
+        d3.select('#context_menu').remove();
+    })
+    .text(function(){
+        return node.isFolded ? 'Unfold node' : 'Fold node';
+    });
+
+
+    contextMenu.append('hr');
+
+
+    contextMenu.append('li')
+    .attr('class', 'contextOption')
+    .attr('id', 'foldSelectionCMI')
+    .style('cursor', 'pointer')
+    .on('click', function(d){
+        foldSelectionOfNodes(d3.selectAll('.selected'));
+        clearCurrentSelection();
+        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+        d3.event.stopPropagation();
+        d3.select('#context_menu').remove();
+    })
+    .text('Fold selection');
+
+
+
+    contextMenu.append('li')
+    .attr('class', 'contextOption')
+    .attr('id', 'unfoldSelectionCMI')
+    .style('cursor', 'pointer')
+    .on('click', function(d){
+        unfoldSelectionOfNodes(d3.selectAll('.selected'));
+        clearCurrentSelection();
+        // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+        d3.event.stopPropagation();
+        d3.select('#context_menu').remove();
+    })
+    .text('Unfold selection');
+}
+
+// generates the list item (<li>) for the context menu options of the external components
+function addContextOptionsExternalComponents(contextMenu, element, node){
+    if(node._type == 'ExternalComponent'){
+        contextMenu.append('hr');
+        contextMenu.append('li')
+        .attr('class', 'contextOption')
+        .attr('id', 'scaleOutNode')
+        .style('cursor', 'pointer')
+        .on('click', function(d){
+            scaleOutNode(node);
+            // if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+            d3.event.stopPropagation();
+            d3.select('#context_menu').remove();
+        })
+        .text('Scale out');
+    }
+}
+
+// unfolds the current selection of nodes
+function unfoldSelectionOfNodes(nodesSelection){
+    if(nodesSelection[0].length == 0){
+        return;
+    }
+    var selectedNodesDatums = [];
+    for(i=0;i < nodesSelection[0].length;i++){
+        // select the data associated with the 'g' node of the selection
+        var nodeDatum = d3.select(nodesSelection[0][i].parentNode).datum();
+        if(nodeDatum.isFolded){
+            // unfold the node
+            unfoldNode(nodeDatum);
+            // find the SVG element that corresponds to the toggled node
+            var svgNodeElement = svg.selectAll(".singleNode").filter(
+                function() {
+                    return this.id == nodeDatum.name;
+                }
+            );
+            // update the popover for the SVG element
+            svgNodeElement.attr("data-content", function(d){
+                return getNodePopover(nodeDatum)
+            });
+        }
+
+
+    }
+
+    // refresh the force layout
+    force.start();
+    update();
+}
+
+// folds the current selection of nodes
+function foldSelectionOfNodes(nodesSelection){
+    if(nodesSelection[0].length ==0){
+        return;
+    }
+    var selectedNodesDatums = [];
+    for(i=0;i<nodesSelection[0].length;++i){
+        var nodeDatum = d3.select(nodesSelection[0][i].parentNode).datum();
+        selectedNodesDatums.push(nodeDatum);
+    }
+
+    while(selectedNodesDatums.length>0){
+        var currentDatum = selectedNodesDatums.pop();
+
+        if(currentDatum.isFolded)
+            continue;
+
+        if(getNodeDatumHostFromSelection(currentDatum, selectedNodesDatums).length > 0){
+            // if the host of the node of the datum is in the selection, we will check it anyways
+            continue;
+        }
+
+        toggleFoldNode(currentDatum);
+
+        var index;
+        // remove the already folded sub-nodes as they are no longer bound
+        for(i=0;i<currentDatum.foldedSubNodes.length;++i){
+            index = selectedNodesDatums.indexOf(currentDatum.foldedSubNodes[i]);
+            if(index > -1){
+                selectedNodesDatums.splice(index,1);
+            }
+        }
+    }
+}
+
+// returns the top level host (if any) of a node from a selection of nodes
+function getNodeDatumHostFromSelection(datum, selection){
+    // no parent - datum represents a host
+    if(datum._type == 'ExternalComponent')
+        return [];
+
+    var result = [];
+    var edge;
+    var edgeSourceHost = findNodeHost(datum);
+    // check if the host of the node is in the selection
+    if(selection.indexOf(edgeSourceHost) > -1){
+        result.push(edgeSourceHost);
+    }
+    return result;
+}
+
+// dummy function (for now) for scaling out
+function scaleOutNode(node){window.alert("scaled out dummy")}
 
 ////////////////////////  experimental code
 //function randomlyChangeLoad(){
