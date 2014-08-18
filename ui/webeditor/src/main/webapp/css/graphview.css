@@ -61,15 +61,11 @@
     stroke: none;
 }
 .externalComponent {
-    fill: white;
-    stroke: green;
     stroke-width: 2.5px;
 }
 
 .internalComponent {
-    fill: white;
-    stroke: #000;
-    stroke-width: 2.5px;
+    stroke-width: 1.5px;
 }
 circle.selectionCircle {
     fill:none;
@@ -85,14 +81,10 @@ circle.selectionCircle.selected {
 .internalComponentText {
     font: 10px sans-serif;
 }
-.link {
-    fill: none;
-    stroke: #000;
+.relationshipBinding {
     stroke-width: 2.5px;
 }
 .executionBinding {
-    fill: none;
-    stroke: green;
     stroke-width: 2.5px;
 }
 svg text {
@@ -103,7 +95,6 @@ circle{
 }
 
 .executionArrow {
-    fill: green;
     viewBox: '0 -5 10 10';
     refX: 6;
     markerWidth: 4;
@@ -112,7 +103,6 @@ circle{
 }
 
 .relationshipArrow {
-    fill: black;
     viewBox: '0 -5 10 10';
     refX: 6;
     markerWidth: 4;
@@ -124,6 +114,7 @@ svg g.nodes circle.internalComponent.hover, g.nodes circle.externalComponent.hov
     fill: steelblue;  
     fill-opacity: .3;
     transition: fill 0.5s linear;
+    animation-delay: 0.1s;
 
     /*
     -moz-transition: background-color 2s linear; 

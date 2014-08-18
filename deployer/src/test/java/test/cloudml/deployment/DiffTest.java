@@ -51,13 +51,14 @@ import org.cloudml.deployer.CloudMLModelComparator;
 
 /**
  *
+ * I have block the test case so that it won't slow down the building process
+ * To test it particularly, just change or the "ttest" to "test"...
+ * 
  * @author Hui Song
  */
 public class DiffTest extends TestCase{
     
-    public static void main(String[] args) throws FileNotFoundException{
-        new DiffTest().testComparator();
-    }
+    
     
     public Deployment current = null;
     public Deployment target = null;
@@ -81,7 +82,7 @@ public class DiffTest extends TestCase{
      * relationship instances and execution instances are changed as well.
      * @throws FileNotFoundException 
      */
-    public void testNameOfOneInCompChanged(){
+    public void ttestNameOfOneInCompChanged(){
         
         String nameBeforeChange = "sensApp1";
         String nameToChange = "sensApp-modified-1";
@@ -101,7 +102,7 @@ public class DiffTest extends TestCase{
      * be the same one as before (not sure if this the most reasonable behaviour), 
      * and the comparing result should be the same as only changing the instance name.
      */
-    public void testTypeOfOneInCompChanged() {
+    public void ttestTypeOfOneInCompChanged() {
         String nameBeforeChange = "sensapp";
         String nameAfterChange = "sensapp-modified";
         String instanceName = "sensApp1";
@@ -149,7 +150,7 @@ public class DiffTest extends TestCase{
         }
     }
     
-    public void testElementCompareInSensApp(){
+    public void ttestElementCompareInSensApp(){
         String vmName = "sensapp-sl1";
         VMInstance ici = target.getComponentInstances()
                 .onlyVMs().firstNamed(vmName);
@@ -174,7 +175,7 @@ public class DiffTest extends TestCase{
      * Check the changes between matched components, relations, and execute
      * instances
      */
-    public void testSignleElementCompare(){
+    public void ttestSignleElementCompare(){
         Deployment dm = SensApp.completeSensApp().build();
         VMInstance vmi = dm.getComponentInstances()
                 .onlyVMs().firstNamed(SensApp.SENSAPP_VM);

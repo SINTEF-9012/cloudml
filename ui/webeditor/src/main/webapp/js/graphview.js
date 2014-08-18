@@ -40,6 +40,16 @@ var width = (window.innerWidth),
     height = (window.innerHeight);
 var brush;
 var contextMenu;
+var cloudMLServerHost;
+
+var stateColorMap = {};
+stateColorMap['PENDING'] = "#fee08b";
+stateColorMap['TERMINATED'] = "#a50026";
+stateColorMap['STOPPED'] = "#BAC2C3";
+stateColorMap['RUNNING'] = "#74AF7A";
+stateColorMap['ERROR'] = "#a50026";
+stateColorMap['UNCATEGORIZED'] = "#BAC2C3";
+stateColorMap['RECOVERY'] = "#4B9D9B";
 
 var colorScale = d3.scale.linear()
 .domain([1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
@@ -47,8 +57,7 @@ var colorScale = d3.scale.linear()
 
 //var loadDispatcher;
 //var shiftKey;
-
-var displayingContextMenu = false;
+var connectedToCloudMLServer = false;
 /*
 var RdYlGn = {
     3: ["#fc8d59","#ffffbf","#91cf60"],
@@ -167,18 +176,18 @@ function addAnyNodeContextMenuItems(contextMenuElement){
 }
 
 function getInstanceType(instanceName){
-    console.log(instanceName);
+    //    console.log(instanceName);
     if(typeof instanceName == 'undefined' || instanceName == null)
         return null;
     for(i=0;i<intCompInstances.length;++i){
-        console.log(intCompInstances[i].name);
+        //        console.log(intCompInstances[i].name);
         if(intCompInstances[i].name == instanceName){
             return "internalComponentInstances";
         }
     }
 
     for(i=0;i<extCompInstances.length;++i){
-        console.log(extCompInstances[i].name);
+        //        console.log(extCompInstances[i].name);
         if(extCompInstances[i].name == instanceName){
             if(extCompInstances[i].name.indexOf("vms") >=0)
                 return "vmInstances";
@@ -259,10 +268,10 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     }
 
     if (propertyPath.length !== 0) { // keep traversin!
-        console.log("jsonObject at the time of recursion n:");
-        console.log(jsonObject);
-        console.log("propertySubPath at the time of recursion n:");
-        console.log(propertySubPath);
+        //        console.log("jsonObject at the time of recursion n:");
+        //        console.log(jsonObject);
+        //        console.log("propertySubPath at the time of recursion n:");
+        //        console.log(propertySubPath);
         return traverseAndSet(jsonObject[propertySubPath], propertyPath, newValue);
     }
 
@@ -282,17 +291,17 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     } else {
         // we change the attribute value
         jsonObject[propertySubPath] = newValue;
-        console.log("jsonObject at the time of setting the new value:");
-        console.log(jsonObject);
-        console.log("propertySubPath at the time of setting the new value:");
-        console.log(propertySubPath);
+        //        console.log("jsonObject at the time of setting the new value:");
+        //        console.log(jsonObject);
+        //        console.log("propertySubPath at the time of setting the new value:");
+        //        console.log(propertySubPath);
     }
     // ... and return the old value
     return old_value;
 }
 
 function graphViewUpdateJSON(parent, propertyId, newValue){
-    console.log("parent, propertyId, newValue: ", parent, propertyId, newValue);
+    //    console.log("parent, propertyId, newValue: ", parent, propertyId, newValue);
     if(parent.indexOf("/") >= 0){
         if(parent.indexOf("componentInstances") >=0){
 
@@ -311,7 +320,7 @@ function graphViewUpdateJSON(parent, propertyId, newValue){
             var res = setValueInJSON(root, xpath, newValue);
         }
         update();
-        console.log(root);
+        //        console.log(root);
     }
 }
 
@@ -366,31 +375,12 @@ function getData(inputJSONString) {
     root.x = width / 2;
     root.y = height / 2;
 
-    // define arrow markers for graph links
-    svg.append('svg:defs').append('svg:marker')
-    .attr('id', 'execute-arrow')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 6)
-    .attr('markerWidth', 4)
-    .attr('markerHeight', 4)
-    .attr('orient', 'auto')
-    .append('svg:path')
-    .attr('d', 'M0,-5L10,0L0,5')
-    .attr('class','executionArrow');
-
-    svg.append('svg:defs').append('svg:marker')
-    .attr('id', 'relationship-arrow')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 6)
-    .attr('markerWidth', 4)
-    .attr('markerHeight', 4)
-    .attr('orient', 'auto')
-    .append('svg:path')
-    .attr('d', 'M0,-5L10,0L0,5')
-    .attr('class','relationshipArrow');
+    // create the arrow markers and gradients for the graph circles and arrows
+    createSVGDefs();
 
     var layoutIntCompInstances = intCompInstances;
     for(var i=0;i<layoutIntCompInstances.length;i++){
+        layoutIntCompInstances[i].status = 'UNKNOWN';
         layoutIntCompInstances[i].isFolded = false;
         layoutIntCompInstances[i].foldedSubNodes = [];
         layoutIntCompInstances[i].foldedSubEdges = [];
@@ -408,6 +398,46 @@ function getData(inputJSONString) {
         layoutExtCompInstances[i]._type = "ExternalComponent";
     }
 
+    // define a socket connection for each of the popovers that connects to the server to retrieve state information
+    layoutExtCompInstances.forEach(function (d){
+        // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
+        if(connectedToCloudMLServer){
+            d.socket = new WebSocket(cloudMLServerHost);
+            d.socket.onopen = function(){
+                var message = 
+                    "!getSnapshot"
+                + '\n' 
+                + "  path : /componentInstances[name='" + d.name + "']";
+                sendMessageFromSocket(d.socket, message);
+            }
+            d.socket.onmessage = function(msg){
+                if(msg.data.indexOf("GetSnapshot") >= 0){
+                    var json=jsyaml.load(msg.data);
+                    if(typeof json.content.status != 'undefined'){
+                        if(json.content.status != null)
+                            d.status = json.content.status;
+                    }
+
+                    if(typeof json.content.properties != 'undefined'){
+                        if(json.content.properties.cpu != null)
+                            d.properties.cpu = json.content.properties.cpu;
+                    }
+                    if(typeof json.content.id != 'undefined'){
+                        if(json.content.id != null)
+                            d.id = json.content.id;
+                    }
+                }
+            }
+            d.socket.onclose = function(){
+                console.log("socket closed for " + d.name);
+            }
+            d.socket.onerror = function(error){
+                console.log("error for node " + d.name + d.socket.readyState);
+            }
+
+        }
+    });
+
     /*
      For each of the external component instances we define an observer for the attributes
      'properties' and 'state' so that any changes to their values will affect the associated
@@ -415,14 +445,28 @@ function getData(inputJSONString) {
     */
     layoutExtCompInstances.forEach(function(d){
         watch(d, ['properties', 'status'], function(){
+            // select the according svg 'g' element for the node
             var svgNodeElement = svg.selectAll(".singleNode").filter(
                 function() {
                     return this.id == d.name;
                 }
             );
+            // change the data content (input for the popover)
             svgNodeElement.attr("data-content", function(d){
                 return getNodePopover(d);
             });
+            // update the status circle coloring
+            decorateNodeCircle(svgNodeElement.select(".internalComponent, .externalComponent")[0][0]);
+            for(i=0; i<graphEdges.length;++i){
+                if(graphEdges[i].source == d){
+                    var svgEdgeElement = svg.selectAll(".executionBinding, .relationshipBinding").filter(
+                        function() {
+                            return this.id == graphEdges[i].id;
+                        }
+                    );
+                    decorateEdgePath(svgEdgeElement[0][0]);
+                }
+            }
         });
     });
 
@@ -458,6 +502,330 @@ function getData(inputJSONString) {
     update();
 }
 
+// create the svg 'def' entries used to decorate arrows and nodes
+function createSVGDefs(){
+
+    var svgDefs = svg.append('svg:defs');
+
+    // define arrow markers for graph links
+    svgDefs.append('svg:marker')
+    .attr('id', 'pendingExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['PENDING']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'terminatedExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['TERMINATED']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'stoppedExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['STOPPED']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'runningExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['RUNNING']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'errorExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['ERROR']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'uncategorizedExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['UNCATEGORIZED']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'recoveryExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['RECOVERY']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'terminatedRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['TERMINATED']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'stoppedRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['STOPPED']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'runningRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['RUNNING']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'errorRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['ERROR']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'uncategorizedRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['UNCATEGORIZED']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'recoveryRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['RECOVERY']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'pendingRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['PENDING']);
+
+    // define gradients
+    var pendingNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "pendingNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    pendingNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['PENDING'])
+    .attr("stop-opacity", 1);
+
+    pendingNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['PENDING'])
+    .attr("stop-opacity", 0.2);
+
+    var terminatedNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "terminatedNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    terminatedNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['TERMINATED'])
+    .attr("stop-opacity", 1);
+
+    terminatedNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['TERMINATED'])
+    .attr("stop-opacity", 0.2);
+
+    var stoppedNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "stoppedNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    stoppedNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['STOPPED'])
+    .attr("stop-opacity", 1);
+
+    stoppedNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['STOPPED'])
+    .attr("stop-opacity", 0.2);
+
+    var runningNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "runningNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    runningNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['RUNNING'])
+    .attr("stop-opacity", 1);
+
+    runningNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['RUNNING'])
+    .attr("stop-opacity", 0.2);
+
+    var uncategorizedNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "uncategorizedNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    uncategorizedNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['UNCATEGORIZED'])
+    .attr("stop-opacity", 1);
+
+    uncategorizedNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['UNCATEGORIZED'])
+    .attr("stop-opacity", 0.2);
+
+    var recoveryNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "recoveryNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    recoveryNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['RECOVERY'])
+    .attr("stop-opacity", 1);
+
+    recoveryNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['RECOVERY'])
+    .attr("stop-opacity", 0.2);
+
+    var errorNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "errorNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    errorNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['ERROR'])
+    .attr("stop-opacity", 1);
+
+    errorNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['ERROR'])
+    .attr("stop-opacity", 0.2);
+
+}
+
+function sendMessageFromSocket(aSocket, text){
+
+    try{ 
+        if(aSocket.readyState !=1 ){
+            setTimeout(function(){sendMessageFromSocket(aSocket,text)},1000);
+        }else{
+            aSocket.send(text);
+            console.log("Request sent!");
+        }
+    } catch(exception){  
+        alertMessage("error",'Unable to send message: ' + exception , 10000);  
+    }  
+}
+
 function getNodePopover(node){
     var result = "";
     result += 'type: ';
@@ -491,7 +859,6 @@ function getNodePopover(node){
             result += node.properties.cpu;
         }
     }
-
     return result;
 }
 
@@ -553,7 +920,7 @@ function update(){
         .on("mouseout", function () {
             d3.select(this).selectAll('circle').classed("hover", false);
         })
-        .popover()
+        .popover();
     })
     // we define for each of the nodes and observer used that listens to changes 
     // of the attribute 'data-content' to enable dynamic popovers content
@@ -656,14 +1023,15 @@ function update(){
         'class' :   function (d){
             return d._type=="InternalComponent" ? "internalComponent" : "externalComponent";
         },
-        'r'     : 25.5,
+        'r'     : 25.5
     })
+    .each(function(d){decorateNodeCircle(this)})
     .call(force.drag);
 
+    // outer circle used to depict a selected node
     nodeGroup.append("svg:circle")
     .attr({
         'class' : 'selectionCircle',
-
         'r'     : 28,
     })
     .call(force.drag);
@@ -728,15 +1096,16 @@ function update(){
 
     path.enter().append('svg:path')
     .attr('class', function (d, i) {
-        return d._type == "ExecuteLink" ? "executionBinding" : "link";
+        return d._type == "ExecuteLink" ? "executionBinding" : "relationshipBinding";
     })
     .attr("id", function(d) {
         return d.id;
     })
+    .each(function(d){decorateEdgePath(this)})
     .style('marker-start', '')
-    .style('marker-end', function(d) {
-        return d._type == "ExecuteLink" ? 'url(#execute-arrow)' : 'url(#relationship-arrow)';
-    });
+    /*.style('marker-end', function(d) {
+        return d._type == "ExecuteLink" ? 'url(#pendingExecuteArrow)' : 'url(#pendingRelationshipArrow)';
+    })*/;
 
     path.on('click', function(){
         d3.select('#context_menu').remove();
@@ -755,6 +1124,103 @@ function update(){
     force.on("tick", tick);
 }
 
+function decorateNodeCircle(svgNodeElement){
+    var node = d3.select(svgNodeElement).datum();
+    // modify the stroke and fill
+    d3.select(svgNodeElement).attr(
+        {
+            'stroke'    : function(node) {
+                switch(node.status){
+                    case 'PENDING':
+                        return stateColorMap['PENDING'];
+                    case 'TERMINATED':
+                        return stateColorMap['TERMINATED'];
+                    case 'STOPPED':
+                        return stateColorMap['STOPPED'];
+                    case 'RUNNING':
+                        return stateColorMap['RUNNING'];
+                    case 'ERROR':
+                        return stateColorMap['ERROR'];
+                    case 'UNCATEGORIZED':
+                        return stateColorMap['UNCATEGORIZED'];
+                    case 'RECOVERY':
+                        return stateColorMap['RECOVERY'];
+                    default: 
+                        return stateColorMap['UNCATEGORIZED'];
+                }
+            },
+            'fill'  : function(node) {
+                switch(node.status){
+                    case 'PENDING':
+                        return 'url(#pendingNodeGradient)';
+                    case 'TERMINATED':
+                        return 'url(#terminatedNodeGradient)';
+                    case 'STOPPED':
+                        return 'url(#stoppedNodeGradient)';
+                    case 'RUNNING':
+                        return 'url(#runningNodeGradient)';
+                    case 'ERROR':
+                        return 'url(#errorNodeGradient)';
+                    case 'UNCATEGORIZED':
+                        return 'url(#uncategorizedNodeGradient)';
+                    case 'RECOVERY':
+                        return 'url(#recoveryNodeGradient)';
+                    default: 
+                        node.status = 'UNCATEGORIZED';
+                        return 'url(#uncategorizedNodeGradient)';
+                }
+            }
+        });
+}
+
+function decorateEdgePath(svgEdgeElement){
+    var edge = d3.select(svgEdgeElement).datum();
+    if(typeof edge == 'undefined'){
+        return;
+    }
+    // find and modify all children edge elements' color
+    d3.select(svgEdgeElement).attr({
+        'stroke' : function() {
+            switch(edge.source.status){
+                case 'PENDING':
+                    return stateColorMap['PENDING'];
+                case 'TERMINATED':
+                    return stateColorMap['TERMINATED'];
+                case 'STOPPED':
+                    return stateColorMap['STOPPED'];
+                case 'RUNNING':
+                    return stateColorMap['RUNNING'];
+                case 'ERROR':
+                    return stateColorMap['ERROR'];
+                case 'UNCATEGORIZED':
+                    return stateColorMap['UNCATEGORIZED'];
+                case 'RECOVERY':
+                    return stateColorMap['RECOVERY'];
+                default: 
+                    return stateColorMap['UNCATEGORIZED'];
+            }
+        },
+        'marker-end': function() {
+            switch(edge.source.status){
+                case 'PENDING':
+                    return edge._type == 'ExecuteLink' ? 'url(#pendingExecuteArrow)' : 'url(#pendingRelationshipArrow)';
+                case 'TERMINATED':
+                    return edge._type == 'ExecuteLink' ? 'url(#terminatedExecuteArrow)' : 'url(#terminatedRelationshipArrow)';
+                case 'STOPPED':
+                    return edge._type == 'ExecuteLink' ? 'url(#stoppedExecuteArrow)' : 'url(#stoppedRelationshipArrow)';
+                case 'RUNNING':
+                    return edge._type == 'ExecuteLink' ? 'url(#runningExecuteArrow)' : 'url(#runningRelationshipArrow)';
+                case 'ERROR':
+                    return edge._type == 'ExecuteLink' ? 'url(#errorExecuteArrow)' : 'url(#errorRelationshipArrow)';
+                case 'UNCATEGORIZED':
+                    return edge._type == 'ExecuteLink' ? 'url(#uncategorizedExecuteArrow)' : 'url(#uncategorizedRelationshipArrow)';
+                case 'RECOVERY':
+                    return edge._type == 'ExecuteLink' ? 'url(#recoveryExecuteArrow)' : 'url(#recoveryRelationshipArrow)';
+                default: 
+                    return edge._type == 'ExecuteLink' ? 'url(#uncategorizedExecuteArrow)' : 'url(#uncategorizedRelationshipArrow)';
+            }
+        }});
+}
 function clearCurrentSelection(){
     d3.selectAll('.selected').classed('selected', false);
 }
@@ -980,7 +1446,7 @@ function hideEdges(edgesToFold){
         currentEdge = graphEdges[currentEdgeIndex];
 
         // remove edge from the graph data
-        var svgEdgeElement = svg.selectAll(".executionBinding, .link").filter(
+        var svgEdgeElement = svg.selectAll(".executionBinding, .relationshipBinding").filter(
             function() {
                 return this.id == currentEdge.id;
             });
@@ -1230,9 +1696,50 @@ function getNodeDatumHostFromSelection(datum, selection){
     return result;
 }
 
-// dummy function (for now) for scaling out
-function scaleOutNode(node){window.alert("scaled out dummy")}
+function scaleOutNode(node){
+    // get the identifier of the node
+    var id = getNodeId(node);
+    // value null is returned in case of an error; we don't perform an action in this case
+    if(id == null)
+        return;
+    // form the message to initiate the scale out action
+    var message = "!extended { name: ScaleOut, params: [" + id + "] }";
+    sendMessageFromSocket(node.socket, message);
+    alertMessage("success","Initiated scaling out action for node " + node.name + "!", 5000); 
+}
 
+function getNodeId(node){
+    if(node.socket){
+        // send a message that retrieves the current node state (the listener updates the 'id' field)
+        // this is in case the ID for the node has been reassigned and the listener did not get notified
+        var message = 
+            "!getSnapshot"
+        + '\n' 
+        + "  path : /componentInstances[name='" + node.name + "']";
+        sendMessageFromSocket(node.socket, message);
+        if(typeof node.id == 'undefined'){
+            alertMessage("error",'The selected node does not have an identifier.', 5000);
+            return null;
+        }
+        if(node.id == null){
+            alertMessage("error",'The selected node has a null identifier.', 5000);
+            return null;
+        }
+        if(node.id == ''){
+            alertMessage("error",'The selected node has an empty identifier.', 5000);
+            return null;
+        }
+        return node.id;
+    }
+    else{
+        alertMessage("error",'Something went wrong during scaling action: No socket associated with the current node.');
+        return null;
+    }
+
+
+
+
+}
 ////////////////////////  experimental code
 //function randomlyChangeLoad(){
 //    var colorCode = colorScale(Math.random());

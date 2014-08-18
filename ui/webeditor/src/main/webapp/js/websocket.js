@@ -25,7 +25,7 @@ var ready;
 var tempObject;
 
 function connect(host){  
-    try{  
+    try{
         socket = new WebSocket(host);  
 
         socket.onopen = function(){  
@@ -34,16 +34,15 @@ function connect(host){
         }  
 
         socket.onmessage = function(msg){ 
-
             if(msg.data.indexOf("GetSnapshot") >= 0){
                 var array=msg.data.split("###");
-//                console.log(array[2]);
 
                 /* *********************
                 TODO refactor this dirty hack - checks if a function loadDeploymentModel is visible 
                  (called from demo.js in case we are running index.html with the low-level graph editor);
                  if it is not - calls the getData function in the graphview.js (also checks if the 'array' that contains the message is valid...sorta....)
                 * *********************/
+
                 if(typeof loadDeploymentModel  != 'undefined'){
                     loadDeploymentModel(array[2]);
                     alertMessage("success","Deployment Model loaded",3000); 
@@ -92,12 +91,13 @@ function connect(host){
             if(typeof loadDeploymentModel != 'undefined'){
                 loadDeploymentModel(JSON.stringify(deploymentModel));
             }else{
-//                if(array instanceof Array)
-//                    getData(array[2]);
+                //                if(array instanceof Array)
+                //                    getData(array[2]);
             }
         }  
 
-        socket.onclose = function(){  
+        socket.onclose = function(){
+            ready=false;
             alertMessage("success",'Connection closed: '+socket.readyState,10000);  
         }
 
