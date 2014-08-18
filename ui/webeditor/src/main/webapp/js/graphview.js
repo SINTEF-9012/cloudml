@@ -41,6 +41,7 @@ var width = (window.innerWidth),
 var brush;
 var contextMenu;
 var cloudMLServerHost;
+var connectedToCloudMLServer = false;
 
 var stateColorMap = {};
 stateColorMap['PENDING'] = "#fee08b";
@@ -51,13 +52,11 @@ stateColorMap['ERROR'] = "#a50026";
 stateColorMap['UNCATEGORIZED'] = "#BAC2C3";
 stateColorMap['RECOVERY'] = "#4B9D9B";
 
-var colorScale = d3.scale.linear()
-.domain([1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
-.range(["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"]);
+//var colorScale = d3.scale.linear()
+//.domain([1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
+//.range(["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"]);
 
-//var loadDispatcher;
-//var shiftKey;
-var connectedToCloudMLServer = false;
+
 /*
 var RdYlGn = {
     3: ["#fc8d59","#ffffbf","#91cf60"],
@@ -76,18 +75,18 @@ var RdYlGn = {
 * Functions to add CloudML elements in the graph
 ************************************************/
 
-function loadInNodesArray(nodesArray, componentInstances) {
-    componentInstances.forEach(
-
-        function (componentInstance) {
-            nodesArray.push(componentInstance);
-        });
+function loadElementsInArray(array, elements) {
+    elements.forEach(
+        function (element) {
+            array.push(element);
+        }
+    );
 }
 
 function getInternalComponentInstances(depModel) {
     var instancesArray = [];
     if (depModel.internalComponentInstances != null) {
-        loadInNodesArray(instancesArray, depModel.internalComponentInstances);
+        loadElementsInArray(instancesArray, depModel.internalComponentInstances);
     }
     return instancesArray;
 }
@@ -95,18 +94,15 @@ function getInternalComponentInstances(depModel) {
 function getExternalComponentInstances(depModel) {
     var instancesArray = [];
     if (depModel.vmInstances != null) {
-        loadInNodesArray(instancesArray, depModel.vmInstances);
+        loadElementsInArray(instancesArray, depModel.vmInstances);
     }
     if (depModel.externalComponentInstances != null) {
-        loadInNodesArray(instancesArray, depModel.externalComponentInstances);
+        loadElementsInArray(instancesArray, depModel.externalComponentInstances);
     }
     return instancesArray;
 }
 
 function generateExecutesLinks(depModel) {
-    //    console.log("START deployment model");
-    //    console.log(depModel);
-    //    console.log("END deployment model");
     var links = [];
     depModel.executesInstances.forEach(
 
@@ -176,18 +172,15 @@ function addAnyNodeContextMenuItems(contextMenuElement){
 }
 
 function getInstanceType(instanceName){
-    //    console.log(instanceName);
     if(typeof instanceName == 'undefined' || instanceName == null)
         return null;
     for(i=0;i<intCompInstances.length;++i){
-        //        console.log(intCompInstances[i].name);
         if(intCompInstances[i].name == instanceName){
             return "internalComponentInstances";
         }
     }
 
     for(i=0;i<extCompInstances.length;++i){
-        //        console.log(extCompInstances[i].name);
         if(extCompInstances[i].name == instanceName){
             if(extCompInstances[i].name.indexOf("vms") >=0)
                 return "vmInstances";
@@ -201,9 +194,10 @@ function getInstanceType(instanceName){
 
 
 /***********************************************
-* Initialisation of the graph
+* Initialisation and updating of the graph
 ************************************************/
 
+// set a value in an input JSON object according to a property path (calls traverseAndSet after initial validation as in jsoninpointer+path.js)
 function setValueInJSON(jsonObject, propertyPath, newValue) {
     propertyPath = validate_input(jsonObject, propertyPath);
     if (propertyPath.length === 0) {
@@ -212,6 +206,7 @@ function setValueInJSON(jsonObject, propertyPath, newValue) {
     return traverseAndSet(jsonObject, propertyPath, newValue);
 }
 
+// traverse an input JSON object according to a property path and change the value (slightly modified copy of the traverse2 function in jsoninpointer+path.js)
 function traverseAndSet(jsonObject, propertyPath, newValue) {
     var propertySubPath = propertyPath.shift();
     var subPathSplit = propertySubPath.split("[");
@@ -220,28 +215,19 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     if (propertySubPath.indexOf("[") >= 0) {
         // we have an XPath expression with a predicate for an attribute (i.e. expression similar to: "/containmentCollection[attribute='attributeValue']"; there could be additional levels of depth)
 
-        //        console.log("1. part:", propertySubPath);
-        //        console.log("1.1 obj:",obj);
-        //        console.log("1.1 tmp[0]:",tmp[0]);
         var containmentCollection = subPathSplit[0];
         if (!jsonObject.hasOwnProperty(containmentCollection)) {
-            //            console.log("returning null");
             return null;
         }
         var predicateAttributeValueSplit = subPathSplit[1].split("=");
-        //        console.log("1.1 temp2 = tmp[1].split=:",tmp[1]);
 
         // the attribute from the predicate that we check (usually would be the 'name' of the node)
         var attribute = predicateAttributeValueSplit[0];
-        //        console.log("1.2 attribute:", attribute);
         var attrValueExpressionSplit = predicateAttributeValueSplit[1].split("]");
-        //        console.log("1.3 temp3:", temp3);
         var attributeValueSplit = attrValueExpressionSplit[0].split("'");
-        //        console.log("1.4 temp4:", temp4);
 
         // the attribute value from the predicate we check against to find the node
         var attributeValue = attributeValueSplit[1];
-        //        console.log("val: ", val);
 
         for (var i = 0; i < jsonObject[containmentCollection].length; i++) {
             // check if the current element of the node containment group even has the attribute
@@ -250,7 +236,6 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
                 if (jsonObject[containmentCollection][i][attribute] == attributeValue) {
                     // we have found the exact node we need to set the new value to
                     var debug = traverseAndSet(jsonObject[containmentCollection][i], propertyPath, newValue);
-                    //                    console.log("debug:",debug);
                     return debug;
                 }
             }
@@ -268,10 +253,6 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     }
 
     if (propertyPath.length !== 0) { // keep traversin!
-        //        console.log("jsonObject at the time of recursion n:");
-        //        console.log(jsonObject);
-        //        console.log("propertySubPath at the time of recursion n:");
-        //        console.log(propertySubPath);
         return traverseAndSet(jsonObject[propertySubPath], propertyPath, newValue);
     }
 
@@ -291,24 +272,15 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     } else {
         // we change the attribute value
         jsonObject[propertySubPath] = newValue;
-        //        console.log("jsonObject at the time of setting the new value:");
-        //        console.log(jsonObject);
-        //        console.log("propertySubPath at the time of setting the new value:");
-        //        console.log(propertySubPath);
     }
     // ... and return the old value
     return old_value;
 }
 
+// update the JSON associated with the current graph view
 function graphViewUpdateJSON(parent, propertyId, newValue){
-    //    console.log("parent, propertyId, newValue: ", parent, propertyId, newValue);
     if(parent.indexOf("/") >= 0){
         if(parent.indexOf("componentInstances") >=0){
-
-            /*
-            TODO: in the POJO metamodel, the internal and external component instances and the VM instances are stored in a common collection called "componentInstances". This collection is also used within the XPath expressions that we define to extract information from the CloudML server. On the other hand, in the JSON serialization we have separate collections for these types of objects which are then propagated to the actual data. This inconsistency causes a lot of problems associated with finding particular instances and changing their properties and should not occur. Is it better to use a single representation or should we leave it as is?
-            */
-
             parent = parent.replace("componentInstances", "vmInstances");
             var xpath="";
             if(parent.length <= 1){
@@ -320,10 +292,10 @@ function graphViewUpdateJSON(parent, propertyId, newValue){
             var res = setValueInJSON(root, xpath, newValue);
         }
         update();
-        //        console.log(root);
     }
 }
 
+// initialise the graph
 function getData(inputJSONString) {
     // remove the svg and the selection area (brush)
     d3.selectAll("svg").remove();
@@ -354,18 +326,6 @@ function getData(inputJSONString) {
     })
     ;
 
-    ////////////////////////  experimental code
-    //    loadDispatcher = d3.dispatch("loadChanged");
-    //    loadDispatcher.on("loadChanged", randomlyChangeLoad);
-    //
-    //    randomLoadChangerButton = svg.append("rect")
-    //    .attr("width", 100)
-    //    .attr("height", 50)
-    //    .style("cursor", "pointer")
-    //    .on("click", function (){loadDispatcher.loadChanged();});
-
-    ////////////////////////
-
     intCompInstances.concat(extCompInstances).forEach(function (d, i) {
         d.x = width / 2 + i;
         d.y = height / 2 + 100 * d.depth;
@@ -380,7 +340,7 @@ function getData(inputJSONString) {
 
     var layoutIntCompInstances = intCompInstances;
     for(var i=0;i<layoutIntCompInstances.length;i++){
-        layoutIntCompInstances[i].status = 'UNKNOWN';
+        layoutIntCompInstances[i].status = 'UNCATEGORIZED';
         layoutIntCompInstances[i].isFolded = false;
         layoutIntCompInstances[i].foldedSubNodes = [];
         layoutIntCompInstances[i].foldedSubEdges = [];
@@ -390,7 +350,7 @@ function getData(inputJSONString) {
     var layoutExtCompInstances = extCompInstances;
 
     for(i=0;i<layoutExtCompInstances.length;i++){
-        layoutExtCompInstances[i].status = 'UNKNOWN';
+        layoutExtCompInstances[i].status = 'UNCATEGORIZED';
         layoutExtCompInstances[i].properties = {cpu : 0, 'cpu-timestamp' : 0};
         layoutExtCompInstances[i].isFolded = false;
         layoutExtCompInstances[i].foldedSubNodes = [];
@@ -812,6 +772,7 @@ function createSVGDefs(){
 
 }
 
+// send a text message from a provided socket
 function sendMessageFromSocket(aSocket, text){
 
     try{ 
@@ -826,6 +787,7 @@ function sendMessageFromSocket(aSocket, text){
     }  
 }
 
+// get the popover content for a node
 function getNodePopover(node){
     var result = "";
     result += 'type: ';
@@ -862,6 +824,7 @@ function getNodePopover(node){
     return result;
 }
 
+// update the graph layout
 function update(){
     allNodesGroup = svg.select('.nodes');
 
@@ -956,22 +919,6 @@ function update(){
         d3.event.preventDefault();
     })
     ;
-
-    ////////////////////////  experimental code
-    //    var drag = d3.behavior.drag()
-    //    .on("drag", function(d, i) {
-    //        console.log("drag");
-    //        d.px += d3.event.dx;
-    //        d.py += d3.event.dy;
-    //        d.x += d3.event.dx;
-    //        d.y += d3.event.dy;
-    //        tick();
-    //    })
-    //    .on("dragend", function(d, i){
-    //        console.log("dragend");
-    //        svg.selectAll('.selectionCircle .internalComponent .externalComponent .tmpNodeSymbol .tmpToggleFoldSymbol').call(force.drag);
-    //    });
-    ////////////////////////
 
     // define the node selection area
     if(!brush){
@@ -1124,6 +1071,7 @@ function update(){
     force.on("tick", tick);
 }
 
+// update colors of a node circle svg element corresponding to a node
 function decorateNodeCircle(svgNodeElement){
     var node = d3.select(svgNodeElement).datum();
     // modify the stroke and fill
@@ -1173,6 +1121,7 @@ function decorateNodeCircle(svgNodeElement){
         });
 }
 
+// update colors of an edge path svg element corresponding to an edge
 function decorateEdgePath(svgEdgeElement){
     var edge = d3.select(svgEdgeElement).datum();
     if(typeof edge == 'undefined'){
@@ -1221,10 +1170,13 @@ function decorateEdgePath(svgEdgeElement){
             }
         }});
 }
+
+// de-select the currently selected set of nodes
 function clearCurrentSelection(){
     d3.selectAll('.selected').classed('selected', false);
 }
 
+// recalculate svg element positions on every tick
 function tick (e) {
     var path = svg.select(".edges").selectAll('path');
     path.attr('d', function (d) {
@@ -1249,6 +1201,7 @@ function tick (e) {
 
 }
 
+// fold or unfold the according svg elements based on an input node 
 function toggleFoldNode(nodeToToggle){
     // so that we won't fold while dragging
     if (d3.event.defaultPrevented) return;
@@ -1276,7 +1229,6 @@ function toggleFoldNode(nodeToToggle){
     force.start();
     update();
 }
-
 function foldNode(nodeToFold){
     nodeToFold.isFolded=true;
 
@@ -1298,7 +1250,6 @@ function foldNode(nodeToFold){
 
     recalculateEdges(nodeToFold);
 }
-
 function unfoldNode(nodeToUnfold){
     nodeToUnfold.isFolded=false;
     var foldedNodesToCheck = [];
@@ -1344,7 +1295,7 @@ function unfoldNode(nodeToUnfold){
     force.links(graphEdges);
 }
 
-//returns an object containing arrays with the nodes and edges to fold
+// computes an object containing arrays with the nodes and edges to fold additionally if the input node is the one being folded
 function findEdgesAndNodesToFold(aNode){
 
     var edgesToFold=[];
@@ -1391,6 +1342,7 @@ function findEdgesAndNodesToFold(aNode){
     return result;
 }
 
+// find the host VM (or other external component) for an input node
 function findNodeHost(aNode){
     var result = [];
     var currentlyCheckedNode = aNode;
@@ -1438,6 +1390,25 @@ function recalculateEdges(aNode){
     }
 }
 
+// hide an input set of nodes from the graph (used when folding)
+function hideNodes(nodesToFold){
+    var currentNodeIndex;
+    var currentNode;
+    for(i=0;i<nodesToFold.length;++i){
+        currentNodeIndex = graphNodes.indexOf(nodesToFold[i]);
+        currentNode = graphNodes[currentNodeIndex];
+
+        // remove node from the graph data
+        var svgNodeElement = svg.selectAll(".singleNode").filter(
+            function() {
+                return this.id == currentNode.name;
+            });
+        svgNodeElement.remove();
+        graphNodes.splice(currentNodeIndex,1);
+    }
+}
+
+// hide an input set of edges from the graph (used when folding)
 function hideEdges(edgesToFold){
     var currentEdgeIndex;
     var currentEdge;
@@ -1456,23 +1427,7 @@ function hideEdges(edgesToFold){
     }
 }
 
-function hideNodes(nodesToFold){
-    var currentNodeIndex;
-    var currentNode;
-    for(i=0;i<nodesToFold.length;++i){
-        currentNodeIndex = graphNodes.indexOf(nodesToFold[i]);
-        currentNode = graphNodes[currentNodeIndex];
-
-        // remove node from the graph data
-        var svgNodeElement = svg.selectAll(".singleNode").filter(
-            function() {
-                return this.id == currentNode.name;
-            });
-        svgNodeElement.remove();
-        graphNodes.splice(currentNodeIndex,1);
-    }
-}
-
+// reset the entire graph
 function reset(){
     svg.remove();
     brush = null;
@@ -1514,15 +1469,15 @@ function loadFile(inputDiv) {
 * Context menu related functions
 ************************************************/
 
-// generate the context menu and, accordingly, the specific items associated with a certain node
-function generateContextMenuForNode(element, node){
+// generate the context menu and specific items associated with an input node and its according svg element
+function generateContextMenuForNode(svgNodeElement, node){
     // if any popover is open for the current element - hide it
-    $(element).popover('hide');
+    $(svgNodeElement).popover('hide');
 
     // if there is another context menu open - remove it too
     d3.select('#context_menu').remove();
 
-    var mousePosition = d3.mouse(element.parentNode);
+    var mousePosition = d3.mouse(svgNodeElement.parentNode);
 
     var contextMenu = d3.select('body').append('ul')
     .attr('id', 'context_menu')
@@ -1534,14 +1489,14 @@ function generateContextMenuForNode(element, node){
     })
     ;
 
-    addContextOptionsAllNodes(contextMenu, element, node);
-    addContextOptionsExternalComponents(contextMenu, element, node);
+    addContextOptionsAllNodes(contextMenu, svgNodeElement, node);
+    addContextOptionsExternalComponents(contextMenu, svgNodeElement, node);
 
 
 
 }
 
-// generates the list item (<li>) for the context menu options of all of the nodes
+// generate the list items (<li>) for the context menu options of all of the nodes
 function addContextOptionsAllNodes(contextMenu, element, node){
 
     // context menu item for Fold/Unfold node
@@ -1595,7 +1550,7 @@ function addContextOptionsAllNodes(contextMenu, element, node){
     .text('Unfold selection');
 }
 
-// generates the list item (<li>) for the context menu options of the external components
+// generate the list items (<li>) for the context menu options of the external components
 function addContextOptionsExternalComponents(contextMenu, element, node){
     if(node._type == 'ExternalComponent'){
         contextMenu.append('hr');
@@ -1613,7 +1568,7 @@ function addContextOptionsExternalComponents(contextMenu, element, node){
     }
 }
 
-// unfolds the current selection of nodes
+// unfold the current selection of nodes
 function unfoldSelectionOfNodes(nodesSelection){
     if(nodesSelection[0].length == 0){
         return;
@@ -1696,6 +1651,7 @@ function getNodeDatumHostFromSelection(datum, selection){
     return result;
 }
 
+// call the 'scale out' command for an input node
 function scaleOutNode(node){
     // get the identifier of the node
     var id = getNodeId(node);
@@ -1708,6 +1664,7 @@ function scaleOutNode(node){
     alertMessage("success","Initiated scaling out action for node " + node.name + "!", 5000); 
 }
 
+// get the identifier of an input node
 function getNodeId(node){
     if(node.socket){
         // send a message that retrieves the current node state (the listener updates the 'id' field)
@@ -1740,21 +1697,4 @@ function getNodeId(node){
 
 
 }
-////////////////////////  experimental code
-//function randomlyChangeLoad(){
-//    var colorCode = colorScale(Math.random());
-//    var tmp = svg.selectAll("circle.externalComponent");
-////    console.log(tmp + " - length: " + tmp.length);
-//    //    var chosenCircleIndex = Math.floor((Math.random() * allCircles.length) + 0);
-//    //    chosenCircle.style('fill', colorCode);
-//    var allCircles = svg.selectAll('circle.externalComponent')/*.find(':eq(' + 1 + ')')*/.style("stroke",colorCode);
-//    //    console.log(allCircles);
-//    //    var chosenCircleIndex = Math.floor((Math.random() * allCircles.length) + 0);
-//    //    console.log(chosenCircleIndex+ "/" + allCircles.length);
-//    //    var chosenCircle = allCircles[0][chosenCircleIndex];
-//    //    console.log(chosenCircle);
-//    //    var colorCode = colorScale(Math.random());
-//    //    chosenCircle.style('fill', colorCode);
-//}
-////////////////////////  
 

@@ -91,7 +91,7 @@
 					<a class="dropdown-toggle" data-toggle="dropdown" href="#Server">Server<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li><a href="#" data-toggle='modal' data-target="#connectModal">Connect ...</a></li>
-						<li><a href="#" onclick='send("!extended { name : LoadDeployment }");send("!additional json-string:"+JSON.stringify(deploymentModel))'>Push model to the server</a></li>
+						<li><a href="#" onclick='send("!extended { name : LoadDeployment }");send("!additional json-string:"+JSON.stringify(currentJSON))'>Push model to the server</a></li>
 						<li><a href="#" onclick='send("!getSnapshot {path : /}");'>Load model from the server</a></li>
 						<li><a href="#" onclick='send("!extended { name : Deploy }")'>Deploy ...</a></li>
 					</ul>
