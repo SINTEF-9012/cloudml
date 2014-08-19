@@ -118,6 +118,7 @@ function traverse2(obj, pointer, value) {
 
 var validate_input = function (obj, pointer) {
 	if (typeof obj !== "object") {
+        console.log("obj:", obj, "pointer:", pointer);
 		throw("Invalid input object.");
 	}
 

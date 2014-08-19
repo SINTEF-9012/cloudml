@@ -71,6 +71,25 @@ var RdYlGn = {
 };
 */
 
+function pushModelToServer(){
+    if(currentJSON == null){
+        alertMessage("error",'Error pushing model to server - the model is empty.', 20000);
+        return;
+    }
+    if(currentJSON.trim() == ""){
+        alertMessage("error",'Error pushing model to server - the model is empty.', 20000);
+        return;
+    }
+    
+    send("!extended { name : LoadDeployment }");
+    send("!additional json-string:"+stringifyRoot()); 
+    
+    // TODO fix this dirty hack - the model might (and probably should) take more than two seconds
+    // to load for the general case (e.g. - remote server for CloudML)
+    setTimeout(function(){send("!getSnapshot {path : /}");}, 2000);
+    alertMessage("success","Sent model to the CloudML server.", 3000);
+}
+
 /***********************************************
 * Functions to add CloudML elements in the graph
 ************************************************/
@@ -190,9 +209,6 @@ function getInstanceType(instanceName){
     }
 }
 
-
-
-
 /***********************************************
 * Initialisation and updating of the graph
 ************************************************/
@@ -277,9 +293,14 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     return old_value;
 }
 
-// update the JSON associated with the current graph view
+// update the JSON associated with the current graph view; currently supports VM instances only
 function graphViewUpdateJSON(parent, propertyId, newValue){
     if(parent.indexOf("/") >= 0){
+        // The following is a hack since if we get the state information from an internal component 
+        // instance it would also be a part of the componentInstances collection. 
+
+        // TODO: Workaround - the 'parent' element contains the path to the element which we can use to retrieve its data using a !getSnapshot command; 
+        // we can then parse the content of the result and get the type.
         if(parent.indexOf("componentInstances") >=0){
             parent = parent.replace("componentInstances", "vmInstances");
             var xpath="";
@@ -289,10 +310,79 @@ function graphViewUpdateJSON(parent, propertyId, newValue){
                 xpath = parent + "/" + propertyId;
 
             }
-            var res = setValueInJSON(root, xpath, newValue);
+            // set the according value to the JSON
+            setValueInJSON(root, xpath, newValue);
+            // update the global object holding the current JSON
+            currentJSON = stringifyRoot();
         }
         update();
     }
+}
+
+// set the value of a property object of a CloudML element; returns true if successful
+function setOrCreatePropValOfCloudMLElement(element, propertyName, newValue){
+    try {
+        for(i=0;i<element.properties.length;++i){
+            if(element.properties[i].name == propertyName){
+                element.properties[i].value = newValue;
+                return true;
+            }
+        }
+        // if we cannot find it we create it
+        element.properties.push(
+            {
+                "eClass" :  "net.cloudml.core:Property",
+                'name'   :  propertyName,
+                'value'  :  newValue
+            }
+        );
+        return true;
+    } catch (error){
+        console.log("Error:", "Could not set property", propertyName ,"for element", element, "!");
+        return false;
+    }
+    
+}
+
+// get the value of a property object of a CloudML element; returns null if not found
+function getPropValFromCloudMLElement(element, propertyName){
+    try {
+        for(i=0;i<element.properties.length;++i){
+            if(element.properties[i].name == propertyName){
+                return element.properties[i].value;
+            }
+        }
+    } catch (error){
+        console.log("Error:", "Could not get property value of property", propertyName ,"for element", element, "!");
+        return null;
+    }
+    return null;
+}
+
+// create the JSON string for the root object while removing circular references and unnecessary data 
+function stringifyRoot(){
+    var cache=[];
+
+    var result = JSON.stringify(root, function(key, value){
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                return;
+            }
+            cache.push(value);
+        }
+        // the added attributes used by internal logic or d3.js
+        if(key == "x" || key ==  "y" || key ==  "dx" || key ==  "dy" || key == "fixed" 
+           || key == "px" || key == "py" || key == "cx" || key == "cy" || key == "index" 
+           || key == "weight" || key == "_type" || key == "_source" || key == "_target"
+           || key == "foldedSubNodes" || key == "foldedSubEdges" || key == "outgoingLinks"
+           || key == "incomingLinks" || key == "isFolded" || key == "socket" 
+           || key == "id" || key == "status" /* status and id-s are assigned by graphview on demand */){
+            return;
+        }
+        return value;
+    });
+
+    return result;
 }
 
 // initialise the graph
@@ -351,7 +441,15 @@ function getData(inputJSONString) {
 
     for(i=0;i<layoutExtCompInstances.length;i++){
         layoutExtCompInstances[i].status = 'UNCATEGORIZED';
-        layoutExtCompInstances[i].properties = {cpu : 0, 'cpu-timestamp' : 0};
+        // We are assuming that each external component instance has these properties.
+        // We use it afterwards to form the content of the popovers.
+        layoutExtCompInstances[i].properties = [
+            {
+                "eClass" :  "net.cloudml.core:Property",
+                'name'   :  'cpu',
+                'value'  :  0
+            }
+        ];
         layoutExtCompInstances[i].isFolded = false;
         layoutExtCompInstances[i].foldedSubNodes = [];
         layoutExtCompInstances[i].foldedSubEdges = [];
@@ -379,8 +477,10 @@ function getData(inputJSONString) {
                     }
 
                     if(typeof json.content.properties != 'undefined'){
-                        if(json.content.properties.cpu != null)
-                            d.properties.cpu = json.content.properties.cpu;
+                        var cpuLoad = getPropValFromCloudMLElement(json.content, "cpu");
+                        if(cpuLoad != null) {
+                            setOrCreatePropValOfCloudMLElement(d, "cpu", cpuLoad);
+                        }
                     }
                     if(typeof json.content.id != 'undefined'){
                         if(json.content.id != null)
@@ -772,7 +872,7 @@ function createSVGDefs(){
 
 }
 
-// send a text message from a provided socket
+// send an input text message from an input socket
 function sendMessageFromSocket(aSocket, text){
 
     try{ 
@@ -815,10 +915,11 @@ function getNodePopover(node){
     }
 
     if(typeof node.properties != "undefined"){
-        if(typeof node.properties.cpu != "undefined"){
+        var cpuLoad = getPropValFromCloudMLElement(node,"cpu");
+        if(cpuLoad != null){
             result += '<br/>';
             result += 'cpu load (%): ';
-            result += node.properties.cpu;
+            result += cpuLoad;
         }
     }
     return result;
@@ -920,7 +1021,7 @@ function update(){
     })
     ;
 
-    // define the node selection area
+    // definition of the node selection area
     if(!brush){
         // put brush area in the background so that the nodes and edges are on top of (and not inside) it
         brush = svg.insert("g", "g.nodes")

@@ -23,13 +23,26 @@
 var socket;
 var ready;
 var tempObject;
-
 function connect(host){  
     try{
-        socket = new WebSocket(host);  
-
+        if(socket != null){
+            if(socket.readyState != 1){
+                socket = new WebSocket(host);
+            }else{
+                if(socket.url.indexOf (host) != -1){
+                    alertMessage("success","Already connected to this CloudML server", 3000);
+                }else{
+                    // we are using a different input URL
+                    socket = new WebSocket(host);
+                }
+            }
+            
+        }else{
+            socket = new WebSocket(host);
+        }
         socket.onopen = function(){  
             console.log('Socket Status: '+socket.readyState);  
+            alertMessage("success","Connected to CloudML server",3000); 
             ready=true;
         }  
 
@@ -73,6 +86,21 @@ function connect(host){
                 alertMessage("success","New update! "+msg.data,3000); 
                 increaseNotificationNumber();
                 addNotification(msg.data);
+
+                /* *********************
+                TODO refactor this dirty hack - checks if a function loadDeploymentModel is visible 
+                 (called from demo.js in case we are running index.html with the low-level graph editor);
+                 if it is not - calls the getData function in the graphview.js (also checks if the 'array' that contains the message is valid...sorta....)
+                * *********************/
+
+                if(typeof loadDeploymentModel  != 'undefined'){
+                    loadDeploymentModel(array[2]);
+                    alertMessage("success","Deployment Model loaded",3000); 
+                }else{
+                    if(array instanceof Array)
+                        getData(array[2]);
+                }
+
                 addInModel(tempObject);
             }
             if(msg.data.indexOf("!removed") >= 0){
