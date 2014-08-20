@@ -68,9 +68,9 @@ public class DiffTest extends TestCase{
         Codec codec = new JsonCodec();
         Codec codec2 = new JsonCodec();
         InputStream stream = null;
-        stream = new FileInputStream(new File("c:\\temp\\sensapp-v2.json"));
+        stream = new FileInputStream(new File("sensapp-v2.json"));
         current = (Deployment) codec.load(stream);
-        stream = new FileInputStream("c:\\temp\\sensapp-v2.json");
+        stream = new FileInputStream("sensapp-v2.json");
         target = (Deployment) codec2.load(stream);
 
     }
