@@ -53,6 +53,7 @@ public class Daemon
         CoordWsReception reception = new CoordWsReception(port, coord);
         coord.setReception(reception);
         
+        Coordinator.SINGLE_INSTANCE = coord;
         
         //coord.setCloudMLRoot(initWithSenseApp());
         //coord.executor.repo.root = initWithMdms();

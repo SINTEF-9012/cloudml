@@ -35,5 +35,4 @@ public interface ModelRepo {
     
     public Object handle(String name, Collection<String> parameter);
  
-    
 }

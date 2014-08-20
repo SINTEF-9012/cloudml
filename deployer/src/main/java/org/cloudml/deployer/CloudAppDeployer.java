@@ -81,11 +81,17 @@ public class CloudAppDeployer {
 
             //set up a coordinator (used to update the model)
             if (coordinator == null) {
-                coordinator = new Coordinator();
+                if(Coordinator.SINGLE_INSTANCE == null){ 
+                    //only if there is no WebSocket server running.
+                    coordinator = new Coordinator();
+                    SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
+                    coordinator.setModelRepo(modelRepo);
+                    coordinator.start();
+                }
+                else
+                    coordinator = Coordinator.SINGLE_INSTANCE;
             }
-            SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
-            coordinator.setModelRepo(modelRepo);
-            coordinator.start();
+            
             if (statusMonitorProperties.getActivated() && statusMonitor == null) {
                 statusMonitorActive = true;
                 statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
