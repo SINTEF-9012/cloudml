@@ -74,7 +74,6 @@ public class ComparatorTest extends TestCase {
 
 	public void testApp(){
         /*try {
-            FlexiantConnector fc = new FlexiantConnector("https://api.sd1.flexiant.net:4442/userapi", "nicolas.ferry@sintef.no/1d190121-fe74-3c4e-aabf-9cde399fdce1", "modus9012");
             VMInstance vm=new VMInstance("SINTEFTestWindows", vmML().build());
 
             fc.createInstance(vm);
