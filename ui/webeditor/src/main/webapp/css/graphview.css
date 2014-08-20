@@ -115,22 +115,7 @@ svg g.nodes circle.internalComponent.hover, g.nodes circle.externalComponent.hov
     fill-opacity: .3;
     transition: fill 0.5s linear;
     animation-delay: 0.1s;
-
-    /*
-    -moz-transition: background-color 2s linear; 
-    -webkit-transition: background-color 2s linear; 
-    -o-transition: background-color 2s linear;
-    -ms-transition: background-color 2s linear; 
-    */
 }
-/*
-svg g.nodes .selected {
-stroke: grey;
-color: grey ;
-fill: grey;
-}
-*/
-
 .brush .extent {
     fill-opacity: .1;
     stroke: #fff;

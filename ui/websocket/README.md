@@ -58,6 +58,23 @@ We first list some examples below for a quick view of what the commands look lik
         credentials : ""
 ```
 
+- Another example to show how to create a VM instance and add it into the list of /componentInstances:
+
+```yaml
+!commit
+  modifications:   
+  - !createAndAdd
+     parent : /
+     property : componentInstances
+     type : VMInstance
+     initializer : 
+       - { type: String, value: newVMInstance }
+       - { type: VM, value: !xpath '/components[name="SL"]' }
+     keyValues : 
+       name : newVMInstance
+```
+
+
 - Deploy the current component model
 
 ```yaml
