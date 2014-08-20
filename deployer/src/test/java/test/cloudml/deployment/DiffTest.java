@@ -75,6 +75,10 @@ public class DiffTest extends TestCase{
 
     }
     
+    public void testNothing(){
+        
+    }
+    
     /**
      * Change the name of the Internal Component Instance sensApp1
      * Since *name* works as the id of the instance, this change should be regarded
