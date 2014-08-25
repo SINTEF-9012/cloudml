@@ -280,7 +280,13 @@ All the other commands require a single parameter, and therefore can be invoked 
 !extended { name: Snapshot, params: [xyz] }
 ```
 
-Where ```xyz``` is the id of a Virtual Machine, and it is the sole parameter required by command ```Snapshot```. 
+Where ```xyz``` is the id of a Virtual Machine, and is the sole parameter required by command ```Snapshot```. 
+
+```
+!extended { name: ScaleOut, params: [xyz] }
+```
+
+Where ```xyz``` is the id of a Virtual Machine,  and is the sole parameter required by the ```ScaleOut``` command. 
 
 If the last params is too long (or too structural) for yaml, you can send a supplimentary command just after an extended command, started with a ```!additional```. The content following this tag is treated as plain text, not yaml.
 
