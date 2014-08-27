@@ -614,7 +614,8 @@ public class CloudAppDeployer {
                 String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
                 int destinationPortNumber = server.getType().getPortNumber();
                 String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
-
+                if(clientResource == null || serverResource == null)
+                    return; // ignore configuration if there is no resource at all
                 configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
             }
         }

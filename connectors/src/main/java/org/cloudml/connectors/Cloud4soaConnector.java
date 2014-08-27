@@ -100,6 +100,8 @@ public class Cloud4soaConnector implements PaaSConnector {
 
         } catch (Cloud4SoaException ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (java.lang.NoSuchFieldError ex){
+            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, "The war is deployed, but due to the version conflict of cloudbees, no response is printed");
         }
 
     }
