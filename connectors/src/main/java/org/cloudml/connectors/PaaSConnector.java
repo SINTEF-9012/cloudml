@@ -24,6 +24,7 @@ package org.cloudml.connectors;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface PaaSConnector{
     
@@ -43,6 +44,8 @@ public interface PaaSConnector{
     public List<String> listQueues();
 
     public void restoreDB(String host, String port, String dbUser,String dbPass, String dbName, String local_file);
+    
+    public void configAppParameters(String applicationName, Map<String,String> params);
 
 //Should be part of the interface at some point
 	//public void createApplication();

@@ -236,6 +236,12 @@ public class CloudAppDeployer {
                         instance.getType().getProperties().valueOf("warfile"),
                         instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
                 );
+                if(instance.hasProperty("containerSize")){
+                    String size =instance.getProperties().valueOf("containerSize");
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("containerSize", size);
+                    connector.configAppParameters(instance.getName(), params);
+                }
             }
         }
     }

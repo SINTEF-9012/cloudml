@@ -494,4 +494,9 @@ public class BeanstalkConnector implements PaaSConnector {
         return result.getQueueUrls();
     }
 
+    @Override
+    public void configAppParameters(String applicationName, Map<String,String> params) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
