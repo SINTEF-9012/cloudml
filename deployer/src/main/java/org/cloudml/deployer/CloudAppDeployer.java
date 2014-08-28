@@ -64,6 +64,10 @@ public class CloudAppDeployer {
         System.setProperty("jsse.enableSNIExtension", "false");
     }
 
+    public StatusMonitor getStatusMonitor(){
+        return this.statusMonitor;
+    }
+
     /**
      * Deploy from a deployment model
      *
@@ -523,6 +527,7 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING, CloudAppDeployer.class.getName());
         ComponentInstance.State state = jc.createInstance(n);
         coordinator.updateStatus(n.getName(), state, CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine

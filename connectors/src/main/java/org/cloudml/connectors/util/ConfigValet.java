@@ -38,23 +38,24 @@ import org.cloudml.core.Resource;
  * execute shell scripts via JCloud on IaaS), we provide a set of pre-defined 
  * configuration agents, each of which works on a given {@link RelationshipInstance}
  * and one of its {@link Resource}s. 
- * 
+ *
  * The Valets (acting as a kid hired by a restaurant to help customers park their cars}
  * accepts some properties from a relationship, and performs the configurations
  * to enable the two components to communicate.
  * @author Hui Song
  */
 public abstract class ConfigValet {
-    
-    
+
+
     public abstract void config();
-    
+
     public static ConfigValet createValet(RelationshipInstance relation, Resource resource){
 
-        String type = resource.getProperties().valueOf("valet");
-        if("war-xml".equals(type))
-            return new WarXmlConfigValet(relation, resource);
-        
+        if(resource.hasProperty("valet")){
+            String type = resource.getProperties().valueOf("valet");
+            if("war-xml".equals(type))
+                return new WarXmlConfigValet(relation, resource);
+        }
         return null;
     }
 
