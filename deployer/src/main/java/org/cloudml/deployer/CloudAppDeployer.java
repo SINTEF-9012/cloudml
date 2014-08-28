@@ -612,16 +612,39 @@ public class CloudAppDeployer {
                 ComponentInstance pltfi = getDestination(clienti);
                 if(pltfi.isExternal()){
                     ExternalComponent pltf = (ExternalComponent) pltfi.getType();
+                    if(!pltf.isVM()){
+                        PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+                        connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                    }else{
+                        journal.log(Level.INFO, ">> Connection IaaS to PaaS ...");
+                        RequiredPortInstance clientInternal = bi.getRequiredEnd();
+                        ProvidedPortInstance server = bi.getProvidedEnd();
 
-                    PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                    connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
-                }else{
-                    RequiredPortInstance clientInternal = bi.getRequiredEnd();
-                    ProvidedPortInstance server = bi.getProvidedEnd();
+                        Resource clientResource = bi.getType().getClientResource();
 
-                    Resource clientResource = bi.getType().getClientResource();
+                        Connector jcClient;
+                        VMInstance ownerVMClient = (VMInstance) getDestination(clientInternal.getOwner().get());
+                        VM VMClient = ownerVMClient.getType();
+                        jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
 
-                    retrieveIPandConfigure(null,clientResource,server,clientInternal);
+                        String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
+                        int destinationPortNumber = server.getType().getPortNumber();
+                        String ipAddress = getDestination(clientInternal.getOwner().get()).getPublicAddress();
+                        if(clientResource == null)
+                            return; // ignore configuration if there is no resource at all
+
+                        if(clientResource.getRetrieveCommand() != null && !clientResource.getRetrieveCommand().equals(""))
+                            jcClient.execCommand(ownerVMClient.getId(), clientResource.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
+                        if(clientResource.getConfigureCommand() != null && !clientResource.getConfigureCommand().equals("")){
+                            String configurationCommand = clientResource.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                            configure(jcClient, VMClient, ownerVMClient, configurationCommand, clientResource.getRequireCredentials());
+                        }
+                        if(clientResource.getInstallCommand() != null && !clientResource.getInstallCommand().equals("")){
+                            String installationCommand = clientResource.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                            configure(jcClient, VMClient, ownerVMClient, installationCommand, clientResource.getRequireCredentials());
+                        }
+                        jcClient.closeConnection();
+                    }
                 }
 
             } else if (bi.getRequiredEnd().getType().isRemote()) {
@@ -639,7 +662,7 @@ public class CloudAppDeployer {
         String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
         int destinationPortNumber = server.getType().getPortNumber();
         String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
-        if(clientResource == null || serverResource == null)
+        if(clientResource == null && serverResource == null)
             return; // ignore configuration if there is no resource at all
         configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
     }
