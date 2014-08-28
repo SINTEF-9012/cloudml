@@ -35,6 +35,7 @@
                     <wsdlFiles>
                         <wsdlFile>UserAdmin.wsdl</wsdlFile>
                     </wsdlFiles>
+                    <wsdlLocation>https://api.sd1.flexiant.net:4442/userapi?wsdl</wsdlLocation>
                     <keep>true</keep>
                     <xnocompile>false</xnocompile>
                 </configuration>
@@ -147,7 +148,6 @@
             <artifactId>commons-jxpath</artifactId>
             <version>1.3</version>
         </dependency>
-
     </dependencies>
 
     <repositories>
@@ -157,6 +157,7 @@
             <name>thingml-snapshot</name>
             <url>http://maven.thingml.org/thirdparty/</url>
         </repository>
+
     </repositories>
 
 

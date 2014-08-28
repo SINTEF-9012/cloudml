@@ -85,7 +85,7 @@ public class CloudAppDeployer {
 
             //set up a coordinator (used to update the model)
             if (coordinator == null) {
-                if(Coordinator.SINGLE_INSTANCE == null){ 
+                if(Coordinator.SINGLE_INSTANCE == null){
                     //only if there is no WebSocket server running.
                     coordinator = new Coordinator();
                     SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
@@ -95,7 +95,7 @@ public class CloudAppDeployer {
                 else
                     coordinator = Coordinator.SINGLE_INSTANCE;
             }
-            
+
             if (statusMonitorProperties.getActivated() && statusMonitor == null) {
                 statusMonitorActive = true;
                 statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
@@ -610,10 +610,19 @@ public class CloudAppDeployer {
                 ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
                 Component client = clienti.getType();
                 ComponentInstance pltfi = getDestination(clienti);
-                ExternalComponent pltf = (ExternalComponent) pltfi.getType();
+                if(pltfi.isExternal()){
+                    ExternalComponent pltf = (ExternalComponent) pltfi.getType();
 
-                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                    PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+                    connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                }else{
+                    RequiredPortInstance clientInternal = bi.getRequiredEnd();
+                    ProvidedPortInstance server = bi.getProvidedEnd();
+
+                    Resource clientResource = bi.getType().getClientResource();
+
+                    retrieveIPandConfigure(null,clientResource,server,clientInternal);
+                }
 
             } else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
@@ -621,15 +630,18 @@ public class CloudAppDeployer {
 
                 Resource clientResource = bi.getType().getClientResource();
                 Resource serverResource = bi.getType().getServerResource();
-
-                String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
-                int destinationPortNumber = server.getType().getPortNumber();
-                String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
-                if(clientResource == null || serverResource == null)
-                    return; // ignore configuration if there is no resource at all
-                configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
+                retrieveIPandConfigure(serverResource,clientResource,server,client);
             }
         }
+    }
+
+    public void retrieveIPandConfigure(Resource serverResource, Resource clientResource, PortInstance<? extends Port> server, PortInstance<? extends Port> client){
+        String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
+        int destinationPortNumber = server.getType().getPortNumber();
+        String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
+        if(clientResource == null || serverResource == null)
+            return; // ignore configuration if there is no resource at all
+        configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
     }
 
     private void configureWithIP(Resource server, Resource client, PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
@@ -638,7 +650,7 @@ public class CloudAppDeployer {
         VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
         VM VMserver = ownerVMServer.getType();
         VMInstance ownerVMClient = (VMInstance) getDestination(pclient.getOwner().get());//TODO:generalization for PaaS
-        VM VMClient = ownerVMServer.getType();
+        VM VMClient = ownerVMClient.getType();
         jcServer = ConnectorFactory.createIaaSConnector(VMserver.getProvider());
         jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
 
