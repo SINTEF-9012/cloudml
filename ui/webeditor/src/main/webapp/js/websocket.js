@@ -41,7 +41,6 @@ function connect(host){
             socket = new WebSocket(host);
         }
         socket.onopen = function(){  
-            console.log('Socket Status: '+socket.readyState);  
             alertMessage("success","Connected to CloudML server",3000); 
             ready=true;
         }  
@@ -59,7 +58,9 @@ function connect(host){
                 if(typeof loadDeploymentModel  != 'undefined'){
                     loadDeploymentModel(array[2]);
                     alertMessage("success","Deployment Model loaded",3000); 
-                }else{
+                }
+                
+                if(typeof getData  != 'undefined'){
                     if(array instanceof Array)
                         getData(array[2]);
                 }
@@ -68,11 +69,15 @@ function connect(host){
                 alertMessage("success","New update!",3000); 
                 increaseNotificationNumber();
                 addNotification(msg.data);
-                var json=jsyaml.load(msg.data);
-
+                try{
+                    var json=jsyaml.load(msg.data, { schema : jsyamlSchema});
+                }catch(error){
+                    console.log(error);
+                }
                 if(typeof updateProperty  != 'undefined'){
                     updateProperty(json.parent,json.property,json.newValue);
-                }else{
+                }
+                if(typeof graphViewUpdateJSON  != 'undefined'){
                     graphViewUpdateJSON(json.parent,json.property,json.newValue);
                 }
             }
@@ -86,41 +91,32 @@ function connect(host){
                 alertMessage("success","New update! "+msg.data,3000); 
                 increaseNotificationNumber();
                 addNotification(msg.data);
-
+                
                 /* *********************
                 TODO refactor this dirty hack - checks if a function loadDeploymentModel is visible 
                  (called from demo.js in case we are running index.html with the low-level graph editor);
                  if it is not - calls the getData function in the graphview.js (also checks if the 'array' that contains the message is valid...sorta....)
                 * *********************/
-
-                if(typeof loadDeploymentModel  != 'undefined'){
-                    loadDeploymentModel(array[2]);
+                if(typeof addInModel  != 'undefined'){
+                    addInModel(tempObject);
                     alertMessage("success","Deployment Model loaded",3000); 
-                }else{
-                    if(array instanceof Array)
-                        getData(array[2]);
+                }else{// addInModel not visible
                 }
-
-                addInModel(tempObject);
+                // simply send a message to retrieve the entire model which will update the graph view
+                setTimeout(function(){send("!getSnapshot {path : /}");}, 2000);
+                
             }
             if(msg.data.indexOf("!removed") >= 0){
                 alertMessage("success","New update! "+msg.data,3000); 
                 increaseNotificationNumber();
                 addNotification(msg.data);
-                var json=jsyaml.load(msg.data);
-                removeInModel(json.removedValue);
+//                var json=jsyaml.load(msg.data);
+                if(typeof removeInModel != 'undefined')
+                    removeInModel(json.removedValue);
             }
 
-            /* *********************
-                TODO refactor this dirty hack - checks if a function loadDeploymentModel is visible 
-                 (called from demo.js in case we are running index.html with the low-level graph editor);
-                 if it is not - calls the getData function in the graphview.js (also checks if the 'array' that contains the message is valid...sorta....)
-            * *********************/
             if(typeof loadDeploymentModel != 'undefined'){
                 loadDeploymentModel(JSON.stringify(deploymentModel));
-            }else{
-                //                if(array instanceof Array)
-                //                    getData(array[2]);
             }
         }  
 
@@ -144,7 +140,6 @@ function send(text){
             setTimeout(function(){send(text)},1000);
         }else{
             socket.send(text);
-            console.log("Request sent!");
         }
     } catch(exception){  
         alertMessage("error",'Unable to send message: '+exception,10000);  

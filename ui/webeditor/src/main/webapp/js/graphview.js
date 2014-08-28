@@ -52,24 +52,62 @@ stateColorMap['ERROR'] = "#a50026";
 stateColorMap['UNCATEGORIZED'] = "#BAC2C3";
 stateColorMap['RECOVERY'] = "#4B9D9B";
 
-//var colorScale = d3.scale.linear()
-//.domain([1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0])
-//.range(["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"]);
 
+/***********************************************
+JS-YAML parser definitions
+***********************************************/
 
-/*
-var RdYlGn = {
-    3: ["#fc8d59","#ffffbf","#91cf60"],
-    4: ["#d7191c","#fdae61","#a6d96a","#1a9641"],
-    5: ["#d7191c","#fdae61","#ffffbf","#a6d96a","#1a9641"],
-    6: ["#d73027","#fc8d59","#fee08b","#d9ef8b","#91cf60","#1a9850"],
-    7: ["#d73027","#fc8d59","#fee08b","#ffffbf","#d9ef8b","#91cf60","#1a9850"],
-    8: ["#d73027","#f46d43","#fdae61","#fee08b","#d9ef8b","#a6d96a","#66bd63","#1a9850"],
-    9: ["#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850"],
-    10: ["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"],
-    11: ["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"]
-};
-*/
+// define all of the unrecognizable yaml tags and types contained in the response from the CloudML server (e.g. the tag !!org.cloudml.core.VMInstance, the type !snapshot, etc.)
+// the definitions are then used by the js-yaml parser to form the javascript objects out of the yaml using the 'load' method
+var yamlVMInstanceTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.VMInstance', {
+    kind : 'mapping',
+    construct : function (data) {
+        data["__type"]="VMInstance"; 
+        return data;
+    },
+});
+var yamlICInstanceTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.InternalComponentInstance', {
+    kind : 'mapping',
+    construct : function (data) {
+        data["__type"]="InternalComponentInstance"; 
+        return data;
+    },
+});
+var localProvPortInstanceGroupTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.ComponentInstance$LocalProvidedPortInstanceGroup', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
+var provPortInstanceGroupTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.ComponentInstance$LocalProvidedExecutionPlatformInstanceGroup', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
+var fileCredentialsTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.credentials.FileCredentials', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
+var updatedType = new jsyaml.Type('!updated', {
+    kind : 'mapping',
+    construct : function (data) {
+        data = data || {}; // null safety first
+        return data;
+    },
+});
+var snapshotType = new jsyaml.Type('!snapshot', {
+    kind : 'mapping',
+    construct : function (data) {
+        data = data || {}; // null safety first
+        return data;
+    },
+});
+
+// create a jsyaml schema containing the defined tags and types which is then used as a second argument to the 'load' method
+var jsyamlSchema = jsyaml.Schema.create([ provPortInstanceGroupTag, fileCredentialsTag, yamlVMInstanceTag, yamlICInstanceTag, updatedType, snapshotType, localProvPortInstanceGroupTag ]);
 
 function pushModelToServer(){
     if(currentJSON == null){
@@ -80,10 +118,10 @@ function pushModelToServer(){
         alertMessage("error",'Error pushing model to server - the model is empty.', 20000);
         return;
     }
-    
+
     send("!extended { name : LoadDeployment }");
     send("!additional json-string:"+stringifyRoot()); 
-    
+
     // TODO fix this dirty hack - the model might (and probably should) take more than two seconds
     // to load for the general case (e.g. - remote server for CloudML)
     setTimeout(function(){send("!getSnapshot {path : /}");}, 2000);
@@ -222,7 +260,7 @@ function setValueInJSON(jsonObject, propertyPath, newValue) {
     return traverseAndSet(jsonObject, propertyPath, newValue);
 }
 
-// traverse an input JSON object according to a property path and change the value (slightly modified copy of the traverse2 function in jsoninpointer+path.js)
+// traverse an input JSON object according to a property path and change its value (slightly modified copy of the traverse2 function in jsoninpointer+path.js)
 function traverseAndSet(jsonObject, propertyPath, newValue) {
     var propertySubPath = propertyPath.shift();
     var subPathSplit = propertySubPath.split("[");
@@ -233,6 +271,7 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
 
         var containmentCollection = subPathSplit[0];
         if (!jsonObject.hasOwnProperty(containmentCollection)) {
+            console.log("Containment collection not found: ", jsonObject, propertyPath, newValue);
             return null;
         }
         var predicateAttributeValueSplit = subPathSplit[1].split("=");
@@ -251,8 +290,7 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
                 // check if the current element of the node containment group's attribute value is the same as in the predicate expression ([attribute='attributeValue'])
                 if (jsonObject[containmentCollection][i][attribute] == attributeValue) {
                     // we have found the exact node we need to set the new value to
-                    var debug = traverseAndSet(jsonObject[containmentCollection][i], propertyPath, newValue);
-                    return debug;
+                    return traverseAndSet(jsonObject[containmentCollection][i], propertyPath, newValue);
                 }
             }
         }
@@ -295,28 +333,85 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
 
 // update the JSON associated with the current graph view; currently supports VM instances only
 function graphViewUpdateJSON(parent, propertyId, newValue){
-    if(parent.indexOf("/") >= 0){
-        // The following is a hack since if we get the state information from an internal component 
-        // instance it would also be a part of the componentInstances collection. 
 
-        // TODO: Workaround - the 'parent' element contains the path to the element which we can use to retrieve its data using a !getSnapshot command; 
-        // we can then parse the content of the result and get the type.
-        if(parent.indexOf("componentInstances") >=0){
-            parent = parent.replace("componentInstances", "vmInstances");
-            var xpath="";
-            if(parent.length <= 1){
-                xpath = parent + propertyId;
-            }else{
-                xpath = parent + "/" + propertyId;
-
-            }
-            // set the according value to the JSON
-            setValueInJSON(root, xpath, newValue);
-            // update the global object holding the current JSON
-            currentJSON = stringifyRoot();
-        }
-        update();
+    /* 
+Since the json serialization of the metamodel differs from the internal POJO serialization the path to a component instance is not directly resolvable in the json (it could be e.g. /componentInstances[name='sensapp-sl1'] which can be found with our current implementation of json traversal by the expression '/vmInstances[name='sensapp-sl1'])'. But there is no way to differentiate the particular component instance type (vm-, internal-, or external component instance). Therefore we need to determine that by sending a request to the CloudML server for the full information for the internal component instance (which also contains its type). The following code does just that.
+    */
+    console.log(parent);
+    var updateSocket = new WebSocket(socket.url);
+    var message = "!getSnapshot"
+    + '\n' 
+    + "  path : " + parent;
+    sendMessageFromSocket(updateSocket,message);
+    updateSocket.onerror = function(error){
+        console.log(error);
+        alertMessage("error",'Error connecting to CloudML server: '+updateSocket.readyState, 5000);  
     }
+
+    // 
+    updateSocket.onmessage = function(msg){
+        console.log(msg);
+        if(msg.data.indexOf("GetSnapshot") >= 0){
+            var array=msg.data.split("###");
+            var jObj;
+            try{
+                var jObj = jsyaml.load(array[2], { schema: jsyamlSchema });
+            } catch (error) {
+                console.log(error);
+                alertMessage("error",'Error parsing the YAML response from the CloudML server: ', 5000);  
+            }
+            if(jObj.content != 'undefined'){
+                // in the js-yaml parser definitions (the global variables), we define a temporary variable '__type' 
+                if(jObj.content.__type != 'undefined'){
+                    switch (jObj.content.__type){
+                            // for now, only state changes in VM instances and internal component instances will be supported (no external component instances like e.g. PaaS services)
+                        case 'VMInstance' : {
+                            if(parent.indexOf("componentInstances") >=0){
+                                parent = parent.replace("componentInstances", "vmInstances");
+                                var xpath="";
+                                if(parent.length <= 1){
+                                    xpath = parent + propertyId;
+                                }else{
+                                    xpath = parent + "/" + propertyId;
+
+                                }
+                                // set the according value to the JSON
+                                setValueInJSON(root, xpath, newValue);
+                                // update the global object holding the current JSON
+                                currentJSON = stringifyRoot();
+                            }
+                            update();
+                        };
+                            break;
+                        case 'InternalComponentInstance' : {
+                            if(parent.indexOf("componentInstances") >=0){
+                                parent = parent.replace("componentInstances", "internalComponentInstances");
+                                var xpath="";
+                                if(parent.length <= 1){
+                                    xpath = parent + propertyId;
+                                }else{
+                                    xpath = parent + "/" + propertyId;
+
+                                }
+                                // set the according value to the JSON
+                                setValueInJSON(root, xpath, newValue);
+                                // update the global object holding the current JSON
+                                currentJSON = stringifyRoot();
+                            }
+                            update();
+                        };
+                            break;
+                        default: // throw error 
+                            console.log(jObj);
+                            console.log('ERROR', 'Update received from an unrecognized type of component:' + jObj.content.__type);
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    updateSocket.close();
+    updateSocket = null;
 }
 
 // set the value of a property object of a CloudML element; returns true if successful
@@ -341,7 +436,7 @@ function setOrCreatePropValOfCloudMLElement(element, propertyName, newValue){
         console.log("Error:", "Could not set property", propertyName ,"for element", element, "!");
         return false;
     }
-    
+
 }
 
 // get the value of a property object of a CloudML element; returns null if not found
@@ -375,7 +470,7 @@ function stringifyRoot(){
            || key == "px" || key == "py" || key == "cx" || key == "cy" || key == "index" 
            || key == "weight" || key == "_type" || key == "_source" || key == "_target"
            || key == "foldedSubNodes" || key == "foldedSubEdges" || key == "outgoingLinks"
-           || key == "incomingLinks" || key == "isFolded" || key == "socket" 
+           || key == "incomingLinks" || key == "isFolded" || key == "socket" || key == "__type" 
            || key == "id" || key == "status" /* status and id-s are assigned by graphview on demand */){
             return;
         }
@@ -456,8 +551,16 @@ function getData(inputJSONString) {
         layoutExtCompInstances[i]._type = "ExternalComponent";
     }
 
-    // define a socket connection for each of the popovers that connects to the server to retrieve state information
-    layoutExtCompInstances.forEach(function (d){
+    /*
+     For each of the graph node we define an observer for the attributes
+     'properties' and 'state' so that any changes to their values will affect the associated
+     popover content
+    */
+    graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
+
+    
+    // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
+    graphNodes.forEach(function (d){
         // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
         if(connectedToCloudMLServer){
             d.socket = new WebSocket(cloudMLServerHost);
@@ -470,7 +573,11 @@ function getData(inputJSONString) {
             }
             d.socket.onmessage = function(msg){
                 if(msg.data.indexOf("GetSnapshot") >= 0){
-                    var json=jsyaml.load(msg.data);
+                    try{
+                        var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+                    }catch (error) {
+                        console.log(error);
+                    }
                     if(typeof json.content.status != 'undefined'){
                         if(json.content.status != null)
                             d.status = json.content.status;
@@ -497,13 +604,7 @@ function getData(inputJSONString) {
 
         }
     });
-
-    /*
-     For each of the external component instances we define an observer for the attributes
-     'properties' and 'state' so that any changes to their values will affect the associated
-     popover content
-    */
-    layoutExtCompInstances.forEach(function(d){
+    graphNodes.forEach(function(d){
         watch(d, ['properties', 'status'], function(){
             // select the according svg 'g' element for the node
             var svgNodeElement = svg.selectAll(".singleNode").filter(
@@ -529,9 +630,6 @@ function getData(inputJSONString) {
             }
         });
     });
-
-
-    graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
 
     var layoutExecuteLinks = executesLinks;
     for(i=0;i<layoutExecuteLinks.length;i++){
@@ -880,7 +978,6 @@ function sendMessageFromSocket(aSocket, text){
             setTimeout(function(){sendMessageFromSocket(aSocket,text)},1000);
         }else{
             aSocket.send(text);
-            console.log("Request sent!");
         }
     } catch(exception){  
         alertMessage("error",'Unable to send message: ' + exception , 10000);  

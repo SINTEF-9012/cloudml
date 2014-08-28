@@ -240,6 +240,12 @@ public class CloudAppDeployer {
                         instance.getType().getProperties().valueOf("warfile"),
                         instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
                 );
+                if(instance.hasProperty("containerSize")){
+                    String size =instance.getProperties().valueOf("containerSize");
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("containerSize", size);
+                    connector.configAppParameters(instance.getName(), params);
+                }
             }
         }
     }
@@ -619,7 +625,8 @@ public class CloudAppDeployer {
                 String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
                 int destinationPortNumber = server.getType().getPortNumber();
                 String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
-
+                if(clientResource == null || serverResource == null)
+                    return; // ignore configuration if there is no resource at all
                 configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
             }
         }

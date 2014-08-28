@@ -26,7 +26,6 @@ import cloudadapter.Adapter;
 import cloudadapter.DatabaseObject;
 import com.cloudbees.api.BeesClient;
 import com.google.common.collect.ImmutableMap;
-//import com.cloudbees.api.BeesClient;
 import java.io.File;
 
 import org.cloudml.core.Provider;
@@ -43,6 +42,7 @@ import eu.cloud4soa.api.util.exception.adapter.Cloud4SoaException;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule.Paas;
 import eu.cloud4soa.governance.ems.IExecutionManagementService;
+import java.util.HashMap;
 
 import java.util.List;
 import java.util.Map;
@@ -100,6 +100,8 @@ public class Cloud4soaConnector implements PaaSConnector {
 
         } catch (Cloud4SoaException ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (java.lang.NoSuchFieldError ex){
+            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, "The war is deployed, but due to the version conflict of cloudbees, no response is printed");
         }
 
     }
@@ -233,5 +235,19 @@ public class Cloud4soaConnector implements PaaSConnector {
 
         }
         return "";
+    }
+
+    @Override
+    public void configAppParameters(String applicationName, Map<String,String> params) {
+        if("cloudbees".equals(provider.getName().toLowerCase())){
+            try{
+                BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
+                
+                client.applicationConfigUpdate(this.credentials.getAccountName()+"/"+applicationName, params);
+            }
+            catch(Exception ex){
+                Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, "failed to set up scale", ex);
+            }
+        }   
     }
 }

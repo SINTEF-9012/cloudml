@@ -8,9 +8,9 @@ digraph Deployment {
 	node_6 [label="sensapp-ml1"];
 	node_4 -> node_1 [label="sensAppAdminSensApp1" ];
 	node_1 -> node_2 [label="sensAppMongoDB1" ];
-	node_2 -> node_6 [label="run on" ];
 	node_3 -> node_5 [label="run on" ];
-	node_4 -> node_3 [label="run on" ];
+	node_2 -> node_6 [label="run on" ];
 	node_0 -> node_6 [label="run on" ];
 	node_1 -> node_0 [label="run on" ];
+	node_4 -> node_3 [label="run on" ];
 }
