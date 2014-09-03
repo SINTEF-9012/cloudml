@@ -91,17 +91,31 @@ public class Cloud4soaConnector implements PaaSConnector {
     }
 
     public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
-        try {
-            String tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
-                             credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
-                             applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml"
-                            );
-            journal.log(Level.INFO, ">> Created application:" + tmp2);
+        if(stackName == null || stackName.length()==0){
+            try {
+                String tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
+                                 credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
+                                 applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml"
+                                );
+                journal.log(Level.INFO, ">> Created application:" + tmp2);
 
-        } catch (Cloud4SoaException ex) {
-            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (java.lang.NoSuchFieldError ex){
-            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, "The war is deployed, but due to the version conflict of cloudbees, no response is printed");
+            } catch (Cloud4SoaException ex) {
+                Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (java.lang.NoSuchFieldError ex){
+                Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, "The war is deployed, but due to the version conflict of cloudbees, no response is printed");
+            }
+        }
+        else{
+            BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
+            Map<String,String> params = new HashMap<String, String>();
+            params.put("containerType", stackName);
+            try {
+                client.applicationDeployArchive(this.credentials.getAccountName()+"/"+applicationName,
+                        envName, "deployed by cloudml", warFile,
+                        warFile, "war", false, params, null);
+            } catch (Exception ex) {
+                Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
     }

@@ -232,11 +232,16 @@ public class CloudAppDeployer {
                 ExternalComponent ownerType = (ExternalComponent) host.getType();
                 Provider p = ownerType.getProvider();
                 PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
+                String stack = "";
+                if(instance.getType().hasProperty("stack"))
+                    stack = instance.getType().getProperties().valueOf("stack");
+                if(instance.hasProperty("stack"))
+                    stack = instance.getProperties().valueOf("stack");
                 connector.createEnvironmentWithWar(
                         instance.getName(),
                         instance.getName(),
                         host.getName(),
-                        "",
+                        stack,
                         instance.getType().getProperties().valueOf("warfile"),
                         instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
                 );
