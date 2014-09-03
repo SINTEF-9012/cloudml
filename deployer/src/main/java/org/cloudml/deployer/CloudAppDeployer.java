@@ -611,6 +611,7 @@ public class CloudAppDeployer {
                     ConfigValet valet = ConfigValet.createValet(bi, res);
                     if (valet != null)
                         valet.config();
+                    
                 }
                 ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
                 Component client = clienti.getType();
@@ -618,8 +619,13 @@ public class CloudAppDeployer {
                 if(pltfi.isExternal()){
                     ExternalComponent pltf = (ExternalComponent) pltfi.getType();
                     if(!pltf.isVM()){
-                        PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                        connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                        try{
+                            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+                            connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                        }
+                        catch(NullPointerException e){
+                            journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
+                        }
                     }else{
                         journal.log(Level.INFO, ">> Connection IaaS to PaaS ...");
                         RequiredPortInstance clientInternal = bi.getRequiredEnd();
