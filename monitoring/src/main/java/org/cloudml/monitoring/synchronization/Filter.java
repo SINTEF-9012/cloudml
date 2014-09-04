@@ -25,12 +25,13 @@ package org.cloudml.monitoring.synchronization;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
-import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.ExternalComponentInstance;
-import org.cloudml.core.VMInstance;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.Method;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.PaaSService;
+import org.cloudml.core.*;
 import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.ExternalComponentInstanceGroup;
+import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.VMInstanceGroup;
 
 import java.util.ArrayList;
@@ -79,9 +80,9 @@ public class Filter {
     //this is the core method the other one are just to prepare the lists for this one
     private static Model getModelUpdates(ComponentInstanceGroup instances) {
         //prepare the lists
-        List<Component> toReturnComponent = new ArrayList<Component>();
-        List<ExternalComponent> toReturnExternalComponent = new ArrayList<ExternalComponent>();
-        List<VM> toReturnVM = new ArrayList<VM>();
+        //List<Component> toReturnComponent = new ArrayList<Component>();
+        //List<ExternalComponent> toReturnExternalComponent = new ArrayList<ExternalComponent>();
+        //List<VM> toReturnVM = new ArrayList<VM>();
 
         Model model = new Model();
 
@@ -96,15 +97,22 @@ public class Filter {
         }
 
         //prepare the ExternalComponents list
-        ExternalComponentInstanceGroup components = instances.onlyExternals();
-        for (ExternalComponentInstance i : components) {
+        ExternalComponentInstanceGroup externalComponents = instances.onlyExternals();
+        for (ExternalComponentInstance i : externalComponents) {
             //toReturnExternalComponent.add(fromCloudmlToModaMP(i)); will no more use lists
             //model.add(fromCloudmlToModaMP(i)); no external component add function
             instances.remove(i);
         }
 
-        //prepare the components list
-        //REALLY NECESSARY?
+        //prepare the InternalComponents list
+        InternalComponentInstanceGroup internalComponents = instances.onlyInternals();
+        for (InternalComponentInstance i : internalComponents) {
+            model.add(fromCloudmlToModaMP(i));
+            instances.remove(i);
+        }
+
+        //TODO no instances.onlyComponents()
+
 
         //return new Model(toReturnComponent, toReturnExternalComponent, toReturnVM);
         return model;
@@ -116,16 +124,21 @@ public class Filter {
         ExternalComponent toReturn = new ExternalComponent();
         //KB entity field
         String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setId(uri);
-        //Component field
-        //toReturn.setId(toTranslate.getName());
-        //External components fields
-        //toReturn.setUrl(toTranslate.getPublicAddress());  there is no more url attribute
+
+        /* previous version of the ontology
+        Component field
+        toReturn.setId(toTranslate.getName());
+        External components fields
+        toReturn.setUrl(toTranslate.getPublicAddress());  there is no more url attribute
         boolean started = false;
         if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
             started = true;
         }
-        //toReturn.setStarted(started); there is no more started attribute
+        toReturn.setStarted(started); there is no more started attribute
+        */
+
+        toReturn.setId(uri);
+        toReturn.setType(String.valueOf(toTranslate.getType()));
         toReturn.setCloudProvider(toTranslate.getType().asExternal().getProvider().getName());
         return toReturn;
     }
@@ -135,20 +148,41 @@ public class Filter {
         VM toReturn = new VM();
         //KB entity field
         String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setId(uri);
+
+        //previous version of the ontology
         //Component field
         //toReturn.setId(toTranslate.getName());
         //External component fields
         //toReturn.setUrl(toTranslate.getPublicAddress()); url is equal to location?? next line
-        toReturn.setLocation(toTranslate.getPublicAddress());
-        boolean started = false;
-        if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
-            started = true;
-        }
+        //boolean started = false;
+        //if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
+        //    started = true;
+        //}
         //toReturn.setStarted(started); no more started attribute
+
+        toReturn.setId(uri);
+        toReturn.setType(String.valueOf(toTranslate.getType()));
+        toReturn.setLocation(toTranslate.getPublicAddress());
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
         //VM fields
         toReturn.setNumberOfCPUs(toTranslate.getType().getMinCores());
+        return toReturn;
+    }
+
+    private static InternalComponent fromCloudmlToModaMP(InternalComponentInstance toTranslate){
+        InternalComponent toReturn = new InternalComponent();
+        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
+        toReturn.setId(uri);
+        toReturn.setType(String.valueOf(toTranslate.getType()));
+        //toReturn.setRequiredComponents(toTranslate.); TODO controllare required components
+        return toReturn;
+    }
+
+    private static Component fromCloudmlToModaMP(ComponentInstance toTranslate){
+        Component toReturn = new Component();
+        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
+        toReturn.setId(uri);
+        toReturn.setType(String.valueOf(toTranslate.getType()));
         return toReturn;
     }
 

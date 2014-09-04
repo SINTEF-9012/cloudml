@@ -52,7 +52,7 @@ public class Test extends TestCase {
 
         Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
         String json = gson.toJson(updates);
-       
+
     }
 
     public void testUpload(){
