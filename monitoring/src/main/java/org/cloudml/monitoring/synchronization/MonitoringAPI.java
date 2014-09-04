@@ -24,6 +24,9 @@ package org.cloudml.monitoring.synchronization;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
+import org.cloudml.core.ExternalComponent;
+
 
 import java.util.List;
 import java.util.logging.Level;
@@ -93,7 +96,7 @@ public class MonitoringAPI {
      */
     public void attachObserver(String callback, String metric) {
 
-        String url = address + "/" + version + "/metrics/" + metric;
+        String url = address + "/" + version + "/metrics/" + metric + "/observers";
 
         try {
             http.postRequest(url, callback);
@@ -109,9 +112,9 @@ public class MonitoringAPI {
      *
      * @param update the state of the deployment
      */
-    public void addInstances(ModelUpdates update){
+    public void addInstances(Model update){
 
-        String url = address + "/" + version + "/update";
+        String url = address + "/" + version + "/resources";
 
         Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
 
@@ -132,17 +135,16 @@ public class MonitoringAPI {
      *
      * @param model the state of the deployment
      */
-    public void uploadDeployment(ModelUpdates model){
+    public void uploadDeployment(Model model){
 
-        String url = address + "/" + version + "/upload";
+        String url = address + "/" + version + "/resources";
 
         Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
 
         String json = gson.toJson(model);
-
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
-            http.postRequest(url, json);
+            http.putRequest(url, json);
             printComponentname(model);
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
@@ -157,7 +159,7 @@ public class MonitoringAPI {
      * @param id are the IDs of the instances to be deleted
      */
     public void deleteInstances(String id){
-        String url = address + "/" + version + "/update";
+        String url = address + "/" + version + "/resources/" + id;
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             http.deleteRequest(url, id);
@@ -166,15 +168,16 @@ public class MonitoringAPI {
         }
     }
 
-    private void printComponentname(ModelUpdates model){
-        for(int i=0;i<model.getComponents().size();i++){
+    private void printComponentname(Model model){
+        /* there is no getComponent in Model class
+        for(Component i : model.getComponent()){
             journal.log(Level.INFO, "Component name: "+model.getComponents().get(i).getId());
         }
-        for(int i=0;i<model.getExternalComponents().size();i++){
+        for(ExternalComponent e : model.getExternalComponent()){
             journal.log(Level.INFO, "ExternalComponent name: "+model.getExternalComponents().get(i).getId());
-        }
-        for(int i=0;i<model.getVms().size();i++){
-            journal.log(Level.INFO, "VM name: "+model.getVms().get(i).getId());
+        }*/
+        for(VM vm : model.getvMs()){
+            journal.log(Level.INFO, "VM name: "+vm.getId());
         }
     }
 

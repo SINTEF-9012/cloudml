@@ -40,7 +40,7 @@ public class MonitoringSynch {
      * @param currentDeployment current deployment model
      */
     public static void sendCurrentDeployment(String monitoringAddress, Deployment currentDeployment){
-        ModelUpdates model = Filter.fromCloudmlToModaMP(currentDeployment);
+        Model model = Filter.fromCloudmlToModaMP(currentDeployment);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
         request.uploadDeployment(model);
 
@@ -53,7 +53,7 @@ public class MonitoringSynch {
      * @param addedECs added components
      */
     public static void sendAddedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> addedECs) {
-        ModelUpdates added = Filter.fromCloudmlToModaMP(addedECs);
+        Model added = Filter.fromCloudmlToModaMP(addedECs);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
         request.addInstances(added);
 
@@ -66,7 +66,7 @@ public class MonitoringSynch {
      * @param removedECs removed components
      */
     public static void sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs) {
-        ModelUpdates removed = Filter.fromCloudmlToModaMP(removedECs);
+        Model removed = Filter.fromCloudmlToModaMP(removedECs);
         //MonitoringAPI request = new MonitoringAPI(monitoringAddress);
         //request.deleteInstances(removed);
 

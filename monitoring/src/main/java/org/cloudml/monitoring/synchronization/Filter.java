@@ -50,7 +50,7 @@ public class Filter {
      *
      * @param deployment the deployment model to convert
      */
-    public static ModelUpdates fromCloudmlToModaMP(Deployment deployment) {
+    public static Model fromCloudmlToModaMP(Deployment deployment) {
         //get the relevant part of the model
         //create a new list for avoid changes in the original one
         ComponentInstanceGroup instances = new ComponentInstanceGroup();
@@ -67,7 +67,7 @@ public class Filter {
      *
      * @param listToConvert the list
      */
-    public static ModelUpdates fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> listToConvert) {
+    public static Model fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> listToConvert) {
         //create a new list for avoid changes in the original one
         ComponentInstanceGroup supportList = new ComponentInstanceGroup();
         supportList.addAll(listToConvert);
@@ -77,32 +77,37 @@ public class Filter {
     }
 
     //this is the core method the other one are just to prepare the lists for this one
-    private static ModelUpdates getModelUpdates(ComponentInstanceGroup instances) {
+    private static Model getModelUpdates(ComponentInstanceGroup instances) {
         //prepare the lists
         List<Component> toReturnComponent = new ArrayList<Component>();
         List<ExternalComponent> toReturnExternalComponent = new ArrayList<ExternalComponent>();
         List<VM> toReturnVM = new ArrayList<VM>();
+
+        Model model = new Model();
 
         //go top down to remove the synched ones
 
         //prepare the VMs list
         VMInstanceGroup VMs = instances.onlyVMs();
         for (VMInstance i : VMs) {
-            toReturnVM.add(fromCloudmlToModaMP(i));
+            //toReturnVM.add(fromCloudmlToModaMP(i)); will no more use lists
+            model.add(fromCloudmlToModaMP(i));
             instances.remove(i);
         }
 
         //prepare the ExternalComponents list
         ExternalComponentInstanceGroup components = instances.onlyExternals();
         for (ExternalComponentInstance i : components) {
-            toReturnExternalComponent.add(fromCloudmlToModaMP(i));
+            //toReturnExternalComponent.add(fromCloudmlToModaMP(i)); will no more use lists
+            //model.add(fromCloudmlToModaMP(i)); no external component add function
             instances.remove(i);
         }
 
         //prepare the components list
         //REALLY NECESSARY?
 
-        return new ModelUpdates(toReturnComponent, toReturnExternalComponent, toReturnVM);
+        //return new Model(toReturnComponent, toReturnExternalComponent, toReturnVM);
+        return model;
     }
 
 
@@ -111,16 +116,16 @@ public class Filter {
         ExternalComponent toReturn = new ExternalComponent();
         //KB entity field
         String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setUri(uri);
+        toReturn.setId(uri);
         //Component field
-        toReturn.setId(toTranslate.getName());
+        //toReturn.setId(toTranslate.getName());
         //External components fields
-        toReturn.setUrl(toTranslate.getPublicAddress());
+        //toReturn.setUrl(toTranslate.getPublicAddress());  there is no more url attribute
         boolean started = false;
         if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
             started = true;
         }
-        toReturn.setStarted(started);
+        //toReturn.setStarted(started); there is no more started attribute
         toReturn.setCloudProvider(toTranslate.getType().asExternal().getProvider().getName());
         return toReturn;
     }
@@ -130,19 +135,20 @@ public class Filter {
         VM toReturn = new VM();
         //KB entity field
         String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setUri(uri);
+        toReturn.setId(uri);
         //Component field
-        toReturn.setId(toTranslate.getName());
+        //toReturn.setId(toTranslate.getName());
         //External component fields
-        toReturn.setUrl(toTranslate.getPublicAddress());
+        //toReturn.setUrl(toTranslate.getPublicAddress()); url is equal to location?? next line
+        toReturn.setLocation(toTranslate.getPublicAddress());
         boolean started = false;
         if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
             started = true;
         }
-        toReturn.setStarted(started);
+        //toReturn.setStarted(started); no more started attribute
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
         //VM fields
-        toReturn.setNumberOfCpus(toTranslate.getType().getMinCores());
+        toReturn.setNumberOfCPUs(toTranslate.getType().getMinCores());
         return toReturn;
     }
 

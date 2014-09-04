@@ -132,4 +132,40 @@ public class HTTPConnection {
             return response;
 
     }
+
+    /**
+     * This methods makes an http post request
+     * @param targetUrl target of the request
+     * @param parameter body of the request
+     * @return response in StringBuffer variable
+     */
+    public StringBuffer putRequest(String targetUrl, String parameter) throws Exception {
+        URL url;
+        HttpURLConnection connection;
+
+        //Create connection
+        url = new URL(targetUrl);
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("PUT");
+        connection.setUseCaches(false);
+        connection.setDoInput(true);
+        connection.setDoOutput(true);
+        //Send request
+        DataOutputStream wr = new DataOutputStream(
+                connection.getOutputStream());
+        wr.writeBytes(parameter);
+        wr.flush();
+        wr.close();
+        //Get Response
+        InputStream is = connection.getInputStream();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+        String line;
+        StringBuffer response = new StringBuffer();
+        while ((line = rd.readLine()) != null) {
+            response.append(line);
+            response.append('\r');
+        }
+        rd.close();
+        return response;
+    }
 }
