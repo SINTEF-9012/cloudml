@@ -94,12 +94,6 @@ public class LoadTest extends TestCase {
         aCodecLibrary().load("");
     }
 
-    @Test
-    public void loadShouldBuildAnEmptyModelWhenTheFileIsEmpty() throws FileNotFoundException {
-        final Deployment model = aCodecLibrary().load(testFile("empty.json"));
-        assertModelIsEmpty(model);
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void loadShouldRejectFilesWhoseFormatIsNotSupported() throws FileNotFoundException {
         aCodecLibrary().load("a_file_with_unknown_extension.foo");
