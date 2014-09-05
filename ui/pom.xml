@@ -19,6 +19,7 @@
         <module>graph</module>
         <module>webeditor</module>
         <module>websocket</module>
-    </modules>
+    <module>rest</module>
+  </modules>
 
 </project>

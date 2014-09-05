@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.cloudml</groupId>
+        <artifactId>ui</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </parent>
+    <groupId>org.cloudml</groupId>
+    <artifactId>rest</artifactId>
+    <version>2.0-SNAPSHOT</version>
+    <name>CloudML :: UI :: Rest</name>
+    <url>http://maven.apache.org</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http-server</artifactId>
+            <version>2.3.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-grizzly2-http</artifactId>
+            <version>2.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>model</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+      
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>facade</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>mrt</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.cloudml</groupId>
+            <artifactId>codecs.json</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <version>2.4</version> 
+            <configuration> <archive> <manifest> <mainClass>org.cloudml.ui.graph.GraphVisu</mainClass> 
+            </manifest> <manifestEntries> <Class-Path>aws-ec2-1.6.0.jar</Class-Path> 
+            </manifestEntries> </archive> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
+            </descriptorRefs> <finalName>cloudml-visu</finalName> <appendAssemblyId>false</appendAssemblyId> 
+            </configuration> <executions> <execution> <id>make-assembly</id> <phase>package</phase> 
+            <goals> <goal>single</goal> </goals> </execution> </executions> </plugin> -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!-- <artifactItems> <artifactItem> <groupId>org.jclouds.provider</groupId> 
+                            <artifactId>aws-ec2</artifactId> <version>1.6.0</version> <overWrite>false</overWrite> 
+                            <destFileName>aws-ec2-1.6.0.jar</destFileName> </artifactItem> </artifactItems> -->
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>org.cloudml.rest.RestDaemon</mainClass>
+                        </manifest>
+                    </archive>
+                    <finalName>cloudml-rest</finalName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

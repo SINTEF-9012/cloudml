@@ -22,7 +22,6 @@
  */
 package org.cloudml.ui.shell;
 
-import org.cloudml.ui.shell.terminal.Terminal;
 import org.cloudml.ui.shell.terminal.Message;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +46,10 @@ public class Mailbox {
         this.content = new ArrayList<Event>();
         this.followed = new ArrayList<CloudMlCommand>();
     }
-    
+
     void showMessages(int depth) {
-         if (hasNewMessages()) {
+
+        if (hasNewMessages()) {
             final int max = (depth == -1) ? size() : depth;
             terminal.print(format("Last messages:").eol());
             for (int index = 1; index <= max; index++) {
@@ -57,10 +57,10 @@ public class Mailbox {
                 Event event = contents().get(reversedIndex);
                 terminal.print(format("  %03d: %s", index, event));
             }
-        
+
         } else {
             terminal.print(format("No new message").eol());
-        
+
         }
     }
 
@@ -73,7 +73,7 @@ public class Mailbox {
     }
 
     List<Event> contents() {
-        List<Event> result = new ArrayList<Event>();
+        final List<Event> result = new ArrayList<Event>();
         synchronized (content) {
             result.addAll(content);
             content.clear();

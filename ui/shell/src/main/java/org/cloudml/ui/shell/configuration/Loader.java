@@ -27,45 +27,39 @@ import java.io.InputStream;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
-
 /**
  * Load the configuration of the CloudML Shell. This is a singleton, as the
  * configuration of the shell is shared among all its component.
- * 
- * @author Franck Chauvel
- * @since 1.0
- * 
  */
 public class Loader {
-	
-	private static final String CONFIGURATION_FILE = "configuration.yaml";
-	
-	private static Loader instance;
-	
-	public static Loader getInstance() {
-		if (instance == null) {
-			instance = new Loader();
-		}
-		return instance;
-	}
-	
-	
-	private final Configuration configuration;
-	
-	/**
-	 * Create the instance of the Loader and pre-fetch the configuration.
-	 */
-	private Loader() {
-		Yaml yaml = new Yaml(new Constructor(Configuration.class));
-		InputStream input = Loader.class.getClassLoader().getResourceAsStream(CONFIGURATION_FILE);
-		configuration = (Configuration) yaml.load(input);
-	}
-	
-	/**
-	 * @return the configuration of the CloudML Shell
-	 */
-	public Configuration getConfiguration() {
-		return configuration;
-	}
+
+    private static final String CONFIGURATION_FILE = "configuration.yaml";
+
+    private static Loader instance;
+
+    public static Loader getInstance() {
+        if (instance == null) {
+            instance = new Loader();
+        }
+        return instance;
+    }
+
+    private final Configuration configuration;
+
+    /**
+     * Create the instance of the Loader and pre-fetch the configuration.
+     */
+    private Loader() {
+        Yaml yaml = new Yaml(new Constructor(Configuration.class));
+        InputStream input = Loader.class.getClassLoader().getResourceAsStream(CONFIGURATION_FILE);
+        configuration = (Configuration) yaml.load(input);
+    }
+
+    /**
+     * @return the configuration of the CloudML Shell
+     */
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 
 }

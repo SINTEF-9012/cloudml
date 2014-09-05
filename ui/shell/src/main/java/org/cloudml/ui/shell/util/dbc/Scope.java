@@ -20,13 +20,16 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.ui.shell;
+/*
+ */
 
-
+package org.cloudml.ui.shell.util.dbc;
 
 /**
- * Capture the options which can be passed to the Shell
+ *
  */
-public class ShellOptions {
-
+public enum Scope {
+    ARGUMENT,
+    STATE
+    
 }

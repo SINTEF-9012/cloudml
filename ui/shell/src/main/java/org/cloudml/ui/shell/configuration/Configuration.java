@@ -26,123 +26,121 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Configuration {
-	
-	private String closingMessage;
 
-	private String prompt;
-	
-	private String logo;
-	
-	private String version;
-	
-	private String copyright;
-	
-	private String disclaimer;
-	
-	private ArrayList<Command> commands;
-	
-	
-	public  Configuration() {
-		this.commands = new ArrayList<Command>();
-	}
+    private String closingMessage;
 
-	/**
-	 * @return the commands
-	 */
-	public List<Command> getCommands() {
-		return commands;
-	}
+    private String prompt;
 
-	/**
-	 * @param commands
-	 *            the commands to set
-	 */
-	public void setCommands(List<Command> commands) {
-		this.commands = new ArrayList<Command>(commands);
-	}
+    private String logo;
 
-	/**
-	 * @return the logo
-	 */
-	public String getLogo() {
-		return logo;
-	}
+    private String version;
 
-	/**
-	 * @param logo the logo to set
-	 */
-	public void setLogo(String logo) {
-		this.logo = logo;
-	}
+    private String copyright;
 
-	/**
-	 * @return the prompt
-	 */
-	public String getPrompt() {
-		return prompt;
-	}
+    private String disclaimer;
 
-	/**
-	 * @param prompt the prompt to set
-	 */
-	public void setPrompt(String prompt) {
-		this.prompt = prompt;
-	}
+    private ArrayList<Command> commands;
 
-	/**
-	 * @return the version
-	 */
-	public String getVersion() {
-		return version;
-	}
+    public Configuration() {
+        this.commands = new ArrayList<Command>();
+    }
 
-	/**
-	 * @param version the version to set
-	 */
-	public void setVersion(String version) {
-		this.version = version;
-	}
+    /**
+     * @return the commands
+     */
+    public List<Command> getCommands() {
+        return commands;
+    }
 
-	/**
-	 * @return the copyright
-	 */
-	public String getCopyright() {
-		return copyright;
-	}
+    /**
+     * @param commands the commands to set
+     */
+    public void setCommands(List<Command> commands) {
+        this.commands = new ArrayList<Command>(commands);
+    }
 
-	/**
-	 * @param copyright the copyright to set
-	 */
-	public void setCopyright(String copyright) {
-		this.copyright = copyright;
-	}
+    /**
+     * @return the logo
+     */
+    public String getLogo() {
+        return logo;
+    }
 
-	/**
-	 * @return the disclaimer
-	 */
-	public String getDisclaimer() {
-		return disclaimer;
-	}
+    /**
+     * @param logo the logo to set
+     */
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
 
-	/**
-	 * @param disclaimer the disclaimer to set
-	 */
-	public void setDisclaimer(String disclaimer) {
-		this.disclaimer = disclaimer;
-	}
+    /**
+     * @return the prompt
+     */
+    public String getPrompt() {
+        return prompt;
+    }
 
-	/**
-	 * @return the closingMessage
-	 */
-	public String getClosingMessage() {
-		return closingMessage;
-	}
+    /**
+     * @param prompt the prompt to set
+     */
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
+    }
 
-	/**
-	 * @param closingMessage the closingMessage to set
-	 */
-	public void setClosingMessage(String closingMessage) {
-		this.closingMessage = closingMessage;
-	}
+    /**
+     * @return the version
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * @param version the version to set
+     */
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    /**
+     * @return the copyright
+     */
+    public String getCopyright() {
+        return copyright;
+    }
+
+    /**
+     * @param copyright the copyright to set
+     */
+    public void setCopyright(String copyright) {
+        this.copyright = copyright;
+    }
+
+    /**
+     * @return the disclaimer
+     */
+    public String getDisclaimer() {
+        return disclaimer;
+    }
+
+    /**
+     * @param disclaimer the disclaimer to set
+     */
+    public void setDisclaimer(String disclaimer) {
+        this.disclaimer = disclaimer;
+    }
+
+    /**
+     * @return the closingMessage
+     */
+    public String getClosingMessage() {
+        return closingMessage;
+    }
+
+    /**
+     * @param closingMessage the closingMessage to set
+     */
+    public void setClosingMessage(String closingMessage) {
+        this.closingMessage = closingMessage;
+    }
 
 }

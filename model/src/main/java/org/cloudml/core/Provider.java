@@ -25,6 +25,7 @@ package org.cloudml.core;
 import org.cloudml.core.util.OwnedBy;
 import org.cloudml.core.collections.ExternalComponentGroup;
 import org.cloudml.core.credentials.Credentials;
+import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.credentials.NoCredentials;
 import org.cloudml.core.validation.Report;
 import org.cloudml.core.visitors.Visitor;
@@ -88,6 +89,10 @@ public class Provider extends WithResources implements DeploymentElement, OwnedB
 
     public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
+    }
+    
+    public void setFileCredentials(String filePath){
+        this.credentials = new FileCredentials(filePath);
     }
 
     @Override

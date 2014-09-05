@@ -33,17 +33,17 @@ public class Main {
 
     public static void main(String arguments[]) {
         try {
-            final InputStream inputStream=Main.class.getClassLoader().getResourceAsStream("logging.properties");
+            final InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("logging.properties");
             LogManager.getLogManager().readConfiguration(inputStream);
             ShellMode.from(arguments).start();
-        
+
         } catch (IllegalArgumentException ex) {
             System.out.println(ex.getMessage());
-            System.out.println(ShellMode.usage());  
-        
+            System.out.println(ShellMode.usage());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
 }
