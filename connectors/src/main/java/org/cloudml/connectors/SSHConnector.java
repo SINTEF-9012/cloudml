@@ -35,9 +35,17 @@ public class SSHConnector {
     String keyPath="";
     String user="";
     String host="";
+    String passwd="";
 
     public SSHConnector(String keyPath, String user, String host){
         this.keyPath=keyPath;
+        this.user=user;
+        this.host=host;
+    }
+
+    public SSHConnector(String passwd, String user, String host, String keyPath){
+        this.keyPath=keyPath;
+        this.passwd=passwd;
         this.user=user;
         this.host=host;
     }
@@ -54,9 +62,11 @@ public class SSHConnector {
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
         try {
-            jsch.addIdentity(keyPath);
-
             Session session = jsch.getSession(user, host, 22);
+            if(!keyPath.equals(""))
+                jsch.addIdentity(keyPath);
+            else session.setPassword(passwd);
+
             session.setConfig(config);
             session.connect(0);
 
