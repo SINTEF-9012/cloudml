@@ -101,13 +101,26 @@ public class BridgeToKmf {
             kr.setStopCommand(r.getStopCommand());
             kr.setRequireCredentials(r.getRequireCredentials());
             kr.setExecuteLocally(r.getExecuteLocally());
-            kElement.addResources(kr);
             convertProperties(r,kr,factory);
             String kup = "";
             for (Map.Entry<String, String> up: r.getUploadCommand().entrySet()) {
                 kup += up.getKey() + " " + up.getValue() + ";";
             }
             kr.setUploadCommand(kup);
+
+            if(r instanceof PuppetResource){
+                PuppetResource pr=(PuppetResource)r;
+                net.cloudml.core.PuppetResource pkr=(net.cloudml.core.PuppetResource)kr;
+                pkr.setConfigureHostnameCommand(pr.getConfigureHostnameCommand());
+                pkr.setMasterEndpoint(pr.getMaster());
+                pkr.setRepositoryEndpoint(pr.getRepo());
+                pkr.setConfigurationFile(pr.getConfigurationFile());
+                pkr.setUsername(pr.getUsername());
+                pkr.setRepositoryKey(pr.getRepositoryKey());
+                kElement.addPuppetResources(pkr);
+            }else{
+                kElement.addResources(kr);
+            }
         }
     }
 

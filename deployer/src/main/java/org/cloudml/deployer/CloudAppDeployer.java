@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.ConfigValet;
+import org.cloudml.connectors.util.MercurialConnector;
+import org.cloudml.connectors.util.MercurialConnectorFactory;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.actions.StandardLibrary;
@@ -45,8 +47,8 @@ import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.SimpleModelRepo;
 
 /*
- * The deployment Engine 
- * author: Nicolas Ferry 
+ * The deployment Engine
+ * author: Nicolas Ferry
  * author: Hui Song
  */
 public class CloudAppDeployer {
@@ -101,11 +103,10 @@ public class CloudAppDeployer {
                 statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
             }
 
-            // Provisioning vms
+            // Provisioning vms and external services
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
             // Deploying on vms
-            // TODO: need to be recursive
             prepareComponents(targetModel.getComponentInstances(), targetModel.getRelationshipInstances());
 
             //Configure the components with the relationships
@@ -113,6 +114,9 @@ public class CloudAppDeployer {
 
             //configuration process at SaaS level
             configureSaas(targetModel.getComponentInstances().onlyInternals());
+
+            //Run puppet
+            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
             //send the current deployment to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
@@ -128,6 +132,7 @@ public class CloudAppDeployer {
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
+            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
@@ -341,6 +346,35 @@ public class CloudAppDeployer {
             return internalComponent.externalHost();
         } else {
             return (ExternalComponentInstance) component;
+        }
+    }
+
+
+    private void configureWithPuppet(ComponentInstanceGroup<InternalComponentInstance> components){
+        unlessNotNull("Cannot configure null!", components);
+        Connector jc;
+        for (InternalComponentInstance ic : components) {
+            if(ic.externalHost().isVM()){
+                for(Resource r: ic.getType().getResources()){
+                    if(r instanceof PuppetResource){
+                        journal.log(Level.INFO, ">> Using Puppet to configure the following component: "+ic.getName());
+                        PuppetResource pr=(PuppetResource)r;
+                        VMInstance n= ic.getHost().asExternal().asVM();
+                        Provider p = n.getType().getProvider();
+                        PuppetMarionnetteConnector puppet=new PuppetMarionnetteConnector(pr.getMaster(),n);
+                        //check if the configuration file is in the repo and manage the repo
+                        MercurialConnector mc=MercurialConnectorFactory.createMercurialConnector(pr.getRepo(),pr.getRepositoryKey());
+                        if(!pr.getConfigurationFile().equals(""))
+                            mc.addFile(pr.getConfigurationFile(), pr.getUsername());
+                        //call the update host command
+                        puppet.configureHostname(n.getType().getPrivateKey(), n.getType().getLogin(), n.getPublicAddress(), pr.getMaster(), pr.getName(), pr.getConfigureHostnameCommand());
+                        //manage the certificates
+                        puppet.manageCertificates(pr.getName());
+                        //start the puppet run
+                        puppet.install(n);
+                    }
+                }
+            }
         }
     }
 
