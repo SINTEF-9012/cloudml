@@ -85,6 +85,8 @@ public class CloudMLCmds {
     yamlRepresenter.addClassTag(ListenToAny.class, new org.yaml.snakeyaml.nodes.Tag("!listenToAny"));
     yamlConstructor.addTypeDescription(new TypeDescription(org.cloudml.mrt.cmd.abstracts.XPath.class, "!xpath"));
     yamlRepresenter.addClassTag(org.cloudml.mrt.cmd.abstracts.XPath.class, new org.yaml.snakeyaml.nodes.Tag("!xpath"));
+    yamlConstructor.addTypeDescription(new TypeDescription(org.cloudml.core.credentials.FileCredentials.class, "!FileCredential"));
+    yamlRepresenter.addClassTag(org.cloudml.core.credentials.FileCredentials.class, new org.yaml.snakeyaml.nodes.Tag("!FileCredential"));
     
     yaml = new Yaml(yamlConstructor, yamlRepresenter);
     
