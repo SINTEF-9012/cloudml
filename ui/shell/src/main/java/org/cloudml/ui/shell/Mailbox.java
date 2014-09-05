@@ -1,28 +1,28 @@
 /**
  * This file is part of CloudML [ http://cloudml.org ]
  *
- * Copyright (C) 2012 - SINTEF ICT
- * Contact: Franck Chauvel <franck.chauvel@sintef.no>
+ * Copyright (C) 2012 - SINTEF ICT Contact: Franck Chauvel
+ * <franck.chauvel@sintef.no>
  *
  * Module: root
  *
- * CloudML is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of
- * the License, or (at your option) any later version.
+ * CloudML is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * CloudML is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ * CloudML is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with CloudML. If not, see
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 package org.cloudml.ui.shell;
 
-import org.cloudml.ui.shell.terminal.Terminal;
 import org.cloudml.ui.shell.terminal.Message;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +47,10 @@ public class Mailbox {
         this.content = new ArrayList<Event>();
         this.followed = new ArrayList<CloudMlCommand>();
     }
-    
+
     void showMessages(int depth) {
-         if (hasNewMessages()) {
+
+        if (hasNewMessages()) {
             final int max = (depth == -1) ? size() : depth;
             terminal.print(format("Last messages:").eol());
             for (int index = 1; index <= max; index++) {
@@ -57,10 +58,10 @@ public class Mailbox {
                 Event event = contents().get(reversedIndex);
                 terminal.print(format("  %03d: %s", index, event));
             }
-        
+
         } else {
             terminal.print(format("No new message").eol());
-        
+
         }
     }
 
@@ -73,7 +74,7 @@ public class Mailbox {
     }
 
     List<Event> contents() {
-        List<Event> result = new ArrayList<Event>();
+        final List<Event> result = new ArrayList<Event>();
         synchronized (content) {
             result.addAll(content);
             content.clear();
