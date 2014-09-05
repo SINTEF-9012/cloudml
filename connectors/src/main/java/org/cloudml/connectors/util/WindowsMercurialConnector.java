@@ -45,20 +45,26 @@ public class WindowsMercurialConnector implements MercurialConnector{
     private static final Logger journal = Logger.getLogger(FlexiantConnector.class.getName());
 
     public static String endPoint;
+    private String directory=System.getProperty("user.dir")+"\\nodes";
+    private String filename="";
 
     public WindowsMercurialConnector(String endPoint){
         this.endPoint=endPoint;
     }
 
     public void clone(String pathDest){
-            String cmd="hg.exe clone "+endPoint+" "+pathDest;
-            execute(cmd);
+        String cmd="hg.exe clone "+endPoint+" "+pathDest;
+        execute(cmd);
     }
 
-    public void addFile(String files, String username){
-        clone("./nodes");
-        File f=new File(files);
-        f.renameTo(new File("./nodes/"+f.getName()));
+    public void addFile(String file, String username){
+        clone(directory);
+        File f=new File(file);
+        filename=f.getName();
+        journal.log(Level.INFO, ">> "+ directory+"\\"+filename);
+        f.renameTo(new File(directory+"\\"+filename));
+
+        add(directory+"\\"+f.getName());
         commit(username, "updated by CloudML");
         push("");
     }
@@ -83,12 +89,12 @@ public class WindowsMercurialConnector implements MercurialConnector{
     }
 
     public void commit(String username, String message){
-        String cmd="hg.exe ci -u "+username+" -m"+message;
+        String cmd="hg.exe commit --traceback -u "+username+" -m \""+message+"\" --cwd \""+directory+"\" "+directory+"\\"+filename ;
         execute(cmd);
     }
 
     public void push(String username){
-        String cmd="hg.exe push";
+        String cmd="hg.exe push --cwd \""+directory+"\"";
         execute(cmd);
     }
 

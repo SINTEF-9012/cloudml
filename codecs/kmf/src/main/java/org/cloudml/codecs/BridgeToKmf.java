@@ -199,6 +199,10 @@ public class BridgeToKmf {
                 kNode.setSshKey(vm.getSshKey());
                 if(ec.getRegion() != null)
                     kNode.setRegion(vm.getRegion());
+                if(ec.getLogin() != null)
+                    kNode.setLogin(ec.getLogin());
+                if(ec.getPasswd() != null)
+                    kNode.setPasswd(ec.getPasswd());
 
                 vms.put(kNode.getName(), kNode);
                 initProvidedExecutionPlatforms(ec, kNode);

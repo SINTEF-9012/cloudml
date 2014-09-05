@@ -29,9 +29,9 @@ public class MercurialConnectorFactory {
 
     public static MercurialConnector createMercurialConnector(String endPoint, String sshKey){
         if(System.getProperty("os.name").toLowerCase().contains("windows")){
-            return new LinuxMercurialConnector(endPoint, sshKey);
-        }else{
             return new WindowsMercurialConnector(endPoint);
+        }else{
+            return new LinuxMercurialConnector(endPoint, sshKey);
         }
 
     }

@@ -367,7 +367,8 @@ public class CloudAppDeployer {
                         if(!pr.getConfigurationFile().equals(""))
                             mc.addFile(pr.getConfigurationFile(), pr.getUsername());
                         //call the update host command
-                        puppet.configureHostname(n.getType().getPrivateKey(), n.getType().getLogin(), n.getPublicAddress(), pr.getMaster(), pr.getName(), pr.getConfigureHostnameCommand());
+                        puppet.configureHostname(n.getType().getPrivateKey(), n.getType().getLogin(),n.getType().getPasswd(),
+                                n.getPublicAddress(), pr.getMaster(), pr.getName(), pr.getConfigureHostnameCommand());
                         //manage the certificates
                         puppet.manageCertificates(pr.getName());
                         //start the puppet run

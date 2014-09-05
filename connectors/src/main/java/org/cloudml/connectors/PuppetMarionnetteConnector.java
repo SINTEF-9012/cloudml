@@ -43,20 +43,20 @@ public class PuppetMarionnetteConnector {
 
     public void install(VMInstance vmi){
         try {
-            startPuppetAgent(vmi.getType().getPrivateKey(),vmi.getType().getLogin(),vmi.getName(), vmi.getPublicAddress());
+            startPuppetAgent(vmi.getType().getPrivateKey(),vmi.getType().getLogin(), vmi.getType().getPasswd(), vmi.getName(), vmi.getPublicAddress());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void startPuppetAgent(String key, String user, String host, String ip){
-        SSHConnector sc=new SSHConnector(key,user,host);
+    private void startPuppetAgent(String key, String user, String passwd, String host, String ip){
+        SSHConnector sc=new SSHConnector(key,user,ip, passwd);
         sc.execCommandSsh("puppet agent -t");
     }
 
 
-    public void configureHostname(String key, String user, String ip, String masterEndpoint,String hostname, String cmd){
-        SSHConnector sc=new SSHConnector(key,user,ip);
+    public void configureHostname(String key, String user, String passwd, String ip, String masterEndpoint,String hostname, String cmd){
+        SSHConnector sc=new SSHConnector(key,user,ip, passwd);
         sc.execCommandSsh(cmd+" "+ip+" "+hostname);
         //need to restart, after updating hostname, crappy fix
         try {
