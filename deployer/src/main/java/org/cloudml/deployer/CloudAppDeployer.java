@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.ConfigValet;
 import org.cloudml.connectors.util.MercurialConnector;
-import org.cloudml.connectors.util.MercurialConnectorFactory;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.actions.StandardLibrary;
@@ -363,7 +362,7 @@ public class CloudAppDeployer {
                         Provider p = n.getType().getProvider();
                         PuppetMarionnetteConnector puppet=new PuppetMarionnetteConnector(pr.getMaster(),n);
                         //check if the configuration file is in the repo and manage the repo
-                        MercurialConnector mc=MercurialConnectorFactory.createMercurialConnector(pr.getRepo(),pr.getRepositoryKey());
+                        MercurialConnector mc=new MercurialConnector(pr.getRepo(),pr.getRepositoryKey());
                         if(!pr.getConfigurationFile().equals(""))
                             mc.addFile(pr.getConfigurationFile(), pr.getUsername());
                         //call the update host command

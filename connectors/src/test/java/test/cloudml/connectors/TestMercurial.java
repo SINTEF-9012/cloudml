@@ -28,7 +28,6 @@ package test.cloudml.connectors;
 
 
 import junit.framework.TestCase;
-import org.cloudml.connectors.util.WindowsMercurialConnector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
