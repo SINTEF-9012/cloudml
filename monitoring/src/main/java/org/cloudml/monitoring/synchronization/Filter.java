@@ -174,7 +174,7 @@ public class Filter {
         String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
         toReturn.setId(uri);
         toReturn.setType(String.valueOf(toTranslate.getType()));
-        //toReturn.setRequiredComponents(toTranslate.); TODO controllare required components
+        //toReturn.setRequiredComponents(toTranslate.); TODO control required components
         return toReturn;
     }
 
