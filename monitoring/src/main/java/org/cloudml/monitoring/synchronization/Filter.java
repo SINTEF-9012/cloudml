@@ -123,7 +123,7 @@ public class Filter {
     private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
         ExternalComponent toReturn = new ExternalComponent();
         //KB entity field
-        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
+        String id = toTranslate.getName();
 
         /* previous version of the ontology
         Component field
@@ -137,7 +137,7 @@ public class Filter {
         toReturn.setStarted(started); there is no more started attribute
         */
 
-        toReturn.setId(uri);
+        toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType()));
         toReturn.setCloudProvider(toTranslate.getType().asExternal().getProvider().getName());
         return toReturn;
@@ -147,7 +147,7 @@ public class Filter {
     private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
         VM toReturn = new VM();
         //KB entity field
-        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
+        String id = toTranslate.getName();
 
         //previous version of the ontology
         //Component field
@@ -160,9 +160,8 @@ public class Filter {
         //}
         //toReturn.setStarted(started); no more started attribute
 
-        toReturn.setId(uri);
+        toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType()));
-        toReturn.setLocation(toTranslate.getPublicAddress());
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
         //VM fields
         toReturn.setNumberOfCPUs(toTranslate.getType().getMinCores());
@@ -171,17 +170,17 @@ public class Filter {
 
     private static InternalComponent fromCloudmlToModaMP(InternalComponentInstance toTranslate){
         InternalComponent toReturn = new InternalComponent();
-        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setId(uri);
+        String id = toTranslate.getName();
+        toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType()));
-        //toReturn.setRequiredComponents(toTranslate.); TODO control required components
+        toReturn.addRequiredComponent(toTranslate.getRequiredExecutionPlatform().getName());
         return toReturn;
     }
 
     private static Component fromCloudmlToModaMP(ComponentInstance toTranslate){
         Component toReturn = new Component();
-        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setId(uri);
+        String id = toTranslate.getName();
+        toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType()));
         return toReturn;
     }
