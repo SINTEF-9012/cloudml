@@ -406,12 +406,12 @@ Since the json serialization of the metamodel differs from the internal POJO ser
                             console.log('ERROR', 'Update received from an unrecognized type of component:' + jObj.content.__type);
                             break;
                     }
+                    updateSocket.close();
+                    updateSocket = null;
                 }
             }
         }
     }
-    updateSocket.close();
-    updateSocket = null;
 }
 
 // set the value of a property object of a CloudML element; returns true if successful
@@ -558,7 +558,7 @@ function getData(inputJSONString) {
     */
     graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
 
-    
+
     // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
     graphNodes.forEach(function (d){
         // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
