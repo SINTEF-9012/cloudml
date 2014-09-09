@@ -66,9 +66,11 @@ public class MonitoringSynch {
      * @param removedECs removed components
      */
     public static void sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs) {
-        Model removed = Filter.fromCloudmlToModaMP(removedECs);
-        //MonitoringAPI request = new MonitoringAPI(monitoringAddress);
-        //request.deleteInstances(removed);
+        //Model removed = Filter.fromCloudmlToModaMP(removedECs);
+        MonitoringAPI request = new MonitoringAPI(monitoringAddress);
+        for(int i = 0; removedECs.size()<i;i++){
+            request.deleteInstances(removedECs.get(i).getName());
+        }
 
     }
 }

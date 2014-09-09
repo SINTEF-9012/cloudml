@@ -60,15 +60,16 @@ public class Test extends TestCase {
         Model model = new Model();
 
 
-        for(int i = 0; i<1; i++){
+
             VM vm = new VM();
-            vm.setId(Integer.toString(i));
+            vm.setId("frontend3");
             //vm.setNumberOfCpus(i);
             //vm.setUrl("NUOVO");
-            vm.setNumberOfCPUs(i);
+        vm.setCloudProvider("amazon");
+            vm.setNumberOfCPUs(2);
             vm.setType(vm.getType());
             model.add(vm);
-        }
+
 
       /* no more component in Model class
       for(int i = 0; i<2; i++){
@@ -79,19 +80,23 @@ public class Test extends TestCase {
             model.add(component);
         }*/
 
-        for(int i = 0; i<3; i++){
+
             InternalComponent internalComponent = new InternalComponent();
-            internalComponent.setId(Integer.toString(i) + "extcompNUOVO");
+            internalComponent.setId("mic3");
             //externalComponent.setStarted(false);
             //externalComponent.setUrl("abcd-extcompoNUOVO");
             //internalComponent.setCloudProvider("meNUOVO");
+        internalComponent.addProvidedMethod("mic3-register");
+        internalComponent.addProvidedMethod("mic3-answer");
+        internalComponent.addProvidedMethod("mic3-save");
+        internalComponent.addRequiredComponent("frontend3");
             internalComponent.setType(internalComponent.getType());
             model.add(internalComponent);
-        }
+
 
         MonitoringAPI monitor = new MonitoringAPI("http://localhost:8170");
 
-        monitor.uploadDeployment(model);
+        monitor.addInstances(model);
 
     }
 }
