@@ -91,6 +91,14 @@ var fileCredentialsTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.cre
         return {};
     },
 });
+
+var fileCredentialsTag = new jsyaml.Type('!FileCredential', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
+
 var updatedType = new jsyaml.Type('!updated', {
     kind : 'mapping',
     construct : function (data) {
@@ -331,7 +339,7 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     return old_value;
 }
 
-// update the JSON associated with the current graph view; currently supports VM instances only
+// update the JSON associated with the current graph view
 function graphViewUpdateJSON(parent, propertyId, newValue){
 
     /* 
@@ -357,6 +365,7 @@ Since the json serialization of the metamodel differs from the internal POJO ser
             try{
                 var jObj = jsyaml.load(array[2], { schema: jsyamlSchema });
             } catch (error) {
+                console.log(msg);
                 console.log(error);
                 alertMessage("error",'Error parsing the YAML response from the CloudML server: ', 5000);  
             }
