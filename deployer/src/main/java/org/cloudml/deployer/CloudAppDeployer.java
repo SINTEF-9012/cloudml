@@ -128,7 +128,10 @@ public class CloudAppDeployer {
             //send the changes to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
                 MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs());
-                MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs());
+                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs());
+                if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
+                        MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
+                }
             }
         }
         //start the monitoring of VMs

@@ -64,13 +64,23 @@ public class MonitoringSynch {
      * and then send the removed components to the MP
      * @param monitoringAddress address of the monitoring platform
      * @param removedECs removed components
+     * @return boolean, true if the models are synch, false if there is a mismatch
      */
-    public static void sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs) {
+    public static boolean sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs) {
         //Model removed = Filter.fromCloudmlToModaMP(removedECs);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
-        for(int i = 0; removedECs.size()<i;i++){
-            request.deleteInstances(removedECs.get(i).getName());
-        }
+        boolean modelMatching = true;
 
+        //this cycle sends the delete request for each component removed
+        //to the monitoring manager. In case the connection terminates
+        //with a NOT FOUND error means that there is a mismatch between the
+        //two models. In this case the whole model should be resent.
+        for(int i = 0; i<removedECs.size() && modelMatching;i++){
+            int code = request.deleteInstances(removedECs.get(i).getName());
+            if(code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
+                modelMatching = false;
+            }
+        }
+        return modelMatching;
     }
 }

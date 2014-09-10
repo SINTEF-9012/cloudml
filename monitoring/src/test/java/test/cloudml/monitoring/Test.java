@@ -96,7 +96,9 @@ public class Test extends TestCase {
 
         MonitoringAPI monitor = new MonitoringAPI("http://localhost:8170");
 
-        monitor.addInstances(model);
+        //monitor.addInstances(model);
+
+        monitor.deleteInstances("mic3");
 
     }
 }
