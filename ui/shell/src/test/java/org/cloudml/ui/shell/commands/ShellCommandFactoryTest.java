@@ -63,6 +63,7 @@ public class ShellCommandFactoryTest extends TestCase {
         results.add(new Object[]{"deploy &", delegate(new Deploy(), true)});
         results.add(new Object[]{"deploy", delegate(new Deploy(), false)});  
         results.add(new Object[]{"connect foo to bar", delegate(new Attach("foo", "bar"), false)});
+        results.add(new Object[]{"connect @8f1d4fae-7dec-11d0-a765-00a0c91e6bf6 to bar", delegate(new Attach("8f1d4fae-7dec-11d0-a765-00a0c91e6bf6", "bar"), false)});
         results.add(new Object[]{"disconnect foo from bar", delegate(new Detach("foo", "bar"), false)});
         results.add(new Object[]{"destroy foo", delegate(new Destroy("foo"), false)});
         results.add(new Object[]{"install foo on bar", delegate(new Install("foo", "bar"), false)});
