@@ -71,21 +71,11 @@ public class Test extends TestCase {
             model.add(vm);
 
 
-      /* no more component in Model class
-      for(int i = 0; i<2; i++){
-            Component component = new Component();
-            component.setId(Integer.toString(i)+"compNUOVOP");
-            //component.setStarted(true);
-            //component.setUrl("abcd-compoNUOVO");
-            model.add(component);
-        }*/
 
 
             InternalComponent internalComponent = new InternalComponent();
             internalComponent.setId("mic3");
-            //externalComponent.setStarted(false);
-            //externalComponent.setUrl("abcd-extcompoNUOVO");
-            //internalComponent.setCloudProvider("meNUOVO");
+
         internalComponent.addProvidedMethod("mic3-register");
         internalComponent.addProvidedMethod("mic3-answer");
         internalComponent.addProvidedMethod("mic3-save");

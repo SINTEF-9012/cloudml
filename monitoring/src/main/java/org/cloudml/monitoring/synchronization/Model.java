@@ -119,30 +119,4 @@ public class Model {
         return collection == null? new HashSet<T>() : collection;
     }
 
-    /* class body before the modifications in the MP. Before using qos models 2.1.2
-
-    private List<VM> vms;
-    private List<Component> components;
-    private List<ExternalComponent> externalComponents;
-
-    public ModelUpdates(List<Component> components, List<ExternalComponent> externalComponents, List<VM> vms) {
-        this.vms = vms;
-        this.components = components;
-        this.externalComponents = externalComponents;
-    }
-
-    public List<VM> getVms() {
-        return vms;
-    }
-
-    public List<Component> getComponents() {
-        return components;
-    }
-
-    public List<ExternalComponent> getExternalComponents() {
-        return externalComponents;
-    }
-    */
-
-
 }

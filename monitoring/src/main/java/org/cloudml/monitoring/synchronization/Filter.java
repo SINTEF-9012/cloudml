@@ -22,19 +22,15 @@ package org.cloudml.monitoring.synchronization;
  * <http://www.gnu.org/licenses/>.
  */
 
-import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.CloudProvider;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.Method;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.PaaSService;
 import org.cloudml.core.*;
+import org.cloudml.core.Provider;
 import org.cloudml.core.collections.ComponentInstanceGroup;
-import org.cloudml.core.collections.ExternalComponentInstanceGroup;
 import org.cloudml.core.collections.InternalComponentInstanceGroup;
+import org.cloudml.core.collections.ProviderGroup;
 import org.cloudml.core.collections.VMInstanceGroup;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,8 +53,10 @@ public class Filter {
         ComponentInstanceGroup instances = new ComponentInstanceGroup();
         instances.addAll(deployment.getComponentInstances());
 
+        ProviderGroup providers = new ProviderGroup();
+        providers.addAll(deployment.getProviders());
         //call the actual translator
-        return getModelUpdates(instances);
+        return getModelUpdates(instances, providers);
 
     }
 
@@ -66,23 +64,21 @@ public class Filter {
      * Convert a list of ExternalCOmpnents model from CloudMl in a format
      * compatible with MODAClouds Monitoring Platform's APIs
      *
-     * @param listToConvert the list
+     * @param addedECs the list
      */
-    public static Model fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> listToConvert) {
+    public static Model fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> addedECs,
+                                            List<InternalComponentInstance> addedICs) {
         //create a new list for avoid changes in the original one
         ComponentInstanceGroup supportList = new ComponentInstanceGroup();
-        supportList.addAll(listToConvert);
+        supportList.addAll(addedECs);
+        supportList.addAll(addedICs);
 
         //call the actual translator
-        return getModelUpdates(supportList);
+        return getModelUpdates(supportList, null);
     }
 
     //this is the core method the other one are just to prepare the lists for this one
-    private static Model getModelUpdates(ComponentInstanceGroup instances) {
-        //prepare the lists
-        //List<Component> toReturnComponent = new ArrayList<Component>();
-        //List<ExternalComponent> toReturnExternalComponent = new ArrayList<ExternalComponent>();
-        //List<VM> toReturnVM = new ArrayList<VM>();
+    private static Model getModelUpdates(ComponentInstanceGroup instances, ProviderGroup providers) {
 
         Model model = new Model();
 
@@ -91,16 +87,7 @@ public class Filter {
         //prepare the VMs list
         VMInstanceGroup VMs = instances.onlyVMs();
         for (VMInstance i : VMs) {
-            //toReturnVM.add(fromCloudmlToModaMP(i)); will no more use lists
             model.add(fromCloudmlToModaMP(i));
-            instances.remove(i);
-        }
-
-        //prepare the ExternalComponents list
-        ExternalComponentInstanceGroup externalComponents = instances.onlyExternals();
-        for (ExternalComponentInstance i : externalComponents) {
-            //toReturnExternalComponent.add(fromCloudmlToModaMP(i)); will no more use lists
-            //model.add(fromCloudmlToModaMP(i)); no external component add function
             instances.remove(i);
         }
 
@@ -111,36 +98,15 @@ public class Filter {
             instances.remove(i);
         }
 
-        //TODO no instances.onlyComponents()
+        //prepare for providers list
+         if(providers!=null){
+             for (Provider i : providers) {
+                 model.add(fromCloudmlToModaMP(i));
+                 instances.remove(i);
+             }
+         }
 
-
-        //return new Model(toReturnComponent, toReturnExternalComponent, toReturnVM);
         return model;
-    }
-
-
-    //translate a single ExternalComponent
-    private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
-        ExternalComponent toReturn = new ExternalComponent();
-        //KB entity field
-        String id = toTranslate.getName();
-
-        /* previous version of the ontology
-        Component field
-        toReturn.setId(toTranslate.getName());
-        External components fields
-        toReturn.setUrl(toTranslate.getPublicAddress());  there is no more url attribute
-        boolean started = false;
-        if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
-            started = true;
-        }
-        toReturn.setStarted(started); there is no more started attribute
-        */
-
-        toReturn.setId(id);
-        toReturn.setType(String.valueOf(toTranslate.getType()));
-        toReturn.setCloudProvider(toTranslate.getType().asExternal().getProvider().getName());
-        return toReturn;
     }
 
     //Translate a single VM
@@ -148,18 +114,6 @@ public class Filter {
         VM toReturn = new VM();
         //KB entity field
         String id = toTranslate.getName();
-
-        //previous version of the ontology
-        //Component field
-        //toReturn.setId(toTranslate.getName());
-        //External component fields
-        //toReturn.setUrl(toTranslate.getPublicAddress()); url is equal to location?? next line
-        //boolean started = false;
-        //if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
-        //    started = true;
-        //}
-        //toReturn.setStarted(started); no more started attribute
-
         toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType()));
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
@@ -177,14 +131,13 @@ public class Filter {
         return toReturn;
     }
 
-    private static Component fromCloudmlToModaMP(ComponentInstance toTranslate){
-        Component toReturn = new Component();
+    private static CloudProvider fromCloudmlToModaMP(Provider toTranslate){
+        CloudProvider toReturn = new CloudProvider();
         String id = toTranslate.getName();
         toReturn.setId(id);
-        toReturn.setType(String.valueOf(toTranslate.getType()));
+        toReturn.setType(String.valueOf(toTranslate.getName()));
         return toReturn;
     }
-
 
 
 }

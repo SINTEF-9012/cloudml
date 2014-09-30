@@ -37,7 +37,7 @@ import java.util.logging.Level;
  */
 public class MonitoringAPI {
 
-    private HTTPConnection http;
+
     private String address;
     private final String version = "v1";
     private static final java.util.logging.Logger journal = java.util.logging.Logger.getLogger(MonitoringAPI.class.getName());
@@ -48,7 +48,7 @@ public class MonitoringAPI {
     public static final int NO_RESPONSE = 0;
 
     public MonitoringAPI(String address) {
-        this.http = new HTTPConnection();
+
         this.address = address;
     }
 
@@ -131,8 +131,7 @@ public class MonitoringAPI {
 
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
-            //http.postRequest(url, json);
-            //printComponentname(update);
+            printComponentname(update);
             result = HttpRequest.post(url).send(json).code();
         } catch (Exception e) {
         result = 0;
@@ -154,9 +153,8 @@ public class MonitoringAPI {
         String json = gson.toJson(model);
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
-            //http.putRequest(url, json);
         result = HttpRequest.put(url).send(json).code();
-            //printComponentname(model);
+            printComponentname(model);
         } catch (Exception e) {
            result = 0;
         }
@@ -177,7 +175,6 @@ public class MonitoringAPI {
         int result;
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
-            //http.deleteRequest(url, id);
             result = HttpRequest.delete(url).code();
         } catch (Exception e) {
             result = NO_RESPONSE;
@@ -188,13 +185,6 @@ public class MonitoringAPI {
     }
 
     private void printComponentname(Model model){
-        /* there is no getComponent in Model class
-        for(Component i : model.getComponent()){
-            journal.log(Level.INFO, "Component name: "+model.getComponents().get(i).getId());
-        }
-        for(ExternalComponent e : model.getExternalComponent()){
-            journal.log(Level.INFO, "ExternalComponent name: "+model.getExternalComponents().get(i).getId());
-        }*/
         for(VM vm : model.getvMs()){
             journal.log(Level.INFO, "VM name: "+vm.getId());
         }
