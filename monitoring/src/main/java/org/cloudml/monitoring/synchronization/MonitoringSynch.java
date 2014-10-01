@@ -23,6 +23,8 @@
 package org.cloudml.monitoring.synchronization;
 
 import org.cloudml.core.*;
+import org.cloudml.core.collections.ComponentInstanceGroup;
+import org.cloudml.core.collections.VMInstanceGroup;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -67,7 +69,6 @@ public class MonitoringSynch {
      */
     public static boolean sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs,
                                                 List<InternalComponentInstance> removedICs) {
-        //Model removed = Filter.fromCloudmlToModaMP(removedECs);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
         boolean modelMatching = true;
 
@@ -75,7 +76,10 @@ public class MonitoringSynch {
         //to the monitoring manager. In case the connection terminates
         //with a NOT FOUND error means that there is a mismatch between the
         //two models. In this case the whole model should be resent.
-        for(int i = 0; i<removedECs.size() && modelMatching;i++){
+        ComponentInstanceGroup supportList = new ComponentInstanceGroup();
+        supportList.addAll(removedECs);
+        VMInstanceGroup removedVMs = supportList.onlyVMs();
+        for(int i = 0; i<removedVMs.size() && modelMatching;i++){
             int code = request.deleteInstances(removedECs.get(i).getName());
             if(code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
                 modelMatching = false;

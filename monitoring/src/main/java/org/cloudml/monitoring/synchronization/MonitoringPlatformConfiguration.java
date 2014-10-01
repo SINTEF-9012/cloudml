@@ -54,11 +54,11 @@ public class MonitoringPlatformConfiguration {
             this.ipAddress = ipAddress;
         }
         public MonitoringPlatformProperties(){
-
             this.monitoringPlatformGiven = false;
             this.ipAddress = "localhost";
         }
     }
+
     public static MonitoringPlatformProperties load() {
 
         Properties prop = new Properties();

@@ -109,28 +109,28 @@ public class Filter {
         return model;
     }
 
-    //Translate a single VM
+    //Translate a single VM from cloudML to Monitoring Platform QoS-model
     private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
         VM toReturn = new VM();
         //KB entity field
         String id = toTranslate.getName();
         toReturn.setId(id);
-        toReturn.setType(String.valueOf(toTranslate.getType()));
+        toReturn.setType(String.valueOf(toTranslate.getType().getName()));
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
         //VM fields
         toReturn.setNumberOfCPUs(toTranslate.getType().getMinCores());
         return toReturn;
     }
-
+    //Translate an internal component from cloudML to Monitoring Platform QoS-model
     private static InternalComponent fromCloudmlToModaMP(InternalComponentInstance toTranslate){
         InternalComponent toReturn = new InternalComponent();
         String id = toTranslate.getName();
         toReturn.setId(id);
-        toReturn.setType(String.valueOf(toTranslate.getType()));
+        toReturn.setType(String.valueOf(toTranslate.getType().getName()));
         toReturn.addRequiredComponent(toTranslate.getRequiredExecutionPlatform().getName());
         return toReturn;
     }
-
+    //Translate a cloud provider from cloudML to Monitoring Platform QoS-model
     private static CloudProvider fromCloudmlToModaMP(Provider toTranslate){
         CloudProvider toReturn = new CloudProvider();
         String id = toTranslate.getName();
