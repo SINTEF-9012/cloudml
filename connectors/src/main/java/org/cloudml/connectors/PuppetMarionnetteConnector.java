@@ -25,20 +25,27 @@ package org.cloudml.connectors;
 import org.cloudml.core.VMInstance;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by nicolasf on 29.08.14.
  */
 public class PuppetMarionnetteConnector {
 
+    private static final Logger journal = Logger.getLogger(PuppetMarionnetteConnector.class.getName());
     public static String endpoint;
+    private Boolean isWindows =false;
+
 
     public PuppetMarionnetteConnector(String endpoint, VMInstance vmi){
         this.endpoint=endpoint;
+        this.isWindows=(vmi.getType().getOs().toLowerCase().contains("windows"));
     }
 
     public void install(VMInstance vmi){
@@ -50,12 +57,30 @@ public class PuppetMarionnetteConnector {
     }
 
     private void startPuppetAgent(String key, String user, String passwd, String host, String ip){
-        SSHConnector sc=new SSHConnector(key,user,ip, passwd);
-        sc.execCommandSsh("puppet agent -t");
+        if(isWindows){
+            journal.log(Level.INFO, ">> STDOUT: Not yet implemented");
+        }else{
+            SSHConnector sc=new SSHConnector(key,user,ip, passwd);
+            sc.execCommandSsh("puppet agent -t");
+        }
+    }
+
+    private void configureHostnameWindows(String passwd, String ip, String masterEndpoint,String hostname){
+        PowerShellConnector run = null;
+        try {
+            String command = "powershell  \".\\connect.ps1 " + passwd + " " + ip +" "+ hostname+" "+masterEndpoint+ "\"";
+            run = new PowerShellConnector(command);
+            journal.log(Level.INFO, ">> STDOUT: " + run.getStandardOutput());
+            journal.log(Level.INFO, ">> STDERR: " + run.getStandardError());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
-    public void configureHostname(String key, String user, String passwd, String ip, String masterEndpoint,String hostname, String cmd){
+    private void configureHostnameLinux(String key, String user, String passwd, String ip, String masterEndpoint,String hostname, String cmd){
         SSHConnector sc=new SSHConnector(key,user,ip, passwd);
         sc.execCommandSsh(cmd+" "+ip+" "+hostname);
         //need to restart, after updating hostname, crappy fix
@@ -65,6 +90,12 @@ public class PuppetMarionnetteConnector {
             e.printStackTrace();
         }
         sc.execCommandSsh("echo \"server = puppet-master-01\" >> /etc/puppet/puppet.conf; echo \""+masterEndpoint+"    puppet-master-01\" >>  /etc/hosts");
+    }
+
+    public void configureHostname(String key, String user, String passwd, String ip, String masterEndpoint,String hostname, String cmd){
+        if(isWindows)
+            configureHostnameWindows(passwd,ip,masterEndpoint,hostname);
+        else configureHostnameLinux(key,user,passwd,ip,masterEndpoint,hostname,cmd);
     }
 
     public void manageCertificates(String id){

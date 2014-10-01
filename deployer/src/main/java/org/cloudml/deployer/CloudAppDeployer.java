@@ -305,6 +305,7 @@ public class CloudAppDeployer {
      * @param jc    the connector used to upload
      */
     private void executeUploadCommands(InternalComponentInstance x, VMInstance owner, Connector jc) {
+        journal.log(Level.INFO, ">> Upload "+x.getType().getName());
         unlessNotNull("Cannot upload with an argument at null", x, owner, jc);
         for (Resource r : x.getType().getResources()) {
             for (String path : r.getUploadCommand().keySet()) {
@@ -392,6 +393,7 @@ public class CloudAppDeployer {
             if (host.isInternal()) {
                 buildExecutes(host.asInternal());
                 journal.log(Level.INFO, ">> Installing host: " + host.getName());
+                executeUploadCommands(host.asInternal(),ownerVM,jc);
                 executeRetrieveCommand(host.asInternal(), ownerVM, jc);
                 executeInstallCommand(host.asInternal(), ownerVM, jc);
                 host.asInternal().setStatus(State.INSTALLED);
@@ -441,7 +443,7 @@ public class CloudAppDeployer {
                 }
                 if (!alreadyDeployed.contains(serverComponent)) {
                     for (Resource r : serverComponent.getType().getResources()) {
-                        executeUploadCommands(x,owner,jc);
+                        executeUploadCommands(serverComponent.asInternal(),owner,jc);
                     }
                     for (Resource r : serverComponent.getType().getResources()) {
                         jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());

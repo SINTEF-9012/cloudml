@@ -64,6 +64,7 @@ public class PowerShellConnector {
         p.getOutputStream().close();
         standardOutput = new OutputCollector(p.getInputStream());
         standardError = new OutputCollector(p.getErrorStream());
+        System.out.println(standardOutput.toString());
         standardOutput.join();
         standardError.join();
         p.waitFor();
