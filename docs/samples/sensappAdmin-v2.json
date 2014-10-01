@@ -64,7 +64,7 @@
 			"resources" : [{
 					"eClass" : "net.cloudml.core:Resource",
 					"name" : "no name",
-					"downloadCommand" : "wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh",
+					"downloadCommand" : "wget -P ~ http://ferrynico.com/install_start_sensapp.sh",
 					"installCommand" : "cd ~; sudo bash install_start_sensapp.sh",
 					"requireCredentials" : false,
 					"executeLocally" : false

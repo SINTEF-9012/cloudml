@@ -88,13 +88,13 @@
  "type":"internalComponents[granny-war]",
 "requiredPortInstances": [
 { "eClass":"net.cloudml.core:RequiredPortInstance" ,
- "name":"dbr1033691575",
+ "name":"dbr-996061874",
  "type":"internalComponents[granny-war]/requiredPorts[dbr]"}
 ]
 ,
 "requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"tomcat1641736474",
+ "name":"tomcat-1458729013",
  "owner":"internalComponentInstances[granny-war-i]",
  "type":"internalComponents[granny-war]/requiredExecutionPlatform[tomcat]"}
 }
@@ -106,7 +106,7 @@
  "type":"externalComponents[granny-cloudml]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"tomcatProvided-1773660665",
+ "name":"tomcatProvided711896268",
  "owner":"externalComponentInstances[granny-cloudml1]",
  "type":"externalComponents[granny-cloudml]/providedExecutionPlatforms[tomcatProvided]"}
 ]
@@ -117,7 +117,7 @@
  "type":"externalComponents[cbdb]",
 "providedPortInstances": [
 { "eClass":"net.cloudml.core:ProvidedPortInstance" ,
- "name":"db310414846",
+ "name":"db1199970361",
  "type":"externalComponents[cbdb]/providedPorts[db]"}
 ]
 }
@@ -175,14 +175,14 @@
 { "eClass":"net.cloudml.core:RelationshipInstance" ,
  "name":"dbreli",
  "type":"relationships[dbrel]",
- "requiredPortInstance":"internalComponentInstances[granny-war-i]/requiredPortInstances[dbr1033691575]",
- "providedPortInstance":"externalComponentInstances[cbdb1]/providedPortInstances[db310414846]"}
+ "requiredPortInstance":"internalComponentInstances[granny-war-i]/requiredPortInstances[dbr-996061874]",
+ "providedPortInstance":"externalComponentInstances[cbdb1]/providedPortInstances[db1199970361]"}
 ]
 ,
 "executesInstances": [
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn-1496903812",
- "providedExecutionPlatformInstance":"externalComponentInstances[granny-cloudml1]/providedExecutionPlatformInstances[tomcatProvided-1773660665]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[granny-war-i]/requiredExecutionPlatformInstance[tomcat1641736474]"}
+ "name":"runOn-1065780041",
+ "providedExecutionPlatformInstance":"externalComponentInstances[granny-cloudml1]/providedExecutionPlatformInstances[tomcatProvided711896268]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[granny-war-i]/requiredExecutionPlatformInstance[tomcat-1458729013]"}
 ]
 }

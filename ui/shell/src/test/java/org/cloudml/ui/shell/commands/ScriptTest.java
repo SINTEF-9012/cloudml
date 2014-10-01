@@ -24,7 +24,6 @@ package org.cloudml.ui.shell.commands;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import static org.cloudml.ui.shell.commands.ShellCommand.*;
 

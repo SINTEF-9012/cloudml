@@ -70,6 +70,12 @@ LETTER
 
 ID      
     :   LETTER(LETTER|DIGIT|'-'|PATH_SEPARATOR)+
+    |   '@' (HEX_DIGIT+ '-')+ HEX_DIGIT+ { setText(getText().replaceAll("@", "")); }
+    ;
+
+fragment
+HEX_DIGIT
+    :   [a-fA-F-0-9]
     ;
 
 INTEGER
