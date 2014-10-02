@@ -24,21 +24,16 @@ package test.cloudml.monitoring;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
 import junit.framework.TestCase;
 import org.cloudml.core.Deployment;
 
 import org.cloudml.core.builders.DeploymentBuilder;
 import org.cloudml.monitoring.synchronization.Filter;
 import org.cloudml.monitoring.synchronization.Model;
-import org.cloudml.monitoring.synchronization.ModelUpdatesExclusionStrategy;
 import org.cloudml.monitoring.synchronization.MonitoringAPI;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by user on 08.07.14.
@@ -50,8 +45,10 @@ public class Test extends TestCase {
 
         Model updates = Filter.fromCloudmlToModaMP(dm);
 
-        Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
+        Gson gson = new GsonBuilder().serializeNulls().create();
         String json = gson.toJson(updates);
+
+        System.out.println(json);
 
     }
 
@@ -59,19 +56,12 @@ public class Test extends TestCase {
 
         Model model = new Model();
 
-
-
             VM vm = new VM();
             vm.setId("frontend3");
-            //vm.setNumberOfCpus(i);
-            //vm.setUrl("NUOVO");
-        vm.setCloudProvider("amazon");
+            vm.setCloudProvider("amazon");
             vm.setNumberOfCPUs(2);
             vm.setType(vm.getType());
             model.add(vm);
-
-
-
 
             InternalComponent internalComponent = new InternalComponent();
             internalComponent.setId("mic3");

@@ -64,7 +64,6 @@ public class MonitoringAPI {
         String response = null;
 
         try {
-        //    response = http.postRequest(url, rule);
             response = HttpRequest.post(url).send(rule).body();
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
@@ -82,7 +81,6 @@ public class MonitoringAPI {
         String url = address + "/" + version + "/metrics";
 
         try {
-           // http.getRequest(url);
             String response = HttpRequest.get(url).body();
         } catch (Exception e) {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
@@ -106,7 +104,6 @@ public class MonitoringAPI {
 
         String url = address + "/" + version + "/metrics/" + metric + "/observers";
         try {
-         //   http.postRequest(url, callback);
         HttpRequest.post(url).send(callback).code();
                journal.log(Level.INFO, "Observer attached");
         } catch (Exception e) {
@@ -126,7 +123,7 @@ public class MonitoringAPI {
 
         String url = address + "/" + version + "/model/resources";
         int result;
-        Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
+        Gson gson = new GsonBuilder().serializeNulls().create();
         String json = gson.toJson(update);
 
         try {
@@ -149,7 +146,7 @@ public class MonitoringAPI {
 
         String url = address + "/" + version + "/model/resources";
         int result;
-        Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
+        Gson gson = new GsonBuilder().serializeNulls().create();
         String json = gson.toJson(model);
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
