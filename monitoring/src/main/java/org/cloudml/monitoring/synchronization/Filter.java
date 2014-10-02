@@ -23,6 +23,7 @@ package org.cloudml.monitoring.synchronization;
  */
 
 import it.polimi.modaclouds.qos_models.monitoring_ontology.CloudProvider;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.Location;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
 import org.cloudml.core.*;
@@ -87,6 +88,7 @@ public class Filter {
         //prepare the VMs list
         VMInstanceGroup VMs = instances.onlyVMs();
         for (VMInstance i : VMs) {
+            model.add(fromCloudmlToModaMP(i.getType().getLocation()));
             model.add(fromCloudmlToModaMP(i));
             instances.remove(i);
         }
@@ -117,7 +119,7 @@ public class Filter {
         toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType().getName()));
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
-        //VM fields
+        toReturn.setLocation(toTranslate.getType().getLocation());
         toReturn.setNumberOfCPUs(toTranslate.getType().getMinCores());
         return toReturn;
     }
@@ -136,6 +138,13 @@ public class Filter {
         String id = toTranslate.getName();
         toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getName()));
+        return toReturn;
+    }
+    //Translate a location from cloudML to Monitoring Platform QoS-model
+    private static Location fromCloudmlToModaMP(String location){
+        Location toReturn = new Location();
+        toReturn.setId(location);
+        toReturn.setType(String.valueOf(location));
         return toReturn;
     }
 
