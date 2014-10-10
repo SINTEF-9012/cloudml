@@ -175,7 +175,9 @@ public class FlexiantConnector implements Connector{
 
                 template.setResourceName(a.getName());
                 Nic n=new Nic();
-                n.setNetworkUUID(findResourceByName("Default network - Default cluster", ResourceType.NETWORK));
+                if(findResourceByName("Default network - Default cluster", ResourceType.NETWORK).equals(""))
+                    n.setNetworkUUID(findResourceByName("Default network - KVM", ResourceType.NETWORK));
+                else n.setNetworkUUID(findResourceByName("Default network - Default cluster", ResourceType.NETWORK));
                 n.setNetworkName(a.getName());
                 template.getNics().add(n);
 
