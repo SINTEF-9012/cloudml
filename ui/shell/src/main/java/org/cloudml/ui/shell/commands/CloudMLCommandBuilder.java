@@ -129,6 +129,11 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
     }
 
     @Override
+    public CloudMlCommand visitReset(ShellCommandsParser.ResetContext ctx) {
+        return new Reset();
+    }
+
+    @Override
     public CloudMlCommand visitStop(ShellCommandsParser.StopContext ctx) {
         return new StopComponent(ctx.ID().getText());
     }

@@ -40,7 +40,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         RUNNING,
         ERROR,
     }
-    private final RequiredPortInstanceGroup requiredPortInstances;
+    private RequiredPortInstanceGroup requiredPortInstances;
     private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance;
     protected State status;
 
@@ -69,6 +69,10 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         return this.requiredPortInstances;
     }
 
+    public void setRequiredPorts(RequiredPortInstanceGroup rpig){
+        this.requiredPortInstances=rpig;
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visitInternalComponentInstance(this);
@@ -95,7 +99,6 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
      * return the linux VM.
      */
     public ExternalComponentInstance<? extends ExternalComponent> externalHost() {
-        System.out.println(this.getName());
         final ComponentInstance<? extends Component> directHost = getHost();
         if (directHost.isInternal()) {
             return directHost.asInternal().externalHost(); 
@@ -146,7 +149,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
             InternalComponentInstance otherCompInst = (InternalComponentInstance) other;
             Boolean match = getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType());
             if (requiredExecutionPlatformInstance != null) {
-                return getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType()) && requiredExecutionPlatformInstance.equals(otherCompInst.getRequiredExecutionPlatform());
+                return match && requiredExecutionPlatformInstance.getName().equals(otherCompInst.getRequiredExecutionPlatform().getName());
             }
             else {
                 return match && (otherCompInst.getRequiredExecutionPlatform() == null);

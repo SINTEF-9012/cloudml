@@ -28,11 +28,13 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Deployment;
 import org.cloudml.facade.FacadeBridge;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.PeerStub;
 import org.cloudml.mrt.cmd.gen.Extended;
+import org.cloudml.mrt.sample.SystemOutPeerStub;
 
 /**
  * Hello world!
@@ -50,12 +52,24 @@ public class Daemon
         coord.setModelRepo(new FacadeBridge());
         CoordWsReception reception = new CoordWsReception(port, coord);
         coord.setReception(reception);
+        
+        Coordinator.SINGLE_INSTANCE = coord;
+        
         //coord.setCloudMLRoot(initWithSenseApp());
         //coord.executor.repo.root = initWithMdms();
         
         //initWithSample(coord);
 
         coord.start();
+        coord.process("!extended { name : LoadDeployment, params : ['sample://sensapp'] }", new SystemOutPeerStub("test"));
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Daemon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        System.out.println("changed!");
+        coord.updateStatus("sensapp-ml1", ComponentInstance.State.PENDING, "some");
     }
     
     public static Deployment initWithSenseApp(){

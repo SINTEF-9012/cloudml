@@ -41,10 +41,13 @@ function traverse(obj, pointer) {
 		for (var a = 0; a < obj[tmp[0]].length; a++) {
 			if (obj[tmp[0]][a].hasOwnProperty('name')) {
 				if (obj[tmp[0]][a]['name'] == val) {
-					if (pointer.length !== 0)
-						return traverse(obj[tmp[0]][a], pointer);
-					else
+					if (pointer.length !== 0){
+						var debug = traverse(obj[tmp[0]][a], pointer);
+                        return debug;
+                    }
+					else{
 						return obj[tmp[0]][a];
+                    }
 				}
 			}
 		}
@@ -77,11 +80,13 @@ function traverse2(obj, pointer, value) {
 		var attribute = temp2[0];
 		var temp3 = temp2[1].split("]");
 		var temp4 = temp3[0].split("'");
+        
 		var val = temp4[1];
+        
 		for (var a = 0; a < obj[tmp[0]].length; a++) {
 			if (obj[tmp[0]][a].hasOwnProperty(attribute)) {
 				if (obj[tmp[0]][a][attribute] == val) {
-					return traverse(obj[tmp[0]][a], pointer, value);
+					return traverse2(obj[tmp[0]][a], pointer, value);
 				}
 			}
 		}
@@ -94,7 +99,7 @@ function traverse2(obj, pointer, value) {
 	}
 
 	if (pointer.length !== 0) { // keep traversin!
-		return traverse(obj[part], pointer, value);
+		return traverse2(obj[part], pointer, value);
 	}
 	// we're done
 	if (typeof value === "undefined") {
@@ -113,6 +118,7 @@ function traverse2(obj, pointer, value) {
 
 var validate_input = function (obj, pointer) {
 	if (typeof obj !== "object") {
+        console.log("obj:", obj, "pointer:", pointer);
 		throw("Invalid input object.");
 	}
 

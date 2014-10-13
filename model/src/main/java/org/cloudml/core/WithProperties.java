@@ -52,7 +52,10 @@ public abstract class WithProperties extends NamedElement {
     
     public void setProperty(String key, String value){
         if(this.properties.containsKey(key)){
-            this.properties.get(key).setValue(value);
+            if(value != null)
+                this.properties.get(key).setValue(value);
+            else
+                this.properties.remove(key);
         }
         else{
             Property p = new Property(key, value);

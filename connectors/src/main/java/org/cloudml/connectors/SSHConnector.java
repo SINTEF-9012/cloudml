@@ -134,7 +134,9 @@ public class SSHConnector {
             if(path[path.length-1].equals(""))
                 channelSftp.put(new FileInputStream(f1), sourcePath);
             else channelSftp.put(new FileInputStream(f1), path[path.length - 1]);
+
             channelSftp.exit();
+            channel.disconnect();
             session.disconnect();
         } catch (JSchException e) {
             // TODO Auto-generated catch block

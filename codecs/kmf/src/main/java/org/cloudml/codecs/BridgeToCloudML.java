@@ -37,6 +37,9 @@ import org.cloudml.core.RequiredPortInstance;
 import org.cloudml.core.Resource;
 import org.cloudml.core.VMInstance;
 
+import org.cloudml.core.collections.ProvidedExecutionPlatformInstanceGroup;
+import org.cloudml.core.collections.ProvidedPortInstanceGroup;
+import org.cloudml.core.collections.RequiredPortInstanceGroup;
 import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.util.OwnedBy;
@@ -432,13 +435,16 @@ public class BridgeToCloudML {
     }
 
     public void convertAndAddProvidedPortInstances(List<net.cloudml.core.ProvidedPortInstance> ppi, ComponentInstance ai) {
+        ProvidedPortInstanceGroup ppig=new ProvidedPortInstanceGroup();
         for (net.cloudml.core.ProvidedPortInstance kapi: ppi) {
             ProvidedPortInstance api = new ProvidedPortInstance(kapi.getName(), providedPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()));
             api.getOwner().set(ai);
             convertProperties(kapi, api);
             //ai.getProvidedPorts().add(api);
+            ppig.add(api);
             providedPortInstances.put(api.getName(), api);
         }
+        ai.setProvidedPorts(ppig);
     }
 
     public void internalComponentInstanceToPOJO(net.cloudml.core.InternalComponentInstance kInternalComponentInstance) {
@@ -454,13 +460,16 @@ public class BridgeToCloudML {
 
         convertAndAddProvidedPortInstances(kInternalComponentInstance.getProvidedPortInstances(), ai);
 
+        RequiredPortInstanceGroup rpig=new RequiredPortInstanceGroup();
         for (net.cloudml.core.RequiredPortInstance kapi: kInternalComponentInstance.getRequiredPortInstances()) {
             RequiredPortInstance api = new RequiredPortInstance(kapi.getName(), requiredPorts.get(ai.getType().getName() + "_" + kapi.getType().getName()));
             api.getOwner().set(ai);
             convertProperties(kapi, api);
             //ai.getRequiredPorts().add(api);
+            rpig.add(api);
             requiredPortInstances.put(api.getName(), api);
         }
+        ai.setRequiredPorts(rpig);
 
         model.getComponentInstances().add(ai);
     }
@@ -481,13 +490,15 @@ public class BridgeToCloudML {
 
     private void initProvidedExecutionPlatformInstances(net.cloudml.core.ComponentInstance kInternalComponentInstance, ComponentInstance ai) {
         if (kInternalComponentInstance.getProvidedExecutionPlatformInstances() != null) {
+            ProvidedExecutionPlatformInstanceGroup pepig=new ProvidedExecutionPlatformInstanceGroup();
             for (net.cloudml.core.ProvidedExecutionPlatformInstance kpepi: kInternalComponentInstance.getProvidedExecutionPlatformInstances()) {
-                initProvidedExecutionPlatformInstance(kpepi, ai);
+                pepig.add(initProvidedExecutionPlatformInstance(kpepi, ai));
             }
+            ai.setProvidedExecutionPlatforms(pepig);
         }
     }
 
-    private void initProvidedExecutionPlatformInstance(net.cloudml.core.ProvidedExecutionPlatformInstance kpepi, ComponentInstance ai) {
+    private ProvidedExecutionPlatformInstance initProvidedExecutionPlatformInstance(net.cloudml.core.ProvidedExecutionPlatformInstance kpepi, ComponentInstance ai) {
         if (kpepi != null) {
             ProvidedExecutionPlatform pepType = null;
             for (ProvidedExecutionPlatform pep: ai.getType().getProvidedExecutionPlatforms()) {
@@ -500,8 +511,9 @@ public class BridgeToCloudML {
             convertProperties(kpepi, pepi);
             convertResources(kpepi, pepi);
             providedExecutionPlatformInstances.put(pepi.getName(), pepi);
-            // ai.getProvidedExecutionPlatforms().add(pepi);
+            return pepi;
         }
+        return null;
     }
 
     public void relationshipInstancesToPOJO(List<net.cloudml.core.RelationshipInstance> kRelationshipInstances) {

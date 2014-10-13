@@ -464,7 +464,7 @@ class Facade implements CloudML, CommandHandler {
 
     @Override
     public void handle(ShotImage command) {
-        dispatch(new Message(command, Category.INFORMATION, "Generating image ..."));
+        dispatch(new Message(command, Category.INFORMATION, "Generating picture ..."));
         DrawnIconVertexDemo g = new DrawnIconVertexDemo(deploy);
         ArrayList<Vertex> v = g.drawFromDeploymentModel();
         File f = new File(command.getPathToSnapshot());
@@ -485,6 +485,13 @@ class Facade implements CloudML, CommandHandler {
         VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
         Connector c =ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
         c.createImage(vmi);
+    }
+
+    @Override
+    public void handle(Reset command) {
+        dispatch(new Message(command, Category.INFORMATION, "The deployment engine has been reset ..."));
+        this.deploy=null;
+        this.deployer.setCurrentModel(null);
     }
 
     @Override

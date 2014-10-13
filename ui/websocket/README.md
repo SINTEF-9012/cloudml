@@ -6,12 +6,12 @@ The CloudML WebSocket Server is a Java application distributed as an executable 
 # Starting CloudML WebSocket Server
 The server can be started by simply executing the following command. There is no deployment model loaded when the server start. By default the server listen on port 9000.
 ```shell
-java -jar cloudml-websocket.jar
+java -jar cloudml-WebSocket.jar
 ```
 
 You can change this port number using the following command.
 ```shell
-java -jar cloudml-websocket.jar portnumber
+java -jar cloudml-WebSocket.jar portnumber
 ```
 
 # WebSocket commands
@@ -58,6 +58,23 @@ We first list some examples below for a quick view of what the commands look lik
         credentials : ""
 ```
 
+- Another example to show how to create a VM instance and add it into the list of /componentInstances:
+
+```yaml
+!commit
+  modifications:   
+  - !createAndAdd
+     parent : /
+     property : componentInstances
+     type : VMInstance
+     initializer : 
+       - { type: String, value: newVMInstance }
+       - { type: VM, value: !xpath '/components[name="SL"]' }
+     keyValues : 
+       name : newVMInstance
+```
+
+
 - Deploy the current component model
 
 ```yaml
@@ -70,6 +87,21 @@ We first list some examples below for a quick view of what the commands look lik
 
 ```yaml
 !listenToAny
+```
+
+- Create a snapshot of a VM:
+```yaml
+!extended { name: Snapshot, params: [id] }
+```
+
+- Create an image of a VM:
+```yaml
+!extended { name: Image, params: [id] }
+```
+
+- Scale out a VM
+```yaml
+!extended { name: ScaleOut, params: [id] }
 ```
 
 The samples above are the simpliest but most frequently used ones. We will show the command syntax, which supports more complex, and therefore powerful, commands.
@@ -234,18 +266,37 @@ instruction !extended{
 }
 ```
 
-We have supported ```LoadDeployment```, ```Deploy```, and ```Start```, three Facade commands.
+We have supported the facade commands including ```LoadDeployment```, ```Deploy```, ```Start```, ```Snapshot```, ```Image``` and ```ScaleOut```.
+
+```Deploy``` command does not need any parameter, and therefore it can be invoked simply as:
+
+```
+!extended { named: Deploy }
+```
+
+All the other commands require a single parameter, and therefore can be invoked as follows.
+
+```
+!extended { name: Snapshot, params: [xyz] }
+```
+
+Where ```xyz``` is the id of a Virtual Machine, and is the sole parameter required by command ```Snapshot```. 
+
+```
+!extended { name: ScaleOut, params: [xyz] }
+```
+
+Where ```xyz``` is the id of a Virtual Machine,  and is the sole parameter required by the ```ScaleOut``` command. 
 
 If the last params is too long (or too structural) for yaml, you can send a supplimentary command just after an extended command, started with a ```!additional```. The content following this tag is treated as plain text, not yaml.
 
-For example: the following too commands together load a deployment model from the input json string:
+For example: the following two commands together load a deployment model from the input json string:
 ```
 !extended { name : LoadDeployment }
 ```
 
 ```
 !additional
-json-string:{
 json-string:{
    "eClass" : "net.cloudml.core:CloudMLModel",
    "name" : "cloudbees-deployment",

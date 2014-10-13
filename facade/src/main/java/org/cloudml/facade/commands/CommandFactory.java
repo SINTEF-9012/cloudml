@@ -240,6 +240,26 @@ public class CommandFactory {
     }
 
     /**
+     * Create an image of a VM
+     *
+     * @param id the id of the VM instance
+     *
+     * @return the associated command object
+     */
+    public CloudMlCommand image(final String id) {
+        return new Image(id);
+    }
+
+    /**
+     * Reset the deployment engine
+     *
+     * @return the associated command object
+     */
+    public CloudMlCommand reset() {
+        return new Reset();
+    }
+
+    /**
      * Scale out a VM
      *
      * @param id of the VM

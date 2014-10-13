@@ -91,7 +91,7 @@
 					<a class="dropdown-toggle" data-toggle="dropdown" href="#Server">Server<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li><a href="#" data-toggle='modal' data-target="#connectModal">Connect ...</a></li>
-						<li><a href="#" onclick='send("!extended { name : LoadDeployment }");send("!additional json-string:"+JSON.stringify(deploymentModel))'>Push model to the server</a></li>
+						<li><a href="#" onclick='pushModelToServer()'>Push model to the server</a></li>
 						<li><a href="#" onclick='send("!getSnapshot {path : /}");'>Load model from the server</a></li>
 						<li><a href="#" onclick='send("!extended { name : Deploy }")'>Deploy ...</a></li>
 					</ul>
@@ -141,7 +141,7 @@
 					</div>
 				</div>
 				<div>
-					<a class="btn" data-dismiss="modal" onclick="loadFile('myModal');">Load</a>
+					<a class="btn" data-dismiss="modal" onclick="loadFile('myModal'); connectedToCloudMLServer = false;">Load</a>
 				</div><br/>
 				<h3>Connect to a CloudML Server</h3><br/>
 				<div class="span4">
@@ -149,7 +149,7 @@
 						<div class="input-group">
 							<input type="text" id="url" class="form-control" placeholder="URL">
 							<span class="input-group-btn">
-								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());send("!listenToAny");' type="button">Go!</button>
+								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());cloudMLServerHost = $("#url").val(); connectedToCloudMLServer = true; send("!listenToAny");send("!getSnapshot" + "\n" + "  path : /")' type="button">Go!</button>
 							</span>
 						</div>
 					</div>
@@ -227,4 +227,5 @@
 	<script src="./js/websocket.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="./js/graphview.js"></script>
+    <script src="./js/watch.js" type="text/javascript"></script>
 </html>

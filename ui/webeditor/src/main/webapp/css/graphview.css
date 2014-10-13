@@ -20,26 +20,140 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-.nodeVM {
-    fill: #fff;
-    stroke: green;
+/**
+* This file is part of CloudML [ http://cloudml.org ]
+*
+* Copyright (C) 2012 - SINTEF ICT
+* Contact: Franck Chauvel <franck.chauvel@sintef.no>
+*
+* Module: root
+*
+* CloudML is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation, either version 3 of
+* the License, or (at your option) any later version.
+*
+* CloudML is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General
+* Public License along with CloudML. If not, see
+* <http://www.gnu.org/licenses/>.
+*/
+
+.tmpNodeSymbol{
+    text-anchor: middle;
+    dominant-baseline: central;
+    font-family: "FontAwesome";
+    font-size: 20px;
+}
+
+.tmpToggleFoldSymbol{
+    text-anchor: start;
+    dominant-baseline: central;
+    font-family: "FontAwesome";
+    font-size: 15px;
+}
+.hidden {
+    fill: none;
+    stroke: none;
+}
+.externalComponent {
     stroke-width: 2.5px;
 }
-.node {
-    fill: #fff;
-    stroke: #000;
-    stroke-width: 2.5px;
+
+.internalComponent {
+    stroke-width: 1.5px;
 }
-.node {
+circle.selectionCircle {
+    fill:none;
+    stroke: none;
+}
+circle.selectionCircle.selected {
+    fill: none;
+    stroke: red;
+    stroke-width: 1px;
+    stroke-dasharray: 3,3;
+    transition: stroke 0.3s linear;
+}
+.internalComponentText {
     font: 10px sans-serif;
 }
-.link {
-    fill: none;
-    stroke: #000;
+.relationshipBinding {
     stroke-width: 2.5px;
 }
 .executionBinding {
-    fill: none;
-    stroke: green;
     stroke-width: 2.5px;
+}
+svg text {
+    cursor: pointer;
+}
+circle{
+    cursor: pointer;
+}
+
+.executionArrow {
+    viewBox: '0 -5 10 10';
+    refX: 6;
+    markerWidth: 4;
+    markerHeight: 4;
+    orient: auto;
+}
+
+.relationshipArrow {
+    viewBox: '0 -5 10 10';
+    refX: 6;
+    markerWidth: 4;
+    markerHeight: 4;
+    orient: auto;
+}
+
+svg g.nodes circle.internalComponent.hover, g.nodes circle.externalComponent.hover {
+    fill: steelblue;  
+    fill-opacity: .3;
+    transition: fill 0.5s linear;
+    animation-delay: 0.1s;
+}
+.brush .extent {
+    fill-opacity: .1;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
+
+
+li.contextOption {
+    padding: 5px;
+    font: 15px sans-serif;
+    text-indent: 1em;
+    
+}
+li.contextOption:hover {
+    background-color: lightblue;
+    color: black;
+}
+.contextMenu {
+    width: 150px;
+    position: absolute;
+    display: inline-block;
+    border: 1px solid black;
+    background-color: lightgrey;
+    list-style-type: none;
+}
+
+hr {
+   display: block;
+   position: relative;
+   padding: 0;
+   margin: 1px auto;
+   height: 0;
+   width: 90%;
+   max-height: 0;
+   font-size: 1px;
+   line-height: 0;
+   clear: both;
+   border: none;
+   border-top: 1px solid #aaaaaa;
+   border-bottom: 1px solid #ffffff;
 }

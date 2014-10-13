@@ -50,6 +50,8 @@ import org.yaml.snakeyaml.Yaml;
  * @author Hui Song
  */
 public class Coordinator {
+    
+    public static Coordinator SINGLE_INSTANCE = null;
 
     public static final String ADDITIONAL_PREFIX = "!additional";
     private static final Logger journal = Logger.getLogger(Coordinator.class.getName());

@@ -23,11 +23,15 @@
 package org.cloudml.core.actions;
 
 import org.cloudml.core.*;
+import org.cloudml.core.builders.RelationshipInstanceBuilder;
 import org.cloudml.core.collections.InternalComponentInstanceGroup;
-import org.cloudml.core.collections.RelationshipInstanceGroup;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.cloudml.core.builders.Commons.aRelationshipInstance;
 
@@ -38,12 +42,15 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
 
     private final InternalComponentInstanceGroup graph;
     private Map<InternalComponentInstance, InternalComponentInstance> mapping;
+    private List<Map> result=new ArrayList<Map>();
     private VMInstance host;
+    private static final Logger journal = Logger.getLogger(ReplicateSubGraph.class.getName());
 
     public ReplicateSubGraph(StandardLibrary library, InternalComponentInstanceGroup graph, VMInstance host) {
         super(library);
         this.graph=rejectIfInvalid(graph);
         this.host=host;
+        mapping=new HashMap<InternalComponentInstance, InternalComponentInstance>();
     }
 
     private InternalComponentInstanceGroup rejectIfInvalid(InternalComponentInstanceGroup graph) {
@@ -56,48 +63,52 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
     @Override
     public Map<InternalComponentInstance, InternalComponentInstance> applyTo(Deployment target) {
         for(InternalComponentInstance ci: graph){
-            mapping.put(ci,getLibrary().replicateComponentInstance(target, ci, host).asInternal());
+            InternalComponentInstance ici=getLibrary().replicateComponentInstance(target, ci, host).asInternal();
+            mapping.put(ci,ici);
         }
         manageDependencies(target);
 
         return mapping;
     }
 
-    private void manageDependencies(Deployment target){
+    private HashMap<String,RelationshipInstance> manageDependencies(Deployment target){
+        HashMap<String,RelationshipInstance> createdInstances=new HashMap<String,RelationshipInstance>();
+        HashMap<String,RelationshipInstanceBuilder> rib=new HashMap<String,RelationshipInstanceBuilder>();
         for(RelationshipInstance ri: target.getRelationshipInstances()){
+            final String name = getLibrary().createUniqueRelationshipInstanceName(target, ri.getType());
+            RelationshipInstance relationship=null;
             if(mapping.containsKey(ri.getClientComponent())){
-                final String name = getLibrary().createUniqueRelationshipInstanceName(target, ri.getType());
                 if(mapping.containsKey(ri.getServerComponent())){ //TODO: move this in a method
-                    aRelationshipInstance()
+                    rib.put(name,aRelationshipInstance()
                             .named(name)
-                            .from(mapping.get(ri.getClientComponent()).getType().getName(),
+                            .from(mapping.get(ri.getClientComponent()).getName(),
                                     mapping.get(ri.getClientComponent()).asInternal().getRequiredPorts().ofType(ri.getRequiredEnd().getType()).getType().getName())
-                            .to(mapping.get(ri.getServerComponent()).getType().getName(),
+                            .to(mapping.get(ri.getServerComponent()).getName(),
                                     mapping.get(ri.getServerComponent()).getProvidedPorts().ofType(ri.getProvidedEnd().getType()).getType().getName())
-                            .ofType(ri.getType().getName())
-                            .integrateIn(target);
+                            .ofType(ri.getType().getName()));
                 }else{
-                    aRelationshipInstance()
+                    rib.put(name, aRelationshipInstance()
                             .named(name)
-                            .from(mapping.get(ri.getClientComponent()).getType().getName(),
+                            .from(mapping.get(ri.getClientComponent()).getName(),
                                     mapping.get(ri.getClientComponent()).asInternal().getRequiredPorts().ofType(ri.getRequiredEnd().getType()).getType().getName())
-                            .to(ri.getServerComponent().getType().getName(),
+                            .to(ri.getServerComponent().getName(),
                                     ri.getProvidedEnd().getType().getName())
-                            .ofType(ri.getType().getName())
-                            .integrateIn(target);
+                            .ofType(ri.getType().getName()));
                 }
-            }
-            if(mapping.containsKey(ri.getServerComponent())){
-                final String name = getLibrary().createUniqueRelationshipInstanceName(target, ri.getType());
-                aRelationshipInstance()
+            }else if(mapping.containsKey(ri.getServerComponent())){
+                rib.put(name, aRelationshipInstance()
                         .named(name)
-                        .from(ri.getClientComponent().getType().getName(),
-                                ri.getRequiredEnd().getType().getName())
-                        .to(mapping.get(ri.getServerComponent()).getType().getName(),
+                        .from(ri.getClientComponent().getName(),
+                                ri.getRequiredEnd().getName())
+                        .to(mapping.get(ri.getServerComponent()).getName(),
                                 mapping.get(ri.getServerComponent()).getProvidedPorts().ofType(ri.getProvidedEnd().getType()).getType().getName())
-                        .ofType(ri.getType().getName())
-                        .integrateIn(target);
+                        .ofType(ri.getType().getName()));
             }
         }
+        for(String name: rib.keySet()){
+            rib.get(name).integrateIn(target);
+            createdInstances.put(name, target.getRelationshipInstances().firstNamed(name));
+        }
+        return createdInstances;
     }
 }

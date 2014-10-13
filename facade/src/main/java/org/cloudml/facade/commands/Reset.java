@@ -20,19 +20,27 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.mrt;
-
-import java.util.Collection;
-import org.cloudml.core.Deployment;
+package org.cloudml.facade.commands;
 
 /**
- *
- * @author Hui Song
+ * Created by nicolasf on 31.07.14.
  */
-public interface ModelRepo {
-     
-    public Deployment getRoot();
-    
-    public Object handle(String name, Collection<String> parameter);
- 
+public class Reset extends CloudMlCommand {
+
+
+    public Reset() {
+
+    }
+
+    @Override
+    public void execute(CommandHandler handler) {
+        handler.handle(this);
+    }
+
+
+    @Override
+    public String toString() {
+        return String.format("reset Cloudml");
+    }
+
 }

@@ -346,6 +346,7 @@ function setModelName(name){
 
 
 /***************************************
+/***************************************
 * General management of deployment model
 ****************************************/
 
@@ -409,7 +410,6 @@ function loadDeploymentModel(jsonString) {
 	
 	reset();
 	setModelName(deploymentModel.name);
-	console.log(deploymentModel.name);
 	addInternalComponentTypes();
 	addVMTypes();
 	addExternalComponentTypes();
