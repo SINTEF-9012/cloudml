@@ -145,8 +145,8 @@ public class Filter {
         Location toReturn = new Location();
         toReturn.setId(location);
         toReturn.setType(String.valueOf(location));
+        toReturn.setLocation(location);
         return toReturn;
     }
-
 
 }

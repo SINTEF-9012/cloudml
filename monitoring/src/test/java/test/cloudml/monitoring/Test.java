@@ -33,6 +33,7 @@ import org.cloudml.core.builders.DeploymentBuilder;
 import org.cloudml.monitoring.synchronization.Filter;
 import org.cloudml.monitoring.synchronization.Model;
 import org.cloudml.monitoring.synchronization.MonitoringAPI;
+import org.cloudml.monitoring.synchronization.MonitoringSynch;
 
 
 /**
@@ -47,8 +48,9 @@ public class Test extends TestCase {
 
         Gson gson = new GsonBuilder().serializeNulls().create();
         String json = gson.toJson(updates);
-
         System.out.println(json);
+
+        MonitoringSynch.sendCurrentDeployment("http://localhost:8170", dm);
 
     }
 
@@ -74,9 +76,9 @@ public class Test extends TestCase {
             model.add(internalComponent);
 
 
-        MonitoringAPI monitor = new MonitoringAPI("http://localhost:8170");
+        //MonitoringAPI monitor = new MonitoringAPI("http://localhost:8170");
 
-        monitor.addInstances(model);
+       // monitor.addInstances(model);
 
         //monitor.deleteInstances("mic3");
 
