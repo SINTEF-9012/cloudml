@@ -400,8 +400,11 @@ public class OpenStackConnector implements Connector{
                 a.setPublicAddress(nodeInstance.getPrivateAddresses().iterator().next());
             }
 
+            if(nodeInstance.getHardware().getProcessors().iterator().hasNext())
+                a.setCore((int)nodeInstance.getHardware().getProcessors().iterator().next().getCores());
+
             a.setId(nodeInstance.getId());
-            //a.setStatusAsRunning();
+
             state = ComponentInstance.State.RUNNING;
         }
         return state;

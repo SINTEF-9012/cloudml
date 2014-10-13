@@ -317,6 +317,7 @@ public class JCloudsConnector implements Connector{
 
             a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
             a.setId(nodeInstance.getId());
+            a.setCore((int) nodeInstance.getHardware().getProcessors().iterator().next().getCores());
             state = ComponentInstance.State.RUNNING;
 
         }

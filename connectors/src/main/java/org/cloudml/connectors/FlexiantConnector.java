@@ -208,6 +208,7 @@ public class FlexiantConnector implements Connector{
             }
             a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
             Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
+            a.setCore(temp.getCpu());
             a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
             journal.log(Level.INFO, ">> Running VM: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
             //a.setStatusAsRunning();

@@ -30,6 +30,8 @@ public class VMInstance extends ExternalComponentInstance<VM> {
     private String id = "";
     private final CloudGroup clouds;
 
+    public int core=0;
+
     public VMInstance(VM type) {
         this(NamedElement.DEFAULT_NAME, type);
     }
@@ -50,6 +52,14 @@ public class VMInstance extends ExternalComponentInstance<VM> {
 
     public String getId() {
         return this.id;
+    }
+
+    public int getCore(){
+        return this.core;
+    }
+
+    public void setCore(int core){
+        this.core=core;
     }
 
     public CloudGroup clouds() {
