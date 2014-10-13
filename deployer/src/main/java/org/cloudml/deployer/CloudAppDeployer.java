@@ -647,6 +647,17 @@ public class CloudAppDeployer {
                     ConfigValet valet = ConfigValet.createValet(bi, res);
                     if (valet != null)
                         valet.config();
+                    else if(res.hasProperty("db-binding-alias")){
+                        try{
+                            Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
+                            Cloud4soaConnector connector = (Cloud4soaConnector) ConnectorFactory.createPaaSConnector(p);
+                            String alias = res.getProperties().valueOf("db-binding-alias");
+                            connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
+                        }catch(Exception ex){
+                            ex.printStackTrace();
+                            journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
+                        }
+                    }
                     
                 }
                 ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
