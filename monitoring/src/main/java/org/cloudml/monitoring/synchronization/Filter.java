@@ -120,7 +120,7 @@ public class Filter {
         toReturn.setType(String.valueOf(toTranslate.getType().getName()));
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
         toReturn.setLocation(toTranslate.getType().getLocation());
-        //toReturn.setNumberOfCPUs(toTranslate.get);
+        toReturn.setNumberOfCPUs(toTranslate.getCore());
         return toReturn;
     }
     //Translate an internal component from cloudML to Monitoring Platform QoS-model
