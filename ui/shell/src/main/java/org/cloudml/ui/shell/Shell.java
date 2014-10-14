@@ -22,11 +22,8 @@
  */
 package org.cloudml.ui.shell;
 
-import org.cloudml.ui.shell.terminal.Terminal;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.cloudml.facade.CloudML;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.ui.shell.commands.Script;
@@ -41,6 +38,10 @@ import org.cloudml.ui.shell.terminal.OutputDevice;
 
 import static org.cloudml.ui.shell.terminal.Message.*;
 import static org.cloudml.ui.shell.terminal.Color.*;
+
+import static org.cloudml.ui.shell.util.dbc.Contracts.*;
+import static org.hamcrest.Matchers.*;
+
 
 /**
  * The CloudML Shell
@@ -65,8 +66,13 @@ public class Shell implements ShellCommandHandler {
     private boolean running;
 
     public Shell(InputDevice input, OutputDevice output, CloudML proxy) {
+        require(proxy, is(not(nullValue()))); 
         this.proxy = proxy;
+        
+        require(input, is(not(nullValue())));
         this.input = input;
+        
+        require(output, is(not(nullValue())));
         this.output = new Formatter(output);
         this.configuration = Loader.getInstance().getConfiguration();
         this.history = new History(output, configuration);   

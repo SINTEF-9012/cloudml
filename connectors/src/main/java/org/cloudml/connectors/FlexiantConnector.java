@@ -175,13 +175,16 @@ public class FlexiantConnector implements Connector{
 
                 template.setResourceName(a.getName());
                 Nic n=new Nic();
-                n.setNetworkUUID(findResourceByName("Default network - Default cluster", ResourceType.NETWORK));
+                if(findResourceByName("Default network - Default cluster", ResourceType.NETWORK).equals(""))
+                    n.setNetworkUUID(findResourceByName("Default network - KVM", ResourceType.NETWORK));
+                else n.setNetworkUUID(findResourceByName("Default network - Default cluster", ResourceType.NETWORK));
                 n.setNetworkName(a.getName());
                 template.getNics().add(n);
 
-				/*Disk d = new Disk();
+				Disk d = new Disk();
 				d.setSize(vm.getMinStorage());
-				template.getDisks().add(d);*/
+                d.setResourceName(a.getName());
+				template.getDisks().add(d);
 
                 //TODO: Add disk
 
@@ -205,6 +208,7 @@ public class FlexiantConnector implements Connector{
             }
             a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
             Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
+            a.setCore(temp.getCpu());
             a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
             journal.log(Level.INFO, ">> Running VM: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
             //a.setStatusAsRunning();

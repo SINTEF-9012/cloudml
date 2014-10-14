@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.ConfigValet;
+import org.cloudml.connectors.util.MercurialConnector;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.actions.StandardLibrary;
@@ -45,8 +46,8 @@ import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.SimpleModelRepo;
 
 /*
- * The deployment Engine 
- * author: Nicolas Ferry 
+ * The deployment Engine
+ * author: Nicolas Ferry
  * author: Hui Song
  */
 public class CloudAppDeployer {
@@ -101,11 +102,10 @@ public class CloudAppDeployer {
                 statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
             }
 
-            // Provisioning vms
+            // Provisioning vms and external services
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
             // Deploying on vms
-            // TODO: need to be recursive
             prepareComponents(targetModel.getComponentInstances(), targetModel.getRelationshipInstances());
 
             //Configure the components with the relationships
@@ -113,6 +113,9 @@ public class CloudAppDeployer {
 
             //configuration process at SaaS level
             configureSaas(targetModel.getComponentInstances().onlyInternals());
+
+            //Run puppet
+            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
             //send the current deployment to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
@@ -128,6 +131,7 @@ public class CloudAppDeployer {
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
+            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
@@ -304,6 +308,7 @@ public class CloudAppDeployer {
      * @param jc    the connector used to upload
      */
     private void executeUploadCommands(InternalComponentInstance x, VMInstance owner, Connector jc) {
+        journal.log(Level.INFO, ">> Upload "+x.getType().getName());
         unlessNotNull("Cannot upload with an argument at null", x, owner, jc);
         for (Resource r : x.getType().getResources()) {
             for (String path : r.getUploadCommand().keySet()) {
@@ -348,6 +353,36 @@ public class CloudAppDeployer {
     }
 
 
+    private void configureWithPuppet(ComponentInstanceGroup<InternalComponentInstance> components){
+        unlessNotNull("Cannot configure null!", components);
+        Connector jc;
+        for (InternalComponentInstance ic : components) {
+            if(ic.externalHost().isVM()){
+                for(Resource r: ic.getType().getResources()){
+                    if(r instanceof PuppetResource){
+                        journal.log(Level.INFO, ">> Using Puppet to configure the following component: "+ic.getName());
+                        PuppetResource pr=(PuppetResource)r;
+                        VMInstance n= ic.getHost().asExternal().asVM();
+                        Provider p = n.getType().getProvider();
+                        PuppetMarionnetteConnector puppet=new PuppetMarionnetteConnector(pr.getMaster(),n);
+                        //check if the configuration file is in the repo and manage the repo
+                        MercurialConnector mc=new MercurialConnector(pr.getRepo(),pr.getRepositoryKey());
+                        if(!pr.getConfigurationFile().equals(""))
+                            mc.addFile(pr.getConfigurationFile(), pr.getUsername());
+                        //call the update host command
+                        puppet.configureHostname(n.getType().getPrivateKey(), n.getType().getLogin(),n.getType().getPasswd(),
+                                n.getPublicAddress(), pr.getMaster(), pr.getName(), pr.getConfigureHostnameCommand());
+                        //manage the certificates
+                        puppet.manageCertificates(pr.getName());
+                        //start the puppet run
+                        puppet.install(n);
+                    }
+                }
+            }
+        }
+    }
+
+
     private void buildExecutes(InternalComponentInstance x) {
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
@@ -361,6 +396,7 @@ public class CloudAppDeployer {
             if (host.isInternal()) {
                 buildExecutes(host.asInternal());
                 journal.log(Level.INFO, ">> Installing host: " + host.getName());
+                executeUploadCommands(host.asInternal(),ownerVM,jc);
                 executeRetrieveCommand(host.asInternal(), ownerVM, jc);
                 executeInstallCommand(host.asInternal(), ownerVM, jc);
                 host.asInternal().setStatus(State.INSTALLED);
@@ -410,7 +446,7 @@ public class CloudAppDeployer {
                 }
                 if (!alreadyDeployed.contains(serverComponent)) {
                     for (Resource r : serverComponent.getType().getResources()) {
-                        executeUploadCommands(x,owner,jc);
+                        executeUploadCommands(serverComponent.asInternal(),owner,jc);
                     }
                     for (Resource r : serverComponent.getType().getResources()) {
                         jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
@@ -614,6 +650,18 @@ public class CloudAppDeployer {
                     ConfigValet valet = ConfigValet.createValet(bi, res);
                     if (valet != null)
                         valet.config();
+                    else if(res.hasProperty("db-binding-alias")){
+                        try{
+                            Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
+                            Cloud4soaConnector connector = (Cloud4soaConnector) ConnectorFactory.createPaaSConnector(p);
+                            String alias = res.getProperties().valueOf("db-binding-alias");
+                            connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
+                        }catch(Exception ex){
+                            ex.printStackTrace();
+                            journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
+                        }
+                    }
+                    
                 }
                 ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
                 Component client = clienti.getType();
@@ -621,8 +669,13 @@ public class CloudAppDeployer {
                 if(pltfi.isExternal()){
                     ExternalComponent pltf = (ExternalComponent) pltfi.getType();
                     if(!pltf.isVM()){
-                        PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                        connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                        try{
+                            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+                            connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                        }
+                        catch(NullPointerException e){
+                            journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
+                        }
                     }else{
                         journal.log(Level.INFO, ">> Connection IaaS to PaaS ...");
                         RequiredPortInstance clientInternal = bi.getRequiredEnd();

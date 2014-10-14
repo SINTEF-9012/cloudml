@@ -138,8 +138,8 @@ public class OpenStackConnector implements Connector{
         if(i == null){
             NodeMetadata nm=getVMById(vmi.getId());
             ServerApi serverApi1=serverApi.getServerApiForZone(vmi.getType().getRegion());
-            journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
-            id=serverApi1.createImageFromServer(vmi.getName()+"-image",nm.getId().split("/")[1]);
+            journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName()+" "+nm.getId()+" :: "+vmi.getType().getRegion());
+            id=serverApi1.createImageFromServer(vmi.getName()+"-image",nm.getId());
             String status="";
             while (!status.toLowerCase().equals("available")){
                 Image im=novaComputeService.getImage(vmi.getType().getRegion()+"/"+id);
@@ -400,8 +400,11 @@ public class OpenStackConnector implements Connector{
                 a.setPublicAddress(nodeInstance.getPrivateAddresses().iterator().next());
             }
 
+            if(nodeInstance.getHardware().getProcessors().iterator().hasNext())
+                a.setCore((int)nodeInstance.getHardware().getProcessors().iterator().next().getCores());
+
             a.setId(nodeInstance.getId());
-            //a.setStatusAsRunning();
+
             state = ComponentInstance.State.RUNNING;
         }
         return state;

@@ -25,6 +25,7 @@ package org.cloudml.connectors;
 import cloudadapter.Adapter;
 import cloudadapter.DatabaseObject;
 import com.cloudbees.api.BeesClient;
+import com.cloudbees.api.ServiceResourceBindResponse;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 
@@ -42,6 +43,7 @@ import eu.cloud4soa.api.util.exception.adapter.Cloud4SoaException;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule;
 import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule.Paas;
 import eu.cloud4soa.governance.ems.IExecutionManagementService;
+import java.util.Collections;
 import java.util.HashMap;
 
 import java.util.List;
@@ -263,5 +265,15 @@ public class Cloud4soaConnector implements PaaSConnector {
                 Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, "failed to set up scale", ex);
             }
         }   
+    }
+    
+    public void bindDbToApp(String appId, String dbId, String alias){
+        try {
+            BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
+            client.resourceBind("cb-app", "mod4cloud/"+appId,  "cb-db", "mod4cloud/"+dbId, alias, Collections.EMPTY_MAP);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

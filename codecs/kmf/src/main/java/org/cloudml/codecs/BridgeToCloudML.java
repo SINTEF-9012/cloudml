@@ -119,6 +119,7 @@ public class BridgeToCloudML {
         VM vm = new VM(kVM.getName(), new Provider("Dummy provider"));
         convertProperties(kVM, vm);
         convertResources(kVM, vm);
+        convertPuppetResources(kVM, vm);
 
         Provider p = providers.get(kVM.getProvider().getName());
         //TODO: extract this to function
@@ -135,6 +136,9 @@ public class BridgeToCloudML {
         vm.setSecurityGroup(kVM.getSecurityGroup());
         vm.setSshKey(kVM.getSshKey());
         vm.setRegion(kVM.getRegion());
+        vm.setLogin(kVM.getLogin());
+        vm.setPasswd(kVM.getPasswd());
+
 
         initProvidedExecutionPlatforms(kVM, vm);
         vms.put(vm.getName(), vm);
@@ -264,6 +268,7 @@ public class BridgeToCloudML {
         InternalComponent ic = new InternalComponent(kInternalComponent.getName(), new RequiredExecutionPlatform("to be replaced"));
         convertProperties(kInternalComponent, ic);
         convertResources(kInternalComponent, ic);
+        convertPuppetResources(kInternalComponent,ic);
         internalComponents.put(ic.getName(), ic);
 
         initRequiredExecutionPlatform(kInternalComponent, ic);
@@ -581,6 +586,34 @@ public class BridgeToCloudML {
         }
     }
 
+
+    private void convertPuppetResources(net.cloudml.core.CloudMLElementWithProperties kElement, WithResources element){
+        for (net.cloudml.core.PuppetResource kr: kElement.getPuppetResources()) {
+            PuppetResource pr = new PuppetResource(kr.getName(), kr.getInstallCommand(), kr.getDownloadCommand(), kr.getConfigureCommand(), kr.getStartCommand(), kr.getStopCommand());
+            pr.setRequireCredentials(kr.getRequireCredentials());
+            pr.setExecuteLocally(kr.getExecuteLocally());
+
+            Map<String, String> up = new HashMap<String, String>();
+            String kup = kr.getUploadCommand();
+            String[] ups = kup.split(";");
+            for (int i = 0; i < ups.length; i++) {
+                String[] com = ups[i].split(" ");
+                if (com.length >= 2) {
+                    up.put(com[0], com[1]);
+                }
+            }
+            pr.setUploadCommand(up);
+            convertProperties(kr, pr);
+            pr.setMaster(kr.getMasterEndpoint());
+            pr.setRepo(kr.getRepositoryEndpoint());
+            pr.setConfigureHostnameCommand(kr.getConfigureHostnameCommand());
+            pr.setConfigurationFile(kr.getConfigurationFile());
+            pr.setRepositoryKey(kr.getRepositoryKey());
+            pr.setUsername(kr.getUsername());
+            element.getResources().add(pr);
+        }
+    }
+
     private void convertResources(net.cloudml.core.CloudMLElementWithProperties kElement, WithResources element) {
         for (net.cloudml.core.Resource kr: kElement.getResources()) {
             Resource r = new Resource(kr.getName(), kr.getInstallCommand(), kr.getDownloadCommand(), kr.getConfigureCommand(), kr.getStartCommand(), kr.getStopCommand());
@@ -599,7 +632,13 @@ public class BridgeToCloudML {
             }
             r.setUploadCommand(up);
             convertProperties(kr, r);
+
+            if(kr instanceof net.cloudml.core.PuppetResource){
+                break;
+            }else{
+
             element.getResources().add(r);
+            }
         }
     }
 }

@@ -46,6 +46,30 @@ public class PowerShellConnector {
         p.waitFor();
     }
 
+    public PowerShellConnector(String... cmd) throws IOException, InterruptedException {
+        ProcessBuilder builder = new ProcessBuilder(cmd);
+        Process p = builder.start();
+        p.getOutputStream().close();
+        standardOutput = new OutputCollector(p.getInputStream());
+        standardError = new OutputCollector(p.getErrorStream());
+        standardOutput.join();
+        standardError.join();
+        p.waitFor();
+    }
+
+    public PowerShellConnector(File directory, String... cmd) throws IOException, InterruptedException {
+        ProcessBuilder builder = new ProcessBuilder(cmd);
+        builder.directory(directory);
+        Process p = builder.start();
+        p.getOutputStream().close();
+        standardOutput = new OutputCollector(p.getInputStream());
+        standardError = new OutputCollector(p.getErrorStream());
+        System.out.println(standardOutput.toString());
+        standardOutput.join();
+        standardError.join();
+        p.waitFor();
+    }
+
     public String getStandardOutput() {
         return standardOutput.getOutput();
     }

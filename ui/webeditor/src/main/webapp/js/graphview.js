@@ -91,6 +91,14 @@ var fileCredentialsTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.cre
         return {};
     },
 });
+
+var fileCredentialsTag = new jsyaml.Type('!FileCredential', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
+
 var updatedType = new jsyaml.Type('!updated', {
     kind : 'mapping',
     construct : function (data) {
@@ -331,7 +339,7 @@ function traverseAndSet(jsonObject, propertyPath, newValue) {
     return old_value;
 }
 
-// update the JSON associated with the current graph view; currently supports VM instances only
+// update the JSON associated with the current graph view
 function graphViewUpdateJSON(parent, propertyId, newValue){
 
     /* 
@@ -357,6 +365,7 @@ Since the json serialization of the metamodel differs from the internal POJO ser
             try{
                 var jObj = jsyaml.load(array[2], { schema: jsyamlSchema });
             } catch (error) {
+                console.log(msg);
                 console.log(error);
                 alertMessage("error",'Error parsing the YAML response from the CloudML server: ', 5000);  
             }
@@ -406,12 +415,12 @@ Since the json serialization of the metamodel differs from the internal POJO ser
                             console.log('ERROR', 'Update received from an unrecognized type of component:' + jObj.content.__type);
                             break;
                     }
+                    updateSocket.close();
+                    updateSocket = null;
                 }
             }
         }
     }
-    updateSocket.close();
-    updateSocket = null;
 }
 
 // set the value of a property object of a CloudML element; returns true if successful
@@ -558,7 +567,7 @@ function getData(inputJSONString) {
     */
     graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
 
-    
+
     // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
     graphNodes.forEach(function (d){
         // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)

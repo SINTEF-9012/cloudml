@@ -20,13 +20,25 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.ui.shell;
-
-
+package test.cloudml.connectors;
 
 /**
- * Capture the options which can be passed to the Shell
+ * Created by nicolasf on 01.09.14.
  */
-public class ShellOptions {
+
+
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+@RunWith(JUnit4.class)
+public class TestMercurial extends TestCase {
+
+    @Test
+    public void testApp(){
+        //WindowsMercurialConnector mc=new WindowsMercurialConnector("ssh://cloudml@109.231.121.6//etc/puppet/manifests//cloudml-nodes");
+        //mc.clone("C:\\Users\\nicolasf\\Desktop\\cloudml2.0\\nodes");
+    }
 
 }

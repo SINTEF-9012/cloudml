@@ -175,6 +175,7 @@ public class JCloudsConnector implements Connector{
      * @param key key to connect
      */
     public void uploadFile(String sourcePath, String destinationPath, String VMId, String login, String key){
+        journal.log(Level.INFO, ">> Uploading "+sourcePath);
         org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
         SshClient ssh = compute.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getVMById(VMId)).credentials(b.build()).build());
         try {
@@ -316,7 +317,7 @@ public class JCloudsConnector implements Connector{
 
             a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
             a.setId(nodeInstance.getId());
-            //a.setStatusAsRunning();
+            a.setCore((int) nodeInstance.getHardware().getProcessors().iterator().next().getCores());
             state = ComponentInstance.State.RUNNING;
 
         }

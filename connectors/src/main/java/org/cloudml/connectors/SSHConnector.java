@@ -35,9 +35,17 @@ public class SSHConnector {
     String keyPath="";
     String user="";
     String host="";
+    String passwd="";
 
     public SSHConnector(String keyPath, String user, String host){
         this.keyPath=keyPath;
+        this.user=user;
+        this.host=host;
+    }
+
+    public SSHConnector(String keyPath, String user, String host, String passwd){
+        this.keyPath=keyPath;
+        this.passwd=passwd;
         this.user=user;
         this.host=host;
     }
@@ -53,14 +61,21 @@ public class SSHConnector {
         JSch jsch = new JSch();
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
+        Session session=null;
+        Channel channel=null;
         try {
-            jsch.addIdentity(keyPath);
+            session = jsch.getSession(user, host, 22);
+            if(!keyPath.equals("")){
+                journal.log(Level.INFO, ">> Connection using an ssh key");
+                jsch.addIdentity(keyPath);
+            }else{
+                session.setPassword(passwd);
+            }
 
-            Session session = jsch.getSession(user, host, 22);
             session.setConfig(config);
             session.connect(0);
 
-            Channel channel = session.openChannel("exec");
+            channel = session.openChannel("exec");
             ChannelExec channelExec=((ChannelExec)channel);
             channelExec.setCommand(command);
             channelExec.setErrStream(System.err);
@@ -90,13 +105,19 @@ public class SSHConnector {
                     journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
                     break;
                 }
-                try{Thread.sleep(1500);}catch(Exception ee){ee.printStackTrace();}
+
+                // Because we are using the research platform we need to wait a bit
+                try{
+                    Thread.sleep(1500);
+                }catch(Exception ee){
+                    ee.printStackTrace();
+                }
             }
-
-
-
-            channel.disconnect();
-            session.disconnect();
+            try{
+                Thread.sleep(15000);
+            }catch(Exception ee){
+                ee.printStackTrace();
+            }
 
         } catch (JSchException e) {
             // TODO Auto-generated catch block
@@ -105,6 +126,11 @@ public class SSHConnector {
             // TODO Auto-generated catch block
             e.printStackTrace();
             journal.log(Level.SEVERE,"File access error");
+        }finally{
+            if(channel != null)
+                channel.disconnect();
+            if(session != null)
+                session.disconnect();
         }
     }
 
