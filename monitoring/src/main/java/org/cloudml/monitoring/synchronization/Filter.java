@@ -88,7 +88,10 @@ public class Filter {
         //prepare the VMs list
         VMInstanceGroup VMs = instances.onlyVMs();
         for (VMInstance i : VMs) {
-            model.add(fromCloudmlToModaMP(i.getType().getLocation()));
+            String location = i.getType().getLocation();
+            if(!location.isEmpty()) {
+                model.add(fromCloudmlToModaMP(location));
+            }
             model.add(fromCloudmlToModaMP(i));
             instances.remove(i);
         }
@@ -138,6 +141,7 @@ public class Filter {
         String id = toTranslate.getName();
         toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getName()));
+
         return toReturn;
     }
     //Translate a location from cloudML to Monitoring Platform QoS-model
