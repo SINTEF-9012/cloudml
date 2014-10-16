@@ -59,6 +59,19 @@ JS-YAML parser definitions
 
 // define all of the unrecognizable yaml tags and types contained in the response from the CloudML server (e.g. the tag !!org.cloudml.core.VMInstance, the type !snapshot, etc.)
 // the definitions are then used by the js-yaml parser to form the javascript objects out of the yaml using the 'load' method
+
+var noCredentialsTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.credentials.NoCredentials', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
+var localRequiredPortInstanceGroupTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.InternalComponentInstance$LocalRequiredPortInstanceGroup', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
 var yamlVMInstanceTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.VMInstance', {
     kind : 'mapping',
     construct : function (data) {
@@ -85,13 +98,12 @@ var provPortInstanceGroupTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.co
         return {};
     },
 });
-var fileCredentialsTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.credentials.FileCredentials', {
+var fileCredentialsFullTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.credentials.FileCredentials', {
     kind : 'mapping',
     construct : function () {
         return {};
     },
 });
-
 var fileCredentialsTag = new jsyaml.Type('!FileCredential', {
     kind : 'mapping',
     construct : function () {
@@ -115,7 +127,7 @@ var snapshotType = new jsyaml.Type('!snapshot', {
 });
 
 // create a jsyaml schema containing the defined tags and types which is then used as a second argument to the 'load' method
-var jsyamlSchema = jsyaml.Schema.create([ provPortInstanceGroupTag, fileCredentialsTag, yamlVMInstanceTag, yamlICInstanceTag, updatedType, snapshotType, localProvPortInstanceGroupTag ]);
+var jsyamlSchema = jsyaml.Schema.create([ provPortInstanceGroupTag, fileCredentialsTag, yamlVMInstanceTag, yamlICInstanceTag, updatedType, snapshotType, localProvPortInstanceGroupTag, fileCredentialsFullTag, localRequiredPortInstanceGroupTag, noCredentialsTag ]);
 
 function pushModelToServer(){
     if(currentJSON == null){
@@ -513,6 +525,14 @@ function getData(inputJSONString) {
     .attr("height", height)
     .on('click', function(){
         d3.select('#context_menu').remove();
+        if($(d3.event.target)[0] == $(this)[0]){
+            var nodes= $('.singleNode');
+            for(i=0;i<nodes.length;++i){
+                if($(nodes[i]).data("bs.popover").tip().hasClass("in")){
+                    $(nodes[i]).popover('toggle');
+                }
+            }
+        }
         d3.event.stopPropagation();
     })
     .on('contextmenu', function(){
@@ -1063,26 +1083,27 @@ function update(){
             }
         )
         // listeners for the popover enabling it to stay shown when hovered over
-        .on("mouseenter", function () {
-            // in case there is an open context menu we do not display popovers
-            if($('#context_menu').length > 0){
-                return;
-            }
-            var _this = this;
-            $(this).popover("show");
-            $(".popover")
-            .on("mouseleave", function () {
-                $(_this).popover('hide');
-            })
-        })
-        .on("mouseleave", function () {
-            var _this = this;
-            setTimeout(function () {
-                if (!$(".popover:hover").length) {
-                    $(_this).popover("hide")
-                }
-            }, 100);
-        })
+        // TODO CHANGED!!!
+        //        .on("mouseenter", function () {
+        //            // in case there is an open context menu we do not display popovers
+        //            if($('#context_menu').length > 0){
+        //                return;
+        //            }
+        //            var _this = this;
+        //            $(this).popover("show");
+        //            $(".popover")
+        //            .on("mouseleave", function () {
+        //                $(_this).popover('hide');
+        //            })
+        //        })
+        //        .on("mouseleave", function () {
+        //            var _this = this;
+        //            setTimeout(function () {
+        //                if (!$(".popover:hover").length) {
+        //                    $(_this).popover("hide")
+        //                }
+        //            }, 100);
+        //        })
         // listeners to allow to change styles of the elements for some basic animation
         .on("mouseover", function () {
             d3.select(this).selectAll('circle').classed("hover", true);
@@ -1140,33 +1161,33 @@ function update(){
               .y(d3.scale.identity().domain([0, height]))
               .on("brushstart", function(){
 
-              })
+        })
               .on("brush", function() {
-                  var extent = d3.event.target.extent();
-                  nodeGroup.each(function(d){
-                      svg.selectAll('g.singleNode').filter(
-                          function(){
-                              return this.id == d.name;
-                          }
-                      )
-                      .selectAll('.selectionCircle')
-                      .classed("selected", function() {
-                          if(d3.event.sourceEvent.shiftKey){
-                              return this.classList.contains("selected") || 
-                                  (extent[0][0] <= d.x && d.x < extent[1][0]
-                                   && extent[0][1] <= d.y && d.y < extent[1][1]);
-                          }else{
-                              return (extent[0][0] <= d.x && d.x < extent[1][0]
-                                      && extent[0][1] <= d.y && d.y < extent[1][1]);
-                          }
-                      })
-                  })
+            var extent = d3.event.target.extent();
+            nodeGroup.each(function(d){
+                svg.selectAll('g.singleNode').filter(
+                    function(){
+                        return this.id == d.name;
+                    }
+                )
+                .selectAll('.selectionCircle')
+                .classed("selected", function() {
+                    if(d3.event.sourceEvent.shiftKey){
+                        return this.classList.contains("selected") || 
+                            (extent[0][0] <= d.x && d.x < extent[1][0]
+                             && extent[0][1] <= d.y && d.y < extent[1][1]);
+                    }else{
+                        return (extent[0][0] <= d.x && d.x < extent[1][0]
+                                && extent[0][1] <= d.y && d.y < extent[1][1]);
+                    }
+                })
+            })
 
-              })
+        })
               .on("brushend", function() {
-                  d3.event.target.clear();
-                  d3.select(this).call(d3.event.target);
-              })
+            d3.event.target.clear();
+            d3.select(this).call(d3.event.target);
+        })
              );
 
     }
@@ -1237,10 +1258,13 @@ function update(){
                 return this.classList.contains('selected') ? false : true ;
             });
         }else{
-            // if shift/ctrl is not pressed - simply fold the node
-            toggleFoldNode(d);
+            $(this).popover("toggle");
             clearCurrentSelection();
         }
+    });
+
+    nodeGroup.on("dblclick", function(d){
+        toggleFoldNode(d);
     });
 
     var path = svg.select(".edges").selectAll('path');
