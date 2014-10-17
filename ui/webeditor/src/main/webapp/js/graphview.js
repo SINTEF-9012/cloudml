@@ -622,6 +622,10 @@ function getData(inputJSONString) {
                         if(json.content.id != null)
                             d.id = json.content.id;
                     }
+                    if(typeof json.content.publicAddress != 'undefined'){
+                        if(json.content.publicAddress != null)
+                            d.publicAddress = json.content.publicAddress;
+                    }
                 }
             }
             d.socket.onclose = function(){
@@ -1039,14 +1043,19 @@ function getNodePopover(node){
         result += 'status: ';
         result += node.status;
     }
-
+    if(typeof node.publicAddress != "undefined"){
+        result += '<br/>';
+        result += 'public address: ';
+        result += node.publicAddress;
+    }
     if(typeof node.properties != "undefined"){
         var cpuLoad = getPropValFromCloudMLElement(node,"cpu");
-        if(cpuLoad != null){
-            result += '<br/>';
-            result += 'cpu load (%): ';
-            result += cpuLoad;
-        }
+        // TODO add this back when necessary
+//        if(cpuLoad != null){
+//            result += '<br/>';
+//            result += 'cpu load (%): ';
+//            result += cpuLoad;
+//        }
     }
     return result;
 }
@@ -1082,28 +1091,6 @@ function update(){
                 'trigger'   : 'manual'
             }
         )
-        // listeners for the popover enabling it to stay shown when hovered over
-        // TODO CHANGED!!!
-        //        .on("mouseenter", function () {
-        //            // in case there is an open context menu we do not display popovers
-        //            if($('#context_menu').length > 0){
-        //                return;
-        //            }
-        //            var _this = this;
-        //            $(this).popover("show");
-        //            $(".popover")
-        //            .on("mouseleave", function () {
-        //                $(_this).popover('hide');
-        //            })
-        //        })
-        //        .on("mouseleave", function () {
-        //            var _this = this;
-        //            setTimeout(function () {
-        //                if (!$(".popover:hover").length) {
-        //                    $(_this).popover("hide")
-        //                }
-        //            }, 100);
-        //        })
         // listeners to allow to change styles of the elements for some basic animation
         .on("mouseover", function () {
             d3.select(this).selectAll('circle').classed("hover", true);
@@ -1247,8 +1234,7 @@ function update(){
     .attr('dx', function(d) {
         return d.isFolded ? '-5' : '0';
     });
-
-    // add listener for mouseclick for folding
+    // add listener for mouseclick for either adding to a selection or toggling the popovers (tooltips) for each element
     nodeGroup.on("click", function(d){
         var e = d3.event;
         // toggle selection of a node if shift/ctrl key is pressed
@@ -1262,7 +1248,7 @@ function update(){
             clearCurrentSelection();
         }
     });
-
+    // add listener for double clicks that folds a node
     nodeGroup.on("dblclick", function(d){
         toggleFoldNode(d);
     });
