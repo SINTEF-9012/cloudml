@@ -34,9 +34,9 @@ import static org.cloudml.core.builders.Commons.*;
 public class ReplicateComponentInstance extends AbstractAction<ComponentInstance> {
 
     private final ComponentInstance<? extends Component> instance;
-    private final ExternalComponentInstance host;
+    private final ComponentInstance<? extends Component>  host;
 
-    public ReplicateComponentInstance(StandardLibrary library, ComponentInstance<? extends Component> instance, ExternalComponentInstance host) {
+    public ReplicateComponentInstance(StandardLibrary library, ComponentInstance<? extends Component> instance, ComponentInstance<? extends Component>  host) {
         super(library);
         this.instance = rejectIfInvalid(instance);
         this.host = host;

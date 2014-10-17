@@ -34,6 +34,7 @@ public class PuppetResource extends Resource {
     private String configurationFile="";
     private String repositoryKey="";
     private String username="";
+    private String manifestEntry="";
 
     public PuppetResource(){
         super();
@@ -83,15 +84,21 @@ public class PuppetResource extends Resource {
         return masterEndpoint;
     }
 
-
     public String getConfigurationFile() {
         return configurationFile;
+    }
+
+    public String getManifestEntry(){
+        return this.manifestEntry;
     }
 
     public void setConfigurationFile(String configurationFile) {
         this.configurationFile = configurationFile;
     }
 
+    public void setManifestEntry(String entry){
+        this.manifestEntry=entry;
+    }
 
     public String getRepositoryKey() {
         return repositoryKey;
