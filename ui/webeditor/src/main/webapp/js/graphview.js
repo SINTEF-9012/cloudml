@@ -357,7 +357,6 @@ function graphViewUpdateJSON(parent, propertyId, newValue){
     /* 
 Since the json serialization of the metamodel differs from the internal POJO serialization the path to a component instance is not directly resolvable in the json (it could be e.g. /componentInstances[name='sensapp-sl1'] which can be found with our current implementation of json traversal by the expression '/vmInstances[name='sensapp-sl1'])'. But there is no way to differentiate the particular component instance type (vm-, internal-, or external component instance). Therefore we need to determine that by sending a request to the CloudML server for the full information for the internal component instance (which also contains its type). The following code does just that.
     */
-    console.log(parent);
     var updateSocket = new WebSocket(socket.url);
     var message = "!getSnapshot"
     + '\n' 
@@ -365,12 +364,11 @@ Since the json serialization of the metamodel differs from the internal POJO ser
     sendMessageFromSocket(updateSocket,message);
     updateSocket.onerror = function(error){
         console.log(error);
-        alertMessage("error",'Error connecting to CloudML server: '+updateSocket.readyState, 5000);  
+        alertMessage("error",'Error connecting to CloudML server: ' + updateSocket.readyState, 5000);  
     }
 
     // 
     updateSocket.onmessage = function(msg){
-        console.log(msg);
         if(msg.data.indexOf("GetSnapshot") >= 0){
             var array=msg.data.split("###");
             var jObj;
@@ -578,6 +576,7 @@ function getData(inputJSONString) {
         layoutExtCompInstances[i].foldedSubNodes = [];
         layoutExtCompInstances[i].foldedSubEdges = [];
         layoutExtCompInstances[i]._type = "ExternalComponent";
+        layoutExtCompInstances[i].publicAddress = "no address given.";
     }
 
     /*
@@ -638,7 +637,8 @@ function getData(inputJSONString) {
         }
     });
     graphNodes.forEach(function(d){
-        watch(d, ['properties', 'status'], function(){
+        // POPOVERS!!: Watch the values for the following properties for change, when one occurs - trigger a refresh of the popover/tooltip
+        watch(d, ['properties', 'status', 'publicAddress'], function(){
             // select the according svg 'g' element for the node
             var svgNodeElement = svg.selectAll(".singleNode").filter(
                 function() {
