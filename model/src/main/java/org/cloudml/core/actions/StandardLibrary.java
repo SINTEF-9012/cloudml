@@ -105,11 +105,11 @@ public class StandardLibrary {
         return new FindComponentTypeProviding(this, bindingType).applyTo(deployment);
     }
 
-    public ComponentInstance replicateComponentInstance(Deployment deployment, ComponentInstance c, ExternalComponentInstance eci){
+    public ComponentInstance replicateComponentInstance(Deployment deployment, ComponentInstance c, ComponentInstance<? extends Component>  eci){
         return new ReplicateComponentInstance(this, c, eci).applyTo(deployment);
     }
 
-    public Map<InternalComponentInstance, InternalComponentInstance> replicateSubGraph(Deployment deployment, InternalComponentInstanceGroup list, VMInstance vmi){
-        return new ReplicateSubGraph(this, list, vmi).applyTo(deployment);
+    public Map<InternalComponentInstance, InternalComponentInstance> replicateSubGraph(Deployment deployment, VMInstance vmiSource, VMInstance vmiDestination){
+        return new ReplicateSubGraph(this, deployment, vmiSource, vmiDestination).applyTo(deployment);
     }
 }

@@ -139,7 +139,7 @@ public class OpenStackConnector implements Connector{
             NodeMetadata nm=getVMById(vmi.getId());
             ServerApi serverApi1=serverApi.getServerApiForZone(vmi.getType().getRegion());
             journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName()+" "+nm.getId()+" :: "+vmi.getType().getRegion());
-            id=serverApi1.createImageFromServer(vmi.getName()+"-image",nm.getId());
+            id=serverApi1.createImageFromServer(vmi.getName()+"-image",nm.getId().split("/")[1]);
             String status="";
             while (!status.toLowerCase().equals("available")){
                 Image im=novaComputeService.getImage(vmi.getType().getRegion()+"/"+id);
@@ -330,7 +330,7 @@ public class OpenStackConnector implements Connector{
 
             if(!vm.getImageId().equals("")){
                 String fullId="";
-                if((vm.getRegion() != null) && (!vm.getRegion().equals(""))){
+                if((vm.getRegion() != null) && (!vm.getRegion().equals("")) && (!vm.getImageId().contains("/"))){
                     journal.log(Level.INFO, ">> Region: " +vm.getRegion());
                     fullId=vm.getRegion()+"/"+vm.getImageId();
                 }else{

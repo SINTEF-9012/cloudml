@@ -34,10 +34,11 @@ import java.io.InputStreamReader;
 public class PowerShellConnector {
     private final OutputCollector standardOutput;
     private final OutputCollector standardError;
+    private final Process p;
 
     public PowerShellConnector(String commandLine) throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder(commandLine.split("\\s+"));
-        Process p = builder.start();
+        p = builder.start();
         p.getOutputStream().close();
         standardOutput = new OutputCollector(p.getInputStream());
         standardError = new OutputCollector(p.getErrorStream());
@@ -48,7 +49,7 @@ public class PowerShellConnector {
 
     public PowerShellConnector(String... cmd) throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder(cmd);
-        Process p = builder.start();
+        p = builder.start();
         p.getOutputStream().close();
         standardOutput = new OutputCollector(p.getInputStream());
         standardError = new OutputCollector(p.getErrorStream());
@@ -60,7 +61,7 @@ public class PowerShellConnector {
     public PowerShellConnector(File directory, String... cmd) throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder(cmd);
         builder.directory(directory);
-        Process p = builder.start();
+        p = builder.start();
         p.getOutputStream().close();
         standardOutput = new OutputCollector(p.getInputStream());
         standardError = new OutputCollector(p.getErrorStream());
@@ -68,6 +69,10 @@ public class PowerShellConnector {
         standardOutput.join();
         standardError.join();
         p.waitFor();
+    }
+
+    public void destroy(){
+        p.destroy();
     }
 
     public String getStandardOutput() {

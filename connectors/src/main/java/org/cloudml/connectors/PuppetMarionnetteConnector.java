@@ -58,20 +58,45 @@ public class PuppetMarionnetteConnector {
 
     private void startPuppetAgent(String key, String user, String passwd, String host, String ip){
         if(isWindows){
-            journal.log(Level.INFO, ">> STDOUT: Not yet implemented");
+            //startPuppetOnWindows(passwd, ip);
         }else{
             SSHConnector sc=new SSHConnector(key,user,ip, passwd);
             sc.execCommandSsh("puppet agent -t");
         }
     }
 
+    private void startPuppetOnWindows(String passwd, String ip){
+        PowerShellConnector run = null;
+        try {
+            journal.log(Level.INFO, ">> Running: puppet agent -t");
+            String command = "powershell  \".\\startPuppet.ps1 " + passwd + " " + ip + "\"";
+            run = new PowerShellConnector(command);
+            journal.log(Level.INFO, ">> STDOUT: " + run.getStandardOutput());
+            journal.log(Level.INFO, ">> STDERR: " + run.getStandardError());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void configureHostnameWindows(String passwd, String ip, String masterEndpoint,String hostname){
         PowerShellConnector run = null;
         try {
+            journal.log(Level.INFO, ">> Configuring hostname and installing Puppet ...");
+            //manage the certificates
+            manageCertificates(hostname);
             String command = "powershell  \".\\connect.ps1 " + passwd + " " + ip +" "+ hostname+" "+masterEndpoint+ "\"";
             run = new PowerShellConnector(command);
             journal.log(Level.INFO, ">> STDOUT: " + run.getStandardOutput());
             journal.log(Level.INFO, ">> STDERR: " + run.getStandardError());
+            run.destroy();
+            //need to restart, after updating hostname, crappy fix
+            try {
+                Thread.sleep(90000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -90,6 +115,7 @@ public class PuppetMarionnetteConnector {
             e.printStackTrace();
         }
         sc.execCommandSsh("echo \"server = puppet-master-01\" >> /etc/puppet/puppet.conf; echo \""+masterEndpoint+"    puppet-master-01\" >>  /etc/hosts");
+        manageCertificates(hostname);
     }
 
     public void configureHostname(String key, String user, String passwd, String ip, String masterEndpoint,String hostname, String cmd){
@@ -115,6 +141,16 @@ public class PuppetMarionnetteConnector {
                 notDone=false;
             }
         }
+    }
+
+    public StringBuffer touchSiteFile(){
+        StringBuffer sb=new StringBuffer();
+        try {
+            sb= getRequest("http://"+endpoint+"/cgi-bin/touch-site");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return sb;
     }
 
     private StringBuffer removeCertificate(String id){
