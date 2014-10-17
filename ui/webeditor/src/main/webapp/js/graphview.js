@@ -503,6 +503,7 @@ function stringifyRoot(){
 function getData(inputJSONString) {
     // remove the svg and the selection area (brush)
     d3.selectAll("svg").remove();
+    d3.selectAll(".popover").remove();
     brush = null;
     root = eval('(' + inputJSONString + ')');
     currentJSON = inputJSONString;
@@ -586,56 +587,6 @@ function getData(inputJSONString) {
     */
     graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
 
-
-    // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
-    graphNodes.forEach(function (d){
-        // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
-        if(connectedToCloudMLServer){
-            d.socket = new WebSocket(cloudMLServerHost);
-            d.socket.onopen = function(){
-                var message = 
-                    "!getSnapshot"
-                + '\n' 
-                + "  path : /componentInstances[name='" + d.name + "']";
-                sendMessageFromSocket(d.socket, message);
-            }
-            d.socket.onmessage = function(msg){
-                if(msg.data.indexOf("GetSnapshot") >= 0){
-                    try{
-                        var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
-                    }catch (error) {
-                        console.log(error);
-                    }
-                    if(typeof json.content.status != 'undefined'){
-                        if(json.content.status != null)
-                            d.status = json.content.status;
-                    }
-
-                    if(typeof json.content.properties != 'undefined'){
-                        var cpuLoad = getPropValFromCloudMLElement(json.content, "cpu");
-                        if(cpuLoad != null) {
-                            setOrCreatePropValOfCloudMLElement(d, "cpu", cpuLoad);
-                        }
-                    }
-                    if(typeof json.content.id != 'undefined'){
-                        if(json.content.id != null)
-                            d.id = json.content.id;
-                    }
-                    if(typeof json.content.publicAddress != 'undefined'){
-                        if(json.content.publicAddress != null)
-                            d.publicAddress = json.content.publicAddress;
-                    }
-                }
-            }
-            d.socket.onclose = function(){
-                console.log("socket closed for " + d.name);
-            }
-            d.socket.onerror = function(error){
-                console.log("error for node " + d.name + d.socket.readyState);
-            }
-
-        }
-    });
     graphNodes.forEach(function(d){
         // POPOVERS!!: Watch the values for the following properties for change, when one occurs - trigger a refresh of the popover/tooltip
         watch(d, ['properties', 'status', 'publicAddress'], function(){
@@ -1051,11 +1002,11 @@ function getNodePopover(node){
     if(typeof node.properties != "undefined"){
         var cpuLoad = getPropValFromCloudMLElement(node,"cpu");
         // TODO add this back when necessary
-//        if(cpuLoad != null){
-//            result += '<br/>';
-//            result += 'cpu load (%): ';
-//            result += cpuLoad;
-//        }
+        //        if(cpuLoad != null){
+        //            result += '<br/>';
+        //            result += 'cpu load (%): ';
+        //            result += cpuLoad;
+        //        }
     }
     return result;
 }
@@ -1063,7 +1014,62 @@ function getNodePopover(node){
 // update the graph layout
 function update(){
     allNodesGroup = svg.select('.nodes');
+    
+    // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
+    // need to have this check on each update in case there are new nodes or we just connected to the CloudML server
+    if(connectedToCloudMLServer){
+        graphNodes.forEach(function (d){
+            // if node already has a socket, skip
+            if(!d.socket){
+                // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
 
+                d.socket = new WebSocket(cloudMLServerHost);
+                d.socket.onopen = function(){
+                    var message = 
+                        "!getSnapshot"
+                    + '\n' 
+                    + "  path : /componentInstances[name='" + d.name + "']";
+                    sendMessageFromSocket(d.socket, message);
+                }
+                d.socket.onmessage = function(msg){
+                    if(msg.data.indexOf("GetSnapshot") >= 0){
+                        try{
+                            var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+                        }catch (error) {
+                            console.log(error);
+                        }
+                        if(typeof json.content.status != 'undefined'){
+                            if(json.content.status != null)
+                                d.status = json.content.status;
+                        }
+
+                        if(typeof json.content.properties != 'undefined'){
+                            var cpuLoad = getPropValFromCloudMLElement(json.content, "cpu");
+                            if(cpuLoad != null) {
+                                setOrCreatePropValOfCloudMLElement(d, "cpu", cpuLoad);
+                            }
+                        }
+                        if(typeof json.content.id != 'undefined'){
+                            if(json.content.id != null)
+                                d.id = json.content.id;
+                        }
+                        if(typeof json.content.publicAddress != 'undefined'){
+                            if(json.content.publicAddress != null)
+                                d.publicAddress = json.content.publicAddress;
+                        }
+                    }
+                }
+                d.socket.onclose = function(){
+                    console.log("socket closed for " + d.name);
+                }
+                d.socket.onerror = function(error){
+                    console.log("error for node " + d.name + d.socket.readyState);
+                }
+
+            }
+        });
+    };
+    
     var nodeDataReference = allNodesGroup.selectAll('g').data(graphNodes);
 
     // remove deleted nodes from graph
@@ -1178,7 +1184,7 @@ function update(){
              );
 
     }
-
+    
     // create a circle SVG element to represent each node
     nodeGroup.append("svg:circle")
     .attr({

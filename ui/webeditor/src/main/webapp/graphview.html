@@ -141,7 +141,7 @@
 					</div>
 				</div>
 				<div>
-					<a class="btn" data-dismiss="modal" onclick="loadFile('myModal'); connectedToCloudMLServer = false;">Load</a>
+					<a class="btn" data-dismiss="modal" onclick="loadFile('myModal');">Load</a>
 				</div><br/>
 				<h3>Connect to a CloudML Server</h3><br/>
 				<div class="span4">
@@ -149,7 +149,7 @@
 						<div class="input-group">
 							<input type="text" id="url" class="form-control" placeholder="URL">
 							<span class="input-group-btn">
-								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());cloudMLServerHost = $("#url").val(); connectedToCloudMLServer = true; send("!listenToAny");send("!getSnapshot" + "\n" + "  path : /")' type="button">Go!</button>
+								<button class="btn btn-default" data-dismiss="modal" onclick='connect($("#url").val());cloudMLServerHost = $("#url").val();  send("!listenToAny");send("!getSnapshot" + "\n" + "  path : /")' type="button">Go!</button>
 							</span>
 						</div>
 					</div>

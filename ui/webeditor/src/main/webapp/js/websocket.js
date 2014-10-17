@@ -41,7 +41,8 @@ function connect(host){
             socket = new WebSocket(host);
         }
         socket.onopen = function(){  
-            alertMessage("success","Connected to CloudML server",3000); 
+            alertMessage("success","Connected to CloudML server",3000);
+            connectedToCloudMLServer = true;
             ready=true;
         }  
 
@@ -123,6 +124,7 @@ function connect(host){
         socket.onclose = function(){
             ready=false;
             alertMessage("success",'Connection closed: '+socket.readyState,10000);  
+            connectedToCloudMLServer = false;
         }
 
         socket.onerror = function(error){
