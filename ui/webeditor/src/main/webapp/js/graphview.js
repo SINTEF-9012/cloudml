@@ -577,7 +577,6 @@ function getData(inputJSONString) {
         layoutExtCompInstances[i].foldedSubNodes = [];
         layoutExtCompInstances[i].foldedSubEdges = [];
         layoutExtCompInstances[i]._type = "ExternalComponent";
-        layoutExtCompInstances[i].publicAddress = "no address given.";
     }
 
     /*
@@ -1054,6 +1053,7 @@ function update(){
                                 d.id = json.content.id;
                         }
                         if(typeof json.content.publicAddress != 'undefined'){
+                            console.log("HERE!!");
                             if(json.content.publicAddress != null)
                                 d.publicAddress = json.content.publicAddress;
                         }
