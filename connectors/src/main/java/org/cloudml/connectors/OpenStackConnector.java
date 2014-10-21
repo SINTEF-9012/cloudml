@@ -39,7 +39,6 @@ import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Property;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
-import org.cloudml.mrt.Coordinator;
 import org.jclouds.ContextBuilder;
 
 

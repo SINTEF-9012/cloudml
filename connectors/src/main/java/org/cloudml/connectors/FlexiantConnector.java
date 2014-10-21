@@ -42,7 +42,6 @@ import org.cloudml.core.VMInstance;
 import org.cloudml.core.Property;
 
 import net.flexiant.extility.*;
-import org.cloudml.mrt.Coordinator;
 
 public class FlexiantConnector implements Connector{
 

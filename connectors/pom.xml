@@ -38,6 +38,9 @@
                     <wsdlLocation>https://api.sd1.flexiant.net:4442/userapi?wsdl</wsdlLocation>
                     <keep>true</keep>
                     <xnocompile>false</xnocompile>
+                    <vmArgs>
+                        <vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
+                    </vmArgs>
                 </configuration>
             </plugin>
         </plugins>

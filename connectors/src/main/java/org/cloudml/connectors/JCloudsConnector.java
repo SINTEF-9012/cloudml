@@ -39,7 +39,6 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.cloudml.core.*;
-import org.cloudml.mrt.Coordinator;
 import org.jclouds.Constants;
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
@@ -58,7 +57,6 @@ import org.jclouds.io.Payloads;
 import org.jclouds.logging.config.NullLoggingModule;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
-import org.cloudml.mrt.SimpleModelRepo;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;

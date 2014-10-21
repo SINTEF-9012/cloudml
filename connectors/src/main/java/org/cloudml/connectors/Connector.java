@@ -24,7 +24,6 @@ package org.cloudml.connectors;
 
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.VMInstance;
-import org.cloudml.mrt.Coordinator;
 
 import java.util.HashMap;
 
