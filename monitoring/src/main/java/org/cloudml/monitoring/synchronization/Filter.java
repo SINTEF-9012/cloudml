@@ -132,7 +132,7 @@ public class Filter {
         String id = toTranslate.getName();
         toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType().getName()));
-        toReturn.addRequiredComponent(toTranslate.getRequiredExecutionPlatform().getName());
+        toReturn.addRequiredComponent(toTranslate.externalHost().getName());
         return toReturn;
     }
     //Translate a cloud provider from cloudML to Monitoring Platform QoS-model

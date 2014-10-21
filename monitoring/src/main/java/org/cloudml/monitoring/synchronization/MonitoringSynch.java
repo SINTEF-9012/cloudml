@@ -79,6 +79,14 @@ public class MonitoringSynch {
         ComponentInstanceGroup supportList = new ComponentInstanceGroup();
         supportList.addAll(removedECs);
         VMInstanceGroup removedVMs = supportList.onlyVMs();
+
+        for(int i = 0; i<removedICs.size() && modelMatching;i++){
+            int code = request.deleteInstances(removedICs.get(i).getName());
+            if(code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
+                modelMatching = false;
+            }
+        }
+
         for(VMInstance vm : removedVMs){
             if(modelMatching) {
                 int code = request.deleteInstances(vm.getName());
@@ -88,12 +96,6 @@ public class MonitoringSynch {
             }
         }
 
-        for(int i = 0; i<removedICs.size() && modelMatching;i++){
-            int code = request.deleteInstances(removedICs.get(i).getName());
-            if(code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
-                modelMatching = false;
-            }
-        }
         return modelMatching;
     }
 
