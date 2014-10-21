@@ -1013,7 +1013,7 @@ function getNodePopover(node){
 // update the graph layout
 function update(){
     allNodesGroup = svg.select('.nodes');
-    
+
     // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
     // need to have this check on each update in case there are new nodes or we just connected to the CloudML server
     if(connectedToCloudMLServer){
@@ -1053,7 +1053,6 @@ function update(){
                                 d.id = json.content.id;
                         }
                         if(typeof json.content.publicAddress != 'undefined'){
-                            console.log("HERE!!");
                             if(json.content.publicAddress != null)
                                 d.publicAddress = json.content.publicAddress;
                         }
@@ -1069,7 +1068,7 @@ function update(){
             }
         });
     };
-    
+
     var nodeDataReference = allNodesGroup.selectAll('g').data(graphNodes);
 
     // remove deleted nodes from graph
@@ -1184,7 +1183,7 @@ function update(){
              );
 
     }
-    
+
     // create a circle SVG element to represent each node
     nodeGroup.append("svg:circle")
     .attr({
@@ -1874,29 +1873,75 @@ function getNodeDatumHostFromSelection(datum, selection){
     return result;
 }
 
+var dedicatedSocket;
 // call the 'scale out' command for an input node
 function scaleOutNode(node){
-    // get the identifier of the node
-    var id = getNodeId(node);
-    // value null is returned in case of an error; we don't perform an action in this case
-    if(id == null)
-        return;
-    // form the message to initiate the scale out action
-    var message = "!extended { name: ScaleOut, params: [" + id + "] }";
-    sendMessageFromSocket(node.socket, message);
-    alertMessage("success","Initiated scaling out action for node " + node.name + "!", 5000); 
-}
+    if(!cloudMLServerHost){
+        alertMessage("error",'Invalid CloudML server host. ', 5000);
+        console.log("host", cloudMLServerHost);
+        return null;
+    }
+    // open a dedicated socket for retrieving the VM identifier so that it doesn't get interference
+    // with other getSnapshot messages
+    dedicatedSocket = new WebSocket(cloudMLServerHost);
 
-// get the identifier of an input node
-function getNodeId(node){
-    if(node.socket){
-        // send a message that retrieves the current node state (the listener updates the 'id' field)
-        // this is in case the ID for the node has been reassigned and the listener did not get notified
+    // send a message that retrieves the current node state (the listener updates the 'id' field)
+    // this is in case the ID for the node has been reassigned and the listener did not get notified
+    dedicatedSocket.onopen = function(){
         var message = 
             "!getSnapshot"
         + '\n' 
         + "  path : /componentInstances[name='" + node.name + "']";
-        sendMessageFromSocket(node.socket, message);
+        sendMessageFromSocket(dedicatedSocket, message);
+
+    }
+    dedicatedSocket.onmessage = function(msg){
+        if(msg.data.indexOf("GetSnapshot") >= 0){
+            try{
+                var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+            }catch (error) {
+                alertMessage("error",'Error parsing YAML response from CloudML server.', 5000);
+                console.log(error);
+            }
+            
+            if(typeof json.content.id != 'undefined'){
+                if(json.content.id != null){
+                    if(json.content.id != ''){
+                        node.id = json.content.id;
+                        // form the message to initiate the scale out action
+                        var message = "!extended { name: ScaleOut, params: [" + node.id + "] }";
+                        sendMessageFromSocket(node.socket, message);
+                        alertMessage("success","Initiated scaling out action for node " 
+                                     + node.name + "!", 3000);
+                        
+                        // HACK - wait 3 more seconds and refresh deployment model
+                        setTimeout(function () {
+                           send("!getSnapshot {path : /}");
+                        }, 3000);
+                    }
+                }
+            }
+            if(typeof json.content.publicAddress != 'undefined'){
+                if(json.content.publicAddress != null)
+                    node.publicAddress = json.content.publicAddress;
+            }
+            dedicatedSocket.close();
+        }
+
+
+
+    }
+    dedicatedSocket.onclose = function(){
+        console.log("dedicated socket closed for " + node.name);
+    }
+    dedicatedSocket.onerror = function(error){
+        console.log("error for node " + node.name, dedicatedSocket.readyState);
+    }
+
+
+    // HACK - displays messages in case there is a problem retrieving the ID of the node
+    // after 5 seconds
+    setTimeout(function () {
         if(typeof node.id == 'undefined'){
             alertMessage("error",'The selected node does not have an identifier.', 5000);
             return null;
@@ -1906,18 +1951,12 @@ function getNodeId(node){
             return null;
         }
         if(node.id == ''){
-            alertMessage("error",'The selected node has an empty identifier.', 5000);
-            return null;
+            if(node.id == ''){
+                alertMessage("error",'The selected node has an empty identifier.', 5000);
+                return null;
+            }
         }
-        return node.id;
-    }
-    else{
-        alertMessage("error",'Something went wrong during scaling action: No socket associated with the current node.');
-        return null;
-    }
-
-
-
-
+        dedicatedSocket.close();
+    }, 3000);
 }
 
