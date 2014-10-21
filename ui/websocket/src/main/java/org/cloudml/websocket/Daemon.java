@@ -61,7 +61,7 @@ public class Daemon
         //initWithSample(coord);
 
         coord.start();
-        coord.process("!extended { name : LoadDeployment, params : ['sample://sensapp'] }", new SystemOutPeerStub("test"));
+        /*coord.process("!extended { name : LoadDeployment, params : ['sample://sensapp'] }", new SystemOutPeerStub("test"));
         try {
             Thread.sleep(10000);
         } catch (InterruptedException ex) {
@@ -69,7 +69,7 @@ public class Daemon
         }
         
         System.out.println("changed!");
-        coord.updateStatus("sensapp-ml1", ComponentInstance.State.PENDING, "some");
+        coord.updateStatus("sensapp-ml1", ComponentInstance.State.PENDING, "some");*/
     }
     
     public static Deployment initWithSenseApp(){

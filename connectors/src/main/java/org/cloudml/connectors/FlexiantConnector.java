@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +42,7 @@ import org.cloudml.core.VMInstance;
 import org.cloudml.core.Property;
 
 import net.flexiant.extility.*;
+import org.cloudml.mrt.Coordinator;
 
 public class FlexiantConnector implements Connector{
 
@@ -49,6 +51,7 @@ public class FlexiantConnector implements Connector{
     private final String endpoint;
     private UserService service;
     private BindingProvider portBP;
+    private HashMap<String,String> runtimeInformation=new HashMap<String, String>();
 
     @SuppressWarnings("restriction")
     public FlexiantConnector(String endPoint, String login, String secretKey) throws MalformedURLException{
@@ -149,7 +152,7 @@ public class FlexiantConnector implements Connector{
         }
     }
 
-    public ComponentInstance.State createInstance(VMInstance a){
+    public HashMap<String,String> createInstance(VMInstance a){
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         try {
             Server template = new Server();
@@ -209,7 +212,8 @@ public class FlexiantConnector implements Connector{
             a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
             Server temp=(Server)findObjectResourceByName(a.getName(), ResourceType.SERVER);
             a.setCore(temp.getCpu());
-            a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
+            //a.setPublicAddress(temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
+            runtimeInformation.put("publicAddress", temp.getNics().get(0).getIpAddresses().get(0).getIpAddress());
             journal.log(Level.INFO, ">> Running VM: " + a.getName() + " id: " + a.getId() + " with public address: " + a.getPublicAddress());
             //a.setStatusAsRunning();
             state = ComponentInstance.State.RUNNING;
@@ -224,7 +228,8 @@ public class FlexiantConnector implements Connector{
             //a.setStatusAsError();
             state = ComponentInstance.State.ERROR;
         }
-        return state;
+        runtimeInformation.put("status", state.toString());
+        return runtimeInformation;
     }
 
     public void execCommand(VMInstance n, String command, String login, String keyPath){

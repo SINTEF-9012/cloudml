@@ -50,7 +50,7 @@ import org.yaml.snakeyaml.Yaml;
  * @author Hui Song
  */
 public class Coordinator {
-    
+
     public static Coordinator SINGLE_INSTANCE = null;
 
     public static final String ADDITIONAL_PREFIX = "!additional";
@@ -71,7 +71,7 @@ public class Coordinator {
 
     }
 
-    public void updateStatus(String name, ComponentInstance.State newState, String identity) {
+    public void updateStatus(String name, String newState, String identity) {
         //A PeerStub identifies who launches the modifications
         PeerStub committer = new SystemOutPeerStub(identity);
 
@@ -83,9 +83,9 @@ public class Coordinator {
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
             if (res !=null) {
                 ComponentInstance.State oldState = ComponentInstance.State.valueOf(res.toString());
-                if (oldState != newState) {
+                if (!oldState.toString().equals(newState)) {
                     journal.log(Level.INFO, ">> Updating the model..");
-                    wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState.toString() + ""));
+                    wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
                     journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
                 }
             }
@@ -93,6 +93,23 @@ public class Coordinator {
         } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
             journal.log(Level.INFO, "Machine: " + name + " not in this model");
         }
+    }
+
+    public void updateIP(String name, String ip, String identity){
+        PeerStub committer = new SystemOutPeerStub(identity);
+        CmdWrapper wrapper = new CmdWrapper(this, committer);
+        try {
+            Object res = wrapper.eGet("/componentInstances[name='" + name + "']/publicAddress");
+            if (res !=null) {
+                journal.log(Level.INFO, ">> Updating the model..");
+                wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("publicAddress", "" + ip + ""));
+                journal.log(Level.INFO, ">> IP of: " + name + " changed in: " + ip + "");
+            }
+
+        } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
+            journal.log(Level.INFO, "Machine: " + name + " not in this model");
+        }
+
     }
 
     public void setModelRepo(ModelRepo repo) {

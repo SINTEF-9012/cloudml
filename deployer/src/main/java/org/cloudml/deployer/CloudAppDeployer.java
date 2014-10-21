@@ -44,6 +44,7 @@ import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.SimpleModelRepo;
+import org.cloudml.mrt.sample.SystemOutPeerStub;
 
 /*
  * The deployment Engine
@@ -605,9 +606,11 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING, CloudAppDeployer.class.getName());
-        ComponentInstance.State state = jc.createInstance(n);
-        coordinator.updateStatus(n.getName(), state, CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
+        HashMap<String,String> runtimeInformation = jc.createInstance(n);
+        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
+
+        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         if (statusMonitorActive) {
             statusMonitor.attachModule(jc);
@@ -859,7 +862,7 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED, CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), CloudAppDeployer.class.getName());
         //old way without using mrt
         //n.setStatusAsStopped();
     }

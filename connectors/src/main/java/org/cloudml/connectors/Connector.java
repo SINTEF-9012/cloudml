@@ -24,12 +24,15 @@ package org.cloudml.connectors;
 
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.VMInstance;
+import org.cloudml.mrt.Coordinator;
+
+import java.util.HashMap;
 
 public interface Connector {
 	
 	public void execCommand(String id, String command, String login, String key);
 	
-	public ComponentInstance.State createInstance(VMInstance a);
+	public HashMap<String,String> createInstance(VMInstance a);
 	
 	public void destroyVM(String id);
 	

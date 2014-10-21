@@ -29,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -38,6 +39,7 @@ import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Property;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
+import org.cloudml.mrt.Coordinator;
 import org.jclouds.ContextBuilder;
 
 
@@ -72,6 +74,7 @@ public class OpenStackConnector implements Connector{
     private ComputeService novaComputeService;
     private final String endpoint;
     private NovaApi serverApi;
+    private HashMap<String,String> runtimeInformation=new HashMap<String, String>();
 
     public OpenStackConnector(String endPoint,String provider,String login,String secretKey){
         this.endpoint=endPoint;
@@ -309,7 +312,7 @@ public class OpenStackConnector implements Connector{
      * @param a description of the VM to be created
      * @return
      */
-    public ComponentInstance.State createInstance(VMInstance a){
+    public HashMap<String,String> createInstance(VMInstance a){
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         VM vm = a.getType();
         ComputeMetadata cm= getVMByName(a.getName());
@@ -395,9 +398,11 @@ public class OpenStackConnector implements Connector{
             }
 
             if(nodeInstance.getPublicAddresses().iterator().hasNext()){
-                a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
+                //a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
+                runtimeInformation.put("publicAddress",nodeInstance.getPublicAddresses().iterator().next());
             }else{
-                a.setPublicAddress(nodeInstance.getPrivateAddresses().iterator().next());
+                //a.setPublicAddress(nodeInstance.getPrivateAddresses().iterator().next());
+                runtimeInformation.put("publicAddress",nodeInstance.getPrivateAddresses().iterator().next());
             }
 
             if(nodeInstance.getHardware().getProcessors().iterator().hasNext())
@@ -407,7 +412,8 @@ public class OpenStackConnector implements Connector{
 
             state = ComponentInstance.State.RUNNING;
         }
-        return state;
+        runtimeInformation.put("status",state.toString());
+        return runtimeInformation;
     }
 
     /**
