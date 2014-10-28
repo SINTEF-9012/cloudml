@@ -33,6 +33,7 @@ import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.ProviderGroup;
 import org.cloudml.core.collections.VMInstanceGroup;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * @author Francesco di Forenza
@@ -41,6 +42,9 @@ import java.util.List;
  */
 
 public class Filter {
+
+    private static final java.util.logging.Logger journal = java.util.logging.Logger.getLogger(Filter.class.getName());
+
 
     /**
      * Convert a Deployment model from CloudMl in a format
@@ -132,7 +136,11 @@ public class Filter {
         String id = toTranslate.getName();
         toReturn.setId(id);
         toReturn.setType(String.valueOf(toTranslate.getType().getName()));
-        toReturn.addRequiredComponent(toTranslate.externalHost().getName());
+        try {
+            toReturn.addRequiredComponent(toTranslate.externalHost().getName());
+        }catch(NullPointerException e){
+            journal.log(Level.INFO, "NullPointer: "+id );
+        }
         return toReturn;
     }
     //Translate a cloud provider from cloudML to Monitoring Platform QoS-model

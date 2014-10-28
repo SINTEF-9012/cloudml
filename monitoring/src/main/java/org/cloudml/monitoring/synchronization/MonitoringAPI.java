@@ -25,6 +25,7 @@ package org.cloudml.monitoring.synchronization;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
 import org.cloudml.core.ExternalComponent;
 
@@ -172,6 +173,7 @@ public class MonitoringAPI {
         int result;
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
+            journal.log(Level.INFO, ">> Deleting: "+id);
             result = HttpRequest.delete(url).code();
         } catch (Exception e) {
             result = NO_RESPONSE;
@@ -184,6 +186,9 @@ public class MonitoringAPI {
     private void printComponentname(Model model){
         for(VM vm : model.getvMs()){
             journal.log(Level.INFO, "VM name: "+vm.getId());
+        }
+        for(InternalComponent ic : model.getInternalComponents()){
+            journal.log(Level.INFO, "InternalComponent name : "+ic.getId());
         }
     }
 
