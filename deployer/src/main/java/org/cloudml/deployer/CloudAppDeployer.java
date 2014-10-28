@@ -1032,13 +1032,15 @@ public class CloudAppDeployer {
             currentModel.getComponents().add(v);
         }
         VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
-        Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
-        c2.createInstance(ci);
-        c2.closeConnection();
 
         //3. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
         Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
 
+        // For synchronization purpose with provision once the model has been fully updated
+        Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
+        HashMap<String,String> result=c2.createInstance(ci);
+        c2.closeConnection();
+        coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
 
         //4. configure the new VM
         //execute the configuration bindings
@@ -1056,6 +1058,7 @@ public class CloudAppDeployer {
 
         //execute configure commands on the components
         for(ComponentInstance ici: listOfAllComponentImpacted){
+            coordinator.updateStatusInternalComponent(ici.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
             if(ici.isInternal()){
                 c2=ConnectorFactory.createIaaSConnector(v.getProvider());
                 for(Resource r: ici.getType().getResources()){
@@ -1063,6 +1066,7 @@ public class CloudAppDeployer {
                 }
                 c2.closeConnection();
             }
+            coordinator.updateStatusInternalComponent(ici.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
         }
 
         //execute start commands on the components
@@ -1074,6 +1078,7 @@ public class CloudAppDeployer {
                 }
                 c2.closeConnection();
             }
+            coordinator.updateStatusInternalComponent(ici.getName(), State.UNINSTALLED.toString(), CloudAppDeployer.class.getName());
         }
 
         journal.log(Level.INFO, ">> Scaling completed!");
