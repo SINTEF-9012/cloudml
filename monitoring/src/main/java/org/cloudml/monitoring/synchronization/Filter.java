@@ -22,18 +22,16 @@ package org.cloudml.monitoring.synchronization;
  * <http://www.gnu.org/licenses/>.
  */
 
-import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.CloudProvider;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.Location;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
-import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.ExternalComponentInstance;
-import org.cloudml.core.VMInstance;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
+import org.cloudml.core.*;
+import org.cloudml.core.Provider;
 import org.cloudml.core.collections.ComponentInstanceGroup;
-import org.cloudml.core.collections.ExternalComponentInstanceGroup;
+import org.cloudml.core.collections.InternalComponentInstanceGroup;
+import org.cloudml.core.collections.ProviderGroup;
 import org.cloudml.core.collections.VMInstanceGroup;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,14 +48,16 @@ public class Filter {
      *
      * @param deployment the deployment model to convert
      */
-    public static ModelUpdates fromCloudmlToModaMP(Deployment deployment) {
+    public static Model fromCloudmlToModaMP(Deployment deployment) {
         //get the relevant part of the model
         //create a new list for avoid changes in the original one
         ComponentInstanceGroup instances = new ComponentInstanceGroup();
         instances.addAll(deployment.getComponentInstances());
 
+        ProviderGroup providers = new ProviderGroup();
+        providers.addAll(deployment.getProviders());
         //call the actual translator
-        return getModelUpdates(instances);
+        return getModelUpdates(instances, providers);
 
     }
 
@@ -65,87 +65,92 @@ public class Filter {
      * Convert a list of ExternalCOmpnents model from CloudMl in a format
      * compatible with MODAClouds Monitoring Platform's APIs
      *
-     * @param listToConvert the list
+     * @param addedECs the list
      */
-    public static ModelUpdates fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> listToConvert) {
+    public static Model fromCloudmlToModaMP(List<ExternalComponentInstance<? extends org.cloudml.core.ExternalComponent>> addedECs,
+                                            List<InternalComponentInstance> addedICs) {
         //create a new list for avoid changes in the original one
         ComponentInstanceGroup supportList = new ComponentInstanceGroup();
-        supportList.addAll(listToConvert);
+        supportList.addAll(addedECs);
+        supportList.addAll(addedICs);
 
         //call the actual translator
-        return getModelUpdates(supportList);
+        return getModelUpdates(supportList, null);
     }
 
     //this is the core method the other one are just to prepare the lists for this one
-    private static ModelUpdates getModelUpdates(ComponentInstanceGroup instances) {
-        //prepare the lists
-        List<Component> toReturnComponent = new ArrayList<Component>();
-        List<ExternalComponent> toReturnExternalComponent = new ArrayList<ExternalComponent>();
-        List<VM> toReturnVM = new ArrayList<VM>();
+    private static Model getModelUpdates(ComponentInstanceGroup instances, ProviderGroup providers) {
+
+        Model model = new Model();
 
         //go top down to remove the synched ones
 
         //prepare the VMs list
         VMInstanceGroup VMs = instances.onlyVMs();
         for (VMInstance i : VMs) {
-            toReturnVM.add(fromCloudmlToModaMP(i));
+            String location = i.getType().getLocation();
+            if(!location.isEmpty()) {
+                model.add(fromCloudmlToModaMP(location));
+            }
+            model.add(fromCloudmlToModaMP(i));
             instances.remove(i);
         }
 
-        //prepare the ExternalComponents list
-        ExternalComponentInstanceGroup components = instances.onlyExternals();
-        for (ExternalComponentInstance i : components) {
-            toReturnExternalComponent.add(fromCloudmlToModaMP(i));
+        //prepare the InternalComponents list
+        InternalComponentInstanceGroup internalComponents = instances.onlyInternals();
+        for (InternalComponentInstance i : internalComponents) {
+            model.add(fromCloudmlToModaMP(i));
             instances.remove(i);
         }
 
-        //prepare the components list
-        //REALLY NECESSARY?
+        //prepare for providers list
+         if(providers!=null){
+             for (Provider i : providers) {
+                 model.add(fromCloudmlToModaMP(i));
+                 instances.remove(i);
+             }
+         }
 
-        return new ModelUpdates(toReturnComponent, toReturnExternalComponent, toReturnVM);
+        return model;
     }
 
-
-    //translate a single ExternalComponent
-    private static ExternalComponent fromCloudmlToModaMP(ExternalComponentInstance toTranslate) {
-        ExternalComponent toReturn = new ExternalComponent();
-        //KB entity field
-        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setUri(uri);
-        //Component field
-        toReturn.setId(toTranslate.getName());
-        //External components fields
-        toReturn.setUrl(toTranslate.getPublicAddress());
-        boolean started = false;
-        if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
-            started = true;
-        }
-        toReturn.setStarted(started);
-        toReturn.setCloudProvider(toTranslate.getType().asExternal().getProvider().getName());
-        return toReturn;
-    }
-
-    //Translate a single VM
+    //Translate a single VM from cloudML to Monitoring Platform QoS-model
     private static VM fromCloudmlToModaMP(VMInstance toTranslate) {
         VM toReturn = new VM();
         //KB entity field
-        String uri = "http://www.modaclouds.eu/rdfs/1.0/monitoring/"+toTranslate.getName()+"-1";
-        toReturn.setUri(uri);
-        //Component field
-        toReturn.setId(toTranslate.getName());
-        //External component fields
-        toReturn.setUrl(toTranslate.getPublicAddress());
-        boolean started = false;
-        if (toTranslate.getStatus() == ComponentInstance.State.RUNNING) {
-            started = true;
-        }
-        toReturn.setStarted(started);
+        String id = toTranslate.getName();
+        toReturn.setId(id);
+        toReturn.setType(String.valueOf(toTranslate.getType().getName()));
         toReturn.setCloudProvider(toTranslate.getType().getProvider().getName());
-        //VM fields
-        toReturn.setNumberOfCpus(toTranslate.getType().getMinCores());
+        toReturn.setLocation(toTranslate.getType().getLocation());
+        toReturn.setNumberOfCPUs(toTranslate.getCore());
         return toReturn;
     }
+    //Translate an internal component from cloudML to Monitoring Platform QoS-model
+    private static InternalComponent fromCloudmlToModaMP(InternalComponentInstance toTranslate){
+        InternalComponent toReturn = new InternalComponent();
+        String id = toTranslate.getName();
+        toReturn.setId(id);
+        toReturn.setType(String.valueOf(toTranslate.getType().getName()));
+        toReturn.addRequiredComponent(toTranslate.externalHost().getName());
+        return toReturn;
+    }
+    //Translate a cloud provider from cloudML to Monitoring Platform QoS-model
+    private static CloudProvider fromCloudmlToModaMP(Provider toTranslate){
+        CloudProvider toReturn = new CloudProvider();
+        String id = toTranslate.getName();
+        toReturn.setId(id);
+        toReturn.setType(String.valueOf(toTranslate.getName()));
 
-
+        return toReturn;
+    }
+    //Translate a location from cloudML to Monitoring Platform QoS-model
+    private static Location fromCloudmlToModaMP(String location){
+        Location toReturn = new Location();
+        toReturn.setId(location);
+        toReturn.setType(String.valueOf(location));
+        toReturn.setLocation(location);
+        return toReturn;
+    }
 
 }

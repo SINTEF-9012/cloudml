@@ -24,22 +24,17 @@ package test.cloudml.monitoring;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.Component;
+import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
-import it.polimi.modaclouds.qos_models.monitoring_ontology.ExternalComponent;
 import junit.framework.TestCase;
 import org.cloudml.core.Deployment;
 
-import org.cloudml.core.Property;
 import org.cloudml.core.builders.DeploymentBuilder;
-import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.monitoring.synchronization.Filter;
-import org.cloudml.monitoring.synchronization.ModelUpdates;
-import org.cloudml.monitoring.synchronization.ModelUpdatesExclusionStrategy;
+import org.cloudml.monitoring.synchronization.Model;
 import org.cloudml.monitoring.synchronization.MonitoringAPI;
+import org.cloudml.monitoring.synchronization.MonitoringSynch;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by user on 08.07.14.
@@ -49,66 +44,43 @@ public class Test extends TestCase {
         DeploymentBuilder dmb = org.cloudml.core.samples.SensApp.completeSensApp();
         Deployment dm = dmb.build();
 
-        /*
-        DeploymentBuilder dmb = org.cloudml.core.samples.PaasCloudBees.completeCloudBeesPaaS();
-        Deployment dm = dmb.build();
-        dm.getProviders().firstNamed("CloudBees").setName("beanstalk");
-        dm.getProviders().firstNamed("beanstalk").setCredentials(new FileCredentials("c:\\temp\\aws.credential"));
-        ExternalComponent c = dm.getComponents().onlyExternals().firstNamed("cbdb");
-        c.setServiceType("database");
-        c.setLogin("sintef");
-        c.setPasswd("password123");
-        c.getProperties().add(new Property("DB-Engine","MySQL"));
-        c.getProperties().add(new Property("DB-Version","5.6.17"));
-        c.getProperties().add(new Property("DB-Name","cbdb"));
-        System.out.println(dm);*/
+        Model updates = Filter.fromCloudmlToModaMP(dm);
 
-        ModelUpdates updates = Filter.fromCloudmlToModaMP(dm);
-
-        Gson gson = new GsonBuilder().setExclusionStrategies(new ModelUpdatesExclusionStrategy()).serializeNulls().create();
+        Gson gson = new GsonBuilder().serializeNulls().create();
         String json = gson.toJson(updates);
         System.out.println(json);
-        /*
-        MonitoringAPI monitoringAPI = new MonitoringAPI();
-        //an instance of the monitring manager should run il localhost
-        monitoringAPI.uploadDeployment("http://localhost:8170", updates);
-        */
+
+        MonitoringSynch.sendCurrentDeployment("http://localhost:8170", dm);
+
     }
 
     public void testUpload(){
-        List<VM> vms = new ArrayList<VM>();
-        List<Component> components = new ArrayList<Component>();
-        List<ExternalComponent> externalComponents = new ArrayList<ExternalComponent>();
 
-        for(int i = 0; i<1; i++){
+        Model model = new Model();
+
             VM vm = new VM();
-            vm.setId(Integer.toString(i));
-            vm.setNumberOfCpus(i);
-            vm.setUrl("NUOVO");
-            vms.add(vm);
-        }
+            vm.setId("frontend3");
+            vm.setCloudProvider("amazon");
+            vm.setNumberOfCPUs(2);
+            vm.setType(vm.getType());
+            model.add(vm);
 
-        for(int i = 0; i<2; i++){
-            Component component = new Component();
-            component.setId(Integer.toString(i)+"compNUOVOP");
-            component.setStarted(true);
-            component.setUrl("abcd-compoNUOVO");
-            components.add(component);
-        }
+            InternalComponent internalComponent = new InternalComponent();
+            internalComponent.setId("mic3");
 
-        for(int i = 0; i<3; i++){
-            ExternalComponent externalComponent = new ExternalComponent();
-            externalComponent.setId(Integer.toString(i)+"extcompNUOVO");
-            externalComponent.setStarted(false);
-            externalComponent.setUrl("abcd-extcompoNUOVO");
-            externalComponent.setCloudProvider("meNUOVO");
-            externalComponents.add(externalComponent);
-        }
+        internalComponent.addProvidedMethod("mic3-register");
+        internalComponent.addProvidedMethod("mic3-answer");
+        internalComponent.addProvidedMethod("mic3-save");
+        internalComponent.addRequiredComponent("frontend3");
+            internalComponent.setType(internalComponent.getType());
+            model.add(internalComponent);
 
-        ModelUpdates model = new ModelUpdates(components,externalComponents,vms);
 
-        MonitoringAPI monitor = new MonitoringAPI("http://localhost:8170");
+        //MonitoringAPI monitor = new MonitoringAPI("http://localhost:8170");
 
-        monitor.uploadDeployment(model);
+       // monitor.addInstances(model);
+
+        //monitor.deleteInstances("mic3");
+
     }
 }

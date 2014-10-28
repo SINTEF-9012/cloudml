@@ -20,24 +20,27 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.monitoring.metrics_observer.model;
+package org.cloudml.monitoring.metrics_observer.instance;
 
-public class Sparql_json_results {
-	
-	private Head head;
-	private Result results;
-	
-	public Head getHead() {
-		return head;
-	}
-	public void setHead(Head head) {
-		this.head = head;
-	}
-	public Result getResults() {
-		return results;
-	}
-	public void setResults(Result results) {
-		this.results = results;
-	}
+import it.polimi.modaclouds.monitoring.metrics_observer.MonitoringDatum;
+import it.polimi.modaclouds.monitoring.metrics_observer.MonitoringDatumHandler;
 
+import java.util.*;
+
+/**
+ * Sample class that handles the data coming from the observer
+ * In the getData() method there should be the code to store the
+ * data in the model
+ */
+public class MonitoringDatumHandlerInstance extends MonitoringDatumHandler {
+
+    /**
+     * see metric observer's documentation to have an example
+     * about how getData() should be overrided
+     *
+     */
+    @Override
+    public void getData(List<MonitoringDatum> monitoringDatums) {
+
+    }
 }

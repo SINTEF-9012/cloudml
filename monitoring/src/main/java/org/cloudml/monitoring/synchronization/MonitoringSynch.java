@@ -22,11 +22,12 @@
  */
 package org.cloudml.monitoring.synchronization;
 
-import org.cloudml.core.Deployment;
-import org.cloudml.core.ExternalComponent;
-import org.cloudml.core.ExternalComponentInstance;
+import org.cloudml.core.*;
+import org.cloudml.core.collections.ComponentInstanceGroup;
+import org.cloudml.core.collections.VMInstanceGroup;
 
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * @author Lorenzo Cianciaruso
@@ -40,10 +41,10 @@ public class MonitoringSynch {
      * @param currentDeployment current deployment model
      */
     public static void sendCurrentDeployment(String monitoringAddress, Deployment currentDeployment){
-        ModelUpdates model = Filter.fromCloudmlToModaMP(currentDeployment);
+        Model model = Filter.fromCloudmlToModaMP(currentDeployment);
+
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
         request.uploadDeployment(model);
-
     }
 
     /**
@@ -52,11 +53,11 @@ public class MonitoringSynch {
      * @param monitoringAddress address of the monitoring platform
      * @param addedECs added components
      */
-    public static void sendAddedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> addedECs) {
-        ModelUpdates added = Filter.fromCloudmlToModaMP(addedECs);
+    public static void sendAddedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> addedECs,
+                                           List<InternalComponentInstance> addedICs) {
+        Model added = Filter.fromCloudmlToModaMP(addedECs, addedICs);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
         request.addInstances(added);
-
     }
 
     /**
@@ -64,11 +65,38 @@ public class MonitoringSynch {
      * and then send the removed components to the MP
      * @param monitoringAddress address of the monitoring platform
      * @param removedECs removed components
+     * @return boolean, true if the models are synch, false if there is a mismatch
      */
-    public static void sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs) {
-        ModelUpdates removed = Filter.fromCloudmlToModaMP(removedECs);
-        //MonitoringAPI request = new MonitoringAPI(monitoringAddress);
-        //request.deleteInstances(removed);
+    public static boolean sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs,
+                                                List<InternalComponentInstance> removedICs) {
+        MonitoringAPI request = new MonitoringAPI(monitoringAddress);
+        boolean modelMatching = true;
 
+        //this cycles send the delete request for each component removed
+        //to the monitoring manager. In case the connection terminates
+        //with a NOT FOUND error means that there is a mismatch between the
+        //two models. In this case the whole model should be resent.
+        ComponentInstanceGroup supportList = new ComponentInstanceGroup();
+        supportList.addAll(removedECs);
+        VMInstanceGroup removedVMs = supportList.onlyVMs();
+
+        for(int i = 0; i<removedICs.size() && modelMatching;i++){
+            int code = request.deleteInstances(removedICs.get(i).getName());
+            if(code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
+                modelMatching = false;
+            }
+        }
+
+        for(VMInstance vm : removedVMs){
+            if(modelMatching) {
+                int code = request.deleteInstances(vm.getName());
+                if (code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
+                    modelMatching = false;
+                }
+            }
+        }
+
+        return modelMatching;
     }
+
 }

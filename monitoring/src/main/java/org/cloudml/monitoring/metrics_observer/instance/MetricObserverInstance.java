@@ -20,21 +20,22 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.monitoring.metrics_observer.model;
+package org.cloudml.monitoring.metrics_observer.instance;
 
-import java.util.ArrayList;
-import java.util.Map;
+import it.polimi.modaclouds.monitoring.metrics_observer.examples.CVSResultHandler;
 
-public class Result {
-	
-	private ArrayList<Map<String, Variable>> bindings;
+import it.polimi.modaclouds.monitoring.metrics_observer.MetricsObServer;
 
-	public ArrayList<Map<String, Variable>> getBindings() {
-		return bindings;
-	}
+/**
+ * Created by Lorenzo Cianciaruso on 06.09.14.
+ * This class extends the Metric Observer, just declares the constructor.
+ * The constructor must be called when a new observer must be created.
+ *
+ */
+public class MetricObserverInstance extends MetricsObServer {
 
-	public void setBindings(ArrayList<Map<String, Variable>> bindings) {
-		this.bindings = bindings;
-	}
-	
+    public MetricObserverInstance(int listeningPort) {
+        super(listeningPort, "/v1/results", CVSResultHandler.class);
+    }
+
 }
