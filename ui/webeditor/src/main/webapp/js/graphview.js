@@ -830,6 +830,18 @@ function createSVGDefs(){
     .attr('class','relationshipArrow')
     .attr('fill', stateColorMap['PENDING']);
 
+    svgDefs.append('svg:marker')
+    .attr('id', 'installedRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['INSTALLED']);
+
     // define gradients
     var pendingNodeGradient = svgDefs
     .append("svg:linearGradient")
