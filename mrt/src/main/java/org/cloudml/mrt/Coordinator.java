@@ -79,19 +79,15 @@ public class Coordinator {
 
         //Update the value of status
         try {
-            journal.log(Level.INFO, "#############################################/componentInstances[name='" + name + "']/status");
-            Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
-            if (res !=null) {
-                InternalComponentInstance.State oldState = InternalComponentInstance.State.valueOf(res.toString());
-                if (!oldState.toString().equals(newState)) {
-                    journal.log(Level.INFO, ">> Updating the model..");
-                    wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
-                    journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
-                }
-            }
+            Thread.sleep(1000);
+            journal.log(Level.INFO, ">> Updating the model..");
+            wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
+            journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
 
         } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
             journal.log(Level.INFO, "Machine: " + name + " not in this model");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -104,7 +100,6 @@ public class Coordinator {
 
         //Update the value of status
         try {
-            journal.log(Level.INFO, "#############################################/componentInstances[name='" + name + "']/status");
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
             if (res !=null) {
                 ComponentInstance.State oldState = ComponentInstance.State.valueOf(res.toString());
