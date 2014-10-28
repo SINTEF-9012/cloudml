@@ -1010,10 +1010,7 @@ function getNodePopover(node){
     return result;
 }
 
-// update the graph layout
-function update(){
-    allNodesGroup = svg.select('.nodes');
-
+function refreshNodeStates(){
     // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
     // need to have this check on each update in case there are new nodes or we just connected to the CloudML server
     if(connectedToCloudMLServer){
@@ -1068,6 +1065,11 @@ function update(){
             }
         });
     };
+}
+
+// update the graph layout
+function update(){
+    allNodesGroup = svg.select('.nodes');
 
     var nodeDataReference = allNodesGroup.selectAll('g').data(graphNodes);
 
@@ -1903,7 +1905,7 @@ function scaleOutNode(node){
                 alertMessage("error",'Error parsing YAML response from CloudML server.', 5000);
                 console.log(error);
             }
-            
+
             if(typeof json.content.id != 'undefined'){
                 if(json.content.id != null){
                     if(json.content.id != ''){
@@ -1913,10 +1915,10 @@ function scaleOutNode(node){
                         sendMessageFromSocket(node.socket, message);
                         alertMessage("success","Initiated scaling out action for node " 
                                      + node.name + "!", 3000);
-                        
+
                         // HACK - wait 3 more seconds and refresh deployment model
                         setTimeout(function () {
-                           send("!getSnapshot {path : /}");
+                            send("!getSnapshot {path : /}");
                         }, 3000);
                     }
                 }
