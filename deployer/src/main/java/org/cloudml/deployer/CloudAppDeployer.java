@@ -141,10 +141,11 @@ public class CloudAppDeployer {
 
             //send the changes to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
-                MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
                 boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
-                if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
+                if (!result){
                         MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
+                }else {
+                    MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
                 }
             }
         }
