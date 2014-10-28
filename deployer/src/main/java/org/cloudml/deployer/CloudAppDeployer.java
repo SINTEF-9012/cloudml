@@ -44,7 +44,6 @@ import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.SimpleModelRepo;
-import org.cloudml.mrt.sample.SystemOutPeerStub;
 
 /*
  * The deployment Engine
@@ -621,7 +620,11 @@ public class CloudAppDeployer {
         coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
         HashMap<String,String> runtimeInformation = jc.createInstance(n);
         coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
-
+        try {
+            Thread.sleep(1000);// crappy temporary hack
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         if (statusMonitorActive) {
@@ -909,7 +912,7 @@ public class CloudAppDeployer {
             }
 
             jc.closeConnection();
-            coordinator.updateStatusInternalComponent(a.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+            coordinator.updateStatusInternalComponent(a.getName(), State.UNINSTALLED.toString(), CloudAppDeployer.class.getName());
             //a.setStatus(State.CONFIGURED);
         }
     }
