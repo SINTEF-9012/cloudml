@@ -51,6 +51,7 @@ stateColorMap['RUNNING'] = "#74AF7A";
 stateColorMap['ERROR'] = "#a50026";
 stateColorMap['UNCATEGORIZED'] = "#BAC2C3";
 stateColorMap['RECOVERY'] = "#4B9D9B";
+stateColorMap['INSTALLED'] = "#fee08b";
 
 
 /***********************************************
@@ -662,6 +663,18 @@ function createSVGDefs(){
     .attr('fill', stateColorMap['PENDING']);
 
     svgDefs.append('svg:marker')
+    .attr('id', 'installedExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['INSTALLED']);
+
+    svgDefs.append('svg:marker')
     .attr('id', 'terminatedExecuteArrow')
     .attr('viewBox', '0 -5 10 10')
     .attr('refX', 6)
@@ -835,6 +848,25 @@ function createSVGDefs(){
     pendingNodeGradient.append("svg:stop")
     .attr("offset", "100%")
     .attr("stop-color", stateColorMap['PENDING'])
+    .attr("stop-opacity", 0.2);
+
+    var installedNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "installedNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    installedNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['INSTALLED'])
+    .attr("stop-opacity", 1);
+
+    installedNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['INSTALLED'])
     .attr("stop-opacity", 0.2);
 
     var terminatedNodeGradient = svgDefs
@@ -1305,6 +1337,8 @@ function decorateNodeCircle(svgNodeElement){
                 switch(node.status){
                     case 'PENDING':
                         return stateColorMap['PENDING'];
+                    case 'INSTALLED':
+                        return stateColorMap['INSTALLED'];
                     case 'TERMINATED':
                         return stateColorMap['TERMINATED'];
                     case 'STOPPED':
@@ -1325,6 +1359,8 @@ function decorateNodeCircle(svgNodeElement){
                 switch(node.status){
                     case 'PENDING':
                         return 'url(#pendingNodeGradient)';
+                    case 'INSTALLED':
+                        return 'url(#installedNodeGradient)';
                     case 'TERMINATED':
                         return 'url(#terminatedNodeGradient)';
                     case 'STOPPED':
@@ -1357,6 +1393,8 @@ function decorateEdgePath(svgEdgeElement){
             switch(edge.source.status){
                 case 'PENDING':
                     return stateColorMap['PENDING'];
+                case 'INSTALLED':
+                    return stateColorMap['INSTALLED'];
                 case 'TERMINATED':
                     return stateColorMap['TERMINATED'];
                 case 'STOPPED':
@@ -1377,6 +1415,8 @@ function decorateEdgePath(svgEdgeElement){
             switch(edge.source.status){
                 case 'PENDING':
                     return edge._type == 'ExecuteLink' ? 'url(#pendingExecuteArrow)' : 'url(#pendingRelationshipArrow)';
+                case 'INSTALLED':
+                    return edge._type == 'ExecuteLink' ? 'url(#installedExecuteArrow)' : 'url(#installedRelationshipArrow)';
                 case 'TERMINATED':
                     return edge._type == 'ExecuteLink' ? 'url(#terminatedExecuteArrow)' : 'url(#terminatedRelationshipArrow)';
                 case 'STOPPED':
