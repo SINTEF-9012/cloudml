@@ -65,6 +65,12 @@ function connect(host){
                     if(array instanceof Array)
                         getData(array[2]);
                 }
+                
+                if(typeof refreshNodeStates  != 'undefined'){
+                   refreshNodeStates();
+                }
+                
+                
             }
             if(msg.data.indexOf("!update") >= 0){
                 alertMessage("success","New update!",3000); 
@@ -81,12 +87,18 @@ function connect(host){
                 if(typeof graphViewUpdateJSON  != 'undefined'){
                     graphViewUpdateJSON(json.parent,json.property,json.newValue);
                 }
+                if(typeof refreshNodeStates  != 'undefined'){
+                   refreshNodeStates();
+                }
             }
             if(msg.data.indexOf("!created") >= 0){
                 alertMessage("success","New update! "+msg.data,3000); 
                 increaseNotificationNumber();
                 addNotification(msg.data);
                 tempObject=new Object();
+                if(typeof refreshNodeStates  != 'undefined'){
+                   refreshNodeStates();
+                }
             }
             if(msg.data.indexOf("!added") >= 0){
                 alertMessage("success","New update! "+msg.data,3000); 
