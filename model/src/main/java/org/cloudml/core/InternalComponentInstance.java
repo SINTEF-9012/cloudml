@@ -33,12 +33,25 @@ import org.cloudml.core.visitors.Visitor;
 public class InternalComponentInstance extends ComponentInstance<InternalComponent> {
 
     public static enum State {
+        UNINSTALLED ("UNINSTALLED"),
+        INSTALLED ("INSTALLED"),
+        CONFIGURED ("CONFIGURED"),
+        RUNNING ("RUNNING"),
+        ERROR ("ERROR");
 
-        UNINSTALLED,
-        INSTALLED,
-        CONFIGURED,
-        RUNNING,
-        ERROR,
+        private final String name;
+
+        private State(String s) {
+            name = s;
+        }
+
+        public boolean equalsName(String otherName){
+            return (otherName == null)? false:name.equals(otherName);
+        }
+
+        public String toString(){
+            return name;
+        }
     }
     private RequiredPortInstanceGroup requiredPortInstances;
     private RequiredExecutionPlatformInstance requiredExecutionPlatformInstance;
@@ -46,6 +59,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 
     public InternalComponentInstance(InternalComponent type) {
         this(NamedElement.DEFAULT_NAME, type);
+        this.status = State.UNINSTALLED;
     }
 
     public InternalComponentInstance(String name, InternalComponent type) {
@@ -53,6 +67,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         requiredPortInstances = instantiateAllRequiredPorts(type);
         requiredExecutionPlatformInstance = type.getRequiredExecutionPlatform().instantiate();
         requiredExecutionPlatformInstance.getOwner().set(this);
+        this.status = State.UNINSTALLED;
     }
 
     private LocalRequiredPortInstanceGroup instantiateAllRequiredPorts(InternalComponent type) {

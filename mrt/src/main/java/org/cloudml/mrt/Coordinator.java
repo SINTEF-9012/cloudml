@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Deployment;
+import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.mrt.cmd.CmdWrapper;
 import org.cloudml.mrt.cmd.abstracts.Change;
 import org.cloudml.mrt.cmd.abstracts.Instruction;
@@ -57,11 +58,9 @@ public class Coordinator {
     private static final Logger journal = Logger.getLogger(Coordinator.class.getName());
 
     CommandReception reception = null;
-    //JsonCodec jsonCodec = new JsonCodec();
     CommandExecutor executor = null;
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
-    JsonCodec jsonCodec = new JsonCodec();
 
     Instruction lastInstruction = null;
 
@@ -69,6 +68,31 @@ public class Coordinator {
         ModelRepo repo = new SimpleModelRepo();
         executor = new CommandExecutor(repo);
 
+    }
+
+    public void updateStatusInternalComponent(String name, String newState, String identity) {
+        //A PeerStub identifies who launches the modifications
+        PeerStub committer = new SystemOutPeerStub(identity);
+
+        //A wrapper hides the complexity of invoking the coordinator
+        CmdWrapper wrapper = new CmdWrapper(this, committer);
+
+        //Update the value of status
+        try {
+            journal.log(Level.INFO, "#############################################/componentInstances[name='" + name + "']/status");
+            Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
+            if (res !=null) {
+                InternalComponentInstance.State oldState = InternalComponentInstance.State.valueOf(res.toString());
+                if (!oldState.toString().equals(newState)) {
+                    journal.log(Level.INFO, ">> Updating the model..");
+                    wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
+                    journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
+                }
+            }
+
+        } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
+            journal.log(Level.INFO, "Machine: " + name + " not in this model");
+        }
     }
 
     public void updateStatus(String name, String newState, String identity) {
@@ -80,6 +104,7 @@ public class Coordinator {
 
         //Update the value of status
         try {
+            journal.log(Level.INFO, "#############################################/componentInstances[name='" + name + "']/status");
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
             if (res !=null) {
                 ComponentInstance.State oldState = ComponentInstance.State.valueOf(res.toString());
@@ -194,6 +219,7 @@ public class Coordinator {
         if (object instanceof Deployment) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                JsonCodec jsonCodec = new JsonCodec();
                 jsonCodec.save((Deployment) object, baos);
                 return baos.toString("UTF-8");
             } catch (UnsupportedEncodingException ex) {

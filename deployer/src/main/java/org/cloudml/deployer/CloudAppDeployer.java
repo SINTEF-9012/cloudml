@@ -235,7 +235,8 @@ public class CloudAppDeployer {
 
                 executeInstallCommand(instance, ownerVM, jc);
 
-                instance.setStatus(State.INSTALLED);
+                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
+                //instance.setStatus(State.INSTALLED);
                 jc.closeConnection();
             } else { // If the destination is a PaaS platform
                 ExternalComponent ownerType = (ExternalComponent) host.getType();
@@ -431,19 +432,22 @@ public class CloudAppDeployer {
                 executeUploadCommands(host.asInternal(),ownerVM,jc);
                 executeRetrieveCommand(host.asInternal(), ownerVM, jc);
                 executeInstallCommand(host.asInternal(), ownerVM, jc);
-                host.asInternal().setStatus(State.INSTALLED);
+                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
+                //host.asInternal().setStatus(State.INSTALLED);
 
                 for (Resource r : host.getType().getResources()) {
                     String configurationCommand = r.getConfigureCommand();
                     configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                 }
-                host.asInternal().setStatus(State.CONFIGURED);
+                coordinator.updateStatusInternalComponent(host.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+                //host.asInternal().setStatus(State.CONFIGURED);
 
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = r.getStartCommand();
                     start(jc, n, ownerVM, startCommand);
                 }
-                host.asInternal().setStatus(State.RUNNING);
+                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                //host.asInternal().setStatus(State.RUNNING);
 
                 alreadyStarted.add(host);
                 alreadyDeployed.add(host);
@@ -488,7 +492,8 @@ public class CloudAppDeployer {
                     }
 
                     if (serverComponent.isInternal()) {
-                        serverComponent.asInternal().setStatus(State.INSTALLED);
+                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
+                        //serverComponent.asInternal().setStatus(State.INSTALLED);
                     }
 
                     for (Resource r : serverComponent.getType().getResources()) {
@@ -496,7 +501,8 @@ public class CloudAppDeployer {
                         configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
                     }
                     if (serverComponent.isInternal()) {
-                        serverComponent.asInternal().setStatus(State.CONFIGURED);
+                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+                        //serverComponent.asInternal().setStatus(State.CONFIGURED);
                     }
 
                     for (Resource r : serverComponent.getType().getResources()) {
@@ -504,7 +510,8 @@ public class CloudAppDeployer {
                         start(jc, n, owner, startCommand);
                     }
                     if (serverComponent.isInternal()) {
-                        serverComponent.asInternal().setStatus(State.RUNNING);
+                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                        //serverComponent.asInternal().setStatus(State.RUNNING);
                     }
 
                     alreadyStarted.add(serverComponent);
@@ -538,13 +545,15 @@ public class CloudAppDeployer {
                         String configurationCommand = r.getConfigureCommand();
                         configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                     }
-                    x.setStatus(State.CONFIGURED);
+                    coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+                    //x.setStatus(State.CONFIGURED);
 
                     for (Resource r : x.getType().getResources()) {
                         String startCommand = r.getStartCommand();
                         start(jc, n, ownerVM, startCommand);
                     }
-                    x.setStatus(State.RUNNING);
+                    coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                    //x.setStatus(State.RUNNING);
 
                     alreadyStarted.add(x);
                     jc.closeConnection();
@@ -900,7 +909,8 @@ public class CloudAppDeployer {
             }
 
             jc.closeConnection();
-            a.setStatus(State.CONFIGURED);
+            coordinator.updateStatusInternalComponent(a.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+            //a.setStatus(State.CONFIGURED);
         }
     }
 
