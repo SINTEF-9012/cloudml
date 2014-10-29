@@ -178,12 +178,14 @@ public class CloudAppDeployer {
             currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
             currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
             currentModel.getComponentInstances().removeAll(diff.getRemovedECs());
+            currentModel.getExecuteInstances().removeAll(diff.getRemovedExecutes());
             alreadyDeployed.removeAll(diff.getRemovedComponents());
             alreadyStarted.removeAll(diff.getRemovedComponents());
 
             currentModel.getComponentInstances().addAll(diff.getAddedComponents());
             currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
             currentModel.getComponentInstances().addAll(diff.getAddedECs());
+            currentModel.getExecuteInstances().addAll(diff.getAddedExecutes());
         } else {
             throw new IllegalArgumentException("Cannot update current model without comparator!");
         }
@@ -620,11 +622,6 @@ public class CloudAppDeployer {
         coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
         HashMap<String,String> runtimeInformation = jc.createInstance(n);
         coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
-        try {
-            Thread.sleep(1000);// crappy temporary hack
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         if (statusMonitorActive) {
