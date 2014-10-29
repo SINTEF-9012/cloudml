@@ -1004,11 +1004,7 @@ public class CloudAppDeployer {
         Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
         StandardLibrary lib = new StandardLibrary();
 
-        //1. create snapshot of an instance
-        String ID=c.createImage(vmi); //TODO: should check if the image already exist
-        c.closeConnection();
-
-        //2. instantiate the new VM using the newly created snapshot
+        //1. instantiate the new VM using the newly created snapshot
         VM existingVM=vmi.asExternal().asVM().getType();
         VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
         if(v == null){//in case a type for the snapshot has already been created
@@ -1016,7 +1012,7 @@ public class CloudAppDeployer {
             v=new VM(name+"-fromImage",existingVM.getProvider());
             v.setGroupName(existingVM.getGroupName());
             v.setRegion(existingVM.getRegion());
-            v.setImageId(ID);
+            v.setImageId("tempID");
             v.setLocation(existingVM.getLocation());
             v.setMinRam(existingVM.getMinRam());
             v.setMinCores(existingVM.getMinCores());
@@ -1030,14 +1026,19 @@ public class CloudAppDeployer {
         }
         VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
 
-        //3. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
+        //2. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
         Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
 
-        // For synchronization purpose with provision once the model has been fully updated
+        //3. For synchronization purpose with provision once the model has been fully updated
+        String ID=c.createImage(vmi); //TODO: should check if the image already exist
+        c.closeConnection();
+        v.setImageId(ID);
+
         Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
         HashMap<String,String> result=c2.createInstance(ci);
         c2.closeConnection();
         coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
+        coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
         coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
 
         //4. configure the new VM
@@ -1076,7 +1077,11 @@ public class CloudAppDeployer {
                 }
                 c2.closeConnection();
             }
-            coordinator.updateStatusInternalComponent(ici.getName(), State.UNINSTALLED.toString(), CloudAppDeployer.class.getName());
+            coordinator.updateStatusInternalComponent(ici.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+        }
+
+        for(InternalComponentInstance ici: duplicatedGraph.values()){
+            coordinator.updateStatusInternalComponent(ici.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
         }
 
         journal.log(Level.INFO, ">> Scaling completed!");

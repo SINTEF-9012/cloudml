@@ -1971,7 +1971,7 @@ function scaleOutNode(node){
                         // HACK - wait 3 more seconds and refresh deployment model
                         setTimeout(function () {
                             send("!getSnapshot {path : /}");
-                        }, 3000);
+                        }, 20000);
                     }
                 }
             }
