@@ -1038,6 +1038,7 @@ public class CloudAppDeployer {
         HashMap<String,String> result=c2.createInstance(ci);
         c2.closeConnection();
         coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
+        coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
 
         //4. configure the new VM
         //execute the configuration bindings

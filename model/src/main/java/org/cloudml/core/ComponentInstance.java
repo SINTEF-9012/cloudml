@@ -63,10 +63,10 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
          */
         RECOVERY ("RECOVERY");
 
-        private final String name;
+        private String name="PENDING";
 
         private State(String s) {
-            name = s;
+            this.name = s;
         }
 
         public boolean equalsName(String otherName){

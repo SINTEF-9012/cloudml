@@ -61,13 +61,13 @@ public class Coordinator {
     CommandExecutor executor = null;
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
+    JsonCodec jsonCodec = new JsonCodec();
 
     Instruction lastInstruction = null;
 
     public Coordinator() {
         ModelRepo repo = new SimpleModelRepo();
         executor = new CommandExecutor(repo);
-
     }
 
     public void updateStatusInternalComponent(String name, String newState, String identity) {
@@ -79,7 +79,7 @@ public class Coordinator {
 
         //Update the value of status
         try {
-            Thread.sleep(1000);
+            Thread.sleep(1500);
             journal.log(Level.INFO, ">> Updating the model..");
             wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
             journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
@@ -100,10 +100,12 @@ public class Coordinator {
 
         //Update the value of status
         try {
+            Thread.sleep(1500);
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
             if (res !=null) {
-                ComponentInstance.State oldState = ComponentInstance.State.valueOf(res.toString());
-                if (!oldState.toString().equals(newState)) {
+                journal.log(Level.INFO, ">> ########################################################1");
+                if (!res.toString().equals(newState)) {
+                    journal.log(Level.INFO, ">> ########################################################2"+newState);
                     journal.log(Level.INFO, ">> Updating the model..");
                     wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
                     journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
@@ -112,6 +114,8 @@ public class Coordinator {
 
         } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
             journal.log(Level.INFO, "Machine: " + name + " not in this model");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -119,6 +123,7 @@ public class Coordinator {
         PeerStub committer = new SystemOutPeerStub(identity);
         CmdWrapper wrapper = new CmdWrapper(this, committer);
         try {
+            Thread.sleep(1500);
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/publicAddress");
             if (res !=null) {
                 journal.log(Level.INFO, ">> Updating the model..");
@@ -128,6 +133,8 @@ public class Coordinator {
 
         } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
             journal.log(Level.INFO, "Machine: " + name + " not in this model");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
     }
@@ -214,7 +221,6 @@ public class Coordinator {
         if (object instanceof Deployment) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                JsonCodec jsonCodec = new JsonCodec();
                 jsonCodec.save((Deployment) object, baos);
                 return baos.toString("UTF-8");
             } catch (UnsupportedEncodingException ex) {

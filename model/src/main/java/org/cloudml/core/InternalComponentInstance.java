@@ -39,7 +39,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         RUNNING ("RUNNING"),
         ERROR ("ERROR");
 
-        private final String name;
+        private String name="UNINSTALLED";
 
         private State(String s) {
             name = s;
