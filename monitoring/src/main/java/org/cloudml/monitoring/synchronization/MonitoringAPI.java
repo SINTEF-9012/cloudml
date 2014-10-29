@@ -67,7 +67,7 @@ public class MonitoringAPI {
         try {
             response = HttpRequest.post(url).send(rule).body();
         } catch (Exception e) {
-            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+            journal.log(Level.INFO, ">> Connection to the monitoring manager refused");
         }
         return response;
     }
@@ -87,9 +87,6 @@ public class MonitoringAPI {
             journal.log(Level.INFO, "Connection to the monitoring manager refused");
             return null;
         }
-
-
-
         //TODO parse results
 
         return null;
@@ -102,15 +99,16 @@ public class MonitoringAPI {
      * @param metric the requested metric
      */
     public void attachObserver(String callback, String metric) {
-
+        int result;
         String url = address + "/" + version + "/metrics/" + metric + "/observers";
         try {
-        HttpRequest.post(url).send(callback).code();
-               journal.log(Level.INFO, "Observer attached");
+            journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
+            journal.log(Level.INFO, ">> Attaching observer");
+            result = HttpRequest.post(url).send(callback).code();
         } catch (Exception e) {
-            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+            result = NO_RESPONSE;
         }
-
+        printResult(result);
 
 
     }
@@ -132,7 +130,7 @@ public class MonitoringAPI {
             printComponentname(update);
             result = HttpRequest.post(url).send(json).code();
         } catch (Exception e) {
-        result = 0;
+            result = NO_RESPONSE;
         }
         printResult(result);
 
@@ -151,10 +149,10 @@ public class MonitoringAPI {
         String json = gson.toJson(model);
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
-        result = HttpRequest.put(url).send(json).code();
             printComponentname(model);
+            result = HttpRequest.put(url).send(json).code();
         } catch (Exception e) {
-           result = 0;
+            result = NO_RESPONSE;
         }
 
         printResult(result);
@@ -174,6 +172,7 @@ public class MonitoringAPI {
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             journal.log(Level.INFO, ">> Deleting: "+id);
+            Thread.sleep(1000);
             result = HttpRequest.delete(url).code();
         } catch (Exception e) {
             result = NO_RESPONSE;
@@ -185,10 +184,10 @@ public class MonitoringAPI {
 
     private void printComponentname(Model model){
         for(VM vm : model.getvMs()){
-            journal.log(Level.INFO, "VM name: "+vm.getId());
+            journal.log(Level.INFO, ">> Sending VM: "+vm.getId());
         }
         for(InternalComponent ic : model.getInternalComponents()){
-            journal.log(Level.INFO, "InternalComponent name : "+ic.getId());
+            journal.log(Level.INFO, ">> Sending InternalComponent: "+ic.getId());
         }
     }
 
@@ -196,23 +195,23 @@ public class MonitoringAPI {
         String message = "";
         switch(result) {
             case SUCCESS:
-                message = " Connection successful";
+                message = " Request successful";
                 break;
             case SUCCESS_NO_CONTENT:
-                message = " Connection successful no content";
+                message = " Request successful, no content";
                 break;
             case INTERNAL_SERVER_ERROR:
-                message = " Error during connection, internal server error";
+                message = " Connection error, internal server error";
                 break;
             case CLIENT_ERROR_NOT_FOUND:
                 message = " Connection error, resource not found";
                 break;
             case NO_RESPONSE:
-                message = " Connection to the monitoring manager refused";
+                message = " Connection error, connection to the monitoring manager refused";
                 break;
 
         }
-        journal.log(Level.INFO,  String.valueOf(result) + message);
+        journal.log(Level.INFO, ">> Connection result: "+String.valueOf(result) + message);
     }
 
 
