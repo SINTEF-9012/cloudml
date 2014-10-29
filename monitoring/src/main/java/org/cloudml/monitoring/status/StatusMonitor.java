@@ -74,7 +74,7 @@ public class StatusMonitor {
 
     private void backgroundAgent() {
         while (active) {
-            journal.log(Level.INFO, "Looking for status changes..");
+            journal.log(Level.INFO, ">> Looking for status changes..");
             //TODO put each module in a thread to deal with connection delay
             synchronized (modules) {
                 for (Module i : modules) {
@@ -120,7 +120,7 @@ public class StatusMonitor {
                     modules.add(module);
                 }
             }
-            journal.log(Level.INFO, "Module attached: " + module.getType());
+            journal.log(Level.INFO, ">> Module attached: " + module.getType());
         }
     }
 
@@ -134,7 +134,7 @@ public class StatusMonitor {
             for (Module i : modules) {
                 if (i.getType() == type) {
                     modules.remove(i);
-                    journal.log(Level.INFO, "Module detached: " + i.getType());
+                    journal.log(Level.INFO, ">> Module detached: " + i.getType());
                 }
             }
         }
@@ -156,7 +156,7 @@ public class StatusMonitor {
     public void pause() {
         this.active = false;
         thread.interrupt();
-        journal.log(Level.INFO, "Monitoring paused");
+        journal.log(Level.INFO, ">> Monitoring paused");
     }
 
     /**
@@ -172,7 +172,7 @@ public class StatusMonitor {
             });
             thread.start();
         } else {
-            journal.log(Level.INFO, "Monitoring already started. Check your code");
+            journal.log(Level.INFO, ">> Monitoring already started. Check your code");
         }
     }
 

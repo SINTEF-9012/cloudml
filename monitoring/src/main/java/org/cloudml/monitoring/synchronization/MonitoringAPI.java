@@ -84,7 +84,7 @@ public class MonitoringAPI {
         try {
             String response = HttpRequest.get(url).body();
         } catch (Exception e) {
-            journal.log(Level.INFO, "Connection to the monitoring manager refused");
+            journal.log(Level.INFO, ">> Connection to the monitoring manager refused");
             return null;
         }
         //TODO parse results
