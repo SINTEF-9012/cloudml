@@ -117,6 +117,7 @@ public class BridgeToKmf {
                 pkr.setConfigurationFile(pr.getConfigurationFile());
                 pkr.setUsername(pr.getUsername());
                 pkr.setRepositoryKey(pr.getRepositoryKey());
+                pkr.setManifestEntry(pr.getManifestEntry());
                 kElement.addPuppetResources(pkr);
             }else{
                 kElement.addResources(kr);

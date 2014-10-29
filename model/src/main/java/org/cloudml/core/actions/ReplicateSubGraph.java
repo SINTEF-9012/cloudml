@@ -40,32 +40,48 @@ import static org.cloudml.core.builders.Commons.aRelationshipInstance;
  */
 public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInstance, InternalComponentInstance>> {
 
-    private final InternalComponentInstanceGroup graph;
     private Map<InternalComponentInstance, InternalComponentInstance> mapping;
     private List<Map> result=new ArrayList<Map>();
     private VMInstance host;
+    private VMInstance source;
     private static final Logger journal = Logger.getLogger(ReplicateSubGraph.class.getName());
+    private Deployment currentModel;
 
-    public ReplicateSubGraph(StandardLibrary library, InternalComponentInstanceGroup graph, VMInstance host) {
+    public ReplicateSubGraph(StandardLibrary library, Deployment currentModel, VMInstance source, VMInstance host) {
         super(library);
-        this.graph=rejectIfInvalid(graph);
+        this.currentModel=rejectIfInvalid(currentModel);
         this.host=host;
+        this.source=source;
         mapping=new HashMap<InternalComponentInstance, InternalComponentInstance>();
     }
 
-    private InternalComponentInstanceGroup rejectIfInvalid(InternalComponentInstanceGroup graph) {
+    private Deployment rejectIfInvalid(Deployment graph) {
         if (graph == null) {
             throw new IllegalArgumentException("'null' is not a valid component instance for duplication");
         }
         return graph;
     }
 
+    private InternalComponentInstanceGroup hostedGroup=new InternalComponentInstanceGroup();
+
+    private void allHosted(ComponentInstance ci, Deployment target){
+        InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(ci);
+        if(icig !=null){
+            hostedGroup.addAll(icig);
+            for(ComponentInstance c : icig){
+                InternalComponentInstance ici;
+                if(ci.isExternal())
+                    ici=getLibrary().replicateComponentInstance(target, c, host).asInternal();
+                else ici=getLibrary().replicateComponentInstance(target, c, mapping.get(ci)).asInternal();
+                mapping.put(c.asInternal(), ici);
+                allHosted(c, target);
+            }
+        }
+    }
+
     @Override
     public Map<InternalComponentInstance, InternalComponentInstance> applyTo(Deployment target) {
-        for(InternalComponentInstance ci: graph){
-            InternalComponentInstance ici=getLibrary().replicateComponentInstance(target, ci, host).asInternal();
-            mapping.put(ci,ici);
-        }
+        allHosted(source, target);
         manageDependencies(target);
 
         return mapping;

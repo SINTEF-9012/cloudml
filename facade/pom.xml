@@ -92,7 +92,7 @@
     </dependencies>
     <build>
         <plugins>
-        <!--    <plugin>
+        <!--<plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
                 <configuration>

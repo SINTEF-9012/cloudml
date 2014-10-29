@@ -32,13 +32,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,6 +76,7 @@ public class JCloudsConnector implements Connector{
 	private String provider;
 	private ComputeServiceContext computeContext;
     private EC2Api ec2api;
+    private HashMap<String,String> runtimeInformation;
 
 	public JCloudsConnector(String provider,String login,String secretKey){
 		journal.log(Level.INFO, ">> Connecting to "+provider+" ...");
@@ -253,7 +249,8 @@ public class JCloudsConnector implements Connector{
      * @param a description of the VM to be created
      * @return
      */
-    public ComponentInstance.State createInstance(VMInstance a){
+    public HashMap<String,String> createInstance(VMInstance a){
+        runtimeInformation=new HashMap<String, String>();
         VM vm = a.getType();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         ComputeMetadata cm= getVMByName(a.getName());
@@ -314,14 +311,15 @@ public class JCloudsConnector implements Connector{
                 state = ComponentInstance.State.ERROR;
 
             }
-
-            a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
+            runtimeInformation.put("publicAddress", nodeInstance.getPublicAddresses().iterator().next());
+            //a.setPublicAddress(nodeInstance.getPublicAddresses().iterator().next());
             a.setId(nodeInstance.getId());
             a.setCore((int) nodeInstance.getHardware().getProcessors().iterator().next().getCores());
             state = ComponentInstance.State.RUNNING;
 
         }
-        return state;
+        runtimeInformation.put("status", state.toString());
+        return runtimeInformation;
     }
 
     /**

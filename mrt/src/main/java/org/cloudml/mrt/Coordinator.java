@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Deployment;
+import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.mrt.cmd.CmdWrapper;
 import org.cloudml.mrt.cmd.abstracts.Change;
 import org.cloudml.mrt.cmd.abstracts.Instruction;
@@ -50,18 +51,16 @@ import org.yaml.snakeyaml.Yaml;
  * @author Hui Song
  */
 public class Coordinator {
-    
+
     public static Coordinator SINGLE_INSTANCE = null;
 
     public static final String ADDITIONAL_PREFIX = "!additional";
     private static final Logger journal = Logger.getLogger(Coordinator.class.getName());
 
     CommandReception reception = null;
-    //JsonCodec jsonCodec = new JsonCodec();
     CommandExecutor executor = null;
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
-    JsonCodec jsonCodec = new JsonCodec();
 
     Instruction lastInstruction = null;
 
@@ -71,7 +70,28 @@ public class Coordinator {
 
     }
 
-    public void updateStatus(String name, ComponentInstance.State newState, String identity) {
+    public void updateStatusInternalComponent(String name, String newState, String identity) {
+        //A PeerStub identifies who launches the modifications
+        PeerStub committer = new SystemOutPeerStub(identity);
+
+        //A wrapper hides the complexity of invoking the coordinator
+        CmdWrapper wrapper = new CmdWrapper(this, committer);
+
+        //Update the value of status
+        try {
+            Thread.sleep(1000);
+            journal.log(Level.INFO, ">> Updating the model..");
+            wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
+            journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
+
+        } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
+            journal.log(Level.INFO, "Machine: " + name + " not in this model");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateStatus(String name, String newState, String identity) {
         //A PeerStub identifies who launches the modifications
         PeerStub committer = new SystemOutPeerStub(identity);
 
@@ -83,9 +103,9 @@ public class Coordinator {
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
             if (res !=null) {
                 ComponentInstance.State oldState = ComponentInstance.State.valueOf(res.toString());
-                if (oldState != newState) {
+                if (!oldState.toString().equals(newState)) {
                     journal.log(Level.INFO, ">> Updating the model..");
-                    wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState.toString() + ""));
+                    wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
                     journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
                 }
             }
@@ -93,6 +113,23 @@ public class Coordinator {
         } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
             journal.log(Level.INFO, "Machine: " + name + " not in this model");
         }
+    }
+
+    public void updateIP(String name, String ip, String identity){
+        PeerStub committer = new SystemOutPeerStub(identity);
+        CmdWrapper wrapper = new CmdWrapper(this, committer);
+        try {
+            Object res = wrapper.eGet("/componentInstances[name='" + name + "']/publicAddress");
+            if (res !=null) {
+                journal.log(Level.INFO, ">> Updating the model..");
+                wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("publicAddress", "" + ip + ""));
+                journal.log(Level.INFO, ">> IP of: " + name + " changed in: " + ip + "");
+            }
+
+        } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
+            journal.log(Level.INFO, "Machine: " + name + " not in this model");
+        }
+
     }
 
     public void setModelRepo(ModelRepo repo) {
@@ -177,6 +214,7 @@ public class Coordinator {
         if (object instanceof Deployment) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                JsonCodec jsonCodec = new JsonCodec();
                 jsonCodec.save((Deployment) object, baos);
                 return baos.toString("UTF-8");
             } catch (UnsupportedEncodingException ex) {

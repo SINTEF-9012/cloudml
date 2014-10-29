@@ -51,6 +51,7 @@ stateColorMap['RUNNING'] = "#74AF7A";
 stateColorMap['ERROR'] = "#a50026";
 stateColorMap['UNCATEGORIZED'] = "#BAC2C3";
 stateColorMap['RECOVERY'] = "#4B9D9B";
+stateColorMap['INSTALLED'] = "#fee08b";
 
 
 /***********************************************
@@ -59,6 +60,19 @@ JS-YAML parser definitions
 
 // define all of the unrecognizable yaml tags and types contained in the response from the CloudML server (e.g. the tag !!org.cloudml.core.VMInstance, the type !snapshot, etc.)
 // the definitions are then used by the js-yaml parser to form the javascript objects out of the yaml using the 'load' method
+
+var noCredentialsTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.credentials.NoCredentials', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
+var localRequiredPortInstanceGroupTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.InternalComponentInstance$LocalRequiredPortInstanceGroup', {
+    kind : 'mapping',
+    construct : function () {
+        return {};
+    },
+});
 var yamlVMInstanceTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.VMInstance', {
     kind : 'mapping',
     construct : function (data) {
@@ -85,13 +99,12 @@ var provPortInstanceGroupTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.co
         return {};
     },
 });
-var fileCredentialsTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.credentials.FileCredentials', {
+var fileCredentialsFullTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.credentials.FileCredentials', {
     kind : 'mapping',
     construct : function () {
         return {};
     },
 });
-
 var fileCredentialsTag = new jsyaml.Type('!FileCredential', {
     kind : 'mapping',
     construct : function () {
@@ -115,7 +128,7 @@ var snapshotType = new jsyaml.Type('!snapshot', {
 });
 
 // create a jsyaml schema containing the defined tags and types which is then used as a second argument to the 'load' method
-var jsyamlSchema = jsyaml.Schema.create([ provPortInstanceGroupTag, fileCredentialsTag, yamlVMInstanceTag, yamlICInstanceTag, updatedType, snapshotType, localProvPortInstanceGroupTag ]);
+var jsyamlSchema = jsyaml.Schema.create([ provPortInstanceGroupTag, fileCredentialsTag, yamlVMInstanceTag, yamlICInstanceTag, updatedType, snapshotType, localProvPortInstanceGroupTag, fileCredentialsFullTag, localRequiredPortInstanceGroupTag, noCredentialsTag ]);
 
 function pushModelToServer(){
     if(currentJSON == null){
@@ -345,7 +358,6 @@ function graphViewUpdateJSON(parent, propertyId, newValue){
     /* 
 Since the json serialization of the metamodel differs from the internal POJO serialization the path to a component instance is not directly resolvable in the json (it could be e.g. /componentInstances[name='sensapp-sl1'] which can be found with our current implementation of json traversal by the expression '/vmInstances[name='sensapp-sl1'])'. But there is no way to differentiate the particular component instance type (vm-, internal-, or external component instance). Therefore we need to determine that by sending a request to the CloudML server for the full information for the internal component instance (which also contains its type). The following code does just that.
     */
-    console.log(parent);
     var updateSocket = new WebSocket(socket.url);
     var message = "!getSnapshot"
     + '\n' 
@@ -353,12 +365,11 @@ Since the json serialization of the metamodel differs from the internal POJO ser
     sendMessageFromSocket(updateSocket,message);
     updateSocket.onerror = function(error){
         console.log(error);
-        alertMessage("error",'Error connecting to CloudML server: '+updateSocket.readyState, 5000);  
+        alertMessage("error",'Error connecting to CloudML server: ' + updateSocket.readyState, 5000);  
     }
 
     // 
     updateSocket.onmessage = function(msg){
-        console.log(msg);
         if(msg.data.indexOf("GetSnapshot") >= 0){
             var array=msg.data.split("###");
             var jObj;
@@ -493,6 +504,7 @@ function stringifyRoot(){
 function getData(inputJSONString) {
     // remove the svg and the selection area (brush)
     d3.selectAll("svg").remove();
+    d3.selectAll(".popover").remove();
     brush = null;
     root = eval('(' + inputJSONString + ')');
     currentJSON = inputJSONString;
@@ -513,6 +525,14 @@ function getData(inputJSONString) {
     .attr("height", height)
     .on('click', function(){
         d3.select('#context_menu').remove();
+        if($(d3.event.target)[0] == $(this)[0]){
+            var nodes= $('.singleNode');
+            for(i=0;i<nodes.length;++i){
+                if($(nodes[i]).data("bs.popover").tip().hasClass("in")){
+                    $(nodes[i]).popover('toggle');
+                }
+            }
+        }
         d3.event.stopPropagation();
     })
     .on('contextmenu', function(){
@@ -567,54 +587,9 @@ function getData(inputJSONString) {
     */
     graphNodes = layoutIntCompInstances.concat(layoutExtCompInstances);
 
-
-    // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
-    graphNodes.forEach(function (d){
-        // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
-        if(connectedToCloudMLServer){
-            d.socket = new WebSocket(cloudMLServerHost);
-            d.socket.onopen = function(){
-                var message = 
-                    "!getSnapshot"
-                + '\n' 
-                + "  path : /componentInstances[name='" + d.name + "']";
-                sendMessageFromSocket(d.socket, message);
-            }
-            d.socket.onmessage = function(msg){
-                if(msg.data.indexOf("GetSnapshot") >= 0){
-                    try{
-                        var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
-                    }catch (error) {
-                        console.log(error);
-                    }
-                    if(typeof json.content.status != 'undefined'){
-                        if(json.content.status != null)
-                            d.status = json.content.status;
-                    }
-
-                    if(typeof json.content.properties != 'undefined'){
-                        var cpuLoad = getPropValFromCloudMLElement(json.content, "cpu");
-                        if(cpuLoad != null) {
-                            setOrCreatePropValOfCloudMLElement(d, "cpu", cpuLoad);
-                        }
-                    }
-                    if(typeof json.content.id != 'undefined'){
-                        if(json.content.id != null)
-                            d.id = json.content.id;
-                    }
-                }
-            }
-            d.socket.onclose = function(){
-                console.log("socket closed for " + d.name);
-            }
-            d.socket.onerror = function(error){
-                console.log("error for node " + d.name + d.socket.readyState);
-            }
-
-        }
-    });
     graphNodes.forEach(function(d){
-        watch(d, ['properties', 'status'], function(){
+        // POPOVERS!!: Watch the values for the following properties for change, when one occurs - trigger a refresh of the popover/tooltip
+        watch(d, ['properties', 'status', 'publicAddress'], function(){
             // select the according svg 'g' element for the node
             var svgNodeElement = svg.selectAll(".singleNode").filter(
                 function() {
@@ -686,6 +661,18 @@ function createSVGDefs(){
     .attr('d', 'M0,-5L10,0L0,5')
     .attr('class','executionArrow')
     .attr('fill', stateColorMap['PENDING']);
+
+    svgDefs.append('svg:marker')
+    .attr('id', 'installedExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['INSTALLED']);
 
     svgDefs.append('svg:marker')
     .attr('id', 'terminatedExecuteArrow')
@@ -843,6 +830,18 @@ function createSVGDefs(){
     .attr('class','relationshipArrow')
     .attr('fill', stateColorMap['PENDING']);
 
+    svgDefs.append('svg:marker')
+    .attr('id', 'installedRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['INSTALLED']);
+
     // define gradients
     var pendingNodeGradient = svgDefs
     .append("svg:linearGradient")
@@ -861,6 +860,25 @@ function createSVGDefs(){
     pendingNodeGradient.append("svg:stop")
     .attr("offset", "100%")
     .attr("stop-color", stateColorMap['PENDING'])
+    .attr("stop-opacity", 0.2);
+
+    var installedNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "installedNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    installedNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['INSTALLED'])
+    .attr("stop-opacity", 1);
+
+    installedNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['INSTALLED'])
     .attr("stop-opacity", 0.2);
 
     var terminatedNodeGradient = svgDefs
@@ -1019,16 +1037,78 @@ function getNodePopover(node){
         result += 'status: ';
         result += node.status;
     }
-
+    if(typeof node.publicAddress != "undefined"){
+        result += '<br/>';
+        result += 'public address: ';
+        result += node.publicAddress;
+    }
     if(typeof node.properties != "undefined"){
         var cpuLoad = getPropValFromCloudMLElement(node,"cpu");
-        if(cpuLoad != null){
-            result += '<br/>';
-            result += 'cpu load (%): ';
-            result += cpuLoad;
-        }
+        // TODO add this back when necessary
+        //        if(cpuLoad != null){
+        //            result += '<br/>';
+        //            result += 'cpu load (%): ';
+        //            result += cpuLoad;
+        //        }
     }
     return result;
+}
+
+function refreshNodeStates(){
+    // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
+    // need to have this check on each update in case there are new nodes or we just connected to the CloudML server
+    if(connectedToCloudMLServer){
+        graphNodes.forEach(function (d){
+            // if node already has a socket, skip
+            if(!d.socket){
+                // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
+
+                d.socket = new WebSocket(cloudMLServerHost);
+                d.socket.onopen = function(){
+                    var message = 
+                        "!getSnapshot"
+                    + '\n' 
+                    + "  path : /componentInstances[name='" + d.name + "']";
+                    sendMessageFromSocket(d.socket, message);
+                }
+                d.socket.onmessage = function(msg){
+                    if(msg.data.indexOf("GetSnapshot") >= 0){
+                        try{
+                            var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+                        }catch (error) {
+                            console.log(error);
+                        }
+                        if(typeof json.content.status != 'undefined'){
+                            if(json.content.status != null)
+                                d.status = json.content.status;
+                        }
+
+                        if(typeof json.content.properties != 'undefined'){
+                            var cpuLoad = getPropValFromCloudMLElement(json.content, "cpu");
+                            if(cpuLoad != null) {
+                                setOrCreatePropValOfCloudMLElement(d, "cpu", cpuLoad);
+                            }
+                        }
+                        if(typeof json.content.id != 'undefined'){
+                            if(json.content.id != null)
+                                d.id = json.content.id;
+                        }
+                        if(typeof json.content.publicAddress != 'undefined'){
+                            if(json.content.publicAddress != null)
+                                d.publicAddress = json.content.publicAddress;
+                        }
+                    }
+                }
+                d.socket.onclose = function(){
+                    console.log("socket closed for " + d.name);
+                }
+                d.socket.onerror = function(error){
+                    console.log("error for node " + d.name + d.socket.readyState);
+                }
+
+            }
+        });
+    };
 }
 
 // update the graph layout
@@ -1062,27 +1142,6 @@ function update(){
                 'trigger'   : 'manual'
             }
         )
-        // listeners for the popover enabling it to stay shown when hovered over
-        .on("mouseenter", function () {
-            // in case there is an open context menu we do not display popovers
-            if($('#context_menu').length > 0){
-                return;
-            }
-            var _this = this;
-            $(this).popover("show");
-            $(".popover")
-            .on("mouseleave", function () {
-                $(_this).popover('hide');
-            })
-        })
-        .on("mouseleave", function () {
-            var _this = this;
-            setTimeout(function () {
-                if (!$(".popover:hover").length) {
-                    $(_this).popover("hide")
-                }
-            }, 100);
-        })
         // listeners to allow to change styles of the elements for some basic animation
         .on("mouseover", function () {
             d3.select(this).selectAll('circle').classed("hover", true);
@@ -1140,33 +1199,33 @@ function update(){
               .y(d3.scale.identity().domain([0, height]))
               .on("brushstart", function(){
 
-              })
+        })
               .on("brush", function() {
-                  var extent = d3.event.target.extent();
-                  nodeGroup.each(function(d){
-                      svg.selectAll('g.singleNode').filter(
-                          function(){
-                              return this.id == d.name;
-                          }
-                      )
-                      .selectAll('.selectionCircle')
-                      .classed("selected", function() {
-                          if(d3.event.sourceEvent.shiftKey){
-                              return this.classList.contains("selected") || 
-                                  (extent[0][0] <= d.x && d.x < extent[1][0]
-                                   && extent[0][1] <= d.y && d.y < extent[1][1]);
-                          }else{
-                              return (extent[0][0] <= d.x && d.x < extent[1][0]
-                                      && extent[0][1] <= d.y && d.y < extent[1][1]);
-                          }
-                      })
-                  })
+            var extent = d3.event.target.extent();
+            nodeGroup.each(function(d){
+                svg.selectAll('g.singleNode').filter(
+                    function(){
+                        return this.id == d.name;
+                    }
+                )
+                .selectAll('.selectionCircle')
+                .classed("selected", function() {
+                    if(d3.event.sourceEvent.shiftKey){
+                        return this.classList.contains("selected") || 
+                            (extent[0][0] <= d.x && d.x < extent[1][0]
+                             && extent[0][1] <= d.y && d.y < extent[1][1]);
+                    }else{
+                        return (extent[0][0] <= d.x && d.x < extent[1][0]
+                                && extent[0][1] <= d.y && d.y < extent[1][1]);
+                    }
+                })
+            })
 
-              })
+        })
               .on("brushend", function() {
-                  d3.event.target.clear();
-                  d3.select(this).call(d3.event.target);
-              })
+            d3.event.target.clear();
+            d3.select(this).call(d3.event.target);
+        })
              );
 
     }
@@ -1226,8 +1285,7 @@ function update(){
     .attr('dx', function(d) {
         return d.isFolded ? '-5' : '0';
     });
-
-    // add listener for mouseclick for folding
+    // add listener for mouseclick for either adding to a selection or toggling the popovers (tooltips) for each element
     nodeGroup.on("click", function(d){
         var e = d3.event;
         // toggle selection of a node if shift/ctrl key is pressed
@@ -1237,10 +1295,13 @@ function update(){
                 return this.classList.contains('selected') ? false : true ;
             });
         }else{
-            // if shift/ctrl is not pressed - simply fold the node
-            toggleFoldNode(d);
+            $(this).popover("toggle");
             clearCurrentSelection();
         }
+    });
+    // add listener for double clicks that folds a node
+    nodeGroup.on("dblclick", function(d){
+        toggleFoldNode(d);
     });
 
     var path = svg.select(".edges").selectAll('path');
@@ -1288,6 +1349,8 @@ function decorateNodeCircle(svgNodeElement){
                 switch(node.status){
                     case 'PENDING':
                         return stateColorMap['PENDING'];
+                    case 'INSTALLED':
+                        return stateColorMap['INSTALLED'];
                     case 'TERMINATED':
                         return stateColorMap['TERMINATED'];
                     case 'STOPPED':
@@ -1308,6 +1371,8 @@ function decorateNodeCircle(svgNodeElement){
                 switch(node.status){
                     case 'PENDING':
                         return 'url(#pendingNodeGradient)';
+                    case 'INSTALLED':
+                        return 'url(#installedNodeGradient)';
                     case 'TERMINATED':
                         return 'url(#terminatedNodeGradient)';
                     case 'STOPPED':
@@ -1340,6 +1405,8 @@ function decorateEdgePath(svgEdgeElement){
             switch(edge.source.status){
                 case 'PENDING':
                     return stateColorMap['PENDING'];
+                case 'INSTALLED':
+                    return stateColorMap['INSTALLED'];
                 case 'TERMINATED':
                     return stateColorMap['TERMINATED'];
                 case 'STOPPED':
@@ -1360,6 +1427,8 @@ function decorateEdgePath(svgEdgeElement){
             switch(edge.source.status){
                 case 'PENDING':
                     return edge._type == 'ExecuteLink' ? 'url(#pendingExecuteArrow)' : 'url(#pendingRelationshipArrow)';
+                case 'INSTALLED':
+                    return edge._type == 'ExecuteLink' ? 'url(#installedExecuteArrow)' : 'url(#installedRelationshipArrow)';
                 case 'TERMINATED':
                     return edge._type == 'ExecuteLink' ? 'url(#terminatedExecuteArrow)' : 'url(#terminatedRelationshipArrow)';
                 case 'STOPPED':
@@ -1858,29 +1927,75 @@ function getNodeDatumHostFromSelection(datum, selection){
     return result;
 }
 
+var dedicatedSocket;
 // call the 'scale out' command for an input node
 function scaleOutNode(node){
-    // get the identifier of the node
-    var id = getNodeId(node);
-    // value null is returned in case of an error; we don't perform an action in this case
-    if(id == null)
-        return;
-    // form the message to initiate the scale out action
-    var message = "!extended { name: ScaleOut, params: [" + id + "] }";
-    sendMessageFromSocket(node.socket, message);
-    alertMessage("success","Initiated scaling out action for node " + node.name + "!", 5000); 
-}
+    if(!cloudMLServerHost){
+        alertMessage("error",'Invalid CloudML server host. ', 5000);
+        console.log("host", cloudMLServerHost);
+        return null;
+    }
+    // open a dedicated socket for retrieving the VM identifier so that it doesn't get interference
+    // with other getSnapshot messages
+    dedicatedSocket = new WebSocket(cloudMLServerHost);
 
-// get the identifier of an input node
-function getNodeId(node){
-    if(node.socket){
-        // send a message that retrieves the current node state (the listener updates the 'id' field)
-        // this is in case the ID for the node has been reassigned and the listener did not get notified
+    // send a message that retrieves the current node state (the listener updates the 'id' field)
+    // this is in case the ID for the node has been reassigned and the listener did not get notified
+    dedicatedSocket.onopen = function(){
         var message = 
             "!getSnapshot"
         + '\n' 
         + "  path : /componentInstances[name='" + node.name + "']";
-        sendMessageFromSocket(node.socket, message);
+        sendMessageFromSocket(dedicatedSocket, message);
+
+    }
+    dedicatedSocket.onmessage = function(msg){
+        if(msg.data.indexOf("GetSnapshot") >= 0){
+            try{
+                var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+            }catch (error) {
+                alertMessage("error",'Error parsing YAML response from CloudML server.', 5000);
+                console.log(error);
+            }
+
+            if(typeof json.content.id != 'undefined'){
+                if(json.content.id != null){
+                    if(json.content.id != ''){
+                        node.id = json.content.id;
+                        // form the message to initiate the scale out action
+                        var message = "!extended { name: ScaleOut, params: [" + node.id + "] }";
+                        sendMessageFromSocket(node.socket, message);
+                        alertMessage("success","Initiated scaling out action for node " 
+                                     + node.name + "!", 3000);
+
+                        // HACK - wait 3 more seconds and refresh deployment model
+                        setTimeout(function () {
+                            send("!getSnapshot {path : /}");
+                        }, 3000);
+                    }
+                }
+            }
+            if(typeof json.content.publicAddress != 'undefined'){
+                if(json.content.publicAddress != null)
+                    node.publicAddress = json.content.publicAddress;
+            }
+            dedicatedSocket.close();
+        }
+
+
+
+    }
+    dedicatedSocket.onclose = function(){
+        console.log("dedicated socket closed for " + node.name);
+    }
+    dedicatedSocket.onerror = function(error){
+        console.log("error for node " + node.name, dedicatedSocket.readyState);
+    }
+
+
+    // HACK - displays messages in case there is a problem retrieving the ID of the node
+    // after 5 seconds
+    setTimeout(function () {
         if(typeof node.id == 'undefined'){
             alertMessage("error",'The selected node does not have an identifier.', 5000);
             return null;
@@ -1890,18 +2005,12 @@ function getNodeId(node){
             return null;
         }
         if(node.id == ''){
-            alertMessage("error",'The selected node has an empty identifier.', 5000);
-            return null;
+            if(node.id == ''){
+                alertMessage("error",'The selected node has an empty identifier.', 5000);
+                return null;
+            }
         }
-        return node.id;
-    }
-    else{
-        alertMessage("error",'Something went wrong during scaling action: No socket associated with the current node.');
-        return null;
-    }
-
-
-
-
+        dedicatedSocket.close();
+    }, 3000);
 }
 

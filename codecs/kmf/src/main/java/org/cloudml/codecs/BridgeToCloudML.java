@@ -610,6 +610,7 @@ public class BridgeToCloudML {
             pr.setConfigurationFile(kr.getConfigurationFile());
             pr.setRepositoryKey(kr.getRepositoryKey());
             pr.setUsername(kr.getUsername());
+            pr.setManifestEntry(kr.getManifestEntry());
             element.getResources().add(pr);
         }
     }

@@ -116,6 +116,7 @@ public class CloudAppDeployer {
 
             //Run puppet
             configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+            generatePuppetManifestAndConfigure();
 
             //send the current deployment to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
@@ -178,12 +179,14 @@ public class CloudAppDeployer {
             currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
             currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
             currentModel.getComponentInstances().removeAll(diff.getRemovedECs());
+            currentModel.getExecuteInstances().removeAll(diff.getRemovedExecutes());
             alreadyDeployed.removeAll(diff.getRemovedComponents());
             alreadyStarted.removeAll(diff.getRemovedComponents());
 
             currentModel.getComponentInstances().addAll(diff.getAddedComponents());
             currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
             currentModel.getComponentInstances().addAll(diff.getAddedECs());
+            currentModel.getExecuteInstances().addAll(diff.getAddedExecutes());
         } else {
             throw new IllegalArgumentException("Cannot update current model without comparator!");
         }
@@ -234,7 +237,8 @@ public class CloudAppDeployer {
 
                 executeInstallCommand(instance, ownerVM, jc);
 
-                instance.setStatus(State.INSTALLED);
+                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
+                //instance.setStatus(State.INSTALLED);
                 jc.closeConnection();
             } else { // If the destination is a PaaS platform
                 ExternalComponent ownerType = (ExternalComponent) host.getType();
@@ -354,6 +358,45 @@ public class CloudAppDeployer {
     }
 
 
+    /**
+     * Generate the manifest file for each VM from the manifestEntry of each puppet resource and start puppet.
+     */
+    private void generatePuppetManifestAndConfigure(){
+        for(VMInstance vmi : currentModel.getComponentInstances().onlyVMs()){
+            PuppetManifestGenerator pmg = new PuppetManifestGenerator(vmi, currentModel);
+            String path=pmg.generate();
+            if(path != null){
+                managePuppet(pmg.getSkeleton(), vmi, vmi.getName(), path);
+            }
+        }
+    }
+
+
+    /**
+     * Install puppet, manage the repo, change the hostname and execute puppet on a VM
+     * @param pr the puppet resource
+     * @param n the vm instance on which puppet will be installed and executed
+     * @param hostname the new hostname of the vm for puppet
+     * @param path the path to the puppet manifest
+     */
+    private void managePuppet(PuppetResource pr, VMInstance n, String hostname, String path){
+        PuppetMarionnetteConnector puppet=new PuppetMarionnetteConnector(pr.getMaster(),n);
+        //check if the configuration file is in the repo and manage the repo
+        MercurialConnector mc=new MercurialConnector(pr.getRepo(),pr.getRepositoryKey());
+        mc.addFile(path, pr.getUsername());
+        //Touch the site.pp file
+        puppet.touchSiteFile();
+        //call the update host command
+        puppet.configureHostname(n.getType().getPrivateKey(), n.getType().getLogin(),n.getType().getPasswd(),
+                n.getPublicAddress(), pr.getMaster(), hostname, pr.getConfigureHostnameCommand());
+        //start the puppet run
+        puppet.install(n);
+    }
+
+    /**
+     * For each component, execute the puppet manifest associated
+     * @param components
+     */
     private void configureWithPuppet(ComponentInstanceGroup<InternalComponentInstance> components){
         unlessNotNull("Cannot configure null!", components);
         Connector jc;
@@ -361,22 +404,13 @@ public class CloudAppDeployer {
             if(ic.externalHost().isVM()){
                 for(Resource r: ic.getType().getResources()){
                     if(r instanceof PuppetResource){
-                        journal.log(Level.INFO, ">> Using Puppet to configure the following component: "+ic.getName());
                         PuppetResource pr=(PuppetResource)r;
-                        VMInstance n= ic.getHost().asExternal().asVM();
-                        Provider p = n.getType().getProvider();
-                        PuppetMarionnetteConnector puppet=new PuppetMarionnetteConnector(pr.getMaster(),n);
-                        //check if the configuration file is in the repo and manage the repo
-                        MercurialConnector mc=new MercurialConnector(pr.getRepo(),pr.getRepositoryKey());
-                        if(!pr.getConfigurationFile().equals(""))
-                            mc.addFile(pr.getConfigurationFile(), pr.getUsername());
-                        //call the update host command
-                        puppet.configureHostname(n.getType().getPrivateKey(), n.getType().getLogin(),n.getType().getPasswd(),
-                                n.getPublicAddress(), pr.getMaster(), pr.getName(), pr.getConfigureHostnameCommand());
-                        //manage the certificates
-                        puppet.manageCertificates(pr.getName());
-                        //start the puppet run
-                        puppet.install(n);
+                        if(!pr.getConfigurationFile().isEmpty()){
+                            journal.log(Level.INFO, ">> Using Puppet to configure the following component: "+ic.getName());
+                            VMInstance n= ic.getHost().asExternal().asVM();
+                            Provider p = n.getType().getProvider();
+                            managePuppet(pr,n, pr.getName(),pr.getConfigurationFile());
+                        }
                     }
                 }
             }
@@ -400,19 +434,22 @@ public class CloudAppDeployer {
                 executeUploadCommands(host.asInternal(),ownerVM,jc);
                 executeRetrieveCommand(host.asInternal(), ownerVM, jc);
                 executeInstallCommand(host.asInternal(), ownerVM, jc);
-                host.asInternal().setStatus(State.INSTALLED);
+                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
+                //host.asInternal().setStatus(State.INSTALLED);
 
                 for (Resource r : host.getType().getResources()) {
                     String configurationCommand = r.getConfigureCommand();
                     configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                 }
-                host.asInternal().setStatus(State.CONFIGURED);
+                coordinator.updateStatusInternalComponent(host.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+                //host.asInternal().setStatus(State.CONFIGURED);
 
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = r.getStartCommand();
                     start(jc, n, ownerVM, startCommand);
                 }
-                host.asInternal().setStatus(State.RUNNING);
+                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                //host.asInternal().setStatus(State.RUNNING);
 
                 alreadyStarted.add(host);
                 alreadyDeployed.add(host);
@@ -457,7 +494,8 @@ public class CloudAppDeployer {
                     }
 
                     if (serverComponent.isInternal()) {
-                        serverComponent.asInternal().setStatus(State.INSTALLED);
+                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
+                        //serverComponent.asInternal().setStatus(State.INSTALLED);
                     }
 
                     for (Resource r : serverComponent.getType().getResources()) {
@@ -465,7 +503,8 @@ public class CloudAppDeployer {
                         configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
                     }
                     if (serverComponent.isInternal()) {
-                        serverComponent.asInternal().setStatus(State.CONFIGURED);
+                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+                        //serverComponent.asInternal().setStatus(State.CONFIGURED);
                     }
 
                     for (Resource r : serverComponent.getType().getResources()) {
@@ -473,7 +512,8 @@ public class CloudAppDeployer {
                         start(jc, n, owner, startCommand);
                     }
                     if (serverComponent.isInternal()) {
-                        serverComponent.asInternal().setStatus(State.RUNNING);
+                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                        //serverComponent.asInternal().setStatus(State.RUNNING);
                     }
 
                     alreadyStarted.add(serverComponent);
@@ -507,13 +547,15 @@ public class CloudAppDeployer {
                         String configurationCommand = r.getConfigureCommand();
                         configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                     }
-                    x.setStatus(State.CONFIGURED);
+                    coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+                    //x.setStatus(State.CONFIGURED);
 
                     for (Resource r : x.getType().getResources()) {
                         String startCommand = r.getStartCommand();
                         start(jc, n, ownerVM, startCommand);
                     }
-                    x.setStatus(State.RUNNING);
+                    coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                    //x.setStatus(State.RUNNING);
 
                     alreadyStarted.add(x);
                     jc.closeConnection();
@@ -578,9 +620,10 @@ public class CloudAppDeployer {
     private void provisionAVM(VMInstance n) {
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING, CloudAppDeployer.class.getName());
-        ComponentInstance.State state = jc.createInstance(n);
-        coordinator.updateStatus(n.getName(), state, CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
+        HashMap<String,String> runtimeInformation = jc.createInstance(n);
+        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
+        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         if (statusMonitorActive) {
             statusMonitor.attachModule(jc);
@@ -662,7 +705,7 @@ public class CloudAppDeployer {
                             journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
                         }
                     }
-                    
+
                 }
                 ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
                 Component client = clienti.getType();
@@ -832,7 +875,7 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED, CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), CloudAppDeployer.class.getName());
         //old way without using mrt
         //n.setStatusAsStopped();
     }
@@ -867,7 +910,8 @@ public class CloudAppDeployer {
             }
 
             jc.closeConnection();
-            a.setStatus(State.CONFIGURED);
+            coordinator.updateStatusInternalComponent(a.getName(), State.UNINSTALLED.toString(), CloudAppDeployer.class.getName());
+            //a.setStatus(State.CONFIGURED);
         }
     }
 
@@ -962,9 +1006,9 @@ public class CloudAppDeployer {
         StandardLibrary lib = new StandardLibrary();
 
         //1. create snapshot of an instance
-
         String ID=c.createImage(vmi); //TODO: should check if the image already exist
         c.closeConnection();
+
         //2. instantiate the new VM using the newly created snapshot
         VM existingVM=vmi.asExternal().asVM().getType();
         VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
@@ -986,13 +1030,15 @@ public class CloudAppDeployer {
             currentModel.getComponents().add(v);
         }
         VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
-        Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
-        c2.createInstance(ci);
-        c2.closeConnection();
 
         //3. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
         Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
 
+        // For synchronization purpose with provision once the model has been fully updated
+        Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
+        HashMap<String,String> result=c2.createInstance(ci);
+        c2.closeConnection();
+        coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
 
         //4. configure the new VM
         //execute the configuration bindings
@@ -1010,6 +1056,7 @@ public class CloudAppDeployer {
 
         //execute configure commands on the components
         for(ComponentInstance ici: listOfAllComponentImpacted){
+            coordinator.updateStatusInternalComponent(ici.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
             if(ici.isInternal()){
                 c2=ConnectorFactory.createIaaSConnector(v.getProvider());
                 for(Resource r: ici.getType().getResources()){
@@ -1017,6 +1064,7 @@ public class CloudAppDeployer {
                 }
                 c2.closeConnection();
             }
+            coordinator.updateStatusInternalComponent(ici.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
         }
 
         //execute start commands on the components
@@ -1028,7 +1076,10 @@ public class CloudAppDeployer {
                 }
                 c2.closeConnection();
             }
+            coordinator.updateStatusInternalComponent(ici.getName(), State.UNINSTALLED.toString(), CloudAppDeployer.class.getName());
         }
+
+        journal.log(Level.INFO, ">> Scaling completed!");
     }
 
 
@@ -1043,9 +1094,9 @@ public class CloudAppDeployer {
     }
 
     private Map<InternalComponentInstance, InternalComponentInstance> duplicateHostedGraph(VMInstance vmiSource,VMInstance vmiDestination){
-        InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
+        //InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
         StandardLibrary lib=new StandardLibrary();
-        return lib.replicateSubGraph(currentModel, icig, vmiDestination);
+        return lib.replicateSubGraph(currentModel, vmiSource, vmiDestination);
     }
 
     /**

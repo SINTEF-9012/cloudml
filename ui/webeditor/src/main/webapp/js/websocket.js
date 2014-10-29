@@ -41,7 +41,8 @@ function connect(host){
             socket = new WebSocket(host);
         }
         socket.onopen = function(){  
-            alertMessage("success","Connected to CloudML server",3000); 
+            alertMessage("success","Connected to CloudML server",3000);
+            connectedToCloudMLServer = true;
             ready=true;
         }  
 
@@ -64,6 +65,12 @@ function connect(host){
                     if(array instanceof Array)
                         getData(array[2]);
                 }
+                
+                if(typeof refreshNodeStates  != 'undefined'){
+                   refreshNodeStates();
+                }
+                
+                
             }
             if(msg.data.indexOf("!update") >= 0){
                 alertMessage("success","New update!",3000); 
@@ -80,12 +87,18 @@ function connect(host){
                 if(typeof graphViewUpdateJSON  != 'undefined'){
                     graphViewUpdateJSON(json.parent,json.property,json.newValue);
                 }
+                if(typeof refreshNodeStates  != 'undefined'){
+                   refreshNodeStates();
+                }
             }
             if(msg.data.indexOf("!created") >= 0){
                 alertMessage("success","New update! "+msg.data,3000); 
                 increaseNotificationNumber();
                 addNotification(msg.data);
                 tempObject=new Object();
+                if(typeof refreshNodeStates  != 'undefined'){
+                   refreshNodeStates();
+                }
             }
             if(msg.data.indexOf("!added") >= 0){
                 alertMessage("success","New update! "+msg.data,3000); 
@@ -123,6 +136,7 @@ function connect(host){
         socket.onclose = function(){
             ready=false;
             alertMessage("success",'Connection closed: '+socket.readyState,10000);  
+            connectedToCloudMLServer = false;
         }
 
         socket.onerror = function(error){
