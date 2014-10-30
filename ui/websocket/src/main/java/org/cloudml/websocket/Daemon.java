@@ -24,8 +24,11 @@ package org.cloudml.websocket;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.ComponentInstance;
@@ -44,6 +47,12 @@ public class Daemon
 {
     public static void main( String[] args )
     {
+        final InputStream inputStream = Daemon.class.getClassLoader().getResourceAsStream("logging.properties");
+        try {
+            LogManager.getLogManager().readConfiguration(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         int port = 9000;
         if(args.length >= 1)
             port = Integer.parseInt(args[0]);
