@@ -38,7 +38,6 @@ import java.util.logging.Level;
  */
 public class MonitoringAPI {
 
-
     private String address;
     private final String version = "v1";
     private static final java.util.logging.Logger journal = java.util.logging.Logger.getLogger(MonitoringAPI.class.getName());
