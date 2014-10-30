@@ -57,8 +57,8 @@ stateColorMap['INSTALLED'] = "#fee08b";
 File management
 ***********************************************/
 function saveFile(inputDiv){
-	if(currentJSON)
-		window.open("data:application/octet-stream,"+currentJSON);
+    if(currentJSON)
+        window.open("data:application/octet-stream,"+currentJSON);
 }
 
 
@@ -95,6 +95,15 @@ var yamlICInstanceTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.Inte
         return data;
     },
 });
+
+var yamlECInstanceTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.ExternalComponentInstance', {
+    kind : 'mapping',
+    construct : function (data) {
+        data["__type"]="ExternalComponentInstance"; 
+        return data;
+    },
+});
+
 var localProvPortInstanceGroupTag = new jsyaml.Type('tag:yaml.org,2002:org.cloudml.core.ComponentInstance$LocalProvidedPortInstanceGroup', {
     kind : 'mapping',
     construct : function () {
@@ -136,7 +145,7 @@ var snapshotType = new jsyaml.Type('!snapshot', {
 });
 
 // create a jsyaml schema containing the defined tags and types which is then used as a second argument to the 'load' method
-var jsyamlSchema = jsyaml.Schema.create([ provPortInstanceGroupTag, fileCredentialsTag, yamlVMInstanceTag, yamlICInstanceTag, updatedType, snapshotType, localProvPortInstanceGroupTag, fileCredentialsFullTag, localRequiredPortInstanceGroupTag, noCredentialsTag ]);
+var jsyamlSchema = jsyaml.Schema.create([ provPortInstanceGroupTag, fileCredentialsTag, yamlVMInstanceTag, yamlICInstanceTag, updatedType, snapshotType, localProvPortInstanceGroupTag, fileCredentialsFullTag, localRequiredPortInstanceGroupTag, noCredentialsTag, yamlECInstanceTag ]);
 
 function pushModelToServer(){
     if(currentJSON == null){
@@ -391,6 +400,7 @@ Since the json serialization of the metamodel differs from the internal POJO ser
             if(jObj.content != 'undefined'){
                 // in the js-yaml parser definitions (the global variables), we define a temporary variable '__type' 
                 if(jObj.content.__type != 'undefined'){
+                    console.log("jObj.content.__type", jObj.content.__type);
                     switch (jObj.content.__type){
                             // for now, only state changes in VM instances and internal component instances will be supported (no external component instances like e.g. PaaS services)
                         case 'VMInstance' : {
@@ -414,6 +424,23 @@ Since the json serialization of the metamodel differs from the internal POJO ser
                         case 'InternalComponentInstance' : {
                             if(parent.indexOf("componentInstances") >=0){
                                 parent = parent.replace("componentInstances", "internalComponentInstances");
+                                var xpath="";
+                                if(parent.length <= 1){
+                                    xpath = parent + propertyId;
+                                }else{
+                                    xpath = parent + "/" + propertyId;
+
+                                }
+                                // set the according value to the JSON
+                                setValueInJSON(root, xpath, newValue);
+                                // update the global object holding the current JSON
+                                currentJSON = stringifyRoot();
+                            }
+                            update();
+                        };
+                        case 'ExternalComponentInstance' : {
+                            if(parent.indexOf("componentInstances") >=0){
+                                parent = parent.replace("componentInstances", "externalComponentInstances");
                                 var xpath="";
                                 if(parent.length <= 1){
                                     xpath = parent + propertyId;
