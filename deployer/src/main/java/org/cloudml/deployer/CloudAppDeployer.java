@@ -1075,7 +1075,8 @@ public class CloudAppDeployer {
         for(ComponentInstance ici: listOfAllComponentImpacted){
             coordinator.updateStatusInternalComponent(ici.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
             if(ici.isInternal()){
-                c2=ConnectorFactory.createIaaSConnector(v.getProvider());
+                Provider p=ici.asInternal().externalHost().asVM().getType().getProvider();
+                c2=ConnectorFactory.createIaaSConnector(p);
                 for(Resource r: ici.getType().getResources()){
                     configure(c2, ci.getType(), ici.asInternal().externalHost().asVM(), r.getConfigureCommand(),false);
                 }
@@ -1087,7 +1088,8 @@ public class CloudAppDeployer {
         //execute start commands on the components
         for(ComponentInstance ici: listOfAllComponentImpacted){
             if(ici.isInternal()){
-                c2=ConnectorFactory.createIaaSConnector(v.getProvider());
+                Provider p=ici.asInternal().externalHost().asVM().getType().getProvider();
+                c2=ConnectorFactory.createIaaSConnector(p);
                 for(Resource r: ici.getType().getResources()){
                     start(c2,ci.getType(),ici.asInternal().externalHost().asVM(),r.getStartCommand());
                 }
