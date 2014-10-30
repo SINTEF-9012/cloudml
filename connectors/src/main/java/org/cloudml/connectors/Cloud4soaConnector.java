@@ -270,8 +270,8 @@ public class Cloud4soaConnector implements PaaSConnector {
     public void bindDbToApp(String appId, String dbId, String alias){
         try {
             BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
-            client.resourceBind("cb-app", "mod4cloud/"+appId,  "cb-db", "mod4cloud/"+dbId, alias, Collections.EMPTY_MAP);
-            
+            ServiceResourceBindResponse srbr=client.resourceBind("cb-app", appId,  "cb-db", dbId, alias, Collections.EMPTY_MAP);
+            Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.INFO, srbr.getMessage());
         } catch (Exception ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
         }

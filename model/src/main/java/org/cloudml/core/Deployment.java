@@ -64,6 +64,19 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
         this.clouds = new LocalCloudGroup();
     }
 
+    public Deployment clone(){
+        Deployment tmp=new Deployment();
+        tmp.getComponents().addAll(this.getComponents());
+        tmp.getComponentInstances().addAll(this.getComponentInstances());
+        tmp.getExecuteInstances().addAll(this.getExecuteInstances());
+        tmp.getProviders().addAll(this.getProviders());
+        tmp.getRelationshipInstances().addAll(this.getRelationshipInstances());
+        tmp.getClouds().addAll(this.getClouds());
+        tmp.getRelationships().addAll(this.getRelationships());
+        tmp.setName(this.getName());
+        return tmp;
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visitDeployment(this);

@@ -53,6 +53,14 @@ stateColorMap['UNCATEGORIZED'] = "#BAC2C3";
 stateColorMap['RECOVERY'] = "#4B9D9B";
 stateColorMap['INSTALLED'] = "#fee08b";
 
+/***********************************************
+File management
+***********************************************/
+function saveFile(inputDiv){
+	if(currentJSON)
+		window.open("data:application/octet-stream,"+currentJSON);
+}
+
 
 /***********************************************
 JS-YAML parser definitions

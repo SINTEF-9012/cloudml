@@ -145,7 +145,7 @@ public class CloudAppDeployer {
                 MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
                 boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
                 if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
-                        MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
+                    MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
                 }
             }
         }
@@ -262,6 +262,7 @@ public class CloudAppDeployer {
                     params.put("containerSize", size);
                     connector.configAppParameters(instance.getName(), params);
                 }
+                coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
             }
         }
     }
@@ -657,8 +658,10 @@ public class CloudAppDeployer {
                     ec.hasProperty("allocatedSize") ? Integer.parseInt(ec.getProperties().valueOf("allocatedSize")) : 0,
                     null,
                     ec.hasProperty("securityGroup") ? ec.getProperties().valueOf("securityGroup") : "");
-            eci.setPublicAddress(connector.getDBEndPoint(eci.getName(), 600));
-
+            String pa=connector.getDBEndPoint(eci.getName(), 600);
+            eci.setPublicAddress(pa);
+            coordinator.updateIP(n.getName(),pa,CloudAppDeployer.class.getName());
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
             //execute the configure command
             if (!n.getType().getResources().isEmpty()) {
                 for (Resource r : n.getType().getResources()) {
@@ -715,6 +718,7 @@ public class CloudAppDeployer {
                         try{
                             PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
                             connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                            coordinator.updateStatusInternalComponent(clienti.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
                         }
                         catch(NullPointerException e){
                             journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
@@ -1001,6 +1005,8 @@ public class CloudAppDeployer {
      * @param vmi an instance of VM
      */
     public void scaleOut(VMInstance vmi) {
+        Deployment tmp=currentModel.clone();
+
         Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
         StandardLibrary lib = new StandardLibrary();
 
@@ -1036,10 +1042,20 @@ public class CloudAppDeployer {
 
         Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
         HashMap<String,String> result=c2.createInstance(ci);
-        c2.closeConnection();
-        coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
-        coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
-        coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
+
+
+        if(!result.get("status").equals(ComponentInstance.State.ERROR.toString())){
+            c2.closeConnection();
+            coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
+            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+            coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
+        }else{
+            //rollback
+            currentModel=tmp;
+            c2.destroyVM(vmi.getId());
+            c2.closeConnection();
+
+        }
 
         //4. configure the new VM
         //execute the configuration bindings

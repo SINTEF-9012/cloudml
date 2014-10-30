@@ -83,10 +83,12 @@ public class BridgeToKmf {
 
     private void convertProperties(WithProperties element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory) {
         for (Property p: element.getProperties()) {
-            net.cloudml.core.Property kp = factory.createProperty();
-            kp.setName(p.getName());
-            kp.setValue(p.getValue());
-            kElement.addProperties(kp);
+            if(p.getValue() != null){
+                net.cloudml.core.Property kp = factory.createProperty();
+                kp.setName(p.getName());
+                kp.setValue(p.getValue());
+                kElement.addProperties(kp);
+            }
         }
     }
 
