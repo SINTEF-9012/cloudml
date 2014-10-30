@@ -262,6 +262,9 @@ public class CloudAppDeployer {
                     params.put("containerSize", size);
                     connector.configAppParameters(instance.getName(), params);
                 }
+                for(InternalComponentInstance ici: host.hostedComponents()){
+                    coordinator.updateStatus(ici.getName(), InternalComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                }
                 coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
             }
         }

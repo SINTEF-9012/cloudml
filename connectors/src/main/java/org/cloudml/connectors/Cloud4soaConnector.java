@@ -258,7 +258,6 @@ public class Cloud4soaConnector implements PaaSConnector {
         if("cloudbees".equals(provider.getName().toLowerCase())){
             try{
                 BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
-                
                 client.applicationConfigUpdate(this.credentials.getAccountName()+"/"+applicationName, params);
             }
             catch(Exception ex){
@@ -266,12 +265,23 @@ public class Cloud4soaConnector implements PaaSConnector {
             }
         }   
     }
-    
+
+    public void restartApp(String appId){
+        try {
+            BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
+            client.applicationRestart("mod4cloud/" + appId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void bindDbToApp(String appId, String dbId, String alias){
         try {
+            //Thread.sleep(60000);
             BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
             ServiceResourceBindResponse srbr=client.resourceBind("cb-app", "mod4cloud/"+appId,  "cb-db", "mod4cloud/"+dbId, alias, Collections.EMPTY_MAP);
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.INFO, srbr.getMessage());
+            restartApp(appId);
         } catch (Exception ex) {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
         }
