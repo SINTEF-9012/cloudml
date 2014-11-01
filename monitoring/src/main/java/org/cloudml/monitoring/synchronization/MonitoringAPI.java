@@ -25,11 +25,10 @@ package org.cloudml.monitoring.synchronization;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.InternalComponent;
 import it.polimi.modaclouds.qos_models.monitoring_ontology.VM;
-import org.cloudml.core.ExternalComponent;
-
-
 import java.util.List;
 import java.util.logging.Level;
 
@@ -64,7 +63,9 @@ public class MonitoringAPI {
         String response = null;
 
         try {
-            response = HttpRequest.post(url).send(rule).body();
+            //response = HttpRequest.post(url).send(rule).body();
+            HttpResponse<String> request = Unirest.post(url).body(rule).asString();
+            response = request.getBody();
         } catch (Exception e) {
             journal.log(Level.INFO, ">> Connection to the monitoring manager refused");
         }
@@ -81,7 +82,9 @@ public class MonitoringAPI {
         String url = address + "/" + version + "/metrics";
 
         try {
-            String response = HttpRequest.get(url).body();
+            //String response = HttpRequest.get(url).body();
+            HttpResponse<String> request = Unirest.get(url).asString();
+            String response = request.getBody();
         } catch (Exception e) {
             journal.log(Level.INFO, ">> Connection to the monitoring manager refused");
             return null;
@@ -103,7 +106,9 @@ public class MonitoringAPI {
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             journal.log(Level.INFO, ">> Attaching observer");
-            result = HttpRequest.post(url).send(callback).code();
+            //result = HttpRequest.post(url).send(callback).code();
+            HttpResponse<String> response = Unirest.post(url).body(callback).asString();
+            result = response.getCode();
         } catch (Exception e) {
             result = NO_RESPONSE;
         }
@@ -117,7 +122,7 @@ public class MonitoringAPI {
      *
      * @param update the state of the deployment
      */
-    public void addInstances(Model update){
+    public void postResources(Model update){
 
         String url = address + "/" + version + "/model/resources";
         int result;
@@ -127,7 +132,9 @@ public class MonitoringAPI {
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             printComponentname(update);
-            result = HttpRequest.post(url).send(json).code();
+            //result = HttpRequest.post(url).send(json).code();
+            HttpResponse<String> response = Unirest.post(url).body(json).asString();
+            result = response.getCode();
         } catch (Exception e) {
             result = NO_RESPONSE;
         }
@@ -140,7 +147,7 @@ public class MonitoringAPI {
      *
      * @param model the state of the deployment
      */
-    public void uploadDeployment(Model model){
+    public void putResources(Model model){
 
         String url = address + "/" + version + "/model/resources";
         int result;
@@ -149,7 +156,10 @@ public class MonitoringAPI {
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             printComponentname(model);
-            result = HttpRequest.put(url).send(json).code();
+            //result = HttpRequest.put(url).send(json).code();
+
+            HttpResponse<String> response = Unirest.put(url).body(json).asString();
+            result = response.getCode();
         } catch (Exception e) {
             result = NO_RESPONSE;
         }
@@ -165,14 +175,16 @@ public class MonitoringAPI {
      * @param id are the IDs of the instances to be deleted
      * @return int code status of the connection
      */
-    public int deleteInstances(String id){
+    public int deleteResource(String id){
         String url = address + "/" + version + "/model/resources/" + id;
         int result;
         try {
             journal.log(Level.INFO, ">> Connecting to the monitoring platform at "+address+"...");
             journal.log(Level.INFO, ">> Deleting: "+id);
-            Thread.sleep(1000);
-            result = HttpRequest.delete(url).code();
+
+            //result = HttpRequest.delete(url).code();
+            HttpResponse<String> response = Unirest.delete(url).asString();
+            result = response.getCode();
         } catch (Exception e) {
             result = NO_RESPONSE;
         }

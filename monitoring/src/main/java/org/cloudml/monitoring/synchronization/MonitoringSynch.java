@@ -27,7 +27,6 @@ import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.VMInstanceGroup;
 
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * @author Lorenzo Cianciaruso
@@ -44,7 +43,7 @@ public class MonitoringSynch {
         Model model = Filter.fromCloudmlToModaMP(currentDeployment);
 
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
-        request.uploadDeployment(model);
+        request.putResources(model);
     }
 
     /**
@@ -57,7 +56,7 @@ public class MonitoringSynch {
                                            List<InternalComponentInstance> addedICs) {
         Model added = Filter.fromCloudmlToModaMP(addedECs, addedICs);
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
-        request.addInstances(added);
+        request.postResources(added);
     }
 
     /**
@@ -81,7 +80,7 @@ public class MonitoringSynch {
         VMInstanceGroup removedVMs = supportList.onlyVMs();
 
         for(int i = 0; i<removedICs.size() && modelMatching;i++){
-            int code = request.deleteInstances(removedICs.get(i).getName());
+            int code = request.deleteResource(removedICs.get(i).getName());
             if(code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
                 modelMatching = false;
             }
@@ -89,7 +88,7 @@ public class MonitoringSynch {
 
         for(VMInstance vm : removedVMs){
             if(modelMatching) {
-                int code = request.deleteInstances(vm.getName());
+                int code = request.deleteResource(vm.getName());
                 if (code == MonitoringAPI.CLIENT_ERROR_NOT_FOUND) {
                     modelMatching = false;
                 }
