@@ -481,46 +481,48 @@ public class CloudAppDeployer {
         for (RelationshipInstance bi : relationships) {
             if (bi.getRequiredEnd().getType().isMandatory() && x.getRequiredPorts().contains(bi.getRequiredEnd())) {
                 final ComponentInstance<? extends Component> serverComponent = bi.getServerComponent();
-                VMInstance owner = (VMInstance) getDestination(serverComponent);
-                if (owner == null) {
-                    owner = ownerVM;
-                }
-                if (!alreadyDeployed.contains(serverComponent)) {
-                    for (Resource r : serverComponent.getType().getResources()) {
-                        executeUploadCommands(serverComponent.asInternal(),owner,jc);
+                if( getDestination(serverComponent).isVM()){
+                    VMInstance owner = (VMInstance) getDestination(serverComponent);
+                    if (owner == null) {
+                        owner = ownerVM;
                     }
-                    for (Resource r : serverComponent.getType().getResources()) {
-                        jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
-                    }
-                    for (Resource r : serverComponent.getType().getResources()) {
-                        jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
-                    }
+                    if (!alreadyDeployed.contains(serverComponent)) {
+                        for (Resource r : serverComponent.getType().getResources()) {
+                            executeUploadCommands(serverComponent.asInternal(),owner,jc);
+                        }
+                        for (Resource r : serverComponent.getType().getResources()) {
+                            jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
+                        }
+                        for (Resource r : serverComponent.getType().getResources()) {
+                            jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
+                        }
 
-                    if (serverComponent.isInternal()) {
-                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
-                        //serverComponent.asInternal().setStatus(State.INSTALLED);
-                    }
+                        if (serverComponent.isInternal()) {
+                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
+                            //serverComponent.asInternal().setStatus(State.INSTALLED);
+                        }
 
-                    for (Resource r : serverComponent.getType().getResources()) {
-                        String configurationCommand = r.getConfigureCommand();
-                        configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
-                    }
-                    if (serverComponent.isInternal()) {
-                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
-                        //serverComponent.asInternal().setStatus(State.CONFIGURED);
-                    }
+                        for (Resource r : serverComponent.getType().getResources()) {
+                            String configurationCommand = r.getConfigureCommand();
+                            configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
+                        }
+                        if (serverComponent.isInternal()) {
+                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
+                            //serverComponent.asInternal().setStatus(State.CONFIGURED);
+                        }
 
-                    for (Resource r : serverComponent.getType().getResources()) {
-                        String startCommand = r.getStartCommand();
-                        start(jc, n, owner, startCommand);
-                    }
-                    if (serverComponent.isInternal()) {
-                        coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
-                        //serverComponent.asInternal().setStatus(State.RUNNING);
-                    }
+                        for (Resource r : serverComponent.getType().getResources()) {
+                            String startCommand = r.getStartCommand();
+                            start(jc, n, owner, startCommand);
+                        }
+                        if (serverComponent.isInternal()) {
+                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                            //serverComponent.asInternal().setStatus(State.RUNNING);
+                        }
 
-                    alreadyStarted.add(serverComponent);
-                    alreadyDeployed.add(serverComponent);
+                        alreadyStarted.add(serverComponent);
+                        alreadyDeployed.add(serverComponent);
+                    }
                 }
             }
         }
@@ -666,14 +668,14 @@ public class CloudAppDeployer {
             coordinator.updateIP(n.getName(),pa,CloudAppDeployer.class.getName());
             coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
             //execute the configure command
-            if (!n.getType().getResources().isEmpty()) {
+            /*if (!n.getType().getResources().isEmpty()) {
                 for (Resource r : n.getType().getResources()) {
                     if (r.getConfigureCommand() != null) {
                         connector.restoreDB(eci.getPublicAddress(), "3306", ec.getLogin(), ec.getPasswd(),
                                 ec.hasProperty("DB-Name") ? ec.getProperties().valueOf("DB-Name") : null, r.getConfigureCommand());
                     }
                 }
-            }
+            }*/
 
         }
         if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
@@ -1047,18 +1049,10 @@ public class CloudAppDeployer {
         HashMap<String,String> result=c2.createInstance(ci);
 
 
-        if(!result.get("status").equals(ComponentInstance.State.ERROR.toString())){
-            c2.closeConnection();
-            coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
-            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
-            coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
-        }else{
-            //rollback
-            currentModel=tmp;
-            c2.destroyVM(vmi.getId());
-            c2.closeConnection();
-
-        }
+        c2.closeConnection();
+        coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
+        coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+        coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
 
         //4. configure the new VM
         //execute the configuration bindings
@@ -1152,7 +1146,8 @@ public class CloudAppDeployer {
         ci.setType(v);
         c.createInstance(ci.asExternal().asVM());
 
-        duplicateHostedGraph(vmi, ci);
+        //2. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
+        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
 
         deploy(targetModel);
     }

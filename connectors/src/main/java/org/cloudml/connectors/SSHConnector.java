@@ -164,6 +164,12 @@ public class SSHConnector {
             channelSftp.exit();
             channel.disconnect();
             session.disconnect();
+            // Because we are using the research platform we need to wait a bit
+            try{
+                Thread.sleep(2000);
+            }catch(Exception ee){
+                ee.printStackTrace();
+            }
         } catch (JSchException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

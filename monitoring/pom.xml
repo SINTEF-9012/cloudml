@@ -40,19 +40,22 @@
             <groupId>it.polimi.modaclouds.monitoring</groupId>
             <artifactId>metrics-observer</artifactId>
             <version>1.0.1</version>
+            <!-- <scope>provided</scope> -->
         </dependency>
 
         <dependency>
             <groupId>it.polimi.modaclouds.qos-models</groupId>
             <artifactId>qos-models</artifactId>
             <version>2.1.4</version>
+            <!--<scope>provided</scope>-->
         </dependency>
 
-            <dependency>
-                <groupId>it.polimi.modaclouds.monitoring</groupId>
-                <artifactId>metrics-observer</artifactId>
-                <version>3.0</version>
-            </dependency>
+        <dependency>
+            <groupId>it.polimi.modaclouds.monitoring</groupId>
+            <artifactId>metrics-observer</artifactId>
+            <version>3.0</version>
+            <!-- <scope>provided</scope>-->
+        </dependency>
 
         <!-- External dependecies TO CHECK AND CLEAN -->
 
