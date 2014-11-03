@@ -49,10 +49,10 @@ public class NamingStrategyTest extends TestCase {
     public void testMaxId() {
         Deployment model = prepareTypes(NODE_TYPE_NAME)
                 .with(aVMInstance()
-                .named("instance #1 (Linux)")
+                .named("instance no_1 (Linux)")
                 .ofType(NODE_TYPE_NAME))
                 .with(aVMInstance()
-                .named("instance #2 (Linux)")
+                .named("instance no_2 (Linux)")
                 .ofType(NODE_TYPE_NAME))
                 .build();
 
@@ -91,10 +91,10 @@ public class NamingStrategyTest extends TestCase {
     public void testReuseUnusedId() {
         Deployment model = prepareTypes(NODE_TYPE_NAME)
                 .with(aVMInstance()
-                .named("node instance #1")
+                .named("node instance no_1")
                 .ofType(NODE_TYPE_NAME))
                 .with(aVMInstance()
-                .named("node instance #3")
+                .named("node instance no_3")
                 .ofType(NODE_TYPE_NAME))
                 .build();
 

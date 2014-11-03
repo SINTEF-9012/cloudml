@@ -114,7 +114,7 @@ public class SSHConnector {
                 }
             }
             try{
-                Thread.sleep(15000);
+                Thread.sleep(22000);
             }catch(Exception ee){
                 ee.printStackTrace();
             }

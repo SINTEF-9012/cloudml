@@ -52,13 +52,14 @@ stateColorMap['ERROR'] = "#a50026";
 stateColorMap['UNCATEGORIZED'] = "#BAC2C3";
 stateColorMap['RECOVERY'] = "#4B9D9B";
 stateColorMap['INSTALLED'] = "#fee08b";
+stateColorMap['CONFIGURED'] = "#fee08b";
 
 /***********************************************
 File management
 ***********************************************/
 function saveFile(inputDiv){
     if(currentJSON)
-        window.open("data:application/octet-stream,"+currentJSON);
+        window.open("data:text/json,"+currentJSON);
 }
 
 
@@ -708,6 +709,18 @@ function createSVGDefs(){
     .attr('d', 'M0,-5L10,0L0,5')
     .attr('class','executionArrow')
     .attr('fill', stateColorMap['INSTALLED']);
+	
+	svgDefs.append('svg:marker')
+    .attr('id', 'configuredExecuteArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','executionArrow')
+    .attr('fill', stateColorMap['CONFIGURED']);
 
     svgDefs.append('svg:marker')
     .attr('id', 'terminatedExecuteArrow')
@@ -876,6 +889,18 @@ function createSVGDefs(){
     .attr('d', 'M0,-5L10,0L0,5')
     .attr('class','relationshipArrow')
     .attr('fill', stateColorMap['INSTALLED']);
+	
+	svgDefs.append('svg:marker')
+    .attr('id', 'configuredRelationshipArrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('class','relationshipArrow')
+    .attr('fill', stateColorMap['CONFIGURED']);
 
     // define gradients
     var pendingNodeGradient = svgDefs
@@ -914,6 +939,25 @@ function createSVGDefs(){
     installedNodeGradient.append("svg:stop")
     .attr("offset", "100%")
     .attr("stop-color", stateColorMap['INSTALLED'])
+    .attr("stop-opacity", 0.2);
+	
+	var configuredNodeGradient = svgDefs
+    .append("svg:linearGradient")
+    .attr("id", "configuredNodeGradient")
+    .attr("x1", "0%")
+    .attr("y1", "100%")
+    .attr("x2", "95%")
+    .attr("y2", "5%")
+    .attr("spreadMethod", "pad");
+
+    configuredNodeGradient.append("svg:stop")
+    .attr("offset", "0%")
+    .attr("stop-color", stateColorMap['CONFIGURED'])
+    .attr("stop-opacity", 1);
+
+    configuredNodeGradient.append("svg:stop")
+    .attr("offset", "100%")
+    .attr("stop-color", stateColorMap['CONFIGURED'])
     .attr("stop-opacity", 0.2);
 
     var terminatedNodeGradient = svgDefs
@@ -1386,6 +1430,8 @@ function decorateNodeCircle(svgNodeElement){
                         return stateColorMap['PENDING'];
                     case 'INSTALLED':
                         return stateColorMap['INSTALLED'];
+					case 'CONFIGURED':
+                        return stateColorMap['CONFIGURED'];
                     case 'TERMINATED':
                         return stateColorMap['TERMINATED'];
                     case 'STOPPED':
@@ -1408,6 +1454,8 @@ function decorateNodeCircle(svgNodeElement){
                         return 'url(#pendingNodeGradient)';
                     case 'INSTALLED':
                         return 'url(#installedNodeGradient)';
+					case 'CONFIGURED':
+                        return 'url(#configuredNodeGradient)';
                     case 'TERMINATED':
                         return 'url(#terminatedNodeGradient)';
                     case 'STOPPED':
@@ -1442,6 +1490,8 @@ function decorateEdgePath(svgEdgeElement){
                     return stateColorMap['PENDING'];
                 case 'INSTALLED':
                     return stateColorMap['INSTALLED'];
+				case 'CONFIGURED':
+                    return stateColorMap['CONFIGURED'];
                 case 'TERMINATED':
                     return stateColorMap['TERMINATED'];
                 case 'STOPPED':
@@ -1464,6 +1514,8 @@ function decorateEdgePath(svgEdgeElement){
                     return edge._type == 'ExecuteLink' ? 'url(#pendingExecuteArrow)' : 'url(#pendingRelationshipArrow)';
                 case 'INSTALLED':
                     return edge._type == 'ExecuteLink' ? 'url(#installedExecuteArrow)' : 'url(#installedRelationshipArrow)';
+				case 'CONFIGURED':
+                    return edge._type == 'ExecuteLink' ? 'url(#configuredExecuteArrow)' : 'url(#configuredRelationshipArrow)';
                 case 'TERMINATED':
                     return edge._type == 'ExecuteLink' ? 'url(#terminatedExecuteArrow)' : 'url(#terminatedRelationshipArrow)';
                 case 'STOPPED':
