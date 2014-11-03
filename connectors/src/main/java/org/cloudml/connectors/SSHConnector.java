@@ -166,7 +166,7 @@ public class SSHConnector {
             session.disconnect();
             // Because we are using the research platform we need to wait a bit
             try{
-                Thread.sleep(2000);
+                Thread.sleep(22000);
             }catch(Exception ee){
                 ee.printStackTrace();
             }
