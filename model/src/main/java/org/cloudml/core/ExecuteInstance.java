@@ -65,7 +65,7 @@ public class ExecuteInstance extends WithResources implements DeploymentElement,
     }
 
     public boolean hasSubject(InternalComponentInstance component) {
-        return getRequiredEnd().getOwner().get().equals(component);
+        return getRequiredEnd().getOwner().get().getName().equals(component.getName());
     }
 
     public boolean isHostedBy(ComponentInstance<? extends Component> host) {

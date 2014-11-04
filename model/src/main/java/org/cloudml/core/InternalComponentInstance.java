@@ -115,10 +115,14 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
      */
     public ExternalComponentInstance<? extends ExternalComponent> externalHost() {
         final ComponentInstance<? extends Component> directHost = getHost();
-        if (directHost.isInternal()) {
-            return directHost.asInternal().externalHost(); 
+        if(directHost != null){
+            if (directHost.isInternal()) {
+                return directHost.asInternal().externalHost();
+            }
+            return directHost.asExternal();
+        }else{
+            return null;
         }
-        return directHost.asExternal();
     }
 
     public State getStatus() {

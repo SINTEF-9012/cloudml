@@ -212,7 +212,7 @@ public class CloudMLModelComparator {
             {
                 for (InternalComponentInstance ni2 : targetDM.getComponentInstances().onlyInternals()) {
                     match = ni.equals(ni2);
-                    if (ni.equals(ni2)) {
+                    if (ni.equals(ni2) && ni.externalHost().equals(ni2.externalHost())) {
                         matchingComponents.put(ni, ni2);
                         break secondloop;
                     }

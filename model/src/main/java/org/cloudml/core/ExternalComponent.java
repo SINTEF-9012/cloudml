@@ -144,7 +144,7 @@ public class ExternalComponent extends Component {
     public boolean equals(Object other) {
         if (other != null && other instanceof ExternalComponent) {
             ExternalComponent otherComp = (ExternalComponent) other;
-            return isNamed(otherComp.getName());
+            return isNamed(otherComp.getName()) && this.provider.isNamed(((ExternalComponent) other).getProvider().getName());
         }
         else {
             return false;
