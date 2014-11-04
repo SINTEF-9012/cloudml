@@ -54,7 +54,7 @@
             <groupId>it.polimi.modaclouds.monitoring</groupId>
             <artifactId>metrics-observer</artifactId>
             <version>3.0</version>
-            <!-- <scope>provided</scope>-->
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <!-- External dependecies TO CHECK AND CLEAN -->

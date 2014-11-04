@@ -491,10 +491,12 @@ public class CloudAppDeployer {
                             executeUploadCommands(serverComponent.asInternal(),owner,jc);
                         }
                         for (Resource r : serverComponent.getType().getResources()) {
-                            jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
+                            executeCommand(owner, jc, r.getRetrieveCommand());
+                            //jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
                         }
                         for (Resource r : serverComponent.getType().getResources()) {
-                            jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
+                            executeCommand(owner, jc, r.getInstallCommand());
+                            //jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
                         }
 
                         if (serverComponent.isInternal()) {
