@@ -44,6 +44,9 @@ public class Uninstall extends AbstractAction<Void> {
     public Void applyTo(Deployment target) {
         disconnectRequiredPorts(target);
         List<RequiredPortInstance> pendingClients = disconnectProvidedPorts(target);
+        if(artefactInstance.externalHost() == null){
+            System.out.println("111111111111111111111111111111111111111"+artefactInstance.getName());
+        }
         shutdownInternalComponentInstance(target);
         reconnectClientsWithAlternativeServer(pendingClients, target);
         return NOTHING;
@@ -54,7 +57,7 @@ public class Uninstall extends AbstractAction<Void> {
             if (clientPort.isBound()) {
                 final ComponentInstance<? extends Component> server = clientPort.findProvider();  
                 getLibrary().unbind(deployment, clientPort);
-                if (server.canBeUninstalled()) {   
+                if (server.canBeUninstalled()) {
                     getLibrary().uninstall(deployment, (InternalComponentInstance) server);
                 }
             }

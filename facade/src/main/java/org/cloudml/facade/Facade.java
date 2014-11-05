@@ -45,6 +45,7 @@ import org.cloudml.deployer.CloudAppDeployer;
 import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.core.credentials.Credentials;
 import org.cloudml.core.samples.SensApp;
+import org.cloudml.deployer.CloudMLModelComparator;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
@@ -160,7 +161,7 @@ class Facade implements CloudML, CommandHandler {
     public void createVM(VMInstance a) {
         Provider provider = a.getType().getProvider();
         JCloudsConnector jc = new JCloudsConnector(provider.getName(), provider.getCredentials().getLogin(),
-                                                   provider.getCredentials().getPassword());
+                provider.getCredentials().getPassword());
         jc.createInstance(a);
         jc.closeConnection();
     }
@@ -177,16 +178,16 @@ class Facade implements CloudML, CommandHandler {
         Provider provider = ownerVM.getProvider();
         final Credentials credentials = provider.getCredentials();
         JCloudsConnector jc = new JCloudsConnector(provider.getName(), credentials.getLogin(),
-                                                   credentials.getPassword());
+                credentials.getPassword());
         jc.execCommand(ownerVM.getGroupName(), command, user,
-                       ownerVM.getPrivateKey());
+                ownerVM.getPrivateKey());
 
         jc.closeConnection();
     }
 
     public ComputeMetadata findVMByName(String name, Provider p) {//TODO: use the connector factory
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(),
-                                                   p.getCredentials().getPassword());
+                p.getCredentials().getPassword());
         ComputeMetadata cm = jc.getVMByName(name);
         jc.closeConnection();
         return cm;
@@ -194,7 +195,7 @@ class Facade implements CloudML, CommandHandler {
 
     public Set<? extends ComputeMetadata> listOfVMs(Provider p) {//TODO: use the connector factory
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(),
-                                                   p.getCredentials().getPassword());
+                p.getCredentials().getPassword());
         Set<? extends ComputeMetadata> list = jc.listOfVMs();
         jc.closeConnection();
         return list;
@@ -295,12 +296,36 @@ class Facade implements CloudML, CommandHandler {
                 JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
                 ComputeMetadata c = jc.getVMByName(command.getArtifactId());
                 jc.uploadFile(command.getLocalPath(), command.getRemotePath(), c.getId(), "ubuntu",
-                              ((VM) ownerVM.getType()).getPrivateKey());
+                        ((VM) ownerVM.getType()).getPrivateKey());
             } else {
                 final String text = "There is no VM with this ID!";
                 final Message message = new Message(command, Category.ERROR, text);
                 dispatch(message);
             }
+        }
+    }
+
+    private void saveMetadata(){
+        if(deployer.getCurrentModel() != null){
+            CloudMLModelComparator diff = new CloudMLModelComparator(deployer.getCurrentModel(), deploy);
+            diff.compareCloudMLModel();
+
+            deploy.getComponentInstances().clear();
+            deploy.getComponentInstances().addAll(deployer.getCurrentModel().getComponentInstances());
+            deploy.getExecuteInstances().clear();
+            deploy.getExecuteInstances().addAll(deployer.getCurrentModel().getExecuteInstances());
+            deploy.getRelationshipInstances().clear();
+            deploy.getRelationshipInstances().addAll(deployer.getCurrentModel().getRelationshipInstances());
+
+            deploy.getComponentInstances().removeAll(diff.getRemovedComponents());
+            deploy.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
+            deploy.getComponentInstances().removeAll(diff.getRemovedECs());
+            deploy.getExecuteInstances().removeAll(diff.getRemovedExecutes());
+
+            deploy.getComponentInstances().addAll(diff.getAddedComponents());
+            deploy.getRelationshipInstances().addAll(diff.getAddedRelationships());
+            deploy.getComponentInstances().addAll(diff.getAddedECs());
+            deploy.getExecuteInstances().addAll(diff.getAddedExecutes());
         }
     }
 
@@ -318,6 +343,7 @@ class Facade implements CloudML, CommandHandler {
             String content = path.trim().substring(JSON_STRING_PREFIX.length()).trim();
             InputStream instream = new ByteArrayInputStream(content.getBytes());
             deploy = (Deployment) new JsonCodec().load(instream);
+            saveMetadata();
             final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
             dispatch(message);
             return;
@@ -374,6 +400,7 @@ class Facade implements CloudML, CommandHandler {
             dispatch(message);
 
         } else {
+
             deployer.deploy(deploy);
             dispatch(new Message(command, Category.INFORMATION, "Deployment Complete."));
         }

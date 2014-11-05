@@ -65,6 +65,10 @@ public class CloudAppDeployer {
         System.setProperty("jsse.enableSNIExtension", "false");
     }
 
+    public Deployment getCurrentModel(){
+        return currentModel;
+    }
+
     public StatusMonitor getStatusMonitor(){
         return this.statusMonitor;
     }
@@ -127,6 +131,9 @@ public class CloudAppDeployer {
             CloudMLModelComparator diff = new CloudMLModelComparator(currentModel, targetModel);
             diff.compareCloudMLModel();
 
+            updateCurrentModel(diff);
+
+
             //Added stuff
             setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
@@ -138,7 +145,8 @@ public class CloudAppDeployer {
             unconfigureRelationships(diff.getRemovedRelationships());
             stopInternalComponents(diff.getRemovedComponents());
             terminateExternalServices(diff.getRemovedECs());
-            updateCurrentModel(diff);
+
+
 
             //send the changes to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {

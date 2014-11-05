@@ -49,7 +49,7 @@ public class FacadeBridge implements ModelRepo {
 
     @Override
     public Deployment getRoot() {
-        return facade.getDeploymentModel(); 
+        return facade.getDeploymentModel();
     } 
     
     public Object handle(String name, Collection<String> params){

@@ -166,7 +166,9 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
     public boolean equals(Object other) {
         if (other instanceof InternalComponentInstance) {
             InternalComponentInstance otherCompInst = (InternalComponentInstance) other;
-            Boolean match = getName().equals(otherCompInst.getName()) && getType().equals(otherCompInst.getType());
+            Boolean match = getName().equals(otherCompInst.getName())
+                    && getType().equals(otherCompInst.getType())
+                    && externalHost().equals(otherCompInst.externalHost());
             if (requiredExecutionPlatformInstance != null) {
                 return match && requiredExecutionPlatformInstance.getName().equals(otherCompInst.getRequiredExecutionPlatform().getName());
             }

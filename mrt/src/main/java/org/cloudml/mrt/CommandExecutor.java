@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.Deployment;
 import org.cloudml.core.Provider;
 import org.cloudml.core.VM;
 import org.cloudml.mrt.cmd.abstracts.Change;
@@ -105,4 +106,5 @@ public class CommandExecutor {
     void setModelRepo(ModelRepo repo) {
         this.repo = repo;
     }
+
 }

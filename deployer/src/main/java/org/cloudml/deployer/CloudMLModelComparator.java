@@ -101,8 +101,6 @@ public class CloudMLModelComparator {
         journal.log(Level.INFO, ">> Removed VMs :" + removedECs.toString());
         journal.log(Level.INFO, ">> Added VMs  :" + addedECs.toString());
 
-        
-
         compareComponents();
         journal.log(Level.INFO, ">> Removed components: " + removedComponents.toString());
         journal.log(Level.INFO, ">> Added components: " + addedComponents.toString());

@@ -245,11 +245,12 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
 
         @Override
         public boolean remove(Object o) {
-            if (o instanceof ComponentInstance) {
+            Boolean b=super.remove(o);
+            if (b && o instanceof ComponentInstance) {
                 final ComponentInstance<? extends Component> instance = (ComponentInstance<? extends Component>) o;
                 instance.getOwner().discard();
             }
-            return super.remove(o);
+            return b;
         }
     }
 
