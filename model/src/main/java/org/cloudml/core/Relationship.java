@@ -72,10 +72,21 @@ public class Relationship extends WithResources implements DeploymentElement, Ow
     public void validate(Report report) {
         if (requiredEnd != null && providedEnd != null) {
             if (requiredEnd.isLocal() && providedEnd.isRemote()) {
-                report.addError("Illegal binding between a local client and a remote server");
+                final String message = String.format(
+                        "Illegal relationship (%s) between a local client (%s) and a remote server (%s)",
+                        getName(),
+                        requiredEnd.getQualifiedName(),
+                        providedEnd.getQualifiedName()
+                        );
+                report.addError(message);
             }
             if (requiredEnd.isRemote() && providedEnd.isLocal()) {
-                report.addError("Illegal binding between a remote client and a local server");
+                final String message = String.format(
+                        "Illegal relationship (%s) between a remote client (%s) and a local server (%s)",
+                        getName(),
+                        requiredEnd.getQualifiedName(),
+                        providedEnd.getQualifiedName());
+                report.addError(message);
             }
         }
     }
