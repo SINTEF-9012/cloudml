@@ -376,6 +376,7 @@ function graphViewUpdateJSON(parent, propertyId, newValue){
     /* 
 Since the json serialization of the metamodel differs from the internal POJO serialization the path to a component instance is not directly resolvable in the json (it could be e.g. /componentInstances[name='sensapp-sl1'] which can be found with our current implementation of json traversal by the expression '/vmInstances[name='sensapp-sl1'])'. But there is no way to differentiate the particular component instance type (vm-, internal-, or external component instance). Therefore we need to determine that by sending a request to the CloudML server for the full information for the internal component instance (which also contains its type). The following code does just that.
     */
+    setTimeout(function(){},3000)
     var updateSocket = new WebSocket(socket.url);
     var message = "!getSnapshot"
     + '\n' 
@@ -1133,12 +1134,8 @@ function getNodePopover(node){
     return result;
 }
 
-function refreshNodeStates(){
-    // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
-    // need to have this check on each update in case there are new nodes or we just connected to the CloudML server
-    if(connectedToCloudMLServer){
-        graphNodes.forEach(function (d){
-            // if node already has a socket, skip
+function refreshNodeState(d,delay){
+    // if node already has a socket, skip
             if(!d.socket){
                 // we only create a socket in case we are using the socket interface (i.e. the graph is connected to a CloudML server)
 
@@ -1186,6 +1183,16 @@ function refreshNodeStates(){
                 }
 
             }
+}
+
+function refreshNodeStates(){
+    // we define a socket connection for each of the graph nodes that connects to the server to retrieve state information
+    // need to have this check on each update in case there are new nodes or we just connected to the CloudML server
+    if(connectedToCloudMLServer){
+        var delay=0;
+        graphNodes.forEach(function (d){
+            setTimeout(function(){refreshNodeState(d,delay);},delay);
+            delay+=400;
         });
     };
 }
