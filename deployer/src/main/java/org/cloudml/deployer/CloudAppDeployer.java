@@ -688,6 +688,11 @@ public class CloudAppDeployer {
         coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
         HashMap<String,String> runtimeInformation = jc.createInstance(n);
         coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         if (statusMonitorActive) {
