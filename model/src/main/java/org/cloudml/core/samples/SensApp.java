@@ -153,7 +153,7 @@ public class SensApp {
                  .demanding("Servlet Container", "true"))  // FIXME: Should be a War container, right?
              .with(aRequiredPort()
                  .named(SENSAPP_DB_PORT)
-                 .local())
+                 .remote())
              .with(aProvidedPort()
                  .named(SENSAPP_USER_PORT)
                  .remote()

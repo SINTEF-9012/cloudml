@@ -51,8 +51,8 @@ public class InternalComponent extends Component {
     @Override
     public void validate(Report report) {
         super.validate(report);
-        if (hasNoPorts()) {
-            final String warning = String.format("Internal component '%s' has no port (neither required or provided)", getQualifiedName());
+        if (hasNoPorts() && !isExecutionPlatform()) {
+            final String warning = String.format("Internal component '%s' has no port (neither required or provided) and does not provide any execution platform!", getQualifiedName());
             report.addWarning(warning);
         }
     }

@@ -60,6 +60,14 @@ public abstract class Component extends WithResources implements DeploymentEleme
         }
     }
 
+    /**
+     * @return true if this component provides at least one execution platform,
+     * false otherwise.
+     */
+    public boolean isExecutionPlatform() {
+        return !providedExecutionPlatforms.isEmpty();
+    }
+
     public boolean isUsed() {
         return !instances().isEmpty();
     }
@@ -120,7 +128,7 @@ public abstract class Component extends WithResources implements DeploymentEleme
     }
 
     public void addProvidedExecutionPlatforms(ProvidedExecutionPlatform... platforms) {
-        for (ProvidedExecutionPlatform platform : platforms) {
+        for (ProvidedExecutionPlatform platform: platforms) {
             unlessNewAndValidPlatform(platform);
             this.providedExecutionPlatforms.add(platform);
         }
@@ -139,7 +147,7 @@ public abstract class Component extends WithResources implements DeploymentEleme
     }
 
     public ProvidedExecutionPlatform getProvidedExecutionPlatformByName(String name) {
-        for (ProvidedExecutionPlatform platform : providedExecutionPlatforms) {
+        for (ProvidedExecutionPlatform platform: providedExecutionPlatforms) {
             if (platform.getName().equals(name)) {
                 return platform;
             }
@@ -191,19 +199,18 @@ public abstract class Component extends WithResources implements DeploymentEleme
                 ProvidedPort port = (ProvidedPort) o;
                 port.getOwner().discard();
             }
-            return super.remove(o); 
+            return super.remove(o);
         }
 
         @Override
         public void clear() {
-            for (ProvidedPort port : this) {
+            for (ProvidedPort port: this) {
                 port.getOwner().discard();
             }
-            super.clear(); 
+            super.clear();
         }
     }
-    
-    
+
     private class LocalProvidedExecutionPlatformGroup extends ProvidedExecutionPlatformGroup {
 
         public LocalProvidedExecutionPlatformGroup() {
@@ -216,7 +223,7 @@ public abstract class Component extends WithResources implements DeploymentEleme
         @Override
         public boolean add(ProvidedExecutionPlatform e) {
             e.getOwner().set(Component.this);
-            return super.add(e); 
+            return super.add(e);
         }
 
         @Override
@@ -235,7 +242,6 @@ public abstract class Component extends WithResources implements DeploymentEleme
             }
             super.clear();
         }
-        
-        
+
     }
 }
