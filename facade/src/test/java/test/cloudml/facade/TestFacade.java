@@ -23,10 +23,18 @@
 package test.cloudml.facade;
 
 import junit.framework.TestCase;
+import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.Deployment;
+import org.cloudml.core.RelationshipInstance;
+import org.cloudml.deployer.CloudMLModelComparator;
 import org.cloudml.facade.*;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.junit.Test;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 /**
  * A simple test to check whether the behaviour of the facade is correct,
@@ -63,6 +71,42 @@ public class TestFacade extends TestCase implements EventHandler {
 
 
     }
+
+    /*@Test
+    public void testComparisonInFacade(){
+        try {
+            Deployment d2 =(Deployment) new JsonCodec().load(new FileInputStream("C:\\Users\\nicolasf\\Desktop\\cloudml2.0\\v2.json"));
+            Deployment d =(Deployment) new JsonCodec().load(new FileInputStream("C:\\Users\\nicolasf\\Desktop\\cloudml2.0\\v4.json"));
+
+            CloudMLModelComparator diff = new CloudMLModelComparator(d,d2);
+            diff.compareCloudMLModel();
+
+            d.getComponents().addAll(d2.getComponents());
+            d.getRelationships().addAll(d2.getRelationships());
+
+            d.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
+            d.getExecuteInstances().removeAll(diff.getRemovedExecutes());
+            d.getComponentInstances().removeAll(diff.getRemovedECs());
+            d.getComponentInstances().removeAll(diff.getRemovedComponents());
+
+            d.getRelationshipInstances().replaceAll(diff.getAddedRelationships());
+            d.getComponentInstances().replaceAll(diff.getAddedECs());
+            d.getExecuteInstances().replaceAll(diff.getAddedExecutes());
+            d.getComponentInstances().replaceAll(diff.getAddedComponents());
+
+
+            System.out.println(d.getComponents().toList().toString());
+            System.out.println(d.getComponentInstances().toList().toString());
+            System.out.println(d.getExecuteInstances().toList().toString());
+            System.out.println(d.getRelationshipInstances().toList().toString());
+            System.out.println(d.getRelationships().toList().toString());
+
+            new JsonCodec().save(d, new FileOutputStream("C:\\Users\\nicolasf\\Desktop\\cloudml2.0\\v3.json"));
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }*/
 
     public boolean canHandle(Event event) {
         return true;

@@ -159,16 +159,20 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 
     @Override
     public String toString() {
-        return "Instance " + getName() + " : " + getType().getName();
+        return "Instance " + getName() + " : " + getType().getName() +" id:"+this.hashCode();
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof InternalComponentInstance) {
             InternalComponentInstance otherCompInst = (InternalComponentInstance) other;
-            Boolean match = getName().equals(otherCompInst.getName())
-                    && getType().equals(otherCompInst.getType())
-                    && externalHost().equals(otherCompInst.externalHost());
+            Boolean match = getName().equals(otherCompInst.getName());
+            match &= getType().equals(otherCompInst.getType());
+            if (externalHost() != null) {
+                match &= externalHost().equals(otherCompInst.externalHost());
+            }else{
+                match &= (otherCompInst.externalHost() == null);
+            }
             if (requiredExecutionPlatformInstance != null) {
                 return match && requiredExecutionPlatformInstance.getName().equals(otherCompInst.getRequiredExecutionPlatform().getName());
             }

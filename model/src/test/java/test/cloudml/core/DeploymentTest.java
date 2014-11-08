@@ -54,17 +54,17 @@ public class DeploymentTest extends WithPropertiesTest {
         sut.getProviders().add(duplicatedProvider);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void rejectDuplicatedComponentNames() {
         final Deployment sut = aDeployment()
                 .with(amazonEc2())
                 .with(ec2LargeLinux())
                 .build();
 
-        sut.getComponents().add(ec2LargeLinux().build());
+        assertFalse(sut.getComponents().add(ec2LargeLinux().build()));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void rejectDuplicatedComponentInstanceNames() {
         final String vmName = "VM #1";
 
@@ -81,10 +81,10 @@ public class DeploymentTest extends WithPropertiesTest {
                 .ofType(EC2_LARGE_LINUX)
                 .build();
 
-        sut.getComponentInstances().add(duplicatedVM);
+        assertFalse(sut.getComponentInstances().add(duplicatedVM));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void rejectDuplicatedRelationshipNames() {
         final Deployment sut = aDeployment()
                 .with(sshClient())
@@ -92,10 +92,10 @@ public class DeploymentTest extends WithPropertiesTest {
                 .with(sshConnection())
                 .build();
 
-        sut.getRelationships().add(sshConnection().build());
+        assertFalse(sut.getRelationships().add(sshConnection().build()));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void rejectDuplicatedRelationshipInstanceNames() {
         final Deployment sut = aDeployment()
                 .with(amazonEc2())
@@ -129,7 +129,7 @@ public class DeploymentTest extends WithPropertiesTest {
                 .named("ssh connection")
                 .build();
 
-        sut.getRelationshipInstances().add(duplicated);
+        assertFalse(sut.getRelationshipInstances().add(duplicated));
     }
 
     @Test

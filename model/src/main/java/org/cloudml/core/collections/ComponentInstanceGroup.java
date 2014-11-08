@@ -37,6 +37,7 @@ public class ComponentInstanceGroup<T extends ComponentInstance<? extends Compon
     public ComponentInstanceGroup(Collection<T> content) {
         super(content);
     }
+
     
     public InternalComponentInstanceGroup onlyInternals() {
        final InternalComponentInstanceGroup internalInstances = new InternalComponentInstanceGroup();

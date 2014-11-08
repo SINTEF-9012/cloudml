@@ -163,7 +163,7 @@ function pushModelToServer(){
 
     // TODO fix this dirty hack - the model might (and probably should) take more than two seconds
     // to load for the general case (e.g. - remote server for CloudML)
-    setTimeout(function(){send("!getSnapshot {path : /}");}, 2000);
+    setTimeout(function(){send("!getSnapshot {path : /}");}, 4000);
     alertMessage("success","Sent model to the CloudML server.", 3000);
 }
 

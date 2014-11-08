@@ -207,11 +207,20 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
 
     private class LocalComponentGroup extends ComponentGroup {
 
+        public boolean replace(Component component){
+            if (firstNamed(component.getName()) != null) {
+                super.remove(component);
+            }
+            component.getOwner().set(Deployment.this);
+            return super.add(component);
+        }
+
         @Override
         public boolean add(Component component) {
             if (firstNamed(component.getName()) != null) {
-                final String error = String.format("Component name must be unique! There is already a component  named '%s'.", component.getName());
-                throw new IllegalStateException(error);
+                //final String error = String.format("Component name must be unique! There is already a component  named '%s'.", component.getName());
+                //throw new IllegalStateException(error);
+                return false;
             }
             component.getOwner().set(Deployment.this);
             return super.add(component);
@@ -233,12 +242,21 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
 
     private class LocalComponentInstanceGroup<T extends ComponentInstance<? extends Component>> extends ComponentInstanceGroup<T> {
 
+        public boolean replace(T element){
+            if (firstNamed(element.getName()) != null) {
+                super.remove(element);
+            }
+            element.getOwner().set(Deployment.this);
+            return super.add(element);
+        }
+
         @Override
         public boolean add(T element) {
             element.getOwner().set(Deployment.this);
             if (firstNamed(element.getName()) != null) {
-                final String error = String.format("Component instance name must be unique! There is already a component instance named '%s'.", element.getName());
-                throw new IllegalStateException(error);
+                //final String error = String.format("Component instance name must be unique! There is already a component instance named '%s'.", element.getName());
+                //throw new IllegalStateException(error);
+                return false;
             }
             return super.add(element);
         }
@@ -256,12 +274,21 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
 
     private class LocalRelationshipGroup extends RelationshipGroup {
 
+        public boolean replace(Relationship relationship){
+            if (firstNamed(relationship.getName()) != null) {
+                super.remove(relationship);
+            }
+            relationship.getOwner().set(Deployment.this);
+            return super.add(relationship);
+        }
+
         @Override
         public boolean add(Relationship relationship) {
             relationship.getOwner().set(Deployment.this);
             if (firstNamed(relationship.getName()) != null) {
-                final String error = String.format("Relationship name must be unique! There is already a relationhip named '%s'.", relationship.getName());
-                throw new IllegalStateException(error);
+                //final String error = String.format("Relationship name must be unique! There is already a relationhip named '%s'.", relationship.getName());
+                //throw new IllegalStateException(error);
+                return false;
             }
             return super.add(relationship);
         }
@@ -277,11 +304,20 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
 
     private class LocalRelationshipInstanceGroup extends RelationshipInstanceGroup {
 
+        public boolean replace(RelationshipInstance relationship){
+            if (firstNamed(relationship.getName()) != null) {
+                super.remove(relationship);
+            }
+            relationship.getOwner().set(Deployment.this);
+            return super.add(relationship);
+        }
+
         @Override
         public boolean add(RelationshipInstance instance) {
             if (firstNamed(instance.getName()) != null) {
-                final String error = String.format("Relationship instance name must be unique! There is already a relationhip instance named '%s'.", instance.getName());
-                throw new IllegalStateException(error);
+                //final String error = String.format("Relationship instance name must be unique! There is already a relationhip instance named '%s'.", instance.getName());
+                //throw new IllegalStateException(error);
+                return false;
             }
             instance.getOwner().set(Deployment.this);
             return super.add(instance);
@@ -297,6 +333,14 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
     }
 
     private class LocalExecuteInstanceGroup extends ExecuteInstanceGroup {
+
+        public boolean replace(ExecuteInstance e){
+            if (firstNamed(e.getName()) != null) {
+                super.remove(e);
+            }
+            e.getOwner().set(Deployment.this);
+            return super.add(e);
+        }
 
         @Override
         public boolean add(ExecuteInstance e) {

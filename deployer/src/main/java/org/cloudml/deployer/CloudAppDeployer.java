@@ -34,10 +34,7 @@ import org.cloudml.connectors.util.MercurialConnector;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
 import org.cloudml.core.actions.StandardLibrary;
-import org.cloudml.core.collections.ComponentInstanceGroup;
-import org.cloudml.core.collections.ExternalComponentInstanceGroup;
-import org.cloudml.core.collections.InternalComponentInstanceGroup;
-import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.core.collections.*;
 import org.cloudml.monitoring.status.StatusConfiguration;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
@@ -133,7 +130,6 @@ public class CloudAppDeployer {
 
             updateCurrentModel(diff);
 
-
             //Added stuff
             setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
@@ -145,7 +141,6 @@ public class CloudAppDeployer {
             unconfigureRelationships(diff.getRemovedRelationships());
             stopInternalComponents(diff.getRemovedComponents());
             terminateExternalServices(diff.getRemovedECs());
-
 
 
             //send the changes to the monitoring platform
@@ -160,6 +155,38 @@ public class CloudAppDeployer {
         //start the monitoring of VMs
         if (statusMonitorActive) {
             statusMonitor.start();
+        }
+    }
+
+    public void deploy(Deployment targetModel, CloudMLModelComparator diff){
+        unlessNotNull("Cannot deploy null!", targetModel);
+        this.targetModel = targetModel;
+        //set up the monitoring
+        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
+        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
+
+        journal.log(Level.INFO, ">> Updating a deployment...");
+
+        //Added stuff
+        setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
+        prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
+        configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
+        configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
+        configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+
+        //removed stuff
+        unconfigureRelationships(diff.getRemovedRelationships());
+        stopInternalComponents(diff.getRemovedComponents());
+        terminateExternalServices(diff.getRemovedECs());
+
+
+        //send the changes to the monitoring platform
+        if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
+            MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
+            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
+            if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
+                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
+            }
         }
     }
 
@@ -428,6 +455,29 @@ public class CloudAppDeployer {
         }
     }
 
+
+    private void startExecutes(InternalComponentInstance x){
+        VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
+        VM n = ownerVM.getType();
+
+        Connector jc = ConnectorFactory.createIaaSConnector(n.getProvider());
+
+        ComponentInstance host = x.getHost();
+
+        if (!alreadyStarted.contains(host)) {
+            if (host.isInternal()) {
+                startExecutes(host.asInternal());
+                for (Resource r : host.getType().getResources()) {
+                    String startCommand = r.getStartCommand();
+                    start(jc, n, ownerVM, startCommand);
+                }
+                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+
+                alreadyStarted.add(host);
+            }
+        }
+        jc.closeConnection();
+    }
 
     private void buildExecutes(InternalComponentInstance x) {
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
@@ -1042,7 +1092,18 @@ public class CloudAppDeployer {
             v.setSshKey(existingVM.getSshKey());
             v.setPrivateKey(existingVM.getPrivateKey());
             v.setProvider(existingVM.getProvider());
-            v.setProvidedExecutionPlatforms(existingVM.getProvidedExecutionPlatforms().toList());
+            ProvidedExecutionPlatformGroup pepg=new ProvidedExecutionPlatformGroup();
+            for(ProvidedExecutionPlatform pep: existingVM.getProvidedExecutionPlatforms()){
+                ArrayList<Property> pg=new ArrayList<Property>();
+                for(Property property: pep.getOffers()){
+                    Property prop=new Property(property.getName());
+                    prop.setValue(property.getValue());
+                    pg.add(prop);
+                }
+                ProvidedExecutionPlatform p =new ProvidedExecutionPlatform(name+"-"+pep.getName(),pg);
+                pepg.add(p);
+            }
+            v.setProvidedExecutionPlatforms(pepg.toList());
             currentModel.getComponents().add(v);
         }
         VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();

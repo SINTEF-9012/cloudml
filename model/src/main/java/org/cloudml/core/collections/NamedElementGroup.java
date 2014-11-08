@@ -62,6 +62,19 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Colle
         return content.iterator();
     }
 
+    public boolean replace(T o){
+        if (o == null) {
+            return false;
+        }
+        if (o instanceof NamedElement) {
+            final NamedElement namedElement = (NamedElement) o;
+            content.remove(o);
+            content.add(o);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean add(T e) {
         content.add(e);
@@ -112,6 +125,14 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Colle
         return false;
     }
 
+    public Boolean replaceAll(Collection<? extends T> c){
+        boolean overall = true;
+        for (T element : c) {
+            overall &= replace(element);
+        }
+        return overall;
+    }
+
     @Override
     public final boolean containsAll(Collection<?> c) {
         return this.content.containsAll(c);
@@ -150,7 +171,7 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Colle
     public void clear() {
         this.content.clear();
     }
-    
+
     public Collection<String> onlyNames() {
         final ArrayList<String> names = new ArrayList<String>();
         for (T element: this) {

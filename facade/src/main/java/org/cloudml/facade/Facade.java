@@ -41,6 +41,7 @@ import org.cloudml.codecs.commons.Codec;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
 import org.cloudml.core.*;
+import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.deployer.CloudAppDeployer;
 import org.cloudml.connectors.JCloudsConnector;
 import org.cloudml.core.credentials.Credentials;
@@ -71,6 +72,7 @@ class Facade implements CloudML, CommandHandler {
     private Deployment deploy;
     private boolean stopOnTimeout = false;
     private final CloudAppDeployer deployer;
+    private CloudMLModelComparator diff=null;
 
     private static final String JSON_STRING_PREFIX = "json-string:";
 
@@ -305,27 +307,26 @@ class Facade implements CloudML, CommandHandler {
         }
     }
 
-    private void saveMetadata(){
-        if(deployer.getCurrentModel() != null){
-            CloudMLModelComparator diff = new CloudMLModelComparator(deployer.getCurrentModel(), deploy);
+    private void saveMetadata(Deployment deploy2){
+        if(deploy != null){
+            diff = new CloudMLModelComparator(deploy,deploy2);
             diff.compareCloudMLModel();
 
-            deploy.getComponentInstances().clear();
-            deploy.getComponentInstances().addAll(deployer.getCurrentModel().getComponentInstances());
-            deploy.getExecuteInstances().clear();
-            deploy.getExecuteInstances().addAll(deployer.getCurrentModel().getExecuteInstances());
-            deploy.getRelationshipInstances().clear();
-            deploy.getRelationshipInstances().addAll(deployer.getCurrentModel().getRelationshipInstances());
+            deploy.getComponents().addAll(deploy2.getComponents());
+            deploy.getRelationships().addAll(deploy2.getRelationships());
 
-            deploy.getComponentInstances().removeAll(diff.getRemovedComponents());
             deploy.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
-            deploy.getComponentInstances().removeAll(diff.getRemovedECs());
             deploy.getExecuteInstances().removeAll(diff.getRemovedExecutes());
+            deploy.getComponentInstances().removeAll(diff.getRemovedECs());
+            deploy.getComponentInstances().removeAll(diff.getRemovedComponents());
 
-            deploy.getComponentInstances().addAll(diff.getAddedComponents());
-            deploy.getRelationshipInstances().addAll(diff.getAddedRelationships());
-            deploy.getComponentInstances().addAll(diff.getAddedECs());
-            deploy.getExecuteInstances().addAll(diff.getAddedExecutes());
+            deploy.getRelationshipInstances().replaceAll(diff.getAddedRelationships());
+            deploy.getComponentInstances().replaceAll(diff.getAddedECs());
+            deploy.getExecuteInstances().replaceAll(diff.getAddedExecutes());
+            deploy.getComponentInstances().replaceAll(diff.getAddedComponents());
+
+        }else{
+            deploy=deploy2;
         }
     }
 
@@ -342,8 +343,8 @@ class Facade implements CloudML, CommandHandler {
         if (path.trim().startsWith(JSON_STRING_PREFIX)) {
             String content = path.trim().substring(JSON_STRING_PREFIX.length()).trim();
             InputStream instream = new ByteArrayInputStream(content.getBytes());
-            deploy = (Deployment) new JsonCodec().load(instream);
-            saveMetadata();
+            Deployment deploy2=(Deployment) new JsonCodec().load(instream);
+            saveMetadata(deploy2);
             final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
             dispatch(message);
             return;
@@ -400,10 +401,13 @@ class Facade implements CloudML, CommandHandler {
             dispatch(message);
 
         } else {
-
-            deployer.deploy(deploy);
+            if(diff != null){
+                deployer.deploy(deploy, diff);
+            }else{
+                deployer.deploy(deploy);
+            }
             dispatch(new Message(command, Category.INFORMATION, "Deployment Complete."));
-        }
+        };
     }
 
     @Override
