@@ -38,10 +38,10 @@ import org.yaml.snakeyaml.Yaml;
  * @author huis
  */
 public class WsPeerStub extends PeerStub{
-    
+
     WebSocket webSocket = null;
     String id = null;
-    
+
     public WsPeerStub(WebSocket webSocket){
         this.webSocket = webSocket;
         id = webSocket.getRemoteSocketAddress().toString();
@@ -56,11 +56,11 @@ public class WsPeerStub extends PeerStub{
     public void sendMessage(Object message) {
         Yaml yaml = CloudMLCmds.INSTANCE.getYaml();
         try{
-        webSocket.send(yaml.dump(message));
+            webSocket.send(yaml.dump(message));
         }
         catch(Exception ex){
-            
+            ex.printStackTrace();
         }
     }
-    
+
 }
