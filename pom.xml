@@ -30,6 +30,7 @@
         <module>monitoring</module>
         <module>mrt</module>
         <module>ui</module>
+        <module>indicators</module>
     </modules>
     
     <dependencies>
