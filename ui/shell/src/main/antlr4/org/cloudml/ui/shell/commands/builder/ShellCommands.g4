@@ -22,7 +22,8 @@ command
 
 
 action
-    :   'connect' customer=ID 'to' provider=ID              # Connect 
+    :   'analyse' 'robustness'                              # AnalyseRobustness 
+    |   'connect' customer=ID 'to' provider=ID              # Connect 
     |   'deploy'                                            # Deploy
     |   'destroy' instance=ID                               # Destroy
     |   'disconnect' customer=ID 'from' provider=ID         # Disconnect

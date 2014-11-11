@@ -65,6 +65,7 @@ public class AsynchronousCloudMLCommandTest {
     public static Collection<Object[]> testCases() {
         Collection<Object[]> testCases = new ArrayList<Object[]>();
         
+        testCases.add(new Object[]{"analyse robustness", new Deploy()});
         testCases.add(new Object[]{"deploy", new Deploy()});
         testCases.add(new Object[]{"connect", new Attach("foo", "bar")}); 
         testCases.add(new Object[]{"disconnect", new Detach("foo", "bar")}); 

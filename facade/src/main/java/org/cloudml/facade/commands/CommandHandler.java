@@ -31,6 +31,8 @@ package org.cloudml.facade.commands;
  */
 public interface CommandHandler {
 
+    public void handle(AnalyseRobustness command);
+    
     public void handle(StartComponent command);
 
     public void handle(StopComponent command);

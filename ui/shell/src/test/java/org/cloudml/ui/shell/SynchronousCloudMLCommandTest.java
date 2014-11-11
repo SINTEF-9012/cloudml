@@ -65,6 +65,7 @@ public class SynchronousCloudMLCommandTest {
     public static Collection<Object[]> testCases() {
         Collection<Object[]> testCases = new ArrayList<Object[]>();
         
+        testCases.add(new Object[]{"analyse robustness", new AnalyseRobustness()});
         testCases.add(new Object[]{"deploy", new Deploy()});
         testCases.add(new Object[]{"connect", new Attach("foo", "bar")}); 
         testCases.add(new Object[]{"disconnect", new Detach("foo", "bar")}); 
@@ -84,7 +85,7 @@ public class SynchronousCloudMLCommandTest {
         testCases.add(new Object[]{"instantiate", new Instantiate("foo", "foo #1")}); 
         testCases.add(new Object[]{"shot", new ShotImage("foo.png")});
         testCases.add(new Object[]{"upload", new Upload("foo", "afile.sh", "home/afile.sh")}); 
-    
+       
         return testCases;
     }
     

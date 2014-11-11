@@ -32,6 +32,11 @@ import org.cloudml.ui.shell.commands.builder.ShellCommandsParser;
  * CloudMLCommand objects.
  */
 public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlCommand> {
+
+    @Override
+    public CloudMlCommand visitAnalyseRobustness(ShellCommandsParser.AnalyseRobustnessContext ctx) {
+        return new AnalyseRobustness(); 
+    }
     
     @Override
     public CloudMlCommand visitDeploy(ShellCommandsParser.DeployContext ctx) {

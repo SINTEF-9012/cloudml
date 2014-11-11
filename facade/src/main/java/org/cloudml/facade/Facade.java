@@ -50,6 +50,7 @@ import org.cloudml.deployer.CloudMLModelComparator;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
+import org.cloudml.indicators.Robustness;
 import org.jclouds.compute.domain.ComputeMetadata;
 
 /**
@@ -72,7 +73,7 @@ class Facade implements CloudML, CommandHandler {
     private Deployment deploy;
     private boolean stopOnTimeout = false;
     private final CloudAppDeployer deployer;
-    private CloudMLModelComparator diff=null;
+    private CloudMLModelComparator diff = null;
 
     private static final String JSON_STRING_PREFIX = "json-string:";
 
@@ -163,7 +164,7 @@ class Facade implements CloudML, CommandHandler {
     public void createVM(VMInstance a) {
         Provider provider = a.getType().getProvider();
         JCloudsConnector jc = new JCloudsConnector(provider.getName(), provider.getCredentials().getLogin(),
-                provider.getCredentials().getPassword());
+                                                   provider.getCredentials().getPassword());
         jc.createInstance(a);
         jc.closeConnection();
     }
@@ -180,16 +181,16 @@ class Facade implements CloudML, CommandHandler {
         Provider provider = ownerVM.getProvider();
         final Credentials credentials = provider.getCredentials();
         JCloudsConnector jc = new JCloudsConnector(provider.getName(), credentials.getLogin(),
-                credentials.getPassword());
+                                                   credentials.getPassword());
         jc.execCommand(ownerVM.getGroupName(), command, user,
-                ownerVM.getPrivateKey());
+                       ownerVM.getPrivateKey());
 
         jc.closeConnection();
     }
 
     public ComputeMetadata findVMByName(String name, Provider p) {//TODO: use the connector factory
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(),
-                p.getCredentials().getPassword());
+                                                   p.getCredentials().getPassword());
         ComputeMetadata cm = jc.getVMByName(name);
         jc.closeConnection();
         return cm;
@@ -197,7 +198,7 @@ class Facade implements CloudML, CommandHandler {
 
     public Set<? extends ComputeMetadata> listOfVMs(Provider p) {//TODO: use the connector factory
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(),
-                p.getCredentials().getPassword());
+                                                   p.getCredentials().getPassword());
         Set<? extends ComputeMetadata> list = jc.listOfVMs();
         jc.closeConnection();
         return list;
@@ -212,6 +213,24 @@ class Facade implements CloudML, CommandHandler {
     /*
      * COMMAND HANDLERS
      */
+    @Override
+    public void handle(AnalyseRobustness command) {
+        robustness(command);
+        robustnessWithSelfRepair(command);
+    }
+
+    private void robustnessWithSelfRepair(AnalyseRobustness command) {
+        final Robustness robustness = Robustness.ofSelfRepairing(deploy);
+        final String content = String.format("Robustness (with self-repair): %.2f percent", robustness.value());
+        dispatch(new Message(command, Category.INFORMATION, content));
+    }
+
+    private void robustness(AnalyseRobustness command) {
+        final Robustness robustness = Robustness.of(deploy);
+        final String content = String.format("Robustness: %.2f percent", robustness.value());
+        dispatch(new Message(command, Category.INFORMATION, content));
+    }
+
     @Override
     public void handle(StartComponent command) {
         // TODO Auto-generated method stub
@@ -298,7 +317,7 @@ class Facade implements CloudML, CommandHandler {
                 JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
                 ComputeMetadata c = jc.getVMByName(command.getArtifactId());
                 jc.uploadFile(command.getLocalPath(), command.getRemotePath(), c.getId(), "ubuntu",
-                        ((VM) ownerVM.getType()).getPrivateKey());
+                              ((VM) ownerVM.getType()).getPrivateKey());
             } else {
                 final String text = "There is no VM with this ID!";
                 final Message message = new Message(command, Category.ERROR, text);
@@ -307,9 +326,9 @@ class Facade implements CloudML, CommandHandler {
         }
     }
 
-    private void saveMetadata(Deployment deploy2){
-        if(deploy != null){
-            diff = new CloudMLModelComparator(deploy,deploy2);
+    private void saveMetadata(Deployment deploy2) {
+        if (deploy != null) {
+            diff = new CloudMLModelComparator(deploy, deploy2);
             diff.compareCloudMLModel();
 
             deploy.getComponents().addAll(deploy2.getComponents());
@@ -325,8 +344,8 @@ class Facade implements CloudML, CommandHandler {
             deploy.getExecuteInstances().replaceAll(diff.getAddedExecutes());
             deploy.getComponentInstances().replaceAll(diff.getAddedComponents());
 
-        }else{
-            deploy=deploy2;
+        } else {
+            deploy = deploy2;
         }
     }
 
@@ -343,7 +362,7 @@ class Facade implements CloudML, CommandHandler {
         if (path.trim().startsWith(JSON_STRING_PREFIX)) {
             String content = path.trim().substring(JSON_STRING_PREFIX.length()).trim();
             InputStream instream = new ByteArrayInputStream(content.getBytes());
-            Deployment deploy2=(Deployment) new JsonCodec().load(instream);
+            Deployment deploy2 = (Deployment) new JsonCodec().load(instream);
             saveMetadata(deploy2);
             final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
             dispatch(message);
@@ -401,9 +420,9 @@ class Facade implements CloudML, CommandHandler {
             dispatch(message);
 
         } else {
-            if(diff != null){
+            if (diff != null) {
                 deployer.deploy(deploy, diff);
-            }else{
+            } else {
                 deployer.deploy(deploy);
             }
             dispatch(new Message(command, Category.INFORMATION, "Deployment Complete."));
@@ -503,35 +522,35 @@ class Facade implements CloudML, CommandHandler {
     }
 
     @Override
-    public void handle(Snapshot command){
+    public void handle(Snapshot command) {
         dispatch(new Message(command, Category.INFORMATION, "Generating snapshot ..."));
-        VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
-        Connector c =ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
         c.createSnapshot(vmi);
     }
 
     @Override
-    public void handle(Image command){
+    public void handle(Image command) {
         dispatch(new Message(command, Category.INFORMATION, "Generating an image ..."));
-        VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
-        Connector c =ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
         c.createImage(vmi);
     }
 
     @Override
     public void handle(Reset command) {
         dispatch(new Message(command, Category.INFORMATION, "The deployment engine has been reset ..."));
-        this.deploy=null;
+        this.deploy = null;
         this.deployer.setCurrentModel(null);
     }
 
     @Override
-    public void handle(ScaleOut command){
-        dispatch(new Message(command, Category.INFORMATION, "Scaling out VM: "+command.getVmId()));
-        VMInstance vmi=deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
-        if(vmi == null){
+    public void handle(ScaleOut command) {
+        dispatch(new Message(command, Category.INFORMATION, "Scaling out VM: " + command.getVmId()));
+        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        if (vmi == null) {
             dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
-        }else{
+        } else {
             deployer.scaleOut(vmi);
         }
     }
