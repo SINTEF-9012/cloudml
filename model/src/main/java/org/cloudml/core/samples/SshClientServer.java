@@ -142,6 +142,12 @@ public class SshClientServer {
                     .to(SERVER_1, SERVER_PORT));
     }
     
+    public static DeploymentBuilder getOneClientConnectedToOneOfTwoServers() {
+        return getOneClientConnectedToOneServer()
+                .with(vmOfServer2())
+                .with(server2());
+    }
+    
     
     public static DeploymentBuilder getTwoClientsConnectedToOneServer() {
         return getOneClientConnectedToOneServer()

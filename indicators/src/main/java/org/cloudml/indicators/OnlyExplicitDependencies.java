@@ -8,7 +8,7 @@ import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.core.RequiredPortInstance;
 
 /**
- * Extract the explicit requirement of a given component.
+ * Extract the explicit requirements/dependencies of a given component.
  *
  * The resulting requirement capture the actual dependencies of the given
  * component. Alternative dependencies (possible relationship or executeOn) are
@@ -22,7 +22,7 @@ public class OnlyExplicitDependencies implements DependencyExtractor {
 
         Requirement requirements = nothing();
         
-         if (instance.isInternal()) {
+        if (instance.isInternal()) {
             final InternalComponentInstance internalInstance = instance.asInternal();
             for (RequiredPortInstance eachDependency: internalInstance.getRequiredPorts()) {
                 if (eachDependency.isBound()) {

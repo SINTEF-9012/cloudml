@@ -107,6 +107,7 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
         return new LocalProvidedExecutionPlatformInstanceGroup(group);
     }
     
+        
     public boolean canHost(InternalComponent componentType) {
         return getProvidedExecutionPlatforms().firstMatchFor(componentType) != null;
     }
