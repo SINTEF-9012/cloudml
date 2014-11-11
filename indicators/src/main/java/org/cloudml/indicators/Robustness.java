@@ -31,6 +31,7 @@ import eu.diversify.trio.data.DataSet;
 import eu.diversify.trio.filter.TaggedAs;
 import eu.diversify.trio.simulation.RandomFailureSequence;
 import eu.diversify.trio.simulation.Scenario;
+import java.util.logging.Logger;
 
 /**
  * Compute the robustness of a given deployment model.
@@ -40,19 +41,52 @@ import eu.diversify.trio.simulation.Scenario;
  */
 public class Robustness {
 
+    private static final Logger logger = Logger.getLogger(Robustness.class.getName());
+    
     private final Deployment deployment;
     private final Analysis results;
 
-    public Robustness(Deployment deployment) {
+    /**
+     * Build a robustness analysis accounting only for the dependency explicitly
+     * set up in the given model. Failures simulated during the analysis, will
+     * only propagate along these dependencies.
+     *
+     * @param deployment the deployment to analyse
+     * @return the robustness analysis
+     */
+    public static Robustness of(Deployment deployment) {
+        return new Robustness(deployment, new OnlyExplicitDependencies());
+    }
+
+    /**
+     * Build a robustness analysis accounting for self-repair. Failure will not
+     * propagate along dependencies, if an existing alternative exist in the
+     * model.
+     *
+     * @param deployment the deployment to analyse
+     * @return the robustness analysis
+     */
+    public static Robustness ofSelfRepairing(Deployment deployment) {
+        return new Robustness(deployment, new AllPossibleDependencies());
+    }
+
+    /**
+     * Create a new Robustness analysis of a given CloudML model
+     *
+     * @param deployment the deployment model to analyse
+     * @param dependencyStrategy the strategy to calculate the dependencies of
+     * components
+     */
+    private Robustness(Deployment deployment, DependencyExtractor dependencyStrategy) {
         requireValidDeployment(deployment);
 
         this.deployment = deployment;
-        final System trioSystem = new TrioExporter(new OnlyExplicitDependencies()).asTrioSystem(deployment);
+        final System trioSystem = new TrioExporter(dependencyStrategy).asTrioSystem(deployment);
         final Trio trio = new Trio();
         final Scenario scenario = new RandomFailureSequence(trioSystem, new TaggedAs("internal"), new TaggedAs("external"));
         final DataSet data = trio.run(scenario, DEFAULT_RUNCOUNT);
         results = trio.analyse(data);
-        
+
         assert results != null;
     }
 
@@ -61,11 +95,13 @@ public class Robustness {
             throw new IllegalArgumentException("Unable to evaluate the robustness of 'null'");
         }
     }
-    
+
     private static final int DEFAULT_RUNCOUNT = 10000;
 
     public double value() {
-        return results.metric("norm. robustness").distribution().mean();
+        return results.metric(NORMALIZED_ROBUSTNESS).distribution().mean();
     }
+    
+    private static final String NORMALIZED_ROBUSTNESS = "norm. robustness";
 
 }

@@ -28,19 +28,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import eu.diversify.trio.core.System;
-import org.cloudml.core.ComponentInstance;
 import org.cloudml.indicators.Robustness;
-import org.cloudml.indicators.OnlyExplicitDependencies;
-import org.cloudml.indicators.TrioExporter;
 
+import static org.cloudml.core.builders.Commons.aVMInstance;
 import static org.hamcrest.MatcherAssert.*;
 
 import static org.hamcrest.Matchers.*;
 
 /**
- * Test the computation of robustness, especially the conversion from CloudML to
- * Trio models.
+ * Test the computation of robustness.
  *
  * We assume here that TRIO's robustness calculations are correct and we
  * therefore only test for a correct generation of a Trio model out of a CloudML
@@ -48,62 +44,65 @@ import static org.hamcrest.Matchers.*;
  */
 @RunWith(JUnit4.class)
 public class RobustnessTest {
-    
-    
+
     @Test
     public void robustnessOfOneClientOneServer() {
+        final Deployment cloudml = SshClientServer.
+                getOneClientConnectedToOneServer()
+                .build();
 
-        final Deployment cloudml = SshClientServer.getOneClientConnectedToOneServer().build();
+        final Robustness robustness = Robustness.of(cloudml);
 
-        final Robustness robustness = new Robustness(cloudml);
-
-        assertThat(
-                robustness.value(),
-                is(both(greaterThan(0D)).and(lessThan(1D))));
-        
-
+        assertThat("Wrong robustness",
+                   robustness.value(),
+                   is(closeTo(0.125, TOLERANCE)));
     }
 
     @Test
-    public void convertOneClientOneServer() {
-        final Deployment cloudml = SshClientServer.getOneClientConnectedToOneServer().build();
+    public void robustnessOfSelfRepairingOneClientOneServer() {
+        final Deployment cloudml = SshClientServer.
+                getOneClientConnectedToOneServer()
+                .build();
 
-        final TrioExporter export = new TrioExporter(new OnlyExplicitDependencies());
-        final System trioModel = export.asTrioSystem(cloudml);
+        final Robustness robustness = Robustness.ofSelfRepairing(cloudml);
 
-        assertThat(trioModel, is(not(nullValue())));
-
-        assertEquivalence(cloudml, trioModel);
-        assertTags(cloudml, trioModel);
+        assertThat("Wrong robustness",
+                   robustness.value(),
+                   is(closeTo(0.125, TOLERANCE)));
     }
 
-    /**
-     * Check that the given cloudML model and the given Trio System are related.
-     * Raise an assertion error as soon as a discrepancy is detected.
-     */
-    private void assertEquivalence(Deployment cloudml, System trioModel) {
-        assertThat("Wrong number of TRIO components",
-                   trioModel.getComponentNames().size(),
-                   is(equalTo(cloudml.getComponentInstances().size())));
+    @Test
+    public void robustnessOfOneClientOneOfTwoServers() {
+        final Deployment cloudml = SshClientServer.
+                getOneClientConnectedToOneServer()
+                .with(aVMInstance()
+                        .named("VM3")
+                        .ofType(SshClientServer.EC2_XLARGE_WINDOWS_7))
+                .build();
 
-        for (ComponentInstance each: cloudml.getComponentInstances()) {
-            assertThat("missing instance '" + each.getName() + "'",
-                       trioModel.hasComponentNamed(each.getName()));
-        }
+        final Robustness robustness = Robustness.of(cloudml);
+
+        assertThat("Wrong robustness",
+                   robustness.value(),
+                   is(closeTo(0.22, TOLERANCE)));
     }
 
-    /**
-     * Check that the proper tags were added on the TRIO model (i.e., internal,
-     * versus external).
-     */
-    private void assertTags(Deployment cloudml, System trioModel) {
-        int tagCount
-                = trioModel.taggedAs("internal").size()
-                + trioModel.taggedAs("external").size();
+    @Test
+    public void robustnessOfSelfRepairingOneClientOneOfTwoServers() {
+        final Deployment cloudml = SshClientServer.
+                getOneClientConnectedToOneServer()
+                .with(aVMInstance()
+                        .named("VM3")
+                        .ofType(SshClientServer.EC2_XLARGE_WINDOWS_7))
+                .build();
 
-        assertThat("some components were not tagged",
-                   tagCount,
-                   is(equalTo(cloudml.getComponentInstances().size())));
+        final Robustness robustness = Robustness.ofSelfRepairing(cloudml);
+
+        assertThat("Wrong robustness",
+                   robustness.value(),
+                   is(closeTo(7D / 18, TOLERANCE)));
     }
+
+    private static final double TOLERANCE = 1e-2;
 
 }
