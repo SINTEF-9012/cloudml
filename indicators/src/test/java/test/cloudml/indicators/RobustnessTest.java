@@ -31,6 +31,7 @@ import org.junit.runners.JUnit4;
 import eu.diversify.trio.core.System;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.indicators.Robustness;
+import org.cloudml.indicators.OnlyExplicitDependencies;
 import org.cloudml.indicators.TrioExporter;
 
 import static org.hamcrest.MatcherAssert.*;
@@ -47,7 +48,8 @@ import static org.hamcrest.Matchers.*;
  */
 @RunWith(JUnit4.class)
 public class RobustnessTest {
-
+    
+    
     @Test
     public void robustnessOfOneClientOneServer() {
 
@@ -66,7 +68,7 @@ public class RobustnessTest {
     public void convertOneClientOneServer() {
         final Deployment cloudml = SshClientServer.getOneClientConnectedToOneServer().build();
 
-        final TrioExporter export = TrioExporter.withoutSelfRepair();
+        final TrioExporter export = new TrioExporter(new OnlyExplicitDependencies());
         final System trioModel = export.asTrioSystem(cloudml);
 
         assertThat(trioModel, is(not(nullValue())));

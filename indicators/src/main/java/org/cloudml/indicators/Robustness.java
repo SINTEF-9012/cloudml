@@ -47,7 +47,7 @@ public class Robustness {
         requireValidDeployment(deployment);
 
         this.deployment = deployment;
-        final System trioSystem = new TrioExporter().asTrioSystem(deployment);
+        final System trioSystem = new TrioExporter(new OnlyExplicitDependencies()).asTrioSystem(deployment);
         final Trio trio = new Trio();
         final Scenario scenario = new RandomFailureSequence(trioSystem, new TaggedAs("internal"), new TaggedAs("external"));
         final DataSet data = trio.run(scenario, DEFAULT_RUNCOUNT);
