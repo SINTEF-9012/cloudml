@@ -31,6 +31,19 @@ import org.cloudml.core.InternalComponentInstance;
 
 public class ExecuteInstanceGroup extends WithResourceGroup<ExecuteInstance> {
 
+    /**
+     * @return the first ExecuteInstance object whose subject is the given component, null otherwise
+     * @param component the component whose ExecuteInstance binding with its host is needed.
+     */
+    public ExecuteInstance withSubject(InternalComponentInstance component) {
+     for (ExecuteInstance execution: this) {
+            if (execution.hasSubject(component)) { 
+                return execution;
+            }
+        }
+        return null;
+    }
+    
     public ExecuteInstance between(String demanderName, String demandName, String providerName, String providedName) {
         for (ExecuteInstance instance: this) {
             if (instance.isBetween(demanderName, demandName, providerName, providedName)) {

@@ -22,12 +22,7 @@
  */
 package org.cloudml.core.actions;
 
-import org.cloudml.core.Component;
-import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.InternalComponentInstance;
-
-
+import org.cloudml.core.*;
 
 public class Migrate extends AbstractAction<InternalComponentInstance> {
 
@@ -37,7 +32,7 @@ public class Migrate extends AbstractAction<InternalComponentInstance> {
         super(library);
         this.instance = rejectIfInvalid(instance);
     }
-    
+
     private InternalComponentInstance rejectIfInvalid(InternalComponentInstance instance) {
         if (instance == null) {
             throw new IllegalArgumentException("'null' is not a valid instance for migration!");
@@ -46,9 +41,15 @@ public class Migrate extends AbstractAction<InternalComponentInstance> {
     }
 
     @Override
-    public InternalComponentInstance applyTo(Deployment deployment) { 
+    public InternalComponentInstance applyTo(Deployment deployment) {
         final ComponentInstance<? extends Component> newHost = getLibrary().findAlternativeDestinationFor(deployment, instance);
-        getLibrary().uninstall(deployment, instance);
-        return getLibrary().install(deployment, instance.getType(), newHost);
+        final ExecuteInstance execution = deployment.getExecuteInstances().withSubject(instance);
+        assert execution != null:
+               String.format("There should be an execute instance whose required end points to '%s'", instance.getName());
+        deployment.getExecuteInstances().remove(execution);
+        deployment.deploy(instance, newHost);
+        return instance;
     }
+
+   
 }

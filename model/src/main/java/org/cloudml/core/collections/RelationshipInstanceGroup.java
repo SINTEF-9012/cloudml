@@ -27,7 +27,6 @@ package org.cloudml.core.collections;
 import java.util.Collection;
 import org.cloudml.core.Component;
 import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.core.Port;
 import org.cloudml.core.PortInstance;
 import org.cloudml.core.RelationshipInstance;

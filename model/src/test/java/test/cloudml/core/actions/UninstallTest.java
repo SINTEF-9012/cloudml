@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import org.cloudml.core.*;
 import org.cloudml.core.actions.StandardLibrary;
 import org.cloudml.core.actions.Uninstall;
+import org.cloudml.core.samples.SensApp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,7 +37,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
 @RunWith(JUnit4.class)
-public class UninstallTest extends TestCase {
+public class UninstallTest {
 
     @Test
     public void uninstallReinstallANewMissingServerForRemainingClientsIfNeeded() {
@@ -70,5 +71,23 @@ public class UninstallTest extends TestCase {
         assertThat("Server instance count", model.getComponentInstances().onlyInternals().ofType(SSH_SERVER).size(), is(equalTo(1)));
         assertThat("SSH connection count", model.getRelationshipInstances().ofType(SSH_CONNECTION).size(), is(equalTo(2)));
         assertThat("ExecuteOn count", model.getExecuteInstances().size(), is(equalTo(3)));
+    }
+    
+    @Test
+    public void uninstallingAHostShouldTriggerAMigration() {
+        final Deployment model = SensApp.completeSensApp().build();
+        
+        assertThat("ExecuteOn count", model.getExecuteInstances().size(), is(equalTo(5)));
+        
+        
+        final InternalComponentInstance app = model.getComponentInstances().onlyInternals().firstNamed(SensApp.SENSAPP_1);
+        final InternalComponentInstance expectedHost = model.getComponentInstances().onlyInternals().firstNamed(SensApp.JETTY_2);
+
+        final InternalComponentInstance host = model.getComponentInstances().onlyInternals().firstNamed(SensApp.JETTY_1);
+        final Uninstall command = new Uninstall(new StandardLibrary(), host);
+        command.applyTo(model);
+        
+        assertThat("ExecuteOn count", model.getExecuteInstances().size(), is(equalTo(4)));
+        assertThat("properly migrated", expectedHost.isHosting(app));
     }
 }

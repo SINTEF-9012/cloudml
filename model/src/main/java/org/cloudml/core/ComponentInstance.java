@@ -33,47 +33,48 @@ import org.cloudml.core.validation.Report;
 public abstract class ComponentInstance<T extends Component> extends WithResources implements DeploymentElement, OwnedBy<Deployment> {
 
     public static enum State {
+
         /**
          * The node is in transition.
          */
-        PENDING ("PENDING"),
+        PENDING("PENDING"),
         /**
-         * The node is visible, and in the process of being deleted.
-         * Available on jCLouds only.
+         * The node is visible, and in the process of being deleted. Available
+         * on jCLouds only.
          */
-        TERMINATED ("TERMINATED"),
+        TERMINATED("TERMINATED"),
         /**
          * The node is deployed, but suspended or stopped.
          */
-        STOPPED ("STOPPED"),
+        STOPPED("STOPPED"),
         /**
          * The node is available for requests
          */
-        RUNNING ("RUNNING"),
+        RUNNING("RUNNING"),
         /**
          * There is an error on the node
          */
-        ERROR ("ERROR"),
+        ERROR("ERROR"),
         /**
          * The state of the node is unrecognized.
          */
-        UNRECOGNIZED ("UNRECOGNIZED"),
+        UNRECOGNIZED("UNRECOGNIZED"),
         /**
          * This status is available only on Flexiant
          */
-        RECOVERY ("RECOVERY");
+        RECOVERY("RECOVERY");
 
-        private String name="PENDING";
+        private String name = "PENDING";
 
         private State(String s) {
             this.name = s;
         }
 
-        public boolean equalsName(String otherName){
-            return (otherName == null)? false:name.equals(otherName);
+        public boolean equalsName(String otherName) {
+            return (otherName == null) ? false : name.equals(otherName);
         }
 
-        public String toString(){
+        public String toString() {
             return name;
         }
 
@@ -93,7 +94,7 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
 
     private ProvidedPortInstanceGroup instantiateAllProvidedPorts(T type) {
         final ProvidedPortInstanceGroup instances = new ProvidedPortInstanceGroup();
-        for (ProvidedPort port : type.getProvidedPorts()) {
+        for (ProvidedPort port: type.getProvidedPorts()) {
             instances.add(port.instantiate());
         }
         return new LocalProvidedPortInstanceGroup(instances);
@@ -101,33 +102,45 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
 
     private LocalProvidedExecutionPlatformInstanceGroup instantiateAllExecutionPlatforms(T type) {
         final ProvidedExecutionPlatformInstanceGroup group = new ProvidedExecutionPlatformInstanceGroup();
-        for (ProvidedExecutionPlatform platform : type.getProvidedExecutionPlatforms()) {
+        for (ProvidedExecutionPlatform platform: type.getProvidedExecutionPlatforms()) {
             group.add(platform.instantiate());
         }
         return new LocalProvidedExecutionPlatformInstanceGroup(group);
     }
-    
-        
+
+    /**
+     * @return true if this component instance can host other instance, (i.e.,
+     * if it provide at least one execution platform), false otherwise.
+     */
+    public boolean canHost() {
+        return !getProvidedExecutionPlatforms().isEmpty();
+    }
+
+    /**
+     * @return true if this component instance can host the given component
+     * (i.e., if it provides a relevant execution platform), false otherwise
+     * @param componentType the component type that need an host
+     */
     public boolean canHost(InternalComponent componentType) {
         return getProvidedExecutionPlatforms().firstMatchFor(componentType) != null;
     }
-    
+
     public boolean isHosting(InternalComponentInstance component) {
-        return hostedComponents().contains(component); 
+        return hostedComponents().contains(component);
     }
-    
+
     public InternalComponentInstanceGroup clientComponents() {
         if (getOwner().isUndefined()) {
             return new InternalComponentInstanceGroup();
         }
-        return getDeployment().getRelationshipInstances().clientsOf(this); 
+        return getDeployment().getRelationshipInstances().clientsOf(this);
     }
-    
+
     public InternalComponentInstanceGroup hostedComponents() {
         if (getOwner().isUndefined()) {
             return new InternalComponentInstanceGroup();
         }
-        return getDeployment().getExecuteInstances().componentsHostedBy(this); 
+        return getDeployment().getExecuteInstances().componentsHostedBy(this);
     }
 
     @Override
@@ -137,7 +150,7 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
             report.addError(error);
         }
     }
-    
+
     public boolean canBeUninstalled() {
         return !isUsed() && isInternal();
     }
@@ -189,8 +202,8 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
         return this.providedPorts;
     }
 
-    public void setProvidedPorts(ProvidedPortInstanceGroup ppig){
-        this.providedPorts=ppig;
+    public void setProvidedPorts(ProvidedPortInstanceGroup ppig) {
+        this.providedPorts = ppig;
     }
 
     public T getType() {
@@ -208,8 +221,8 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
         return providedExecutionPlatforms;
     }
 
-    public void setProvidedExecutionPlatforms(ProvidedExecutionPlatformInstanceGroup pepig){
-        this.providedExecutionPlatforms=pepig;
+    public void setProvidedExecutionPlatforms(ProvidedExecutionPlatformInstanceGroup pepig) {
+        this.providedExecutionPlatforms = pepig;
     }
 
     @Override
@@ -227,8 +240,7 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
             ComponentInstance otherCompInst = (ComponentInstance) other;
             Boolean match = getName().equals(otherCompInst.getName()) && type.equals(otherCompInst.getType());
             return match;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -237,7 +249,7 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
 
         public LocalProvidedPortInstanceGroup(Collection<ProvidedPortInstance> content) {
             super();
-            for (ProvidedPortInstance port : content) {
+            for (ProvidedPortInstance port: content) {
                 super.add(port);
                 port.getOwner().set(ComponentInstance.this);
             }
