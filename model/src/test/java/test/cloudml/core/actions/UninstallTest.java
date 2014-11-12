@@ -52,6 +52,7 @@ public class UninstallTest extends TestCase {
         assertThat("Client instance count", model.getComponentInstances().onlyInternals().ofType(SSH_CLIENT).size(), is(equalTo(1)));
         assertThat("Server instance count", model.getComponentInstances().onlyInternals().ofType(SSH_SERVER).size(), is(equalTo(1)));
         assertThat("SSH connection count", model.getRelationshipInstances().ofType(SSH_CONNECTION).size(), is(equalTo(1)));
+        assertThat("ExecuteOn count", model.getExecuteInstances().size(), is(equalTo(2)));
     }
 
     @Test
@@ -68,5 +69,6 @@ public class UninstallTest extends TestCase {
         assertThat("Client instance count", model.getComponentInstances().onlyInternals().ofType(SSH_CLIENT).size(), is(equalTo(2)));
         assertThat("Server instance count", model.getComponentInstances().onlyInternals().ofType(SSH_SERVER).size(), is(equalTo(1)));
         assertThat("SSH connection count", model.getRelationshipInstances().ofType(SSH_CONNECTION).size(), is(equalTo(2)));
+        assertThat("ExecuteOn count", model.getExecuteInstances().size(), is(equalTo(3)));
     }
 }
