@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import org.cloudml.indicators.Robustness;
+import org.cloudml.indicators.Selection;
 
 import static org.cloudml.core.builders.Commons.aVMInstance;
 import static org.hamcrest.MatcherAssert.*;
@@ -51,7 +52,7 @@ public class RobustnessTest {
                 getOneClientConnectedToOneServer()
                 .build();
 
-        final Robustness robustness = Robustness.of(cloudml);
+        final Robustness robustness = Robustness.of(cloudml, Selection.INTERNAL, Selection.EXTERNAL);
 
         assertThat("Wrong robustness",
                    robustness.value(),
@@ -64,7 +65,7 @@ public class RobustnessTest {
                 getOneClientConnectedToOneServer()
                 .build();
 
-        final Robustness robustness = Robustness.ofSelfRepairing(cloudml);
+        final Robustness robustness = Robustness.ofSelfRepairing(cloudml, Selection.INTERNAL, Selection.EXTERNAL);
 
         assertThat("Wrong robustness",
                    robustness.value(),
@@ -80,7 +81,7 @@ public class RobustnessTest {
                         .ofType(SshClientServer.EC2_XLARGE_WINDOWS_7))
                 .build();
 
-        final Robustness robustness = Robustness.of(cloudml);
+        final Robustness robustness = Robustness.of(cloudml, Selection.INTERNAL, Selection.EXTERNAL);
 
         assertThat("Wrong robustness",
                    robustness.value(),
@@ -96,7 +97,7 @@ public class RobustnessTest {
                         .ofType(SshClientServer.EC2_XLARGE_WINDOWS_7))
                 .build();
 
-        final Robustness robustness = Robustness.ofSelfRepairing(cloudml);
+        final Robustness robustness = Robustness.ofSelfRepairing(cloudml, Selection.INTERNAL, Selection.EXTERNAL);
 
         assertThat("Wrong robustness",
                    robustness.value(),

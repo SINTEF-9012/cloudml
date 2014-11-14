@@ -74,16 +74,13 @@ public class AllPossibleDependencies implements DependencyExtractor {
         assert component != null:
                 "Unable to find hosts for 'null'";
 
-        Requirement disjunction = null;
+        Requirement disjunction = nothing().not();
         for (ComponentInstance<?> eachHost: findAllCandidateHosts(component)) {
-            if (disjunction == null) {
-                disjunction = require(eachHost.getName());
-
-            } else {
-                disjunction = disjunction.or(require(eachHost.getName()));
-            }
+            disjunction = disjunction.or(require(eachHost.getName()));
         }
 
+        assert disjunction != null: 
+                "Should never return null";
         return disjunction;
     }
 
@@ -99,15 +96,13 @@ public class AllPossibleDependencies implements DependencyExtractor {
         assert dependency != null:
                 "Unable to find service providers for 'null'";
 
-        Requirement disjunction = null;
+        Requirement disjunction = nothing().not();
         for (ComponentInstance<?> eachProvider: findAllCandidateProviders(dependency)) {
-            if (disjunction == null) {
-                disjunction = require(eachProvider.getName());
-
-            } else {
-                disjunction = disjunction.or(require(eachProvider.getName()));
-            }
+            disjunction = disjunction.or(require(eachProvider.getName()));
         }
+        
+        assert disjunction != null:
+               "Should never return null";
         return disjunction;
     }
 

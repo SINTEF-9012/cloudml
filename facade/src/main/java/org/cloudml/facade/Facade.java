@@ -220,13 +220,13 @@ class Facade implements CloudML, CommandHandler {
     }
 
     private void robustnessWithSelfRepair(AnalyseRobustness command) {
-        final Robustness robustness = Robustness.ofSelfRepairing(deploy);
+        final Robustness robustness = Robustness.ofSelfRepairing(deploy, command.getToObserve(), command.getToControl());
         final String content = String.format("Robustness (with self-repair): %.2f percent", robustness.value());
         dispatch(new Message(command, Category.INFORMATION, content));
     }
 
     private void robustness(AnalyseRobustness command) {
-        final Robustness robustness = Robustness.of(deploy);
+        final Robustness robustness = Robustness.of(deploy, command.getToObserve(), command.getToControl());
         final String content = String.format("Robustness: %.2f percent", robustness.value());
         dispatch(new Message(command, Category.INFORMATION, content));
     }

@@ -22,17 +22,35 @@
  */
 package org.cloudml.facade.commands;
 
+import org.cloudml.indicators.Selection;
+
 /**
  * Compute the robustness of the internal components, with respect to failures
  * in the external ones.
  *
- * TODO: Offer the user ways to specify what robustness she wants
  */
 public class AnalyseRobustness extends CloudMlCommand {
 
+    private final Selection toObserve;
+    private final Selection toControl;
+    
     public AnalyseRobustness() {
+        this(Selection.INTERNAL.getLabel(), Selection.EXTERNAL.getLabel()); 
+    }
+    
+    public AnalyseRobustness(String toObserve, String toControl) {
+        this.toObserve = Selection.readFrom(toObserve);
+        this.toControl = Selection.readFrom(toControl);
     }
 
+    public Selection getToObserve() {
+        return toObserve;
+    }
+
+    public Selection getToControl() {
+        return toControl;
+    }
+    
     @Override
     public void execute(CommandHandler target) {
         target.handle(this);

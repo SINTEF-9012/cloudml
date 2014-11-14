@@ -28,10 +28,8 @@ import org.cloudml.core.Deployment;
 
 import eu.diversify.trio.core.System;
 import eu.diversify.trio.data.DataSet;
-import eu.diversify.trio.filter.TaggedAs;
 import eu.diversify.trio.simulation.RandomFailureSequence;
 import eu.diversify.trio.simulation.Scenario;
-import java.util.logging.Logger;
 
 /**
  * Compute the robustness of a given deployment model.
@@ -41,9 +39,6 @@ import java.util.logging.Logger;
  */
 public class Robustness {
 
-    private static final Logger logger = Logger.getLogger(Robustness.class.getName());
-    
-    private final Deployment deployment;
     private final Analysis results;
 
     /**
@@ -52,10 +47,14 @@ public class Robustness {
      * only propagate along these dependencies.
      *
      * @param deployment the deployment to analyse
+     * @param toObserve the subset of CloudML components whose failure are
+     * observed
+     * @param toControl the subset of CloudML components where failures are
+     * injected
      * @return the robustness analysis
      */
-    public static Robustness of(Deployment deployment) {
-        return new Robustness(deployment, new OnlyExplicitDependencies());
+    public static Robustness of(Deployment deployment, Selection toObserve, Selection toControl) {
+        return new Robustness(deployment, toObserve, toControl, new OnlyExplicitDependencies());
     }
 
     /**
@@ -64,34 +63,49 @@ public class Robustness {
      * model.
      *
      * @param deployment the deployment to analyse
+     * @param toObserve the subset of CloudML components whose failure are
+     * observed
+     * @param toControl the subset of CloudML components where failures are
+     * injected
      * @return the robustness analysis
      */
-    public static Robustness ofSelfRepairing(Deployment deployment) {
-        return new Robustness(deployment, new AllPossibleDependencies());
+    public static Robustness ofSelfRepairing(Deployment deployment, Selection toObserve, Selection toControl) {
+        return new Robustness(deployment, toObserve, toControl, new AllPossibleDependencies());
     }
 
+   
     /**
      * Create a new Robustness analysis of a given CloudML model
      *
      * @param deployment the deployment model to analyse
      * @param dependencyStrategy the strategy to calculate the dependencies of
      * components
+     * @param toObserve the subset of CloudML components whose failure are
+     * observed
+     * @param toControl the subset of CloudML components where failures are
+     * injected
      */
-    private Robustness(Deployment deployment, DependencyExtractor dependencyStrategy) {
-        requireValidDeployment(deployment);
+    private Robustness(Deployment deployment, Selection toObserve, Selection toControl, DependencyExtractor dependencyStrategy) {
+        requireValid(deployment);
+        requireValid(toObserve, toControl);
 
-        this.deployment = deployment;
         final System trioSystem = new TrioExporter(dependencyStrategy).asTrioSystem(deployment);
         final Trio trio = new Trio();
-        final Scenario scenario = new RandomFailureSequence(trioSystem, new TaggedAs("internal"), new TaggedAs("external"));
+        final Scenario scenario = new RandomFailureSequence(trioSystem, toObserve.asTrioFilter(), toControl.asTrioFilter());
         final DataSet data = trio.run(scenario, DEFAULT_RUNCOUNT);
         results = trio.analyse(data);
 
-        assert results != null;
+        assert results != null: "robustness analysis did not produce any results!";
     }
 
-    private void requireValidDeployment(Deployment deployment1) throws IllegalArgumentException {
-        if (deployment1 == null) {
+    private void requireValid(Selection toObserve, Selection toControl) throws IllegalArgumentException {
+        if (toObserve == null || toControl == null) {
+            throw new IllegalArgumentException("'null' is not a valid selection");
+        }
+    }
+
+    private void requireValid(Deployment deployment) throws IllegalArgumentException {
+        if (deployment == null) {
             throw new IllegalArgumentException("Unable to evaluate the robustness of 'null'");
         }
     }
@@ -101,7 +115,7 @@ public class Robustness {
     public double value() {
         return results.metric(NORMALIZED_ROBUSTNESS).distribution().mean();
     }
-    
+
     private static final String NORMALIZED_ROBUSTNESS = "norm. robustness";
 
 }
