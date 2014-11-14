@@ -28,8 +28,12 @@ import org.cloudml.core.Deployment;
 import eu.diversify.trio.core.System;
 import eu.diversify.trio.core.Tag;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.cloudml.core.ComponentInstance;
+
+import static org.cloudml.indicators.Selection.*;
 
 /**
  * Convert a CloudML model into a Trio System.
@@ -77,25 +81,38 @@ public class TrioExporter {
     public System asTrioSystem(Deployment model) {
         requireValidDeployment(model);
 
-        final List<String> taggedAsInternal = new ArrayList<String>();
-        final List<String> taggedAsExternal = new ArrayList<String>();
+        final Map<String, List<String>> tagged = new HashMap<String, List<String>>();
+        tagged.put(INTERNAL.getLabel(), new ArrayList<String>());
+        tagged.put(EXTERNAL.getLabel(), new ArrayList<String>());
+        tagged.put(VM.getLabel(), new ArrayList<String>());
 
         final ArrayList<Component> trioComponents = new ArrayList<Component>();
         for (ComponentInstance each: model.getComponentInstances()) {
             if (each.isExternal()) {
-                taggedAsExternal.add(each.getName());
+                tagged.get(EXTERNAL.getLabel()).add(each.getName());
+                if (each.asExternal().isVM()) {
+                    tagged.get(VM.getLabel()).add(each.getName());                    
+                }
             }
             if (each.isInternal()) {
-                taggedAsInternal.add(each.getName());
+                tagged.get(INTERNAL.getLabel()).add(each.getName());
             }
             trioComponents.add(new Component(each.getName(), extractRequirement.from(each)));
         }
 
-        final List<Tag> tags = new ArrayList<Tag>();
-        tags.add(new Tag(INTERNAL_TAG, taggedAsInternal));
-        tags.add(new Tag(EXTERNAL_TAG, taggedAsExternal));
+        return new System(trioComponents, buildTags(tagged));
+    }
 
-        return new System(trioComponents, tags);
+    
+    private List<Tag> buildTags(final Map<String, List<String>> tagged) {
+        final List<Tag> tags = new ArrayList<Tag>();
+        for (String eachTag: tagged.keySet()) {
+            final List<String> taggedComponents = tagged.get(eachTag);
+            if (!taggedComponents.isEmpty()) {
+                tags.add(new Tag(eachTag, taggedComponents));
+            }
+        }
+        return tags;
     }
 
     private void requireValidDeployment(Deployment model) throws IllegalArgumentException {
@@ -103,8 +120,5 @@ public class TrioExporter {
             throw new IllegalArgumentException("Unable to build a TRIO system from 'null'");
         }
     }
-
-    private static final String EXTERNAL_TAG = "external";
-    private static final String INTERNAL_TAG = "internal";
 
 }

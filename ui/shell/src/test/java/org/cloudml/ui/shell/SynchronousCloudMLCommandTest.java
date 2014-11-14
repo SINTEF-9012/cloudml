@@ -20,8 +20,6 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
 
 package org.cloudml.ui.shell;
 
@@ -66,6 +64,7 @@ public class SynchronousCloudMLCommandTest {
         Collection<Object[]> testCases = new ArrayList<Object[]>();
         
         testCases.add(new Object[]{"analyse robustness", new AnalyseRobustness()});
+        testCases.add(new Object[]{"analyse robustness internal / external", new AnalyseRobustness("internal", "external")});
         testCases.add(new Object[]{"deploy", new Deploy()});
         testCases.add(new Object[]{"connect", new Attach("foo", "bar")}); 
         testCases.add(new Object[]{"disconnect", new Detach("foo", "bar")}); 

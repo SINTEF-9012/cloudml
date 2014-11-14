@@ -22,7 +22,7 @@ command
 
 
 action
-    :   'analyse' 'robustness'                              # AnalyseRobustness 
+    :   'analyse' 'robustness' filter?                      # AnalyseRobustness 
     |   'connect' customer=ID 'to' provider=ID              # Connect 
     |   'deploy'                                            # Deploy
     |   'destroy' instance=ID                               # Destroy
@@ -56,6 +56,18 @@ level
     |   'type'
     ;
     
+
+filter
+    :   observe=tag '/' control=tag
+    ;
+
+
+tag
+    :   'internal'
+    |   'external'
+    |   'vm'
+    |   'all'
+    ;
 
 asJob
     :   '&'

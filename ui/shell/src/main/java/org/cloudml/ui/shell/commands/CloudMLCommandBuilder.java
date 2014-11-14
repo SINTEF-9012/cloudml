@@ -35,9 +35,12 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitAnalyseRobustness(ShellCommandsParser.AnalyseRobustnessContext ctx) {
-        return new AnalyseRobustness(); 
+        if (ctx.filter() != null) {
+            return new AnalyseRobustness(ctx.filter().observe.getText(), ctx.filter().control.getText());
+        }
+        return new AnalyseRobustness();
     }
-    
+
     @Override
     public CloudMlCommand visitDeploy(ShellCommandsParser.DeployContext ctx) {
         return new Deploy();
@@ -50,7 +53,7 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitConnect(ShellCommandsParser.ConnectContext ctx) {
-        return new Attach(ctx.customer.getText(), ctx.provider.getText()); 
+        return new Attach(ctx.customer.getText(), ctx.provider.getText());
     }
 
     @Override
@@ -70,7 +73,7 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitInstantiate(ShellCommandsParser.InstantiateContext ctx) {
-        return new Instantiate(ctx.type.getText(), ctx.instance.getText()); 
+        return new Instantiate(ctx.type.getText(), ctx.instance.getText());
     }
 
     @Override
@@ -152,6 +155,5 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
     public CloudMlCommand visitStart(ShellCommandsParser.StartContext ctx) {
         return new StartComponent(ctx.ID().getText());
     }
-    
-    
+
 }
