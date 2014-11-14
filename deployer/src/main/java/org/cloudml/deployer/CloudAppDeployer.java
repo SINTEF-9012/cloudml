@@ -832,10 +832,12 @@ public class CloudAppDeployer {
 
                 Resource clientResource = bi.getType().getClientResource();
                 Resource serverResource = bi.getType().getServerResource();
+                this.bi=bi;
                 retrieveIPandConfigure(serverResource,clientResource,server,client);
             }
         }
     }
+    private RelationshipInstance bi = null;
 
     public void retrieveIPandConfigure(Resource serverResource, Resource clientResource, PortInstance<? extends Port> server, PortInstance<? extends Port> client){
         String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
@@ -858,35 +860,35 @@ public class CloudAppDeployer {
 
         if(server != null){
             if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals(""))
-                jcServer.execCommand(ownerVMServer.getId(), server.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
+                jcServer.execCommand(ownerVMServer.getId(), CloudMLQueryUtil.cloudmlStringRecover(server.getRetrieveCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
         }
         if(client !=null){
             if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals(""))
-                jcClient.execCommand(ownerVMClient.getId(), client.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
+                jcClient.execCommand(ownerVMClient.getId(), CloudMLQueryUtil.cloudmlStringRecover(client.getRetrieveCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
         }
         if(server != null){
             if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
-                String configurationCommand = server.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials());
             }
         }
 
         if(client != null){
             if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
-                String configurationCommand = client.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
             }
         }
 
         if(server != null){
             if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
-                String installationCommand = server.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials());
             }
         }
         if(client != null){
             if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
-                String installationCommand = client.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials());
             }
         }
