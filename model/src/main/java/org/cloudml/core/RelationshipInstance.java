@@ -70,7 +70,8 @@ public class RelationshipInstance extends WithResources implements DeploymentEle
     private void validateRequiredEnd(Report report) {
         if (!requiredEnd.getType().equals(type.getRequiredEnd())) {
             final String message = String.format(
-                    "illegal relationship instance that does not match its type (required port found '%s' but expected '%s')",
+                    "illegal relationship '%s' instance that does not match its type (required port found '%s' but expected '%s')",
+                    getName(),
                     requiredEnd.getType().getName(),
                     type.getRequiredEnd().getName());
             report.addError(message);
@@ -79,7 +80,11 @@ public class RelationshipInstance extends WithResources implements DeploymentEle
 
     private void validateProvidedEnd(Report report) {
         if (!providedEnd.getType().equals(type.getProvidedEnd())) {
-            final String message = String.format("illegal relationship instance that does not match its type (provided port found '%s' but expected '%s')", providedEnd.getType().getQualifiedName(), type.getProvidedEnd().getQualifiedName());
+            final String message = String.format(
+                    "illegal relationship instance '%s' that does not match its type (provided port found '%s' but expected '%s')", 
+                    getName(),
+                    providedEnd.getType().getQualifiedName(), 
+                    type.getProvidedEnd().getQualifiedName());
             report.addError(message);
         }
     }
