@@ -35,6 +35,8 @@ public enum Selection {
     INTERNAL("internal", new TaggedAs("internal")),
     EXTERNAL("external", new TaggedAs("external")),
     VM("vm", new TaggedAs("vm")),
+    SERVICE("service", new TaggedAs("service")),
+    NOT_SERVICE("not service", new TaggedAs("service").not()),
     ALL("all", All.getInstance());
 
     private final String label;

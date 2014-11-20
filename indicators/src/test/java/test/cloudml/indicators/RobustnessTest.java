@@ -22,7 +22,9 @@
  */
 package test.cloudml.indicators;
 
+import org.cloudml.core.Component;
 import org.cloudml.core.Deployment;
+import org.cloudml.core.Property;
 import org.cloudml.core.samples.SshClientServer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +32,7 @@ import org.junit.runners.JUnit4;
 
 import org.cloudml.indicators.Robustness;
 import org.cloudml.indicators.Selection;
+import org.cloudml.indicators.TrioExporter;
 
 import static org.cloudml.core.builders.Commons.aVMInstance;
 import static org.hamcrest.MatcherAssert.*;
@@ -70,6 +73,28 @@ public class RobustnessTest {
         assertThat("Wrong robustness",
                    robustness.value(),
                    is(closeTo(0.125, TOLERANCE)));
+    }
+    
+    
+    @Test
+    public void serviceRobustnessOfSelfRepairingOneClientOneServer() {
+        final Deployment ssh = SshClientServer.
+                getOneClientConnectedToOneServer()
+                .build();
+
+        final Component client = ssh.getComponents().firstNamed(SshClientServer.SSH_CLIENT);
+        client.getProperties().add(new Property(TrioExporter.IS_SERVICE, "true"));
+        
+        final Component server = ssh.getComponents().firstNamed(SshClientServer.SSH_SERVER);
+        server.getProperties().add(new Property(TrioExporter.IS_SERVICE, "true"));
+        
+        final Robustness internalRobustness = Robustness.ofSelfRepairing(ssh, Selection.INTERNAL, Selection.EXTERNAL);
+        final Robustness serviceRobustness = Robustness.ofSelfRepairing(ssh, Selection.SERVICE, Selection.NOT_SERVICE);
+
+        
+        assertThat("Wrong robustness",
+                   serviceRobustness.value(),
+                   is(closeTo(internalRobustness.value(), TOLERANCE)));
     }
 
     @Test
