@@ -69,7 +69,11 @@ public class DotPrinter extends AbstractVisitListener {
         dotText.append("\t")
                 .append(symbols.initialise(subject))
                 .append(" [")
-                .append(componentFormatting(subject)).append("];\n");
+                .append(vmFormatting(subject)).append("];\n");
+    }
+
+    private String vmFormatting(ComponentInstance<? extends Component> subject) {
+        return "label=\"" + subject.getName() + "\", style=\"filled\"";
     }
 
     private String componentFormatting(ComponentInstance<? extends Component> subject) {
@@ -114,7 +118,7 @@ public class DotPrinter extends AbstractVisitListener {
     }
 
     private String executeOnFormatting(ExecuteInstance subject) {
-        return "label=\"" + "run on" + "\"";
+        return "style=\"dashed\"";
     }
 
     private void ensureBufferIsReady() {
