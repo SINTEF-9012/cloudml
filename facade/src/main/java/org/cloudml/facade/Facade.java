@@ -333,6 +333,7 @@ class Facade implements CloudML, CommandHandler {
 
             deploy.getComponents().addAll(deploy2.getComponents());
             deploy.getRelationships().addAll(deploy2.getRelationships());
+            deploy.getProviders().addAll(deploy2.getProviders());
 
             deploy.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
             deploy.getExecuteInstances().removeAll(diff.getRemovedExecutes());
