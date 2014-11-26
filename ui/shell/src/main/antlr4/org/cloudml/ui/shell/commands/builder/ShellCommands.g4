@@ -42,6 +42,7 @@ action
     |   'scale out' ID                                      # ScaleOut
     |   'create image from'  ID                             # Image
     |   'reset deployment'                                  # Reset
+    |   'validate' noWarnings='no warnings'?                # Validate
     ;
 
 kind
@@ -73,12 +74,18 @@ asJob
     :   '&'
     ;
 
+fragment
 DIGIT   
     :   [0-9] 
     ;
 
 LETTER  
     :   [a-zA-Z\u0080-\u00FF_]
+    ;
+
+
+INTEGER
+    :   DIGIT+
     ;
 
 ID      
@@ -91,9 +98,6 @@ HEX_DIGIT
     :   [a-fA-F-0-9]
     ;
 
-INTEGER
-    :   DIGIT+
-    ;
 
 PATH
     :   DRIVE? FILE (PATH_SEPARATOR FILE)*

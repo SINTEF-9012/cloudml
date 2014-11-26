@@ -68,9 +68,10 @@ public class LocalShellCommandTest extends TestCase {
 
         testCases.add(new Object[]{"version", version()});
         testCases.add(new Object[]{"history", history()});
-        testCases.add(new Object[]{"history 3", history(2)});
+        testCases.add(new Object[]{"history 2", history(2)});
         testCases.add(new Object[]{"messages", showMessages()});
         testCases.add(new Object[]{"messages 3", showMessages(3)});
+        testCases.add(new Object[]{"messages 18", showMessages(18)});
         testCases.add(new Object[]{"exit", exit()});
         testCases.add(new Object[]{"dump", script(version(), history(), dumpTo("test.txt"))});
         testCases.add(new Object[]{"replay", replay("test.txt")});

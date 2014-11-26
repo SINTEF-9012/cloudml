@@ -44,7 +44,7 @@ public class ShotImage extends CloudMlCommand {
 
     @Override
     public String toString() {
-        return String.format("shot %s", pathToSnapshot);
+        return String.format("shot to %s", pathToSnapshot);
     }
     
     

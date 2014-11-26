@@ -20,8 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-/*
- */
+
 package org.cloudml.core.validation;
 
 import org.cloudml.core.Deployment;

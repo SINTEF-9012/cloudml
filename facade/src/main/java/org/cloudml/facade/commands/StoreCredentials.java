@@ -54,7 +54,7 @@ public class StoreCredentials extends CloudMlCommand {
 
     @Override
     public String toString() {
-        return String.format("store credentials in %s", destination);
+        return String.format("store credentials to %s", destination);
     }
     
     

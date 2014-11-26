@@ -31,6 +31,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.cloudml.facade.commands.ValidateCommand.REPORT_ONLY_ERRORS;
+import static org.cloudml.facade.commands.ValidateCommand.REPORT_WARNINGS_AND_ERRORS;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -53,11 +55,13 @@ public class ShellCommandFactoryTest extends TestCase {
         results.add(new Object[]{"help \"foo\"", help("foo")});
         results.add(new Object[]{"history", history()});
         results.add(new Object[]{"history 23", history(23)});
+        results.add(new Object[]{"history 3", history(3)});
         results.add(new Object[]{"dump to c:\\temp\\myscript.txt", dumpTo("c:\\temp\\myscript.txt")});
         results.add(new Object[]{"dump to /home/foo/script.txt", dumpTo("/home/foo/script.txt")});
         results.add(new Object[]{"dump 23 to /home/foo/script.txt", dumpTo(23, "/home/foo/script.txt")});
         results.add(new Object[]{"replay /home/foo/script.txt", replay("/home/foo/script.txt")});
         results.add(new Object[]{"messages", showMessages()});
+        results.add(new Object[]{"messages 4", showMessages(4)});
         results.add(new Object[]{"messages 24", showMessages(24)});
         results.add(new Object[]{"history version exit", script(history(), version(), exit())});
         results.add(new Object[]{"deploy &", delegate(new Deploy(), true)});
@@ -81,7 +85,9 @@ public class ShellCommandFactoryTest extends TestCase {
         results.add(new Object[]{"upload c:\\sensapp.json on foo at /home/sensapp.json", delegate(new Upload("c:\\sensapp.json", "foo", "/home/sensapp.json"), false)});
         results.add(new Object[]{"shot to /home/sensapp.json", delegate(new ShotImage("/home/sensapp.json"), false)});
         results.add(new Object[]{"scale out @8f1d4fae-7dec-11d0-a765-00a0c91e6bf6", delegate(new ScaleOut("8f1d4fae-7dec-11d0-a765-00a0c91e6bf6"), false)});
-        
+        results.add(new Object[]{"validate", delegate(new ValidateCommand(REPORT_WARNINGS_AND_ERRORS), false)});
+        results.add(new Object[]{"validate no warnings", delegate(new ValidateCommand(REPORT_ONLY_ERRORS), false)});
+           
         return results;
     }
     

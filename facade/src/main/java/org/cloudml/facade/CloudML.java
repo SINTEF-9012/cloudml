@@ -29,9 +29,6 @@ import org.cloudml.facade.events.EventHandler;
 
 /**
  * The general interface of the CloudML facade
- *
- * @author Franck Chauvel - SINTEF ICT
- * @since 1.0
  */
 public interface CloudML extends CommandHandler{
 

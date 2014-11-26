@@ -38,6 +38,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.cloudml.facade.commands.ValidateCommand.REPORT_ONLY_ERRORS;
+import static org.cloudml.facade.commands.ValidateCommand.REPORT_WARNINGS_AND_ERRORS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -78,12 +80,14 @@ public class SynchronousCloudMLCommandTest {
         testCases.add(new Object[]{"store credentials", new StoreCredentials("foo.credentials")}); 
         testCases.add(new Object[]{"list types", new ListComponents()}); 
         testCases.add(new Object[]{"list instances", new ListComponentInstances()}); 
-        testCases.add(new Object[]{"view type", new ViewComponent("foo")}); 
-        testCases.add(new Object[]{"view instance", new ViewComponentInstance("foo")}); 
+        testCases.add(new Object[]{"view type foo", new ViewComponent("foo")}); 
+        testCases.add(new Object[]{"view instance foo", new ViewComponentInstance("foo")}); 
         testCases.add(new Object[]{"destroy", new Destroy("foo")});
         testCases.add(new Object[]{"instantiate", new Instantiate("foo", "foo #1")}); 
-        testCases.add(new Object[]{"shot", new ShotImage("foo.png")});
+        testCases.add(new Object[]{"shot to foo.png", new ShotImage("foo.png")});
         testCases.add(new Object[]{"upload", new Upload("foo", "afile.sh", "home/afile.sh")}); 
+        testCases.add(new Object[]{"validate no warnings", new ValidateCommand(REPORT_ONLY_ERRORS)});
+        testCases.add(new Object[]{"validate", new ValidateCommand(REPORT_WARNINGS_AND_ERRORS)});
        
         return testCases;
     }
@@ -91,7 +95,7 @@ public class SynchronousCloudMLCommandTest {
         
     @Test
     public void shellShouldDelegateToCloudML() {
-        final Scenario input = new Scenario(ShellCommand.delegate(command, false));
+        final Scenario input = new Scenario(ShellCommand.delegate(command, NOT_IN_BACKGROUND));
         final Recorder output = new Recorder();
 
         final CloudML proxy = context.mock(CloudML.class);
@@ -113,4 +117,5 @@ public class SynchronousCloudMLCommandTest {
         assertThat(output.record(), not(containsString("Error")));
         assertThat(output.record(), not(containsString("Exception")));
     }
+    private static final boolean NOT_IN_BACKGROUND = false;
 }

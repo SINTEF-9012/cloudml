@@ -23,26 +23,15 @@
 package test.cloudml.facade;
 
 import junit.framework.TestCase;
-import org.cloudml.codecs.JsonCodec;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.RelationshipInstance;
-import org.cloudml.deployer.CloudMLModelComparator;
 import org.cloudml.facade.*;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.junit.Test;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 /**
  * A simple test to check whether the behaviour of the facade is correct,
  * regarding message exchange and triggering of events
- *
- * @author Franck Chauvel
- * @author Brice Morin
- * @since 1.0
  */
 public class TestFacade extends TestCase implements EventHandler {
 

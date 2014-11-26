@@ -25,9 +25,6 @@ package org.cloudml.facade.commands;
 /**
  * Interface of object able to implements the commands supported by the CloudML
  * facade
- *
- * @author Franck Chauvel - SINTEF ICT
- * @since 1.0
  */
 public interface CommandHandler {
 
@@ -78,5 +75,7 @@ public interface CommandHandler {
     public void handle(Image command);
 
     public void handle(Reset command);
+    
+    public void handle(ValidateCommand command);
     
 }

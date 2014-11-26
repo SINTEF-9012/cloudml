@@ -27,6 +27,9 @@ import org.cloudml.facade.commands.*;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsBaseVisitor;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsParser;
 
+import static org.cloudml.facade.commands.ValidateCommand.REPORT_ONLY_ERRORS;
+import static org.cloudml.facade.commands.ValidateCommand.REPORT_WARNINGS_AND_ERRORS;
+
 /**
  * Traverse subparts of the ANTLR parse tree and output the related
  * CloudMLCommand objects.
@@ -155,5 +158,15 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
     public CloudMlCommand visitStart(ShellCommandsParser.StartContext ctx) {
         return new StartComponent(ctx.ID().getText());
     }
+
+    @Override
+    public CloudMlCommand visitValidate(ShellCommandsParser.ValidateContext ctx) {
+        if (ctx.noWarnings != null) {
+            return new ValidateCommand(REPORT_ONLY_ERRORS);
+        }
+        return new ValidateCommand(REPORT_WARNINGS_AND_ERRORS);
+    }
+    
+    
 
 }

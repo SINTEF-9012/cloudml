@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.cloudml.facade.commands.ValidateCommand.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -87,6 +88,8 @@ public class AsynchronousCloudMLCommandTest {
         testCases.add(new Object[]{"shot", new ShotImage("foo.png")});
         testCases.add(new Object[]{"snapshot", new Snapshot("RegionOne/52d49b86-8d5c-41de-afbd-7fed3cb2b436")});
         testCases.add(new Object[]{"upload", new Upload("foo", "afile.sh", "home/afile.sh")}); 
+        testCases.add(new Object[]{"validate no warnings", new ValidateCommand(REPORT_ONLY_ERRORS)});
+        testCases.add(new Object[]{"validate", new ValidateCommand(REPORT_WARNINGS_AND_ERRORS)});
     
         return testCases;
     }
@@ -94,7 +97,7 @@ public class AsynchronousCloudMLCommandTest {
         
     @Test
     public void shellShouldDelegateToCloudML() {
-        final Scenario input = new Scenario(ShellCommand.delegate(command, true));
+        final Scenario input = new Scenario(ShellCommand.delegate(command, IN_BACKGROUND));
         final Recorder output = new Recorder();
 
         final CloudML proxy = context.mock(CloudML.class);
@@ -116,4 +119,5 @@ public class AsynchronousCloudMLCommandTest {
         assertThat(output.record(), not(containsString("Error")));
         assertThat(output.record(), not(containsString("Exception")));
     }
+    private static final boolean IN_BACKGROUND = true;
 }
