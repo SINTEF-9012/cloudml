@@ -57,6 +57,7 @@ public class CloudAppDeployer {
     private Coordinator coordinator;
     private boolean statusMonitorActive;
     private StatusMonitor statusMonitor; //always check if active
+    private static boolean DEBUG=false;
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -306,6 +307,11 @@ public class CloudAppDeployer {
     }
 
     private void executeCommand(VMInstance owner, Connector jc, String command) {
+        if(DEBUG){
+            journal.log(Level.INFO, ">> Executing command: " + command);
+            journal.log(Level.INFO, ">> On VM: " + owner.getName());
+            return;
+        }
         if (!command.equals("")) {
             if (!owner.getType().getOs().toLowerCase().contains("windows")) {
                 jc.execCommand(owner.getId(), command, "ubuntu", owner.getType().getPrivateKey());
@@ -683,6 +689,10 @@ public class CloudAppDeployer {
      * @param n a VMInstance
      */
     private void provisionAVM(VMInstance n) {
+        if(DEBUG){
+            journal.log(Level.INFO, ">> Provision: "+n.getName());
+            return;
+        }
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
