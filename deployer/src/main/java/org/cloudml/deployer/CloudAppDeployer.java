@@ -203,6 +203,7 @@ public class CloudAppDeployer {
         }
     }
 
+
     /**
      * Update the currentModel with the targetModel and preserve all the CPSM
      * metadata
@@ -644,7 +645,7 @@ public class CloudAppDeployer {
      * @param configurationCommand the command to configure the component,
      *                             parameters are: IP IPDest portDest
      */
-    private void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean keyRequired) {
+    protected void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean keyRequired) {
         if (!configurationCommand.equals("")) {
             if(keyRequired)
                 jc.execCommand(ni.getId(), configurationCommand+" "+ni.getType().getProvider().getCredentials().getLogin()+" "+ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
@@ -660,7 +661,7 @@ public class CloudAppDeployer {
      * @param ni           a VM instance
      * @param startCommand the command to start the component
      */
-    private void start(Connector jc, VM n, VMInstance ni, String startCommand) {
+    protected void start(Connector jc, VM n, VMInstance ni, String startCommand) {
         unlessNotNull("Cannot start without connector", jc, n, ni, startCommand);
         if (!startCommand.equals("")) {
             executeCommand(ni, jc, startCommand);
@@ -767,7 +768,7 @@ public class CloudAppDeployer {
      * @param relationships a list of relationships
      * @throws MalformedURLException
      */
-    private void configureWithRelationships(RelationshipInstanceGroup relationships) {
+    protected void configureWithRelationships(RelationshipInstanceGroup relationships) {
         //Configure on the basis of the relationships
         //parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
         for (RelationshipInstance bi : relationships) {
@@ -1078,164 +1079,14 @@ public class CloudAppDeployer {
         }
     }
 
-    /**
-     * Method to scale out a VM within the same provider
-     * Create a snapshot of the VM and then configure the bindings
-     *
-     * @param vmi an instance of VM
-     */
-    public void scaleOut(VMInstance vmi) {
-        Deployment tmp=currentModel.clone();
-
-        Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-        StandardLibrary lib = new StandardLibrary();
-
-        //1. instantiate the new VM using the newly created snapshot
-        VM existingVM=vmi.asExternal().asVM().getType();
-        VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
-        if(v == null){//in case a type for the snapshot has already been created
-            String name=lib.createUniqueComponentInstanceName(currentModel,existingVM);
-            v=new VM(name+"-fromImage",existingVM.getProvider());
-            v.setGroupName(existingVM.getGroupName());
-            v.setRegion(existingVM.getRegion());
-            v.setImageId("tempID");
-            v.setLocation(existingVM.getLocation());
-            v.setMinRam(existingVM.getMinRam());
-            v.setMinCores(existingVM.getMinCores());
-            v.setMinStorage(existingVM.getMinStorage());
-            v.setSecurityGroup(existingVM.getSecurityGroup());
-            v.setSshKey(existingVM.getSshKey());
-            v.setPrivateKey(existingVM.getPrivateKey());
-            v.setProvider(existingVM.getProvider());
-            ProvidedExecutionPlatformGroup pepg=new ProvidedExecutionPlatformGroup();
-            for(ProvidedExecutionPlatform pep: existingVM.getProvidedExecutionPlatforms()){
-                ArrayList<Property> pg=new ArrayList<Property>();
-                for(Property property: pep.getOffers()){
-                    Property prop=new Property(property.getName());
-                    prop.setValue(property.getValue());
-                    pg.add(prop);
-                }
-                ProvidedExecutionPlatform p =new ProvidedExecutionPlatform(name+"-"+pep.getName(),pg);
-                pepg.add(p);
-            }
-            v.setProvidedExecutionPlatforms(pepg.toList());
-            currentModel.getComponents().add(v);
-        }
-        VMInstance ci=lib.provision(currentModel,v).asExternal().asVM();
-
-        //2. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
-        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
-
-        //3. For synchronization purpose with provision once the model has been fully updated
-        String ID=c.createImage(vmi); //TODO: should check if the image already exist
-        c.closeConnection();
-        v.setImageId(ID);
-
-        Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
-        HashMap<String,String> result=c2.createInstance(ci);
-
-
-        c2.closeConnection();
-        coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
-        coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
-        coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
-
-        //4. configure the new VM
-        //execute the configuration bindings
-        Set<ComponentInstance> listOfAllComponentImpacted= new HashSet<ComponentInstance>();
-        for(InternalComponentInstance ici: duplicatedGraph.values()){
-            for(ProvidedPortInstance ppi: ici.getProvidedPorts()){
-                RelationshipInstanceGroup rig=currentModel.getRelationshipInstances().whereEitherEndIs(ppi);
-                manageDuplicatedRelationships(rig, listOfAllComponentImpacted);
-            }
-            for(RequiredPortInstance rpi: ici.getRequiredPorts()){
-                RelationshipInstanceGroup rig=currentModel.getRelationshipInstances().whereEitherEndIs(rpi);
-                manageDuplicatedRelationships(rig, listOfAllComponentImpacted);
-            }
-        }
-
-        //execute configure commands on the components
-        for(ComponentInstance ici: listOfAllComponentImpacted){
-            coordinator.updateStatusInternalComponent(ici.getName(), State.INSTALLED.toString(), CloudAppDeployer.class.getName());
-            if(ici.isInternal()){
-                Provider p=ici.asInternal().externalHost().asVM().getType().getProvider();
-                c2=ConnectorFactory.createIaaSConnector(p);
-                for(Resource r: ici.getType().getResources()){
-                    configure(c2, ci.getType(), ici.asInternal().externalHost().asVM(), r.getConfigureCommand(),false);
-                }
-                c2.closeConnection();
-            }
-            coordinator.updateStatusInternalComponent(ici.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
-        }
-
-        //execute start commands on the components
-        for(ComponentInstance ici: listOfAllComponentImpacted){
-            if(ici.isInternal()){
-                Provider p=ici.asInternal().externalHost().asVM().getType().getProvider();
-                c2=ConnectorFactory.createIaaSConnector(p);
-                for(Resource r: ici.getType().getResources()){
-                    start(c2,ci.getType(),ici.asInternal().externalHost().asVM(),r.getStartCommand());
-                }
-                c2.closeConnection();
-            }
-            coordinator.updateStatusInternalComponent(ici.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
-        }
-
-        for(InternalComponentInstance ici: duplicatedGraph.values()){
-            coordinator.updateStatusInternalComponent(ici.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
-        }
-
-        journal.log(Level.INFO, ">> Scaling completed!");
+    public void scaleOut(VMInstance vmi){
+        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        scaler.scaleOut(vmi);
     }
 
-
-    private void manageDuplicatedRelationships(RelationshipInstanceGroup rig, Set<ComponentInstance> listOfAllComponentImpacted){
-        if(rig != null){
-            configureWithRelationships(rig);
-            for(RelationshipInstance ri: rig){
-                listOfAllComponentImpacted.add(ri.getClientComponent());
-                listOfAllComponentImpacted.add(ri.getServerComponent());
-            }
-        }
-    }
-
-    private Map<InternalComponentInstance, InternalComponentInstance> duplicateHostedGraph(VMInstance vmiSource,VMInstance vmiDestination){
-        //InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
-        StandardLibrary lib=new StandardLibrary();
-        return lib.replicateSubGraph(currentModel, vmiSource, vmiDestination);
-    }
-
-    /**
-     * To scale our a VM on another provider (kind of bursting)
-     *
-     * @param vmi      the vm instance to scale out
-     * @param provider the provider where we want to burst
-     */
-    public void scaleOut(VMInstance vmi, Provider provider) {
-        Connector c = ConnectorFactory.createIaaSConnector(provider);
-        StandardLibrary lib = new StandardLibrary();
-
-        VMInstance ci = lib.replicateComponentInstance(targetModel, vmi, null).asExternal().asVM();
-        VM existingVM = ci.asExternal().asVM().getType();
-        VM v = new VM(existingVM.getName() + "-scaled", existingVM.getProvider());
-        v.setGroupName(existingVM.getGroupName());
-        v.setImageId(existingVM.getImageId());
-        v.setLocation(existingVM.getLocation());
-        v.setMinRam(existingVM.getMinRam());
-        v.setMinCores(existingVM.getMinCores());
-        v.setMinStorage(existingVM.getMinStorage());
-        v.setSecurityGroup(existingVM.getSecurityGroup());
-        v.setSshKey(existingVM.getSshKey());
-        v.setPrivateKey(existingVM.getPrivateKey());
-        v.setProvider(provider);
-        targetModel.getComponents().add(v);
-        ci.setType(v);
-        c.createInstance(ci.asExternal().asVM());
-
-        //2. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
-        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
-
-        deploy(targetModel);
+    public void scaleOut(VMInstance vmi,Provider provider){
+        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        scaler.scaleOut(vmi,provider);
     }
 
 }
