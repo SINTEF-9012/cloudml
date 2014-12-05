@@ -24,19 +24,30 @@ package org.cloudml.connectors;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by nicolasf on 05.12.14.
  */
 public class DockerConnector {
 
+    private static final Logger journal = Logger.getLogger(DockerConnector.class.getName());
     private DockerClient dockerClient;
 
-    public DockerConnector(String endPoint){
+    public DockerConnector(String endPoint, String version){
         DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder()
-                .withVersion("1.10")
+                .withVersion(version)
                 .withUri(endPoint)
                 .build();
         dockerClient = DockerClientBuilder.getInstance(config).build();
@@ -47,13 +58,52 @@ public class DockerConnector {
         connector.execCommandSsh("sudo docker -H 0.0.0.0 "+dockerPort+" -d");
     }
 
+    public void commit(String msg){
+        dockerClient.commitCmd(msg);
+    }
+
     public void pullImage(String image){
         dockerClient.pullImageCmd(image).exec();
     }
 
-    public String createContainer(String command){
+    public String createContainerWithPorts(String image, String command, int[] ports){
+        ExposedPort[] exposedPorts=new ExposedPort[ports.length];
+        for(int i=0;i < ports.length;i++){
+            exposedPorts[i]=ExposedPort.tcp(ports[i]);
+        }
+
+        CreateContainerResponse container = dockerClient.createContainerCmd(image)
+                .withCmd(command)
+                .withExposedPorts(exposedPorts)
+                .exec();
+        return container.getId();
+    }
+
+    public void BuildImageFromDockerFile(String path){
+        File baseDir = new File(path);
+
+        InputStream response = dockerClient.buildImageCmd(baseDir).exec();
+
+        StringWriter logwriter = new StringWriter();
+
+        try {
+            LineIterator itr = IOUtils.lineIterator(response, "UTF-8");
+            while (itr.hasNext()) {
+                String line = itr.next();
+                logwriter.write(line);
+                journal.log(Level.INFO,line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(response);
+        }
+    }
+
+    public String createContainer(String image, String command){
         CreateContainerResponse container = dockerClient
-                .createContainerCmd("ubuntu").withCmd(command).exec();
+                .createContainerCmd(image)
+                .withCmd(command).exec();
         return container.getId();
     }
 
