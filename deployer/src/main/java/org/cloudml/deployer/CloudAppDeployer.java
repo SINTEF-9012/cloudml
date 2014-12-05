@@ -307,6 +307,12 @@ public class CloudAppDeployer {
         }
     }
 
+    /**
+     * Execute a command either on Linux or on Windows depending on the name of the OS set up in the type
+     * @param owner the VMInstance on which the command will be executed
+     * @param jc a connector
+     * @param command the command to be executed
+     */
     private void executeCommand(VMInstance owner, Connector jc, String command) {
         if(DEBUG){
             journal.log(Level.INFO, ">> Executing command: " + command);
