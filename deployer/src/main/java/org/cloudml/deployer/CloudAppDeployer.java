@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cloudml.connectors.*;
+import org.cloudml.connectors.util.CloudMLQueryUtil;
 import org.cloudml.connectors.util.ConfigValet;
 import org.cloudml.connectors.util.MercurialConnector;
 import org.cloudml.core.*;
@@ -346,9 +347,9 @@ public class CloudAppDeployer {
         for (Resource r : x.getType().getResources()) {
             if (!r.getInstallCommand().equals("")) {
                 if (r.getRequireCredentials()) {
-                    jc.execCommand(owner.getId(), r.getInstallCommand() + " " + owner.getType().getProvider().getCredentials().getLogin() + " " + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                    jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + " " + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
                 } else {
-                    executeCommand(owner, jc, r.getInstallCommand());
+                    executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x));
                 }
             }
         }
@@ -386,8 +387,8 @@ public class CloudAppDeployer {
         for (Resource r : x.getType().getResources()) {
             if (!r.getRetrieveCommand().equals("")) {
                 if (r.getRequireCredentials())
-                    jc.execCommand(owner.getId(), r.getRetrieveCommand() + " " + owner.getType().getProvider().getCredentials().getLogin() + "" + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
-                else executeCommand(owner, jc, r.getRetrieveCommand());
+                    jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + "" + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                else executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
             }
         }
     }
@@ -481,7 +482,7 @@ public class CloudAppDeployer {
             if (host.isInternal()) {
                 startExecutes(host.asInternal());
                 for (Resource r : host.getType().getResources()) {
-                    String startCommand = r.getStartCommand();
+                    String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                     start(jc, n, ownerVM, startCommand);
                 }
                 coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
@@ -512,14 +513,14 @@ public class CloudAppDeployer {
                 //host.asInternal().setStatus(State.INSTALLED);
 
                 for (Resource r : host.getType().getResources()) {
-                    String configurationCommand = r.getConfigureCommand();
+                    String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
                     configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                 }
                 coordinator.updateStatusInternalComponent(host.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
                 //host.asInternal().setStatus(State.CONFIGURED);
 
                 for (Resource r : host.getType().getResources()) {
-                    String startCommand = r.getStartCommand();
+                    String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                     start(jc, n, ownerVM, startCommand);
                 }
                 coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
@@ -562,11 +563,11 @@ public class CloudAppDeployer {
                             executeUploadCommands(serverComponent.asInternal(),owner,jc);
                         }
                         for (Resource r : serverComponent.getType().getResources()) {
-                            executeCommand(owner, jc, r.getRetrieveCommand());
+                            executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
                             //jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
                         }
                         for (Resource r : serverComponent.getType().getResources()) {
-                            executeCommand(owner, jc, r.getInstallCommand());
+                            executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x));
                             //jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
                         }
 
@@ -585,7 +586,7 @@ public class CloudAppDeployer {
                         }
 
                         for (Resource r : serverComponent.getType().getResources()) {
-                            String startCommand = r.getStartCommand();
+                            String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                             start(jc, n, owner, startCommand);
                         }
                         if (serverComponent.isInternal()) {
@@ -622,14 +623,14 @@ public class CloudAppDeployer {
                     //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
                     for (Resource r : x.getType().getResources()) {
-                        String configurationCommand = r.getConfigureCommand();
+                        String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
                         configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                     }
                     coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), CloudAppDeployer.class.getName());
                     //x.setStatus(State.CONFIGURED);
 
                     for (Resource r : x.getType().getResources()) {
-                        String startCommand = r.getStartCommand();
+                        String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                         start(jc, n, ownerVM, startCommand);
                     }
                     coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
@@ -848,10 +849,12 @@ public class CloudAppDeployer {
 
                 Resource clientResource = bi.getType().getClientResource();
                 Resource serverResource = bi.getType().getServerResource();
+                this.bi=bi;
                 retrieveIPandConfigure(serverResource,clientResource,server,client);
             }
         }
     }
+    private RelationshipInstance bi = null;
 
     public void retrieveIPandConfigure(Resource serverResource, Resource clientResource, PortInstance<? extends Port> server, PortInstance<? extends Port> client){
         String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
@@ -874,35 +877,35 @@ public class CloudAppDeployer {
 
         if(server != null){
             if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals(""))
-                jcServer.execCommand(ownerVMServer.getId(), server.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
+                jcServer.execCommand(ownerVMServer.getId(), CloudMLQueryUtil.cloudmlStringRecover(server.getRetrieveCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
         }
         if(client !=null){
             if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals(""))
-                jcClient.execCommand(ownerVMClient.getId(), client.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
+                jcClient.execCommand(ownerVMClient.getId(), CloudMLQueryUtil.cloudmlStringRecover(client.getRetrieveCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
         }
         if(server != null){
             if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
-                String configurationCommand = server.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials());
             }
         }
 
         if(client != null){
             if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
-                String configurationCommand = client.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
             }
         }
 
         if(server != null){
             if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
-                String installationCommand = server.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials());
             }
         }
         if(client != null){
             if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
-                String installationCommand = client.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
                 configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials());
             }
         }
