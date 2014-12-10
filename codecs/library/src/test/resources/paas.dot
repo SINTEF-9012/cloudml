@@ -3,5 +3,5 @@ digraph Deployment {
 	node_1 [label="granny-cloudml1"];
 	node_2 [label="granny-war-i"];
 	node_2 -> node_0 [label="dbreli" ];
-	node_2 -> node_1 [label="run on" ];
+	node_2 -> node_1 [style="dashed" ];
 }
