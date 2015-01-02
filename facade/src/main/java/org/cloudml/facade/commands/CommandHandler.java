@@ -77,5 +77,7 @@ public interface CommandHandler {
     public void handle(Reset command);
     
     public void handle(ValidateCommand command);
+
+    public void handle(DebugMode command);
     
 }
