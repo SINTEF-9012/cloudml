@@ -454,7 +454,19 @@ class Facade implements CloudML, CommandHandler {
             reportNoDeploymentLoaded(command);
         }
     }
-    
+
+    public void handle(DebugMode command){
+        final Message success;
+        if(command.getDebug()) {
+            deployer.activeDebug();
+            success = new Message(command, Category.INFORMATION, "Debug mode activated.");
+        }else{
+            deployer.stopDebug();
+            success = new Message(command, Category.INFORMATION, "Debug mode stopped.");
+        }
+        dispatch(success);
+    }
+
     @Override
     public void handle(ListComponents command) {
         if (isDeploymentLoaded()) {
