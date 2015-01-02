@@ -51,6 +51,8 @@ import org.cloudml.mrt.SimpleModelRepo;
 public class CloudAppDeployer {
 
     private static final Logger journal = Logger.getLogger(CloudAppDeployer.class.getName());
+    private static boolean DEBUG=false;
+
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
@@ -58,7 +60,6 @@ public class CloudAppDeployer {
     private Coordinator coordinator;
     private boolean statusMonitorActive;
     private StatusMonitor statusMonitor; //always check if active
-    private static boolean DEBUG=false;
 
     public CloudAppDeployer() {
         System.setProperty("jsse.enableSNIExtension", "false");
@@ -1096,6 +1097,14 @@ public class CloudAppDeployer {
     public void scaleOut(VMInstance vmi,Provider provider){
         Scaler scaler=new Scaler(currentModel,coordinator,this);
         scaler.scaleOut(vmi,provider);
+    }
+
+    public void activeDebug(){
+        DEBUG=true;
+    }
+
+    public void stopDebug(){
+        DEBUG=false;
     }
 
 }
