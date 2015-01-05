@@ -166,7 +166,10 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
         }
         return new ValidateCommand(REPORT_WARNINGS_AND_ERRORS);
     }
-    
-    
+
+    @Override
+    public CloudMlCommand visitDebugMode(ShellCommandsParser.DebugModeContext ctx) {
+        return new DebugMode(ctx.state.equals("true"));
+    }
 
 }
