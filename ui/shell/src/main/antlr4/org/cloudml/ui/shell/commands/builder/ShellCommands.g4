@@ -43,6 +43,12 @@ action
     |   'create image from'  ID                             # Image
     |   'reset deployment'                                  # Reset
     |   'validate' noWarnings='no warnings'?                # Validate
+    |   'debug mode' state=BOOL                             # DebugMode
+    ;
+
+BOOL
+    :   'true'
+    |   'false'
     ;
 
 kind
