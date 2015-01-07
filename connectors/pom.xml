@@ -2,6 +2,8 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <jclouds.version>1.7.3</jclouds.version>
+        <org.springframework.security.version>3.2.5.RELEASE</org.springframework.security.version>
+        <org.springframework.version>4.0.5.RELEASE</org.springframework.version>
     </properties>
     <artifactId>connectors</artifactId>
     <packaging>jar</packaging>
@@ -47,6 +49,13 @@
     </build>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.cloudfoundry</groupId>
+            <artifactId>cloudfoundry-client-lib</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
         <dependency>
             <groupId>com.cloudbees</groupId>
             <artifactId>cloudbees-api-client</artifactId>
@@ -137,7 +146,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>4.2</version>
+            <version>4.3</version>
         </dependency>
 
         <dependency>
@@ -147,17 +156,10 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>3.0.4.RELEASE</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-jxpath</groupId>
             <artifactId>commons-jxpath</artifactId>
             <version>1.3</version>
         </dependency>
-
 
         <dependency>
             <groupId>com.aragost.javahg</groupId>
@@ -187,6 +189,11 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
 
+        <repository>
+            <id>spring-milestone</id>
+            <name>Spring Maven MILESTONE Repository</name>
+            <url>http://maven.springframework.org/milestone</url>
+        </repository>
     </repositories>
 
 
