@@ -25,10 +25,7 @@ package org.cloudml.connectors;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.HttpProxyConfiguration;
-import org.cloudfoundry.client.lib.domain.CloudApplication;
-import org.cloudfoundry.client.lib.domain.CloudOrganization;
-import org.cloudfoundry.client.lib.domain.CloudSpace;
-import org.cloudfoundry.client.lib.domain.Staging;
+import org.cloudfoundry.client.lib.domain.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,19 +100,86 @@ public class CloudFoundryConnector implements PaaSConnector {
         }
     }
 
+    public void bindService(String appName, String serviceName){
+        if(checkIfApplicationExist(appName) && checkIfServiceExist(serviceName)){
+            connectedClient.bindService(appName, serviceName);
+        }
+    }
+
+    private Boolean checkIfServiceExist(String serviceName){
+        return connectedClient.getService(serviceName) != null;
+    }
+
+    private Boolean checkIfApplicationExist(String appName){
+        return connectedClient.getApplication(appName) != null;
+    }
+
+    private Boolean checkIfPlanExist(String planName, String serviceLabel){
+        for(CloudServicePlan csp : findCloudServiceOffering(serviceLabel).getCloudServicePlans()){
+            if(csp.getMeta().equals(serviceLabel))
+                return true;
+        }
+        return false;
+    }
+
+    private String findFreePlan(String serviceLabel){
+        for(CloudServicePlan csp : findCloudServiceOffering(serviceLabel).getCloudServicePlans()){
+            if(csp.isFree())
+                return csp.getName();
+        }
+        return "";
+    }
+
+    public void updateApplicationDisk(String appName, int size){
+        connectedClient.updateApplicationDiskQuota(appName, size);
+    }
+
+    public void updateApplicationMemory(String appName, int size){
+        connectedClient.updateApplicationMemory(appName, size);
+    }
+
+    public CloudServiceOffering findCloudServiceOffering(String label) {
+        List<CloudServiceOffering> serviceOfferings = connectedClient.getServiceOfferings();
+        for (CloudServiceOffering so : serviceOfferings) {
+            if (so.getLabel().equals(label)) {
+                return so;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password, Integer allocatedSize, String dbInstanceClass, String securityGroup) {
+        if(checkIfServiceExist(dbInstanceIdentifier)){
+            journal.log(Level.INFO, ">> A DB with this name already exist! ");
+            return;
+        }
+        journal.log(Level.INFO, ">> Initializing DB ... ");
+        CloudService service = new CloudService(CloudEntity.Meta.defaultMeta(), dbInstanceIdentifier);
+        service.setLabel(engine);
+        if(!version.equals("") && checkIfPlanExist(version, engine))
+            service.setPlan(version);
+        else service.setPlan(findFreePlan(engine));
 
+        connectedClient.createService(service);
     }
 
     @Override
     public String getDBEndPoint(String dbInstanceId, int timeout) {
+
         return null;
     }
 
     @Override
     public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout) {
-
+        try {
+            journal.log(Level.INFO, ">> Uploading application ... ");
+            connectedClient.uploadApplication(applicationName,new File(warFile).getCanonicalPath());
+            journal.log(Level.INFO, ">> Starting application ... ");
+            connectedClient.startApplication(applicationName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
