@@ -24,17 +24,27 @@ package org.cloudml.connectors;
 
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.HttpProxyConfiguration;
 import org.cloudfoundry.client.lib.domain.CloudApplication;
+import org.cloudfoundry.client.lib.domain.CloudOrganization;
+import org.cloudfoundry.client.lib.domain.CloudSpace;
 import org.cloudfoundry.client.lib.domain.Staging;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
 /**
  * Created by ferrynico on 03/12/2014.
@@ -43,33 +53,51 @@ public class CloudFoundryConnector implements PaaSConnector {
 
     private CloudFoundryClient connectedClient;
     private static final int DEFAULT_MEMORY = 512; // MB
+    private static final Logger journal = Logger.getLogger(CloudFoundryConnector.class.getName());
+    private String defaultDomainName;
 
-    public CloudFoundryConnector(String APIEndPoint, String login, String passwd){
+    public CloudFoundryConnector(String APIEndPoint, String login, String passwd, String organization, String space){
         try {
-            URL cloudControllerUrl = new URL(APIEndPoint);
-            connectedClient = new CloudFoundryClient(new CloudCredentials(login, passwd),
-                    cloudControllerUrl);
+            URL cloudControllerUrl = URI.create(APIEndPoint).toURL();
+            journal.log(Level.INFO, ">> Connecting to CloudFoundry ...");
+            connectedClient = new CloudFoundryClient(new CloudCredentials(login,passwd),cloudControllerUrl,organization,space);
             connectedClient.login();
-
+            defaultDomainName = connectedClient.getDefaultDomain().getName();
         } catch (MalformedURLException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
     }
 
 
+    public void logOut(){
+        connectedClient.logout();
+    }
+
+    public CloudFoundryClient getConnectedClient(){
+        return connectedClient;
+    }
+
     private String computeAppUrl(String appName, String domainName) {
-        return appName + "." + domainName;
+        return appName + "." + (domainName.equals("")? defaultDomainName : domainName);
     }
 
     @Override
     public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+        journal.log(Level.INFO, ">> Creating application ... ");
         List<String> uris = new ArrayList<String>();
         uris.add(computeAppUrl(applicationName, domainName));
-        connectedClient.createApplication(applicationName, new Staging(""), DEFAULT_MEMORY, uris, null);
+        Staging staging = new Staging();
+        List<String> serviceNames = new ArrayList<String>();
+        connectedClient.createApplication(applicationName, staging, DEFAULT_MEMORY, uris, serviceNames);
         CloudApplication app = connectedClient.getApplication(applicationName);
+        journal.log(Level.INFO, ">> Application details: "+ app.getName() + ", URI: " + app.getUris().get(0)+ ", Memory: " +app.getMemory());
         try {
+            journal.log(Level.INFO, ">> Uploading application ... ");
             connectedClient.uploadApplication(applicationName,new File(warFile).getCanonicalPath());
+            journal.log(Level.INFO, ">> Starting application ... ");
+            connectedClient.startApplication(app.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
