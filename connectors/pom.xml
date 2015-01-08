@@ -57,6 +57,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.3</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.cloudbees</groupId>
             <artifactId>cloudbees-api-client</artifactId>
             <version>1.5.7</version>
@@ -141,12 +147,6 @@
             <groupId>org.cloudml.utils</groupId>
             <artifactId>org.cloud.utils.governance</artifactId>
             <version>1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.3</version>
         </dependency>
 
         <dependency>

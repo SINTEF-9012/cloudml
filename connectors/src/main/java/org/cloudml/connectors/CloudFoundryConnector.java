@@ -77,7 +77,7 @@ public class CloudFoundryConnector implements PaaSConnector {
     }
 
     private String computeAppUrl(String appName, String domainName) {
-        return appName + "." + (domainName.equals("")? defaultDomainName : domainName);
+        return appName + "." + ((domainName.equals("") || domainName.equals(appName))? defaultDomainName : domainName);
     }
 
     @Override
