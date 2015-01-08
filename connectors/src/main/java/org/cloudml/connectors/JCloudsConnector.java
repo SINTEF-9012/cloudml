@@ -70,38 +70,38 @@ import org.jclouds.ec2.features.*;
  */
 public class JCloudsConnector implements Connector{
 
-	private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
+    private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
 
-	private ComputeService compute;
-	private String provider;
-	private ComputeServiceContext computeContext;
+    private ComputeService compute;
+    private String provider;
+    private ComputeServiceContext computeContext;
     private EC2Api ec2api;
     private HashMap<String,String> runtimeInformation;
 
-	public JCloudsConnector(String provider,String login,String secretKey){
-		journal.log(Level.INFO, ">> Connecting to "+provider+" ...");
-		Properties overrides = new Properties();
-		if(provider.equals("aws-ec2")){
-			// choose only amazon images that are ebs-backed
-			//overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_OWNERS,"107378836295");
-			overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
-					"owner-id=137112412989,107378836295,099720109477;state=available;image-type=machine;root-device-type=ebs");
-		}
-		overrides.setProperty(PROPERTY_CONNECTION_TIMEOUT, 0 + "");
-		overrides.setProperty(PROPERTY_SO_TIMEOUT, 0 + "");
-		overrides.setProperty(PROPERTY_REQUEST_TIMEOUT, 0 + "");
-		overrides.setProperty(PROPERTY_RETRY_DELAY_START, 0 + "");
-		Iterable<Module> modules = ImmutableSet.<Module> of(
-				new SshjSshClientModule(),
-				new NullLoggingModule());
-		ContextBuilder builder = ContextBuilder.newBuilder(provider).credentials(login, secretKey).modules(modules).overrides(overrides);
-		journal.log(Level.INFO, ">> Authenticating ...");
-		computeContext=builder.buildView(ComputeServiceContext.class);
+    public JCloudsConnector(String provider,String login,String secretKey){
+        journal.log(Level.INFO, ">> Connecting to "+provider+" ...");
+        Properties overrides = new Properties();
+        if(provider.equals("aws-ec2")){
+            // choose only amazon images that are ebs-backed
+            //overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_OWNERS,"107378836295");
+            overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_AMI_QUERY,
+                    "owner-id=137112412989,107378836295,099720109477;state=available;image-type=machine;root-device-type=ebs");
+        }
+        overrides.setProperty(PROPERTY_CONNECTION_TIMEOUT, 0 + "");
+        overrides.setProperty(PROPERTY_SO_TIMEOUT, 0 + "");
+        overrides.setProperty(PROPERTY_REQUEST_TIMEOUT, 0 + "");
+        overrides.setProperty(PROPERTY_RETRY_DELAY_START, 0 + "");
+        Iterable<Module> modules = ImmutableSet.<Module> of(
+                new SshjSshClientModule(),
+                new NullLoggingModule());
+        ContextBuilder builder = ContextBuilder.newBuilder(provider).credentials(login, secretKey).modules(modules).overrides(overrides);
+        journal.log(Level.INFO, ">> Authenticating ...");
+        computeContext=builder.buildView(ComputeServiceContext.class);
         ec2api=builder.buildApi(EC2Api.class);
-		//loadBalancerCtx=builder.buildView(LoadBalancerServiceContext.class);
-		compute=computeContext.getComputeService();
-		this.provider = provider;
-	}
+        //loadBalancerCtx=builder.buildView(LoadBalancerServiceContext.class);
+        compute=computeContext.getComputeService();
+        this.provider = provider;
+    }
 
     /**
      * Retrieve information about a VM
@@ -133,34 +133,34 @@ public class JCloudsConnector implements Connector{
         return compute.getNodeMetadata(id);
     }
 
-	/**
-	 * Close the connection
-	 */
-	public void closeConnection(){
-		compute.getContext().close();
-		journal.log(Level.INFO, ">> Closing connection ...");
-	}
+    /**
+     * Close the connection
+     */
+    public void closeConnection(){
+        compute.getContext().close();
+        journal.log(Level.INFO, ">> Closing connection ...");
+    }
 
-	/**
-	 * Prepare the credential builder
-	 * @param login
-	 * @param key
-	 * @return
-	 */
-	private org.jclouds.domain.LoginCredentials.Builder initCredentials(String login, String key){
-		String contentKey;
-		org.jclouds.domain.LoginCredentials.Builder b= LoginCredentials.builder();
-		try {
-			contentKey = FileUtils.readFileToString(new File(key));
-			b.user(login);
-			b.noPassword();
-			b.privateKey(contentKey);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return b;
-	}
+    /**
+     * Prepare the credential builder
+     * @param login
+     * @param key
+     * @return
+     */
+    private org.jclouds.domain.LoginCredentials.Builder initCredentials(String login, String key){
+        String contentKey;
+        org.jclouds.domain.LoginCredentials.Builder b= LoginCredentials.builder();
+        try {
+            contentKey = FileUtils.readFileToString(new File(key));
+            b.user(login);
+            b.noPassword();
+            b.privateKey(contentKey);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return b;
+    }
 
     /**
      * Upload a file on a selected VM
@@ -272,10 +272,14 @@ public class JCloudsConnector implements Connector{
 
             journal.log(Level.INFO, ">> Provisioning a vm ...");
 
-            if (vm.getMinRam() > 0)
-                templateBuilder.minRam(vm.getMinRam());
-            if (vm.getMinCores() > 0)
-                templateBuilder.minCores(vm.getMinCores());
+            if(vm.getProviderSpecificTypeName().equals("")){
+                if (vm.getMinRam() > 0)
+                    templateBuilder.minRam(vm.getMinRam());
+                if (vm.getMinCores() > 0)
+                    templateBuilder.minCores(vm.getMinCores());
+            }else{
+                templateBuilder.hardwareId(vm.getProviderSpecificTypeName());
+            }
             if (!vm.getLocation().equals(""))
                 templateBuilder.locationId(vm.getLocation());
             if (!vm.getOs().equals(""))
@@ -381,28 +385,28 @@ public class JCloudsConnector implements Connector{
         return id;
     }
 
-	/**
-	 * Find Hardware from a provider on the basis of the disk space
-	 * @param minDisk minimum disk space available
-	 * @return
-	 */
-	public Hardware findHardwareByDisk(int minDisk) {
-		Set<? extends Hardware> listHardware=compute.listHardwareProfiles();
-		Hardware min=null;
-		int minSum=2000; // baaah
-		for (Hardware h : listHardware) {
-			List<? extends Volume> listVolumes=h.getVolumes();
-			int sum=0;
-			for (Volume volume : listVolumes) {
-				sum+=volume.getSize().intValue();
-			}
-			if(sum >= minDisk && minSum > sum){
-				minSum=sum;
-				min=h;
-			}
-		}
-		return min;
-	}
+    /**
+     * Find Hardware from a provider on the basis of the disk space
+     * @param minDisk minimum disk space available
+     * @return
+     */
+    public Hardware findHardwareByDisk(int minDisk) {
+        Set<? extends Hardware> listHardware=compute.listHardwareProfiles();
+        Hardware min=null;
+        int minSum=2000; // baaah
+        for (Hardware h : listHardware) {
+            List<? extends Volume> listVolumes=h.getVolumes();
+            int sum=0;
+            for (Volume volume : listVolumes) {
+                sum+=volume.getSize().intValue();
+            }
+            if(sum >= minDisk && minSum > sum){
+                minSum=sum;
+                min=h;
+            }
+        }
+        return min;
+    }
 
 	/*public void createLoadBalancer(String location, String group, String protocol, int loadBalancerPort, int instancePort, List<NodeMetadata> nodes){
 		LocationBuilder lBuilder= new LocationBuilder();

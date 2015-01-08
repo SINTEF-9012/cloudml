@@ -97,6 +97,7 @@ public class VM extends ExternalComponent implements Visitable, CanBeValidated {
     private String privateKey = "";
     private Boolean is64os;
     private String imageId;
+    private String providerSpecificTypeName;
 
     /*
      * getters
@@ -157,6 +158,10 @@ public class VM extends ExternalComponent implements Visitable, CanBeValidated {
         return imageId;
     }
 
+    public String getProviderSpecificTypeName(){
+        return providerSpecificTypeName;
+    }
+
     /*
      * Setters
      */
@@ -214,6 +219,10 @@ public class VM extends ExternalComponent implements Visitable, CanBeValidated {
 
     public void setImageId(String id) {
         imageId = id;
+    }
+
+    public void setProviderSpecificTypeName(String providerSpecificTypeName){
+        this.providerSpecificTypeName = providerSpecificTypeName;
     }
 
     @Override

@@ -138,7 +138,7 @@ public class BridgeToCloudML {
         vm.setRegion(kVM.getRegion());
         vm.setLogin(kVM.getLogin());
         vm.setPasswd(kVM.getPasswd());
-
+        vm.setProviderSpecificTypeName(kVM.getProviderSpecificTypeName());
 
         initProvidedExecutionPlatforms(kVM, vm);
         vms.put(vm.getName(), vm);

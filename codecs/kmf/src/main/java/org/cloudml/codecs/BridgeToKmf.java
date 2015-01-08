@@ -206,6 +206,8 @@ public class BridgeToKmf {
                     kNode.setLogin(ec.getLogin());
                 if(ec.getPasswd() != null)
                     kNode.setPasswd(ec.getPasswd());
+                if(((VM) ec).getProviderSpecificTypeName() != null)
+                    kNode.setProviderSpecificTypeName(((VM) ec).getProviderSpecificTypeName());
 
                 vms.put(kNode.getName(), kNode);
                 initProvidedExecutionPlatforms(ec, kNode);
