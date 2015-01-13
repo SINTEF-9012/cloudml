@@ -105,6 +105,7 @@
                     <archive>
                         <manifestEntries>
                             <Class-Path>aws-ec2-1.7.3.jar</Class-Path>
+                            <Class-Path>openstack-nova-1.7.3.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                     <descriptors>
