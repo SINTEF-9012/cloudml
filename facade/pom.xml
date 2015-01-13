@@ -97,21 +97,21 @@
 
     </dependencies>
     <build>
-        <!--<plugins>
-        <plugin>
+        <plugins>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.5.3</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
                             <Class-Path>aws-ec2-1.7.3.jar</Class-Path>
                         </manifestEntries>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <finalName>cloudml-library</finalName>
-                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/assembly/standalone-jar.xml</descriptor>
+                        <descriptor>src/assembly/dist-as-zip.xml</descriptor>
+                    </descriptors>
+                    <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -123,35 +123,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.apache.jclouds.provider</groupId>
-                                    <artifactId>aws-ec2</artifactId>
-                                    <version>1.7.3</version>
-                                    <overWrite>false</overWrite>
-                                    <destFileName>aws-ec2-1.7.3.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins> -->
+        </plugins>
     </build>
 
 </project>
