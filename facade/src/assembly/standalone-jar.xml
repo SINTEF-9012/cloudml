@@ -10,12 +10,10 @@
     <dependencySets>
         <dependencySet>
             <excludes>
-                <exclude>org.apache.jclouds.provider:aws-ec2</exclude>
+                <exclude>org.apache.jclouds.provider:aws-ec2:jar:1.7.3</exclude>
             </excludes>
             <outputDirectory>/</outputDirectory>
-            <useProjectArtifact>true</useProjectArtifact>
             <unpack>true</unpack>
-            <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
 </assembly>
