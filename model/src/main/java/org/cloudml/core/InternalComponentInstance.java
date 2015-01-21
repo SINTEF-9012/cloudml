@@ -159,7 +159,13 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
 
     @Override
     public String toString() {
-        return "Instance " + getName() + " : " + getType().getName() +" id:"+this.hashCode();
+        StringBuilder builder = new StringBuilder();
+        builder.append("Instance " + getName() + " : " + getType().getName() +" id:"+this.hashCode());
+        for(PortInstance p : this.getProvidedPorts())
+            builder.append("-Provided port:"+p.getName());
+        for(PortInstance p : this.getRequiredPorts())
+            builder.append("-Required port:"+p.getName());
+        return builder.toString();
     }
 
     @Override

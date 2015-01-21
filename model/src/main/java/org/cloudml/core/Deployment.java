@@ -168,7 +168,7 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
         builder.append("}\n");
         builder.append("- Component instances: {\n");
         for (ComponentInstance i : componentInstances) {
-            builder.append("  - " + i + "\n");
+            builder.append("  - " + i.toString() + "\n");
         }
         builder.append("}\n");
         builder.append("- Relationship instances: {\n");

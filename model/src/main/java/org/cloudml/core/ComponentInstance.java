@@ -227,7 +227,11 @@ public abstract class ComponentInstance<T extends Component> extends WithResourc
 
     @Override
     public String toString() {
-        return "Instance " + getName() + " : " + getType().getName();
+        StringBuilder builder = new StringBuilder();
+        builder.append("Instance " + getName() + " : " + getType().getName());
+        for(PortInstance p : this.getProvidedPorts())
+            builder.append("-Provided port:"+p.getName());
+        return builder.toString();
     }
 
     @Override

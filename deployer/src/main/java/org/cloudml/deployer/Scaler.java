@@ -22,6 +22,8 @@
  */
 package org.cloudml.deployer;
 
+import com.amazonaws.util.StringInputStream;
+import org.cloudml.codecs.JsonCodec;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
 import org.cloudml.core.*;
@@ -30,6 +32,10 @@ import org.cloudml.core.collections.ProvidedExecutionPlatformGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
 import org.cloudml.mrt.Coordinator;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,10 +95,10 @@ public class Scaler {
         return v;
     }
 
-    private Map<InternalComponentInstance, InternalComponentInstance> duplicateHostedGraph(VMInstance vmiSource,VMInstance vmiDestination){
+    private Map<InternalComponentInstance, InternalComponentInstance> duplicateHostedGraph(Deployment d, VMInstance vmiSource,VMInstance vmiDestination){
         //InternalComponentInstanceGroup icig= currentModel.getComponentInstances().onlyInternals().hostedOn(vmiSource);
         StandardLibrary lib=new StandardLibrary();
-        return lib.replicateSubGraph(currentModel, vmiSource, vmiDestination);
+        return lib.replicateSubGraph(d, vmiSource, vmiDestination);
     }
 
     private void manageDuplicatedRelationships(RelationshipInstanceGroup rig, Set<ComponentInstance> listOfAllComponentImpacted){
@@ -168,7 +174,7 @@ public class Scaler {
         VM v=createNewInstanceOfVMFromImage(vmi);
 
         //2. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
-        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
+        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(currentModel,vmi, ci);
 
         //3. For synchronization purpose with provision once the model has been fully updated
         String ID=c.createImage(vmi);
@@ -208,7 +214,19 @@ public class Scaler {
         StandardLibrary lib = new StandardLibrary();
 
         //need to clone the model
-        Deployment targetModel=currentModel.clone();
+        //Deployment targetModel=currentModel.clone();
+        JsonCodec jsonCodec=new JsonCodec();
+        ByteArrayOutputStream baos=new ByteArrayOutputStream();
+        jsonCodec.save(currentModel,baos);
+
+        Deployment targetModel=new Deployment();
+        try {
+            String aString = new String(baos.toByteArray(),"UTF-8");
+            InputStream is = new StringInputStream(aString);
+            targetModel = (Deployment) jsonCodec.load(is);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
         VM existingVM=vmi.asExternal().asVM().getType();
         VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-scaled");
@@ -241,9 +259,10 @@ public class Scaler {
             targetModel.getComponents().add(v);
         }
 
+        ci=lib.provision(targetModel,v).asExternal().asVM();
 
         //2. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
-        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(vmi, ci);
+        Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(targetModel,vmi, ci);
 
         dep.deploy(targetModel);
     }

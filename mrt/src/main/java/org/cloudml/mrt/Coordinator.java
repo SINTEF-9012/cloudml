@@ -103,9 +103,7 @@ public class Coordinator {
             Thread.sleep(1500);
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
             if (res !=null) {
-                journal.log(Level.INFO, ">> ########################################################1");
                 if (!res.toString().equals(newState)) {
-                    journal.log(Level.INFO, ">> ########################################################2"+newState);
                     journal.log(Level.INFO, ">> Updating the model..");
                     wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
                     journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
