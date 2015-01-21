@@ -62,22 +62,22 @@ import org.jclouds.compute.domain.ComputeMetadata;
  * communicate with its clients using events.
  */
 class Facade implements CloudML, CommandHandler {
-    
+
     private final List<EventHandler> handlers = Collections.synchronizedList(new ArrayList<EventHandler>());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Deployment deploy;
     private boolean stopOnTimeout = false;
     private final CloudAppDeployer deployer;
     private CloudMLModelComparator diff = null;
-    
+
     private static final String JSON_STRING_PREFIX = "json-string:";
-    
+
     public Facade() {
         XmiCodec.init();
         JsonCodec.init();
         this.deployer = new CloudAppDeployer();
     }
-    
+
     @Override
     public void terminate() {
         executor.shutdown();
@@ -89,14 +89,14 @@ class Facade implements CloudML, CommandHandler {
             executor.shutdownNow();
         }
     }
-    
+
     @Override
     public Execution fireAndForget(CloudMlCommand command) {
         final Execution execution = new Execution(command, this);
         executor.submit(execution);
         return execution;
     }
-    
+
     @Override
     public Execution fireAndWait(CloudMlCommand command) {
         final Execution execution = new Execution(command, this);
@@ -106,17 +106,17 @@ class Facade implements CloudML, CommandHandler {
                 dispatch(new Message(command, Category.INFORMATION, "Will wait (max) for " + execution.getTimeout() + " ms..."));
                 done.get(execution.getTimeout(), TimeUnit.MILLISECONDS);
                 dispatch(new Message(command, Category.INFORMATION, "OK!"));
-                
+
             } else {
                 dispatch(new Message(command, Category.INFORMATION, "Will wait until completion"));
                 done.get();
             }
         } catch (InterruptedException ex) {
             Logger.getLogger(Facade.class.getName()).log(Level.SEVERE, null, ex);
-            
+
         } catch (ExecutionException ex) {
             Logger.getLogger(Facade.class.getName()).log(Level.SEVERE, null, ex);
-            
+
         } catch (TimeoutException ex) {
             //Logger.getLogger(Facade.class.getName()).log(Level.SEVERE, null, ex);
             if (stopOnTimeout) {
@@ -132,7 +132,7 @@ class Facade implements CloudML, CommandHandler {
         }
         return execution;
     }
-    
+
     @Override
     public void register(EventHandler handler) {
         this.handlers.add(handler);
@@ -159,7 +159,7 @@ class Facade implements CloudML, CommandHandler {
     public void createVM(VMInstance a) {
         Provider provider = a.getType().getProvider();
         JCloudsConnector jc = new JCloudsConnector(provider.getName(), provider.getCredentials().getLogin(),
-                                                   provider.getCredentials().getPassword());
+                provider.getCredentials().getPassword());
         jc.createInstance(a);
         jc.closeConnection();
     }
@@ -176,24 +176,24 @@ class Facade implements CloudML, CommandHandler {
         Provider provider = ownerVM.getProvider();
         final Credentials credentials = provider.getCredentials();
         JCloudsConnector jc = new JCloudsConnector(provider.getName(), credentials.getLogin(),
-                                                   credentials.getPassword());
+                credentials.getPassword());
         jc.execCommand(ownerVM.getGroupName(), command, user,
-                       ownerVM.getPrivateKey());
-        
+                ownerVM.getPrivateKey());
+
         jc.closeConnection();
     }
-    
+
     public ComputeMetadata findVMByName(String name, Provider p) {//TODO: use the connector factory
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(),
-                                                   p.getCredentials().getPassword());
+                p.getCredentials().getPassword());
         ComputeMetadata cm = jc.getVMByName(name);
         jc.closeConnection();
         return cm;
     }
-    
+
     public Set<? extends ComputeMetadata> listOfVMs(Provider p) {//TODO: use the connector factory
         JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(),
-                                                   p.getCredentials().getPassword());
+                p.getCredentials().getPassword());
         Set<? extends ComputeMetadata> list = jc.listOfVMs();
         jc.closeConnection();
         return list;
@@ -213,30 +213,30 @@ class Facade implements CloudML, CommandHandler {
         if (isDeploymentLoaded()) {
             robustness(command);
             robustnessWithSelfRepair(command);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
-            
+
         }
     }
-    
+
     private void robustnessWithSelfRepair(AnalyseRobustness command) {
         final Robustness robustness = Robustness.ofSelfRepairing(deploy, command.getToObserve(), command.getToControl());
         final String content = String.format("Robustness (with self-repair): %.2f percent", robustness.value());
         dispatch(new Message(command, Category.INFORMATION, content));
     }
-    
+
     private void robustness(AnalyseRobustness command) {
         final Robustness robustness = Robustness.of(deploy, command.getToObserve(), command.getToControl());
         final String content = String.format("Robustness: %.2f percent", robustness.value());
         dispatch(new Message(command, Category.INFORMATION, content));
     }
-    
+
     @Override
     public void handle(StartComponent command) {
         if (isDeploymentLoaded()) {
             reportCommandNotYetSupported(command);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
         }
@@ -262,47 +262,47 @@ class Facade implements CloudML, CommandHandler {
         final Message message = new Message(command, Category.ERROR, text);
         dispatch(message);
     }
-    
+
     @Override
     public void handle(StopComponent command) {
         if (isDeploymentLoaded()) {
             reportCommandNotYetSupported(command);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
         }
     }
-    
+
     @Override
     public void handle(Attach command) {
         if (isDeploymentLoaded()) {
             dispatch(new Message(command, Category.INFORMATION, "Relationship created!"));
-            
+
         } else {
             reportNoDeploymentLoaded(command);
         }
     }
-    
+
     @Override
     public void handle(Detach command) {
         reportCommandNotYetSupported(command);
     }
-    
+
     @Override
     public void handle(Install command) {
         reportCommandNotYetSupported(command);
     }
-    
+
     @Override
     public void handle(Uninstall command) {
         reportCommandNotYetSupported(command);
     }
-    
+
     @Override
     public void handle(Instantiate command) {
         reportCommandNotYetSupported(command);
     }
-    
+
     @Override
     public void handle(Destroy command) {
         if (isDeploymentLoaded()) {
@@ -317,13 +317,13 @@ class Facade implements CloudML, CommandHandler {
                 jc.destroyVM(instance.getId());
                 dispatch(new Message(command, Category.INFORMATION, "VM instance terminated"));
             }
-            
+
         } else {
             reportNoDeploymentLoaded(command);
-            
+
         }
     }
-    
+
     @Override
     public void handle(Upload command) {
         if (isDeploymentLoaded()) {
@@ -338,24 +338,24 @@ class Facade implements CloudML, CommandHandler {
                 JCloudsConnector jc = new JCloudsConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
                 ComputeMetadata c = jc.getVMByName(command.getArtifactId());
                 jc.uploadFile(command.getLocalPath(), command.getRemotePath(), c.getId(), "ubuntu",
-                              ((VM) ownerVM.getType()).getPrivateKey());
+                        ((VM) ownerVM.getType()).getPrivateKey());
             } else {
                 final String text = "There is no VM with this ID!";
                 final Message message = new Message(command, Category.ERROR, text);
                 dispatch(message);
             }
-            
+
         } else {
             reportNoDeploymentLoaded(command);
-            
+
         }
     }
-    
+
     private void saveMetadata(Deployment deploy2) {
         if (isDeploymentLoaded()) {
             diff = new CloudMLModelComparator(deploy, deploy2);
             diff.compareCloudMLModel();
-            
+
             deploy.getComponents().addAll(deploy2.getComponents());
             deploy.getRelationships().addAll(deploy2.getRelationships());
             deploy.getProviders().addAll(deploy2.getProviders());
@@ -364,17 +364,17 @@ class Facade implements CloudML, CommandHandler {
             deploy.getExecuteInstances().removeAll(diff.getRemovedExecutes());
             deploy.getComponentInstances().removeAll(diff.getRemovedECs());
             deploy.getComponentInstances().removeAll(diff.getRemovedComponents());
-            
+
             deploy.getRelationshipInstances().replaceAll(diff.getAddedRelationships());
             deploy.getComponentInstances().replaceAll(diff.getAddedECs());
             deploy.getExecuteInstances().replaceAll(diff.getAddedExecutes());
             deploy.getComponentInstances().replaceAll(diff.getAddedComponents());
-            
+
         } else {
             deploy = deploy2;
         }
     }
-    
+
     @Override
     public void handle(LoadDeployment command) {
         String path = command.getPathToModel();
@@ -384,7 +384,7 @@ class Facade implements CloudML, CommandHandler {
             dispatch(message);
             return;
         }
-        
+
         if (path.trim().startsWith(JSON_STRING_PREFIX)) {
             String content = path.trim().substring(JSON_STRING_PREFIX.length()).trim();
             InputStream instream = new ByteArrayInputStream(content.getBytes());
@@ -394,11 +394,11 @@ class Facade implements CloudML, CommandHandler {
             dispatch(message);
             return;
         }
-        
+
         final String extension = canHandle(command.getPathToModel());
-        
+
         if (extension != null) {
-            
+
             final File f = new File(command.getPathToModel());
             try {
                 deploy = (Deployment) new JsonCodec().load(new FileInputStream(f));
@@ -415,7 +415,7 @@ class Facade implements CloudML, CommandHandler {
             wrongFileFormat(command.getPathToModel(), command);
         }
     }
-    
+
     @Override
     public void handle(StoreDeployment command) {
         final String extension = canHandle(command.getDestination());
@@ -425,7 +425,7 @@ class Facade implements CloudML, CommandHandler {
                 getCodec(extension).save(deploy, new FileOutputStream(f));
                 final Message message = new Message(command, Category.INFORMATION, "Serialisation Complete.");
                 dispatch(message);
-                
+
             } catch (FileNotFoundException ex) {
                 final Message message = new Message(command, Category.ERROR, "Cannot save model to specified destination.");
                 dispatch(message);
@@ -437,7 +437,7 @@ class Facade implements CloudML, CommandHandler {
             wrongFileFormat(command.getDestination(), command);
         }
     }
-    
+
     @Override
     public void handle(Deploy command) {
         if (isDeploymentLoaded()) {
@@ -446,10 +446,10 @@ class Facade implements CloudML, CommandHandler {
             } else {
                 deployer.deploy(deploy);
             }
-            
+
             final Message success = new Message(command, Category.INFORMATION, "Deployment Complete.");
             dispatch(success);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
         }
@@ -468,30 +468,46 @@ class Facade implements CloudML, CommandHandler {
     }
 
     @Override
+    public void handle(Burst command){
+        dispatch(new Message(command, Category.INFORMATION, "Bursting out VM: " + command.getVmId()+" to "+ command.getProviderID()));
+        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        Provider p=deploy.getProviders().firstNamed(command.getProviderID());
+        if (vmi == null) {
+            dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
+        } else {
+            if(p == null){
+                dispatch(new Message(command, Category.ERROR, "Cannot find a Provider with this ID!"));
+            }else{
+                deployer.scaleOut(vmi,p);
+            }
+        }
+    }
+
+    @Override
     public void handle(ListComponents command) {
         if (isDeploymentLoaded()) {
             final ComponentList data = new ComponentList(command, deploy.getComponents());
             dispatch(data);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
-            
+
         }
     }
-    
+
     @Override
     public void handle(ListComponentInstances command) {
         if (isDeploymentLoaded()) {
             final Collection<ComponentInstance<? extends Component>> instances = deploy.getComponentInstances().toList();
             final ComponentInstanceList data = new ComponentInstanceList(command, instances);
             dispatch(data);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
-            
+
         }
     }
-    
+
     @Override
     public void handle(ViewComponent command) {
         if (isDeploymentLoaded()) {
@@ -500,18 +516,18 @@ class Facade implements CloudML, CommandHandler {
                 final String text = String.format("No artefact type with ID \"%s\"", command.getComponentId());
                 final Message message = new Message(command, Category.ERROR, text);
                 dispatch(message);
-                
+
             } else {
                 final ComponentData data = new ComponentData(command, type);
                 dispatch(data);
-                
+
             }
-            
+
         } else {
             reportNoDeploymentLoaded(command);
         }
     }
-    
+
     @Override
     public void handle(ViewComponentInstance command) {
         if (isDeploymentLoaded()) {
@@ -520,28 +536,28 @@ class Facade implements CloudML, CommandHandler {
                 final String text = String.format("No artefact instance with ID \"%s\"", command.getComponentId());
                 final Message message = new Message(command, Category.ERROR, text);
                 dispatch(message);
-                
+
             } else {
                 final ComponentInstanceData data = new ComponentInstanceData(command, instance);
                 dispatch(data);
-                
+
             }
-            
+
         } else {
             reportNoDeploymentLoaded(command);
         }
     }
-    
+
     @Override
     public void handle(LoadCredentials command) {
         reportCommandNotYetSupported(command);
     }
-    
+
     @Override
     public void handle(StoreCredentials command) {
         reportCommandNotYetSupported(command);
     }
-    
+
     @Override
     public void handle(ShotImage command) {
         if (isDeploymentLoaded()) {
@@ -550,12 +566,12 @@ class Facade implements CloudML, CommandHandler {
             ArrayList<Vertex> v = g.drawFromDeploymentModel();
             File f = new File(command.getPathToSnapshot());
             g.writeServerJPEGImage(f);
-        
+
         } else {
             reportNoDeploymentLoaded(command);
         }
     }
-    
+
     @Override
     public void handle(Snapshot command) {
         if (isDeploymentLoaded()) {
@@ -563,13 +579,13 @@ class Facade implements CloudML, CommandHandler {
             VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
             Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
             c.createSnapshot(vmi);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
-            
+
         }
     }
-    
+
     @Override
     public void handle(Image command) {
         if (isDeploymentLoaded()) {
@@ -577,54 +593,54 @@ class Facade implements CloudML, CommandHandler {
             VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
             Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
             c.createImage(vmi);
-            
+
         } else {
             reportNoDeploymentLoaded(command);
-        
+
         }
     }
-        
-    
+
+
     @Override
     public void handle(Reset command) {
         dispatch(new Message(command, Category.INFORMATION, "The deployment engine has been reset ..."));
         this.deploy = null;
         this.deployer.setCurrentModel(null);
     }
-    
+
     @Override
     public void handle(ValidateCommand command) {
         assert command != null: "Unable to handle a 'null' validate command!";
-        
-        if (isDeploymentLoaded()) {
-            
-            final Report validation = new DeploymentValidator().validate(deploy);
-                for (org.cloudml.core.validation.Message eachError: validation.getErrors()) {
-                    final Message error = new Message(command, Category.ERROR, eachError.toString());
-                    dispatch(error);
-                }
 
-                if (command.mustReportWarnings()) {
-                    for (org.cloudml.core.validation.Message eachWarning: validation.getWarnings()) {
-                        final Message warning = new Message(command, Category.WARNING, eachWarning.toString());
-                        dispatch(warning);
-                    }
+        if (isDeploymentLoaded()) {
+
+            final Report validation = new DeploymentValidator().validate(deploy);
+            for (org.cloudml.core.validation.Message eachError: validation.getErrors()) {
+                final Message error = new Message(command, Category.ERROR, eachError.toString());
+                dispatch(error);
+            }
+
+            if (command.mustReportWarnings()) {
+                for (org.cloudml.core.validation.Message eachWarning: validation.getWarnings()) {
+                    final Message warning = new Message(command, Category.WARNING, eachWarning.toString());
+                    dispatch(warning);
                 }
-                
-                final String  summaryText = 
-                        String.format("%d error(s) ; %d warning(s).", 
-                                      validation.getErrors().size(), 
-                                      validation.getWarnings().size());
-                
-                final Message summary = new Message(command, Category.INFORMATION, summaryText);
-                dispatch(summary);
-            
-            
+            }
+
+            final String  summaryText =
+                    String.format("%d error(s) ; %d warning(s).",
+                            validation.getErrors().size(),
+                            validation.getWarnings().size());
+
+            final Message summary = new Message(command, Category.INFORMATION, summaryText);
+            dispatch(summary);
+
+
         } else {
             reportNoDeploymentLoaded(command);
-            
+
         }
-        
+
     }
 
     /**
@@ -634,7 +650,7 @@ class Facade implements CloudML, CommandHandler {
     private boolean isDeploymentLoaded() {
         return deploy != null;
     }
-    
+
     @Override
     public void handle(ScaleOut command) {
         dispatch(new Message(command, Category.INFORMATION, "Scaling out VM: " + command.getVmId()));
@@ -692,5 +708,5 @@ class Facade implements CloudML, CommandHandler {
     private Codec getCodec(String extension) {
         return Codec.extensions.get(extension);
     }
-    
+
 }

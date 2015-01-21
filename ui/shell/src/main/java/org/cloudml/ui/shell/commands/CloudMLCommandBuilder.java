@@ -172,4 +172,9 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
         return new DebugMode(ctx.state.equals("true"));
     }
 
+    @Override
+    public CloudMlCommand visitBurst(ShellCommandsParser.BurstContext ctx) {
+        return new Burst(ctx.ID(0).getText(),ctx.ID(1).getText());
+    }
+
 }
