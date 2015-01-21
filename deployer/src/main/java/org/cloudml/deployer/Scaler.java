@@ -243,7 +243,7 @@ public class Scaler {
             v.setSecurityGroup(existingVM.getSecurityGroup());
             v.setSshKey(existingVM.getSshKey());
             v.setPrivateKey(existingVM.getPrivateKey());
-            v.setProvider(existingVM.getProvider());
+            v.setProvider(provider);
             ProvidedExecutionPlatformGroup pepg=new ProvidedExecutionPlatformGroup();
             for(ProvidedExecutionPlatform pep: existingVM.getProvidedExecutionPlatforms()){
                 ArrayList<Property> pg=new ArrayList<Property>();
