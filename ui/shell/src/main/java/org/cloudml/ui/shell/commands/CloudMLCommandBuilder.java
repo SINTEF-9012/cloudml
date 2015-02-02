@@ -169,7 +169,7 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitDebugMode(ShellCommandsParser.DebugModeContext ctx) {
-        return new DebugMode(ctx.state.equals("true"));
+        return new DebugMode(ctx.state.getText().equals("true"));
     }
 
     @Override
