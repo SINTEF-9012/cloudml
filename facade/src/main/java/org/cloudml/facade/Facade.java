@@ -63,6 +63,8 @@ import org.jclouds.compute.domain.ComputeMetadata;
  */
 class Facade implements CloudML, CommandHandler {
 
+    private static final Logger journal = Logger.getLogger(Facade.class.getName());
+
     private final List<EventHandler> handlers = Collections.synchronizedList(new ArrayList<EventHandler>());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Deployment deploy;
@@ -358,7 +360,6 @@ class Facade implements CloudML, CommandHandler {
 
             deploy.getComponents().addAll(deploy2.getComponents());
             deploy.getRelationships().addAll(deploy2.getRelationships());
-            deploy.getProviders().addAll(deploy2.getProviders());
 
             deploy.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
             deploy.getExecuteInstances().removeAll(diff.getRemovedExecutes());
