@@ -120,7 +120,7 @@ public class StatusMonitor {
                     modules.add(module);
                 }
             }
-            journal.log(Level.INFO, "Module attached: " + module.getType());
+            journal.log(Level.INFO, ">> Module attached: " + module.getType());
         }
     }
 

@@ -348,9 +348,9 @@ public class CloudAppDeployer {
         for (Resource r : x.getType().getResources()) {
             if (!r.getInstallCommand().equals("")) {
                 if (r.getRequireCredentials()) {
-                    jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + " " + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                    jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + " " + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
                 } else {
-                    executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x));
+                    executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x));
                 }
             }
         }
@@ -564,11 +564,13 @@ public class CloudAppDeployer {
                             executeUploadCommands(serverComponent.asInternal(),owner,jc);
                         }
                         for (Resource r : serverComponent.getType().getResources()) {
-                            executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
+                            executeRetrieveCommand(serverComponent.asInternal(),owner,jc);
+                            //executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
                             //jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
                         }
                         for (Resource r : serverComponent.getType().getResources()) {
-                            executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x));
+                            executeInstallCommand(serverComponent.asInternal(),owner,jc);
+                            //executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x));
                             //jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
                         }
 
