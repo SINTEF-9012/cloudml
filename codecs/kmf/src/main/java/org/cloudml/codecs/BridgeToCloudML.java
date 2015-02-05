@@ -249,7 +249,7 @@ public class BridgeToCloudML {
 
     public void convertAndAddRequiredPortsToPOJO(List<net.cloudml.core.RequiredPort> rps, InternalComponent ic) {
         for (net.cloudml.core.RequiredPort krp: rps) {
-            RequiredPort rp = new RequiredPort(krp.getName(), krp.getIsLocal(), krp.getIsMandatory());
+            RequiredPort rp = new RequiredPort(krp.getName(), krp.getIsLocal(), !krp.getIsMandatory());
             rp.getOwner().set(ic);
             convertProperties(krp, rp);
             rp.setPortNumber(krp.getPortNumber());

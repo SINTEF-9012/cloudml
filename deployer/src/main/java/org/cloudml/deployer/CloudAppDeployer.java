@@ -868,7 +868,12 @@ public class CloudAppDeployer {
         configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
     }
 
-    private void configureWithIP(Resource server, Resource client, PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
+    private void configureWithIP(Resource server, Resource client,
+                                 PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
+        if(DEBUG){
+            journal.log(Level.INFO, ">> Configure with IP ");
+            return;
+        }
         Connector jcServer;
         Connector jcClient;
         VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
@@ -927,6 +932,10 @@ public class CloudAppDeployer {
      * @throws MalformedURLException
      */
     private void configureWithIP(Resource r, PortInstance<? extends Port> i, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
+        if(DEBUG){
+            journal.log(Level.INFO, ">> Configure with IP ");
+            return;
+        }
         Connector jc;
         if (r != null) {
             VMInstance ownerVM = (VMInstance) getDestination(i.getOwner().get());//TODO:generalization for PaaS
