@@ -33,6 +33,8 @@ public class ConnectorFactory {
         try {
             if(p.getName().toLowerCase().equals("aws-ec2") || p.getName().toLowerCase().equals("ec2"))
                 return new JCloudsConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
+            if(p.getName().toLowerCase().equals("cloudsigma2-zrh"))
+                return new CloudSigmaConnector(p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
             if(p.getName().toLowerCase().equals("flexiant"))
                 return new FlexiantConnector(p.getProperties().valueOf("endPoint"), p.getCredentials().getLogin(), p.getCredentials().getPassword());
             if(p.getName().toLowerCase().equals("openstack-nova"))

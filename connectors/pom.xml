@@ -102,6 +102,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.jclouds.labs</groupId>
+            <artifactId>cloudsigma2-zrh</artifactId>
+            <version>${jclouds.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.jclouds.provider</groupId>
             <artifactId>aws-ec2</artifactId>
             <version>${jclouds.version}</version>
