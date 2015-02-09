@@ -23,14 +23,8 @@ package org.cloudml.monitoring.status;
  */
 
 
-import org.cloudml.connectors.Connector;
-import org.cloudml.connectors.FlexiantConnector;
-import org.cloudml.connectors.JCloudsConnector;
-import org.cloudml.connectors.OpenStackConnector;
-import org.cloudml.monitoring.status.modules.FlexiantModule;
-import org.cloudml.monitoring.status.modules.JCloudsModule;
-import org.cloudml.monitoring.status.modules.Module;
-import org.cloudml.monitoring.status.modules.OpenStackModule;
+import org.cloudml.connectors.*;
+import org.cloudml.monitoring.status.modules.*;
 import org.cloudml.mrt.Coordinator;
 
 import java.util.ArrayList;
@@ -103,6 +97,8 @@ public class StatusMonitor {
             module = new OpenStackModule((OpenStackConnector) connector, coord);
         } else if (connector instanceof JCloudsConnector) {
             module = new JCloudsModule((JCloudsConnector) connector, coord);
+        }else if (connector instanceof CloudSigmaConnector) {
+            module = new CloudSigmaModule((CloudSigmaConnector) connector, coord);
         } else {
             //TODO exception
             System.out.println("error");

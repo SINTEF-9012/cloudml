@@ -26,26 +26,19 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
-import net.flexiant.extility.ResourceType;
+import net.flexiant.extility.Firewall;
 import org.apache.commons.io.FileUtils;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
 import org.jclouds.ContextBuilder;
 import org.jclouds.cloudsigma2.domain.*;
-import org.jclouds.cloudsigma.domain.Server;
-import org.jclouds.cloudsigma.domain.ServerInfo;
-import org.jclouds.cloudsigma.util.Servers;
 import org.jclouds.cloudsigma2.CloudSigma2Api;
-import org.jclouds.collect.PagedIterable;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
-import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.domain.*;
 import org.jclouds.domain.LoginCredentials;
-import org.jclouds.io.Payloads;
 import org.jclouds.logging.config.NullLoggingModule;
-import org.jclouds.ssh.SshClient;
 import org.jclouds.sshj.config.SshjSshClientModule;
 
 import java.io.BufferedReader;
@@ -55,14 +48,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.jclouds.Constants.*;
-import static org.jclouds.compute.options.RunScriptOptions.Builder.overrideLoginCredentials;
-import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
 /**
  * Created by nicolasf on 02.02.15.
@@ -90,6 +78,10 @@ public class CloudSigmaConnector implements Connector {
         //compute=computeContext.getComputeService();
         this.provider = provider;
         cloudSigmaApi=builder.buildApi(CloudSigma2Api.class);
+    }
+
+    public FluentIterable<ServerInfo> listOfServers(){
+        return cloudSigmaApi.listServersInfo().concat();
     }
 
     @Override
@@ -169,22 +161,33 @@ public class CloudSigmaConnector implements Connector {
             }
         }
 
+        FirewallPolicy p = null;
+        for(FirewallPolicy fp :cloudSigmaApi.listFirewallPolicies().concat()){
+            if(fp.getName().toLowerCase().equals(vm.getSecurityGroup().toLowerCase())){
+                p=fp;
+            }
+        }
+
         ServerDrive drive=cloned.toServerDrive(1,"0:1", DeviceEmulationType.VIRTIO);
         NIC nic=new NIC.Builder()
+                .firewallPolicy(p)
                 .ipV4Configuration(new IPConfiguration(IPConfigurationType.DHCP, null))
                 .build();
 
 
-
         Map<String,String> m=new HashMap<String, String>();
-        m.put("ssh_public_key",readSshKey(vm.getPrivateKey()));
+        m.put("ssh_public_key",readSshKey(vm.getSshKey()));
+
+
+
 
         org.jclouds.cloudsigma2.domain.ServerInfo serverToCreate = new org.jclouds.cloudsigma2.domain.ServerInfo.Builder()
                 .name(a.getName())
-                .memory(BigInteger.valueOf(vm.getMaxRam() * 1000000))
+                .memory(BigInteger.valueOf(vm.getMinRam() * 1000000))
                 .vncPassword("cloudml")
-                .cpu(vm.getMaxCores())
+                .cpu(vm.getMinCores())
                 .nics(ImmutableList.of(nic))
+                .meta(m)
                 .drives(ImmutableList.of(drive))
                 .build();
 
@@ -198,8 +201,19 @@ public class CloudSigmaConnector implements Connector {
         for(IP ip: cloudSigmaApi.listIPs().concat()){
             if(ip.getServer().getUuid().equals(a.getId())){
                 runtimeInformation.put("publicAddress", ip.getUuid());
+
+                //wait for the VM to be accessible
+                SSHConnector sc=new SSHConnector(vm.getPrivateKey(), "ubuntu", ip.getUuid());
+                while(!sc.checkConnectivity()){
+                    try {
+                        Thread.sleep(15000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
+
 
         runtimeInformation.put("status", state.toString());
         return runtimeInformation;
@@ -212,7 +226,11 @@ public class CloudSigmaConnector implements Connector {
 
     @Override
     public void closeConnection() {
-        compute.getContext().close();
+        try {
+            cloudSigmaApi.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         journal.log(Level.INFO, ">> Closing connection ...");
     }
 

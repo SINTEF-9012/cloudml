@@ -104,7 +104,7 @@
         <dependency>
             <groupId>org.apache.jclouds.labs</groupId>
             <artifactId>cloudsigma2-zrh</artifactId>
-            <version>${jclouds.version}</version>
+            <version>1.8.1</version>
         </dependency>
 
         <dependency>

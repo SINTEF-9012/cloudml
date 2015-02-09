@@ -33,7 +33,7 @@ import org.cloudml.connectors.Connector;
 public interface Module {
 
     public enum Type {
-        FLEXIANT_MONITOR, JCLOUDS_MONITOR, OPENSTACK_MONITOR
+        FLEXIANT_MONITOR, JCLOUDS_MONITOR, OPENSTACK_MONITOR, CLOUDSIGMA_MONITOR
     }
 
 

@@ -51,11 +51,41 @@ public class SSHConnector {
     }
 
 
+    public Boolean checkConnectivity(){
+        JSch jsch = new JSch();
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+        Session session=null;
+        Channel channel=null;
+        try {
+            session = jsch.getSession(user, host, 22);
+            if(!keyPath.equals("")){
+                jsch.addIdentity(keyPath);
+            }else{
+                session.setPassword(passwd);
+            }
+
+            session.setConfig(config);
+            session.connect(0);
+            channel = session.openChannel("exec");
+            ChannelExec channelExec=((ChannelExec)channel);
+        } catch (JSchException e) {
+            return false;
+        } finally {
+            if(channel != null)
+                channel.disconnect();
+            if(session != null)
+                session.disconnect();
+        }
+        return true;
+    }
+
+
     /**
      * Execute a command through SSH on the host specified in the object instance
      * @param command
      */
-    public void execCommandSsh(String command){
+    public Boolean execCommandSsh(String command){
         journal.log(Level.INFO, ">> executing command...");
         journal.log(Level.INFO, ">> "+ command);
         JSch jsch = new JSch();
@@ -122,16 +152,19 @@ public class SSHConnector {
         } catch (JSchException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return false;
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             journal.log(Level.SEVERE,"File access error");
+            return false;
         }finally{
             if(channel != null)
                 channel.disconnect();
             if(session != null)
                 session.disconnect();
         }
+        return true;
     }
 
 
