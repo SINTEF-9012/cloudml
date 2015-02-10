@@ -788,11 +788,13 @@ public class CloudAppDeployer {
                     if (valet != null)
                         valet.config();
                     else if(res.hasProperty("db-binding-alias")){
+                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
                         try{
                             Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
                             PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
                             String alias = res.getProperties().valueOf("db-binding-alias");
                             connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
+                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
                         }catch(Exception ex){
                             ex.printStackTrace();
                             journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );

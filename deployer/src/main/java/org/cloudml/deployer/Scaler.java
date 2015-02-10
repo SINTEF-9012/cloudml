@@ -203,6 +203,31 @@ public class Scaler {
         journal.log(Level.INFO, ">> Scaling completed!");
     }
 
+    private List<VM> vmFromAProvider(Provider p){
+        ArrayList<VM> result=new ArrayList<VM>();
+        for(VM v : currentModel.getComponents().onlyVMs()){
+            if(v.getProvider().getName().equals(p.getName())){
+                result.add(v);
+            }
+        }
+        return result;
+    }
+
+    private VM findSimilarVMFromProvider(VM sampleVM, Provider p){
+        VM selected=null;
+        List<VM> availablesVM=vmFromAProvider(p);
+        if(availablesVM.size() > 0){
+            selected=availablesVM.get(0);
+            for(VM v: availablesVM){
+                if((v.getMinRam() >= sampleVM.getMinRam()) && (v.getMinRam() < selected.getMinRam())){
+                    selected=v;
+                }
+            }
+        }
+        return selected;
+    }
+
+
     /**
      * To scale our a VM on another provider (kind of bursting)
      *
@@ -228,7 +253,13 @@ public class Scaler {
             e.printStackTrace();
         }
 
-        VM existingVM=vmi.asExternal().asVM().getType();
+        VM existingVM=findSimilarVMFromProvider(vmi.asExternal().asVM().getType(), provider);
+        if(existingVM == null){
+            journal.log(Level.INFO, ">> No VM available for this provider!");
+            return;
+        }
+
+        //VM existingVM=vmi.asExternal().asVM().getType();
         VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-scaled");
         if(v == null){//in case a type for the snapshot has already been created
             String name=lib.createUniqueComponentInstanceName(targetModel,existingVM);
