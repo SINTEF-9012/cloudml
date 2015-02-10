@@ -47,6 +47,8 @@ public interface PaaSConnector{
     
     public void configAppParameters(String applicationName, Map<String,String> params);
 
+    public void bindDbToApp(String appId, String dbId, String alias);
+
 //Should be part of the interface at some point
 	//public void createApplication();
 	

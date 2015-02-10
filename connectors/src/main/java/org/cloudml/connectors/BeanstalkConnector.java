@@ -499,4 +499,9 @@ public class BeanstalkConnector implements PaaSConnector {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public void bindDbToApp(String appId, String dbId, String alias) {
+        return;
+    }
+
 }

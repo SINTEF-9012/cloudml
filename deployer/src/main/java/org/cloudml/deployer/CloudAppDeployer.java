@@ -790,7 +790,7 @@ public class CloudAppDeployer {
                     else if(res.hasProperty("db-binding-alias")){
                         try{
                             Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
-                            Cloud4soaConnector connector = (Cloud4soaConnector) ConnectorFactory.createPaaSConnector(p);
+                            PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
                             String alias = res.getProperties().valueOf("db-binding-alias");
                             connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
                         }catch(Exception ex){

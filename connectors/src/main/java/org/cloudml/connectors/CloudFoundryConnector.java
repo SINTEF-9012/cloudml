@@ -100,10 +100,18 @@ public class CloudFoundryConnector implements PaaSConnector {
         }
     }
 
+
+
+    @Override
+    public void bindDbToApp(String appId, String dbId, String alias) {
+        bindService(appId,dbId);
+    }
+
     public void bindService(String appName, String serviceName){
         if(checkIfApplicationExist(appName) && checkIfServiceExist(serviceName)){
             connectedClient.bindService(appName, serviceName);
         }
+        connectedClient.restartApplication(appName);
     }
 
     private Boolean checkIfServiceExist(String serviceName){
@@ -157,6 +165,8 @@ public class CloudFoundryConnector implements PaaSConnector {
         journal.log(Level.INFO, ">> Initializing DB ... ");
         CloudService service = new CloudService(CloudEntity.Meta.defaultMeta(), dbInstanceIdentifier);
         service.setLabel(engine);
+        if(version == null)
+            version = "";
         if(!version.equals("") && checkIfPlanExist(version, engine))
             service.setPlan(version);
         else service.setPlan(findFreePlan(engine));
@@ -206,4 +216,5 @@ public class CloudFoundryConnector implements PaaSConnector {
     public void configAppParameters(String applicationName, Map<String, String> params) {
 
     }
+
 }

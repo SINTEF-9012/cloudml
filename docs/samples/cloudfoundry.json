@@ -1,0 +1,158 @@
+{
+	"eClass" : "net.cloudml.core:CloudMLModel",
+	"name" : "cloudfoundry-deployment",
+	"providers" : [{
+			"eClass" : "net.cloudml.core:Provider",
+			"name" : "cloudfoundry",
+			"credentials" : "./credentialsCF",
+			"properties" : [{
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "org",
+					"value" : "mod4cloud"
+				}, {
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "space",
+					"value" : "development"
+				}, {
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "endPoint",
+					"value" : "http://api.run.pivotal.io"
+				}
+			]
+		}
+	],
+	"internalComponents" : [{
+			"eClass" : "net.cloudml.core:InternalComponent",
+			"name" : "simple-spring-app",
+			"properties" : [{
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "warfile",
+					"value" : "./spring-music.war"
+				}
+			],
+			"requiredPorts" : [{
+					"eClass" : "net.cloudml.core:RequiredPort",
+					"name" : "dbr",
+					"isLocal" : false,
+					"portNumber" : "0",
+					"isMandatory" : true,
+					"component" : "internalComponents[simple-spring-app]"
+				}
+			],
+			"requiredExecutionPlatform" : {
+				"eClass" : "net.cloudml.core:RequiredExecutionPlatform",
+				"name" : "tomcat",
+				"owner" : "internalComponents[simple-spring-app]"
+			}
+		}
+	],
+	"externalComponents" : [{
+			"eClass" : "net.cloudml.core:ExternalComponent",
+			"name" : "granny-cloudml",
+			"provider" : "providers[cloudfoundry]",
+			"providedExecutionPlatforms" : [{
+					"eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
+					"name" : "tomcatProvided",
+					"owner" : "externalComponents[granny-cloudml]"
+				}
+			]
+		}, {
+			"eClass" : "net.cloudml.core:ExternalComponent",
+			"name" : "cbdb",
+			"provider" : "providers[cloudfoundry]",
+			"serviceType" : "database",
+			"login" : "sa",
+			"passwd" : "",
+			"providedPorts" : [{
+					"eClass" : "net.cloudml.core:ProvidedPort",
+					"name" : "db",
+					"isLocal" : true,
+					"portNumber" : "0",
+					"component" : "externalComponents[cbdb]"
+				}
+			],
+			"properties" : [{
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "DB-Engine",
+					"value" : "cleardb"
+				}
+			]
+		}
+	],
+	"internalComponentInstances" : [{
+			"eClass" : "net.cloudml.core:InternalComponentInstance",
+			"name" : "simple-spring-app-i",
+			"type" : "internalComponents[simple-spring-app]",
+			"requiredPortInstances" : [{
+					"eClass" : "net.cloudml.core:RequiredPortInstance",
+					"name" : "dbr2104793932",
+					"type" : "internalComponents[simple-spring-app]/requiredPorts[dbr]"
+				}
+			],
+			"requiredExecutionPlatformInstance" : {
+				"eClass" : "net.cloudml.core:RequiredExecutionPlatformInstance",
+				"name" : "tomcat-644574951",
+				"owner" : "internalComponentInstances[simple-spring-app-i]",
+				"type" : "internalComponents[simple-spring-app]/requiredExecutionPlatform[tomcat]"
+			}
+		}
+	],
+	"externalComponentInstances" : [{
+			"eClass" : "net.cloudml.core:ExternalComponentInstance",
+			"name" : "simple-spring-app1",
+			"type" : "externalComponents[granny-cloudml]",
+			"providedExecutionPlatformInstances" : [{
+					"eClass" : "net.cloudml.core:ProvidedExecutionPlatformInstance",
+					"name" : "tomcatProvided-581404342",
+					"owner" : "externalComponentInstances[simple-spring-app1]",
+					"type" : "externalComponents[granny-cloudml]/providedExecutionPlatforms[tomcatProvided]"
+				}
+			]
+		}, {
+			"eClass" : "net.cloudml.core:ExternalComponentInstance",
+			"name" : "cbdb1",
+			"type" : "externalComponents[cbdb]",
+			"providedPortInstances" : [{
+					"eClass" : "net.cloudml.core:ProvidedPortInstance",
+					"name" : "db-858626628",
+					"type" : "externalComponents[cbdb]/providedPorts[db]"
+				}
+			]
+		}
+	],
+	"relationships" : [{
+			"eClass" : "net.cloudml.core:Relationship",
+			"name" : "dbrel",
+			"requiredPort" : "internalComponents[simple-spring-app]/requiredPorts[dbr]",
+			"providedPort" : "externalComponents[cbdb]/providedPorts[db]",
+			"resources" : [{
+					"eClass" : "net.cloudml.core:Resource",
+					"name" : "no name",
+					"requireCredentials" : false,
+					"executeLocally" : false,
+					"properties" : [{
+							"eClass" : "net.cloudml.core:Property",
+							"name" : "db-binding-alias",
+							"value" : "mydb"
+						}
+					]
+				}
+			]
+		}
+	],
+	"relationshipInstances" : [{
+			"eClass" : "net.cloudml.core:RelationshipInstance",
+			"name" : "dbreli",
+			"type" : "relationships[dbrel]",
+			"requiredPortInstance" : "internalComponentInstances[simple-spring-app-i]/requiredPortInstances[dbr2104793932]",
+			"providedPortInstance" : "externalComponentInstances[cbdb1]/providedPortInstances[db-858626628]"
+		}
+	],
+	"executesInstances" : [{
+			"eClass" : "net.cloudml.core:ExecuteInstance",
+			"name" : "runOn362504944",
+			"providedExecutionPlatformInstance" : "externalComponentInstances[simple-spring-app1]/providedExecutionPlatformInstances[tomcatProvided-581404342]",
+			"requiredExecutionPlatformInstance" : "internalComponentInstances[simple-spring-app-i]/requiredExecutionPlatformInstance[tomcat-644574951]"
+		}
+	]
+}
