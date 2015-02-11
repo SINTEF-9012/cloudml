@@ -65,13 +65,7 @@ public class PyHrapiConnector {
     
     private ObjectMapper mapper = new ObjectMapper();
 
-
-
-
-
-
-
-    
+  
     /**
      * Currently only "v1" is supported
      */
@@ -147,11 +141,11 @@ public class PyHrapiConnector {
         return mapper.readValue(s, Map.class);
     }
     
-    public List<String> listGateways() {
+    private List<String> _generalGetToList(String path, String resultLabel){
         try{
-            URI request = new URIBuilder(prefix+"/gateways").build();
+            URI request = new URIBuilder(path).build();
             Map result = invokeToMap(request, "GET", null);
-            return (List<String>)result.get("Gateways");
+            return (List<String>)result.get(resultLabel);
         }
         catch(Exception e){
             e.printStackTrace();
@@ -159,11 +153,11 @@ public class PyHrapiConnector {
         }
     }
     
-    public Map getGateway(String gateway){
+    private Map _generalGet(String path, String errorKey){
         try{
-            URI request = new URIBuilder(prefix+"/gateways/"+gateway).build();
+            URI request = new URIBuilder(path).build();
             Map result = invokeToMap(request, "GET", null);
-            if(result.containsKey(NO_SUCH_GATEWAY)){
+            if(result.containsKey(errorKey)){
                 return null;
             }
             return result;
@@ -174,19 +168,38 @@ public class PyHrapiConnector {
         }
     }
     
-    public String createGateway(Map gateway){
+    public String _generalAdd(String path, Map content, String resultKey){
         try{
-            String name = (String)gateway.get("gateway");
-            String body = mapper.writeValueAsString(gateway);
-            System.out.println(body);
-            Map result = invokeToMap(prefix + "/gateways/"+name, "PUT", body);
             
-            return (String)result.get(ADDED_GATEWAY);
+            String body = mapper.writeValueAsString(content);
+            System.out.println(body);
+            Map result = invokeToMap(path, "PUT", body);
+            System.out.println(result);
+            //return (String)result.get(resultKey);
+            return result.toString();
         }
         catch(Exception e){
             e.printStackTrace();
             return null;
         }
+    }
+    
+    public List<String> getGateways() {
+        return _generalGetToList(prefix+"/gateways", "Gateways");
+    }
+    
+    public Map getGateway(String gateway){
+        return _generalGet(prefix+"/gateways/"+gateway, NO_SUCH_GATEWAY);
+    }
+    
+    
+    
+    public String addGateway(Map gateway){
+        return _generalAdd(
+                prefix + "/gateways/"+gateway.get("gateway"),
+                gateway,
+                ADDED_GATEWAY
+        );
     }
     
     public String deleteGateway(String gateway){
@@ -200,15 +213,10 @@ public class PyHrapiConnector {
     }
     
     public List<String> getEndpoints(String gateway) {
-        try{
-            URI request = new URIBuilder(String.format("%s/gateways/%s/endpoints", prefix, gateway)).build();
-            Map result = invokeToMap(request, "GET", null);
-            return (List<String>) result.get("Endpoints");
-        }
-        catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
+        return _generalGetToList(
+                String.format("%s/gateways/%s/endpoints", prefix, gateway),
+                "Endpoints"
+        );
     }
     
     public String getEndpointAddress(String gateway, String endpoint){
@@ -261,4 +269,100 @@ public class PyHrapiConnector {
            return null;
         }
     }
+    
+    public List<String> getPools() {
+
+        try{
+            URI request = new URIBuilder(prefix+"/pools").build();
+            Map result = invokeToMap(request, "GET", null);
+            if("No pools present".equals(result.get("Pool Error")))
+                return Collections.EMPTY_LIST;
+            return (List<String>)result.get("Pools");
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String addPool(String pool, Map<String, Object> content) {
+        return _generalAdd(
+                    prefix+"/pools/"+pool,
+                    content,
+                    "Added pool"
+                );
+    }
+
+
+    public List<String> getTargets(String pool) {
+        try{
+            return _generalGetToList(
+                  prefix + "/pools/" + pool + "/targets",
+                  "Targets"
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public String deletePool(String pool){
+        try{
+            return invoke(prefix+"/pools/"+pool, "DELETE", null);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public Map getPoolTarget(String pool, String target){
+        return _generalGet(
+                String.format("%s/pools/%s/targets/%s", prefix, pool, target),
+                "No such target"
+        );
+    }
+    
+    public String addTarget(String pool, String target, Map content){
+        return _generalAdd(
+             String.format("%s/pools/%s/targets/%s", prefix, pool, target),
+             content,
+             "x"
+        );
+    }
+    
+    public String deleteTarget(String pool, String target){
+        try{
+            return invoke(prefix+"/pools/"+pool+"/targets/"+target, "DELETE", null);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public Map getPoolPolicy(String pool){
+        return _generalGet(
+                String.format("%s/pools/%s/policy", prefix, pool),
+                ""
+        );
+    }
+    
+    public String setPoolPolicy(String pool, Map content){
+        return _generalAdd(
+                String.format("%s/pools/%s/policy", prefix, pool),
+                content,
+                ""
+        );
+    }
+    
+    public boolean isTargetOnline(String pool, String target){
+        Map m = _generalGet(
+                String.format("%s/pools/%s/targets/%s/check", prefix, pool, target),
+                ""
+        );
+        return "Online".equals(m.get("Status"));
+    }
+
 }
