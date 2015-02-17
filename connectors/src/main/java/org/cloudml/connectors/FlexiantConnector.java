@@ -241,6 +241,12 @@ public class FlexiantConnector implements Connector{
         Server temp=(Server)findObjectResourceByID(id, ResourceType.SERVER);
         String ip=temp.getNics().get(0).getIpAddresses().get(0).getIpAddress();
         SSHConnector sc=new SSHConnector(keyPath, login, ip);
+        // Because we are using the research platform we need to wait a bit
+        try{
+            Thread.sleep(2000);
+        }catch(Exception ee){
+            ee.printStackTrace();
+        }
         sc.execCommandSsh(command);
     }
 

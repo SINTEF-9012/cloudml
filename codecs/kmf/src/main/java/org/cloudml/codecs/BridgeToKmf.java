@@ -65,6 +65,7 @@ public class BridgeToKmf {
 
     public net.cloudml.core.CloudMLModel toKMF(Deployment deploy) {
         kDeploy.setName(deploy.getName());
+        convertProperties(deploy,kDeploy,factory);
 
         providersToKmf(deploy.getProviders().toList());
 

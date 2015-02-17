@@ -67,6 +67,7 @@ public class BridgeToCloudML {
     private Deployment model = new Deployment();
 
     public BridgeToCloudML() {
+
     }
 
     //TODO: delete this method
@@ -76,6 +77,7 @@ public class BridgeToCloudML {
 
     public NamedElement toPOJO(net.cloudml.core.CloudMLModel kDeploy) {
         model.setName(kDeploy.getName() + " ");
+        convertProperties(kDeploy,model);
 
         providersToPOJO(kDeploy.getProviders());
         externalComponentsToPOJO(kDeploy.getExternalComponents());

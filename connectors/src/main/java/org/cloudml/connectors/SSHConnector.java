@@ -135,13 +135,6 @@ public class SSHConnector {
                     journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
                     break;
                 }
-
-                // Because we are using the research platform we need to wait a bit
-                try{
-                    Thread.sleep(1500);
-                }catch(Exception ee){
-                    ee.printStackTrace();
-                }
             }
             try{
                 Thread.sleep(22000);
