@@ -23,7 +23,10 @@
 package org.cloudml.deployer;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -159,7 +162,29 @@ public class CloudAppDeployer {
         if (statusMonitorActive) {
             statusMonitor.start();
         }
+
+        //MODAClouds specific code
+        if(targetModel.getProperties().get("sla_url") != null && targetModel.getProperties().get("agreement_id") != null){
+            startSLA(targetModel.getProperties().get("sla_url").getValue(),targetModel.getProperties().get("agreement_id").getValue());
+        }
     }
+
+    private void startSLA(String url, String agreementId){
+        URL slaUrl = null;
+        try {
+            slaUrl = new URL(url+"/modaclouds/"+agreementId);
+            HttpURLConnection httpCon = (HttpURLConnection) slaUrl.openConnection();
+            httpCon.setRequestMethod("PUT");
+            httpCon.connect();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void deploy(Deployment targetModel, CloudMLModelComparator diff){
         unlessNotNull("Cannot deploy null!", targetModel);
