@@ -165,17 +165,25 @@ public class CloudAppDeployer {
 
         //MODAClouds specific code
         if(targetModel.getProperties().get("sla_url") != null && targetModel.getProperties().get("agreement_id") != null){
-            startSLA(targetModel.getProperties().get("sla_url").getValue(),targetModel.getProperties().get("agreement_id").getValue());
+            Boolean status=startSLA(targetModel.getProperties().get("sla_url").getValue(),targetModel.getProperties().get("agreement_id").getValue());
+            if(status){
+                journal.log(Level.INFO, ">> SLA management started");
+            }else{
+                journal.log(Level.INFO, ">> SLA management not started");
+            }
         }
     }
 
-    private void startSLA(String url, String agreementId){
+    private Boolean startSLA(String url, String agreementId){
         URL slaUrl = null;
         try {
-            slaUrl = new URL(url+"/modaclouds/"+agreementId);
+            slaUrl = new URL(url+"/modaclouds/"+agreementId+"/start");
             HttpURLConnection httpCon = (HttpURLConnection) slaUrl.openConnection();
             httpCon.setRequestMethod("PUT");
             httpCon.connect();
+            if(httpCon.getResponseCode() == 202){
+                return true;
+            }
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (ProtocolException e) {
@@ -183,6 +191,7 @@ public class CloudAppDeployer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
 
