@@ -124,6 +124,10 @@ public class RelationshipInstance extends WithResources implements DeploymentEle
     public boolean isProvidedBy(ComponentInstance<? extends Component> candidateServer) {
         return getServerComponent().equals(candidateServer);
     }
+    
+    public boolean isRequiredBy(ComponentInstance<? extends Component> candidateClient) {
+    	return getClientComponent().equals(candidateClient);
+    }
 
     public boolean eitherEndIs(PortInstance<? extends Port> port) {
         return getProvidedEnd().equals(port) || getRequiredEnd().equals(port);
