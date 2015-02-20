@@ -49,4 +49,8 @@ public class Factory {
 	public CloudML getCloudML() {
 		return new Facade();
 	}
+
+    public CloudML getCloudML(String serverURI){
+        return new RemoteFacade(serverURI);
+    }
 }

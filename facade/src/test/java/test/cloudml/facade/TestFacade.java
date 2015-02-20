@@ -26,7 +26,11 @@ import junit.framework.TestCase;
 import org.cloudml.facade.*;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
+import org.cloudml.facade.util.WSClient;
 import org.junit.Test;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 
 /**
@@ -58,7 +62,13 @@ public class TestFacade extends TestCase implements EventHandler {
         final Execution execution = cloudml.fireAndWait(command);
         assertTrue(execution.isCompleted());
 
+    }
 
+    @Test
+    public void testRemoteFacade(){
+        //CloudML cloudml=Factory.getInstance().getCloudML("ws://127.0.0.1:9000");
+        //cloudml.fireAndWait(new LoadDeployment("C:\\Users\\nicolasf\\Desktop\\cloudml2.0\\flexiantStorm.json"));
+        //cloudml.fireAndWait(new Deploy());
     }
 
     /*@Test
