@@ -53,6 +53,8 @@ The available commands are available in the Java package `org.cloudml.facade.com
  view component            | Show the details of a given component type | yes | ViewComponent
  view component instance   | Show the details of a given component instance | Yes | ViewComponentInstance
  snapshot                  | Create a snapshot of a given VM | Yes | Snapshot
+ image                     | Create an image of a given VM | Yes | Image
+ scale                     | Scale a given VM (and replicate its hosted graph) | Yes | scale
  
 ## Events ##
 
