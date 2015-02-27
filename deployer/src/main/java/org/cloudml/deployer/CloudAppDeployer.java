@@ -180,6 +180,7 @@ public class CloudAppDeployer {
             slaUrl = new URL(url+"/modaclouds/"+agreementId+"/start");
             HttpURLConnection httpCon = (HttpURLConnection) slaUrl.openConnection();
             httpCon.setRequestMethod("PUT");
+            httpCon.setRequestProperty("Content-Type", "application/json");
             httpCon.connect();
             if(httpCon.getResponseCode() == 202){
                 return true;
