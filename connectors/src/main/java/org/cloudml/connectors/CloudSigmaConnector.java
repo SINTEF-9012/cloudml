@@ -74,8 +74,6 @@ public class CloudSigmaConnector implements Connector {
                 .credentials(login, secretKey)
                 .modules(modules);
         journal.log(Level.INFO, ">> Authenticating ...");
-        //computeContext=builder.buildView(ComputeServiceContext.class);
-        //compute=computeContext.getComputeService();
         this.provider = provider;
         cloudSigmaApi=builder.buildApi(CloudSigma2Api.class);
     }
@@ -120,7 +118,7 @@ public class CloudSigmaConnector implements Connector {
             }
             key = sb.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
         return key;
     }
@@ -148,7 +146,7 @@ public class CloudSigmaConnector implements Connector {
         try {//TODO: to be removed
             Thread.sleep(60000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
 
         FluentIterable<DriveInfo> concat = cloudSigmaApi.listDrivesInfo().concat();
@@ -208,7 +206,7 @@ public class CloudSigmaConnector implements Connector {
                     try {
                         Thread.sleep(15000);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        journal.log(Level.SEVERE, e.getMessage());
                     }
                 }
             }
@@ -229,7 +227,7 @@ public class CloudSigmaConnector implements Connector {
         try {
             cloudSigmaApi.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
         journal.log(Level.INFO, ">> Closing connection ...");
     }
@@ -264,8 +262,7 @@ public class CloudSigmaConnector implements Connector {
             b.noPassword();
             b.privateKey(contentKey);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
         return b;
     }

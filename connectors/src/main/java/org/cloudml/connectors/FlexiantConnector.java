@@ -115,7 +115,7 @@ public class FlexiantConnector implements Connector{
             return result.getList();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
             return null;
         }
     }
@@ -146,7 +146,7 @@ public class FlexiantConnector implements Connector{
             ListResult result = service.listResources(sf,lim, ResourceType.IMAGE);
             return result.getList();
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
             return null;
         }
     }
@@ -218,12 +218,12 @@ public class FlexiantConnector implements Connector{
             state = ComponentInstance.State.RUNNING;
         } catch (ExtilityException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
             //a.setStatusAsError();
             state = ComponentInstance.State.ERROR;
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
             //a.setStatusAsError();
             state = ComponentInstance.State.ERROR;
         }
@@ -245,7 +245,7 @@ public class FlexiantConnector implements Connector{
         try{
             Thread.sleep(2000);
         }catch(Exception ee){
-            ee.printStackTrace();
+            journal.log(Level.SEVERE, ee.getMessage());
         }
         sc.execCommandSsh(command);
     }
@@ -314,7 +314,7 @@ public class FlexiantConnector implements Connector{
             ListResult result = service.listResources(sf,lim, t);
             return result.getList().get(0);
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
             return null;
         }
     }
@@ -346,7 +346,7 @@ public class FlexiantConnector implements Connector{
             ListResult result = service.listResources(sf,lim, t);
             return result.getList().get(0);
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
             return null;
         }
     }
@@ -397,7 +397,7 @@ public class FlexiantConnector implements Connector{
             }
             return "";
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
             return "";
         }
     }
@@ -462,7 +462,7 @@ public class FlexiantConnector implements Connector{
             Job job3=service.changeServerStatus(temp.getResourceUUID(),ServerStatus.RUNNING,true,null,null);
             service.waitForJob(job3.getResourceUUID(), false);
         } catch (ExtilityException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
 
         journal.log(Level.INFO, ">> Image created with id: "+vmi.getName()+"-image");

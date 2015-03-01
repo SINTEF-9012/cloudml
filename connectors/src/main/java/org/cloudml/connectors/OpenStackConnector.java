@@ -149,7 +149,7 @@ public class OpenStackConnector implements Connector{
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    journal.log(Level.SEVERE, e.getMessage());
                 }
             }
             journal.log(Level.INFO, ">> Image created with ID: "+id);
@@ -195,8 +195,7 @@ public class OpenStackConnector implements Connector{
             b.noPassword();
             b.privateKey(contentKey);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
         return b;
     }
@@ -391,7 +390,7 @@ public class OpenStackConnector implements Connector{
                         " on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
 
             } catch (RunNodesException e) {
-                e.printStackTrace();
+                journal.log(Level.SEVERE, e.getMessage());
                 //a.setStatusAsError();
                 state = ComponentInstance.State.ERROR;
             }
