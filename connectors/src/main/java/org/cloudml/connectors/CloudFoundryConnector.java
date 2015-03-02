@@ -85,7 +85,12 @@ public class CloudFoundryConnector implements PaaSConnector {
         journal.log(Level.INFO, ">> Creating application ... ");
         List<String> uris = new ArrayList<String>();
         uris.add(computeAppUrl(applicationName, domainName));
-        Staging staging = new Staging();
+        Staging staging;
+        if(stackName != null && !stackName.equals("")){
+            staging=new Staging(null, stackName);
+        }else{
+            staging= new Staging();
+        }
         List<String> serviceNames = new ArrayList<String>();
         connectedClient.createApplication(applicationName, staging, DEFAULT_MEMORY, uris, serviceNames);
         CloudApplication app = connectedClient.getApplication(applicationName);

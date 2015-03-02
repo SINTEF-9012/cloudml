@@ -322,6 +322,10 @@ public class CloudAppDeployer {
                     stack = instance.getType().getProperties().valueOf("stack");
                 if(instance.hasProperty("stack"))
                     stack = instance.getProperties().valueOf("stack");
+                if(instance.getType().hasProperty("buildpack"))
+                    stack = instance.getType().getProperties().valueOf("buildpack");
+                if(instance.hasProperty("buildpack"))
+                    stack = instance.getProperties().valueOf("buildpack");
                 connector.createEnvironmentWithWar(
                         instance.getName(),
                         instance.getName(),
