@@ -355,20 +355,48 @@ public class JCloudsConnector implements Connector{
      */
     public String createImage(VMInstance vmi){
         AMIApi ami=ec2api.getAMIApi().get();
-        journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
-        String id=ami.createImageInRegion("eu-west-1",vmi.getName()+"-image",vmi.getId().split("/")[1]);//TODO: check the region
-        String status="";
-        while (!status.toLowerCase().equals("available")){
-            Image i=compute.getImage("eu-west-1/"+id);
-            status=i.getStatus().name();
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        String id="";
+        Image img = checkIfImageExist(vmi.getName()+"-image");
+        if(img == null){
+            journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
+            id=ami.createImageInRegion(vmi.getId().split("/")[0],vmi.getName()+"-image",vmi.getId().split("/")[1]);
+            String status="";
+            while (!status.toLowerCase().equals("available")){
+                Image i=compute.getImage("eu-west-1/"+id);
+                status=i.getStatus().name();
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+            journal.log(Level.INFO, ">> Image created with ID: "+id);
+        }else{
+            id=img.getId().split("/")[1];
         }
-        journal.log(Level.INFO, ">> Image created with ID: "+id);
         return "eu-west-1/"+id;
+    }
+
+
+    /**
+     * retrieve the list of images avaialbels
+     * @return the list of available images
+     */
+    public Set<? extends Image> listOfImages(){
+        return compute.listImages();
+    }
+
+    /**
+     * Search for an image with that name
+     * @param name name if the image
+     * @return an Image
+     */
+    public Image checkIfImageExist(String name){
+        for(Image i : listOfImages()){
+            if(i.getName().equals(name))
+                return i;
+        }
+        return null;
     }
 
     /**

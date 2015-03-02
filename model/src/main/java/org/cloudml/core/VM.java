@@ -97,7 +97,7 @@ public class VM extends ExternalComponent implements Visitable, CanBeValidated {
     private String privateKey = "";
     private Boolean is64os;
     private String imageId;
-    private String providerSpecificTypeName;
+    private String providerSpecificTypeName = "";
 
     /*
      * getters

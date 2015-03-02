@@ -28,9 +28,20 @@ package test.cloudml.connectors;
 
 
 import junit.framework.TestCase;
+import org.cloudfoundry.client.lib.CloudCredentials;
+import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.domain.*;
+import org.cloudml.connectors.CloudFoundryConnector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(JUnit4.class)
 public class TestMercurial extends TestCase {
@@ -39,6 +50,31 @@ public class TestMercurial extends TestCase {
     public void testApp(){
         //WindowsMercurialConnector mc=new WindowsMercurialConnector("ssh://cloudml@109.231.121.6//etc/puppet/manifests//cloudml-nodes");
         //mc.clone("C:\\Users\\nicolasf\\Desktop\\cloudml2.0\\nodes");
+
+
+        /*CloudFoundryConnector cfc=new CloudFoundryConnector("http://api.run.pivotal.io","mod4cloud@gmail.com","modus9012", "mod4cloud", "development");
+        System.out.printf("%nSpaces:%n");
+        for (CloudSpace space : cfc.getConnectedClient().getSpaces()) {
+            System.out.printf("  %s\t(%s)%n", space.getName(), space.getOrganization().getName());
+        }
+        cfc.createEnvironmentWithWar("moduscpowa","","","","C:\\Users\\nicolasf\\Dropbox\\spring-music.war","");
+
+        Map<String, String> env1 = new HashMap<String, String>();
+        env1.put("foo", "bar");
+        env1.put("bar", "baz");
+        cfc.getConnectedClient().updateApplicationEnv("moduscpowa", env1);
+
+        if(cfc.findCloudServiceOffering("p-mysql") != null){
+            for(CloudServicePlan csp : cfc.findCloudServiceOffering("p-mysql").getCloudServicePlans())
+                System.out.println(csp.getName()+ " :: " + csp.isFree());
+        } else {
+            System.out.printf("mmmmm");
+        }
+
+        cfc.createDBInstance("cleardb","","testDB","","","",0,"","");
+        cfc.bindService("moduscpowa","testDB");
+        cfc.logOut();*/
     }
+
 
 }
