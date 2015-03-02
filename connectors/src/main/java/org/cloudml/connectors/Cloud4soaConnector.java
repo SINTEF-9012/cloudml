@@ -271,7 +271,7 @@ public class Cloud4soaConnector implements PaaSConnector {
             BeesClient client = new BeesClient("https://api.cloudbees.com/api", provider.getCredentials().getLogin(), provider.getCredentials().getPassword(), "xml", "1.0");
             client.applicationRestart("mod4cloud/" + appId);
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
     }
 

@@ -186,11 +186,11 @@ public class CloudAppDeployer {
                 return true;
             }
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         } catch (ProtocolException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
         return false;
     }

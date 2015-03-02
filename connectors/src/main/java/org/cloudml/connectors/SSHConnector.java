@@ -70,6 +70,7 @@ public class SSHConnector {
             channel = session.openChannel("exec");
             ChannelExec channelExec=((ChannelExec)channel);
         } catch (JSchException e) {
+            journal.log(Level.SEVERE, e.getMessage());
             return false;
         } finally {
             if(channel != null)
@@ -139,17 +140,14 @@ public class SSHConnector {
             try{
                 Thread.sleep(22000);
             }catch(Exception ee){
-                ee.printStackTrace();
+                journal.log(Level.SEVERE, ee.getMessage());
             }
 
         } catch (JSchException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return false;
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            journal.log(Level.SEVERE,"File access error");
+            journal.log(Level.SEVERE,"File access error "+e.getMessage());
             return false;
         }finally{
             if(channel != null)
@@ -197,12 +195,9 @@ public class SSHConnector {
                 ee.printStackTrace();
             }
         } catch (JSchException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            journal.log(Level.SEVERE,"File access error");
+            journal.log(Level.SEVERE,"File access error "+e.getMessage());
         } catch (SftpException e) {
             e.printStackTrace();
         }

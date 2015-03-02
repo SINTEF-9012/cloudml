@@ -23,11 +23,14 @@
 package org.cloudml.connectors;
 
 import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.cloudml.core.Provider;
 
 public class ConnectorFactory {
 
+    private static final Logger journal = Logger.getLogger(ConnectorFactory.class.getName());
 
     public static Connector createIaaSConnector(Provider p){
         try {
@@ -40,7 +43,7 @@ public class ConnectorFactory {
             if(p.getName().toLowerCase().equals("openstack-nova"))
                 return new OpenStackConnector(p.getProperties().valueOf("endPoint"), p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
 
         throw new IllegalArgumentException("No such connector");

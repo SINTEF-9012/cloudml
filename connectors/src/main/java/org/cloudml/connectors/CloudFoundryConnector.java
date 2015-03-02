@@ -61,9 +61,9 @@ public class CloudFoundryConnector implements PaaSConnector {
             connectedClient.login();
             defaultDomainName = connectedClient.getDefaultDomain().getName();
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -96,7 +96,7 @@ public class CloudFoundryConnector implements PaaSConnector {
             journal.log(Level.INFO, ">> Starting application ... ");
             connectedClient.startApplication(app.getName());
         } catch (IOException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -188,7 +188,7 @@ public class CloudFoundryConnector implements PaaSConnector {
             journal.log(Level.INFO, ">> Starting application ... ");
             connectedClient.startApplication(applicationName);
         } catch (IOException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
     }
 

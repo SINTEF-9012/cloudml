@@ -238,7 +238,7 @@ public class BeanstalkConnector implements PaaSConnector {
                     .withSourceBundle(new S3Location(bucketName, key)));
         } catch (UnsupportedEncodingException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -471,9 +471,9 @@ public class BeanstalkConnector implements PaaSConnector {
                 System.out.println("restore failure");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
     }
 

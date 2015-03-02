@@ -156,8 +156,7 @@ public class JCloudsConnector implements Connector{
             b.noPassword();
             b.privateKey(contentKey);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            journal.log(Level.SEVERE, e.getMessage());
         }
         return b;
     }
@@ -310,7 +309,7 @@ public class JCloudsConnector implements Connector{
                         " on OS:"+nodeInstance.getOperatingSystem()+ " " + nodeInstance.getCredentials().identity+":"+nodeInstance.getCredentials().getUser()+":"+nodeInstance.getCredentials().getPrivateKey());
 
             } catch (RunNodesException e) {
-                e.printStackTrace();
+                journal.log(Level.SEVERE, e.getMessage());
                 //a.setStatusAsError();
                 state = ComponentInstance.State.ERROR;
 
@@ -355,6 +354,7 @@ public class JCloudsConnector implements Connector{
      */
     public String createImage(VMInstance vmi){
         AMIApi ami=ec2api.getAMIApi().get();
+<<<<<<< HEAD
         String id="";
         Image img = checkIfImageExist(vmi.getName()+"-image");
         if(img == null){
@@ -369,6 +369,18 @@ public class JCloudsConnector implements Connector{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+=======
+        journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
+        String id=ami.createImageInRegion("eu-west-1",vmi.getName()+"-image",vmi.getId().split("/")[1]);//TODO: check the region
+        String status="";
+        while (!status.toLowerCase().equals("available")){
+            Image i=compute.getImage("eu-west-1/"+id);
+            status=i.getStatus().name();
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                journal.log(Level.SEVERE, e.getMessage());
+>>>>>>> e33ee5248b272f363cdb39dd359b024c65ff7096
             }
             journal.log(Level.INFO, ">> Image created with ID: "+id);
         }else{
