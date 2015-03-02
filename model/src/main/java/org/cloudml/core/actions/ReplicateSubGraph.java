@@ -95,7 +95,6 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
             RelationshipInstance relationship=null;
             if(mapping.containsKey(ri.getClientComponent())){
                 if(mapping.containsKey(ri.getServerComponent())){ //TODO: move this in a method
-                    journal.log(Level.INFO,"11&11");
                     rib.put(name,aRelationshipInstance()
                             .named(name)
                             .from(mapping.get(ri.getClientComponent()).getName(),
@@ -104,7 +103,6 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
                                     mapping.get(ri.getServerComponent()).getProvidedPorts().ofType(ri.getProvidedEnd().getType()).getType().getName())
                             .ofType(ri.getType().getName()));
                 }else{
-                    journal.log(Level.INFO,"2222222");
                     rib.put(name, aRelationshipInstance()
                             .named(name)
                             .from(mapping.get(ri.getClientComponent()).getName(),
@@ -114,7 +112,6 @@ public class ReplicateSubGraph extends AbstractAction<Map<InternalComponentInsta
                             .ofType(ri.getType().getName()));
                 }
             }else if(mapping.containsKey(ri.getServerComponent())){
-                journal.log(Level.INFO,"33333");
                 rib.put(name, aRelationshipInstance()
                         .named(name)
                         .from(ri.getClientComponent().getName(),
