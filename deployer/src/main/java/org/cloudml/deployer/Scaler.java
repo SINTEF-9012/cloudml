@@ -198,10 +198,25 @@ public class Scaler {
         configureImpactedComponents(listOfAllComponentImpacted,duplicatedGraph);
 
         //execute start commands on the components
-        startImpactedComponents(listOfAllComponentImpacted,duplicatedGraph);
+        startImpactedComponents(listOfAllComponentImpacted, duplicatedGraph);
+
+        //restart components on the VM scaled 
+        restartHostedComponents(ci);
 
         journal.log(Level.INFO, ">> Scaling completed!");
     }
+
+    private void restartHostedComponents(VMInstance ci){
+        for(InternalComponentInstance ici: ci.hostedComponents().onlyInternals()){
+            Provider p=ci.getType().getProvider();
+            Connector c2=ConnectorFactory.createIaaSConnector(p);
+            for(Resource r: ici.getType().getResources()){
+                dep.start(c2,ci.getType(),ici.asInternal().externalHost().asVM(),r.getStartCommand());
+            }
+            c2.closeConnection();
+        }
+    }
+
 
     private List<VM> vmFromAProvider(Provider p){
         ArrayList<VM> result=new ArrayList<VM>();
