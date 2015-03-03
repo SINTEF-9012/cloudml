@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.cloudfoundry.client.lib.rest.CloudControllerClient;
+import org.cloudfoundry.client.lib.rest.CloudControllerClientFactory;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
 /**
@@ -48,7 +50,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
  */
 public class CloudFoundryConnector implements PaaSConnector {
 
-    private CloudFoundryClient connectedClient;
+    private CloudControllerClient connectedClient;
     private static final int DEFAULT_MEMORY = 512; // MB
     private static final Logger journal = Logger.getLogger(CloudFoundryConnector.class.getName());
     private String defaultDomainName;
@@ -57,7 +59,9 @@ public class CloudFoundryConnector implements PaaSConnector {
         try {
             URL cloudControllerUrl = URI.create(APIEndPoint).toURL();
             journal.log(Level.INFO, ">> Connecting to CloudFoundry ...");
-            connectedClient = new CloudFoundryClient(new CloudCredentials(login,passwd),cloudControllerUrl,organization,space);
+            CloudControllerClientFactory cff=new CloudControllerClientFactory(null,true);
+            connectedClient = cff.newCloudController(cloudControllerUrl, new CloudCredentials(login,passwd),organization,space);
+
             connectedClient.login();
             defaultDomainName = connectedClient.getDefaultDomain().getName();
         } catch (MalformedURLException e) {
@@ -72,7 +76,7 @@ public class CloudFoundryConnector implements PaaSConnector {
         connectedClient.logout();
     }
 
-    public CloudFoundryClient getConnectedClient(){
+    public CloudControllerClient getConnectedClient(){
         return connectedClient;
     }
 
@@ -97,7 +101,7 @@ public class CloudFoundryConnector implements PaaSConnector {
         journal.log(Level.INFO, ">> Application details: "+ app.getName() + ", URI: " + app.getUris().get(0)+ ", Memory: " +app.getMemory());
         try {
             journal.log(Level.INFO, ">> Uploading application ... ");
-            connectedClient.uploadApplication(applicationName,new File(warFile).getCanonicalPath());
+            connectedClient.uploadApplication(applicationName,new File(warFile), null);
             journal.log(Level.INFO, ">> Starting application ... ");
             connectedClient.startApplication(app.getName());
         } catch (IOException e) {
@@ -189,7 +193,7 @@ public class CloudFoundryConnector implements PaaSConnector {
     public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout) {
         try {
             journal.log(Level.INFO, ">> Uploading application ... ");
-            connectedClient.uploadApplication(applicationName,new File(warFile).getCanonicalPath());
+            connectedClient.uploadApplication(applicationName,new File(warFile), null);
             journal.log(Level.INFO, ">> Starting application ... ");
             connectedClient.startApplication(applicationName);
         } catch (IOException e) {
