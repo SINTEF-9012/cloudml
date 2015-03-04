@@ -221,24 +221,26 @@ function generateExecutesLinks(depModel) {
 
 function generateRelationshipLinks(depModel) {
     var links = [];
-    depModel.relationshipInstances.forEach(
+	if(depModel.relationshipInstances != null){
+		depModel.relationshipInstances.forEach(
 
-        function (d, i) {
-            var tempLink = {
-                source : null,
-                target : null
-            };
-            tempLink.id = d.name;
-            tempLink.source = findSource(d.providedPortInstance, depModel);
-            tempLink.target = findTarget(d.requiredPortInstance, depModel);
-            if (tempLink.source != null && tempLink.target != null) {
-                tempLink.source.outgoingLinks == null ? tempLink.source.outgoingLinks = [tempLink] : tempLink.source.outgoingLinks.push(tempLink);
-                tempLink.target.incomingLinks == null ? tempLink.target.incomingLinks = [tempLink] : tempLink.target.incomingLinks.push(tempLink);
-                links.push(tempLink);
-            } else {
-                window.alert("bouhaaa");
-            }
-        });
+			function (d, i) {
+				var tempLink = {
+					source : null,
+					target : null
+				};
+				tempLink.id = d.name;
+				tempLink.source = findSource(d.providedPortInstance, depModel);
+				tempLink.target = findTarget(d.requiredPortInstance, depModel);
+				if (tempLink.source != null && tempLink.target != null) {
+					tempLink.source.outgoingLinks == null ? tempLink.source.outgoingLinks = [tempLink] : tempLink.source.outgoingLinks.push(tempLink);
+					tempLink.target.incomingLinks == null ? tempLink.target.incomingLinks = [tempLink] : tempLink.target.incomingLinks.push(tempLink);
+					links.push(tempLink);
+				} else {
+					window.alert("bouhaaa");
+				}
+			});
+	}
     return links;
 }
 
