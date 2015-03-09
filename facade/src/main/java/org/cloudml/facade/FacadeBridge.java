@@ -81,9 +81,16 @@ public class FacadeBridge implements ModelRepo {
             Iterator<String> itor = params.iterator();
             command = factory.burst(itor.next(), itor.next());
         }
+        else if("StartComponent".equals(name)){
+            command = factory.startComponent(params.iterator().next());
+        }
+        else if("StopComponent".equals(name)){
+            command = factory.stopComponent(params.iterator().next());
+        }
         else{
             throw new RuntimeException("Command not defined in facade");
         }
+        
         facade.fireAndForget(command);
         return null;
     }
