@@ -64,6 +64,7 @@ public class CloudFoundryConnector implements PaaSConnector {
 
             connectedClient.login();
             defaultDomainName = connectedClient.getDefaultDomain().getName();
+            journal.log(Level.INFO, ">> Default domain name: "+defaultDomainName);
         } catch (MalformedURLException e) {
             journal.log(Level.SEVERE, e.getMessage());
         } catch (Exception e) {
@@ -89,6 +90,7 @@ public class CloudFoundryConnector implements PaaSConnector {
         journal.log(Level.INFO, ">> Creating application ... ");
         List<String> uris = new ArrayList<String>();
         uris.add(computeAppUrl(applicationName, domainName));
+        journal.log(Level.INFO, ">> App URI: "+computeAppUrl(applicationName, domainName));
         Staging staging;
         if(stackName != null && !stackName.equals("")){
             staging=new Staging(null, stackName);
