@@ -35,7 +35,6 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
-import com.fasterxml.jackson.databind.node.ValueNode;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
@@ -467,6 +466,28 @@ public class FlexiantConnector implements Connector{
 
         journal.log(Level.INFO, ">> Image created with id: "+vmi.getName()+"-image");
         return vmi.getName()+"-image";
+    }
+
+    @Override
+    public void startVM(VMInstance a) {
+        try {
+            journal.log(Level.INFO, ">> Starting VM: "+a.getName());
+            Job startJob=service.changeServerStatus(a.getId(), ServerStatus.RUNNING, true, null, null);
+            service.waitForJob(startJob.getResourceUUID(), false);
+        } catch (ExtilityException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void stopVM(VMInstance a) {
+        try {
+            journal.log(Level.INFO, ">> Stopping VM: "+a.getName());
+            Job startJob=service.changeServerStatus(a.getId(), ServerStatus.STOPPED, true, null, null);
+            service.waitForJob(startJob.getResourceUUID(), false);
+        } catch (ExtilityException e) {
+            e.printStackTrace();
+        }
     }
 
     public void closeConnection() {}

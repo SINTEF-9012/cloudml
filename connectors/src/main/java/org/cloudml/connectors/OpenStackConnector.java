@@ -160,6 +160,18 @@ public class OpenStackConnector implements Connector{
         return id;
     }
 
+    @Override
+    public void startVM(VMInstance a) {
+        journal.log(Level.INFO, ">> Starting VM: "+a.getName());
+        novaComputeService.resumeNode(a.getId());
+    }
+
+    @Override
+    public void stopVM(VMInstance a) {
+        journal.log(Level.INFO, ">> Stopping VM: "+a.getName());
+        novaComputeService.suspendNode(a.getId());
+    }
+
     /**
      * Create a snapshot of the volume attached to the VM
      * @param vmi

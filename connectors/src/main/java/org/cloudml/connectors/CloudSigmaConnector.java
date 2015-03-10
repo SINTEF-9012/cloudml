@@ -287,4 +287,16 @@ public class CloudSigmaConnector implements Connector {
     public String createImage(VMInstance a) {
         return null;
     }
+
+    @Override
+    public void startVM(VMInstance a) {
+        journal.log(Level.INFO, ">> Starting VM: "+a.getName());
+        cloudSigmaApi.startServer(a.getId());
+    }
+
+    @Override
+    public void stopVM(VMInstance a) {
+        journal.log(Level.INFO, ">> Stopping VM: "+a.getName());
+        cloudSigmaApi.stopServer(a.getId());
+    }
 }

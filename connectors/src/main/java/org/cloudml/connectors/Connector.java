@@ -44,5 +44,9 @@ public interface Connector {
     public String createSnapshot(VMInstance a);
 
     public String createImage(VMInstance a);
+
+    public void startVM(VMInstance a);
+
+    public void stopVM(VMInstance a);
 	
 }
