@@ -288,6 +288,13 @@ Where ```xyz``` is the id of a Virtual Machine, and is the sole parameter requir
 
 Where ```xyz``` is the id of a Virtual Machine,  and is the sole parameter required by the ```ScaleOut``` command. 
 
+
+```
+!extended { name: StartComponent, params: [vm1] }
+```
+
+Where vm1 is the id of a Virtual Machine
+
 If the last params is too long (or too structural) for yaml, you can send a supplimentary command just after an extended command, started with a ```!additional```. The content following this tag is treated as plain text, not yaml.
 
 For example: the following two commands together load a deployment model from the input json string:
