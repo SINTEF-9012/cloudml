@@ -376,6 +376,18 @@ public class JCloudsConnector implements Connector{
         return "eu-west-1/"+id;
     }
 
+    @Override
+    public void startVM(VMInstance a) {
+        journal.log(Level.INFO, ">> Starting VM: "+a.getName());
+        compute.resumeNode(a.getId());
+    }
+
+    @Override
+    public void stopVM(VMInstance a) {
+        journal.log(Level.INFO, ">> Stopping VM: "+a.getName());
+        compute.suspendNode(a.getId());
+    }
+
 
     /**
      * retrieve the list of images avaialbels

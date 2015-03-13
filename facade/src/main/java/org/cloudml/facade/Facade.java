@@ -237,10 +237,13 @@ class Facade implements CloudML, CommandHandler {
     @Override
     public void handle(StartComponent command) {
         if (isDeploymentLoaded()) {
-            reportCommandNotYetSupported(command);
-
-        } else {
-            reportNoDeploymentLoaded(command);
+            dispatch(new Message(command, Category.INFORMATION, "Starting VM: " + command.getComponentId()));
+            VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getComponentId());
+            if(vmi != null){
+                Provider provider = vmi.getType().getProvider();
+                Connector c=ConnectorFactory.createIaaSConnector(provider);
+                c.startVM(vmi);
+            }
         }
     }
 
@@ -268,10 +271,13 @@ class Facade implements CloudML, CommandHandler {
     @Override
     public void handle(StopComponent command) {
         if (isDeploymentLoaded()) {
-            reportCommandNotYetSupported(command);
-
-        } else {
-            reportNoDeploymentLoaded(command);
+            dispatch(new Message(command, Category.INFORMATION, "Stopping VM: " + command.getComponentId()));
+            VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getComponentId());
+            if(vmi != null){
+                Provider provider = vmi.getType().getProvider();
+                Connector c=ConnectorFactory.createIaaSConnector(provider);
+                c.stopVM(vmi);
+            }
         }
     }
 
@@ -484,6 +490,7 @@ class Facade implements CloudML, CommandHandler {
         }
     }
 
+
     @Override
     public void handle(ListComponents command) {
         if (isDeploymentLoaded()) {
@@ -492,7 +499,6 @@ class Facade implements CloudML, CommandHandler {
 
         } else {
             reportNoDeploymentLoaded(command);
-
         }
     }
 
