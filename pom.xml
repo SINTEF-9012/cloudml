@@ -26,6 +26,7 @@
         <module>codecs</module>
         <module>connectors</module>
         <module>deployer</module>
+        <module>deployer2</module>
         <module>facade</module>
         <module>monitoring</module>
         <module>mrt</module>
