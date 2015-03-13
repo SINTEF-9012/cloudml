@@ -104,6 +104,16 @@ We first list some examples below for a quick view of what the commands look lik
 !extended { name: ScaleOut, params: [id] }
 ```
 
+- Burst a VM
+```yaml
+!extended { name: Burst, params: [id,providerName] }
+```
+
+- Start a VM
+```yaml
+!extended { name: StartComponent, params: [vmid] }
+```
+
 The samples above are the simpliest but most frequently used ones. We will show the command syntax, which supports more complex, and therefore powerful, commands.
 
 ## YAML and XPath
