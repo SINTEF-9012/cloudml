@@ -104,6 +104,16 @@ We first list some examples below for a quick view of what the commands look lik
 !extended { name: ScaleOut, params: [id] }
 ```
 
+- Burst a VM
+```yaml
+!extended { name: Burst, params: [id,providerName] }
+```
+
+- Start a VM
+```yaml
+!extended { name: StartComponent, params: [vmid] }
+```
+
 The samples above are the simpliest but most frequently used ones. We will show the command syntax, which supports more complex, and therefore powerful, commands.
 
 ## YAML and XPath
@@ -287,6 +297,13 @@ Where ```xyz``` is the id of a Virtual Machine, and is the sole parameter requir
 ```
 
 Where ```xyz``` is the id of a Virtual Machine,  and is the sole parameter required by the ```ScaleOut``` command. 
+
+
+```
+!extended { name: StartComponent, params: [vm1] }
+```
+
+Where vm1 is the id of a Virtual Machine
 
 If the last params is too long (or too structural) for yaml, you can send a supplimentary command just after an extended command, started with a ```!additional```. The content following this tag is treated as plain text, not yaml.
 
