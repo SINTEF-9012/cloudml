@@ -46,22 +46,22 @@ import org.java_websocket.server.WebSocketServer;
  * @author huis
  */
 public class CoordWsReception extends WebSocketServer implements CommandReception{
-    
+
     Coordinator coord = null;
     List<WebSocket> activeComponents = new ArrayList<WebSocket>();
 
     public CoordWsReception(int port){
         this(port, null);
     }
-    
+
     public CoordWsReception(int port, Coordinator coord){
         super(
                 new InetSocketAddress(port),
                 Collections.singletonList((Draft)new Draft_17())
-              );
+        );
         this.coord = coord;
     }
-    
+
     @Override
     public void onOpen(WebSocket ws, ClientHandshake ch) {
         System.out.printf("A component is connected from: %s\n", ws.getRemoteSocketAddress());
@@ -77,27 +77,28 @@ public class CoordWsReception extends WebSocketServer implements CommandReceptio
 
     @Override
     public void onMessage(WebSocket ws, String string) {
-            System.out.printf("%s said: %s\n", ws.getRemoteSocketAddress(), string);
-            Object ret = coord.process(string, new WsPeerStub(ws));
-            if(ret != null)
-                ws.send(ret.toString());
+        System.out.printf("%s said: %s\n", ws.getRemoteSocketAddress(), string);
+        Object ret = coord.process(string, new WsPeerStub(ws));
+        if(ret != null)
+            ws.send(ret.toString());
     }
 
     @Override
     public void onError(WebSocket ws, Exception excptn) {
         excptn.printStackTrace();
     }
-    
+
     public Coordinator getCoordinator(){
         return coord;
     }
-    
+
+
     public static void main( String[] args ){
         String prefix = "abc:";
-        
+
         String s = "abc:def";
-        
+
         System.out.println(s.substring(prefix.length()));
     }
-    
+
 }

@@ -55,6 +55,8 @@ public class CloudMLCmds {
     yamlRepresenter.addClassTag(Remove.class, new org.yaml.snakeyaml.nodes.Tag("!remove"));
     yamlConstructor.addTypeDescription(new TypeDescription(Snapshot.class, "!snapshot"));
     yamlRepresenter.addClassTag(Snapshot.class, new org.yaml.snakeyaml.nodes.Tag("!snapshot"));
+    yamlConstructor.addTypeDescription(new TypeDescription(Ack.class, "!ack"));
+    yamlRepresenter.addClassTag(Ack.class, new org.yaml.snakeyaml.nodes.Tag("!ack"));
     yamlConstructor.addTypeDescription(new TypeDescription(Set.class, "!set"));
     yamlRepresenter.addClassTag(Set.class, new org.yaml.snakeyaml.nodes.Tag("!set"));
     yamlConstructor.addTypeDescription(new TypeDescription(Extended.class, "!extended"));

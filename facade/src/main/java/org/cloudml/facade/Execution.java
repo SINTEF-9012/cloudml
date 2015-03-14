@@ -24,6 +24,7 @@ package org.cloudml.facade;
 
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.CommandHandler;
+import org.cloudml.mrt.Coordinator;
 
 /**
  * Execute a command in a separate thread
@@ -36,6 +37,7 @@ public class Execution implements Runnable {
     private final CommandHandler handler;
     private boolean completed;
     private final long timeout;
+    Coordinator coordinator;
 
     public Execution(CloudMlCommand command, CommandHandler handler) {
         this(command, handler, NO_TIMEOUT);
@@ -48,11 +50,18 @@ public class Execution implements Runnable {
         this.timeout = timeout;
     }
 
+    public void setCoordinator(Coordinator coordinator){
+        this.coordinator=coordinator;
+    }
+
     public synchronized boolean isCompleted() {
         return completed;
     }
 
     private synchronized void markAsCompleted() {
+        if(coordinator != null) {
+            coordinator.ack("completed", command.getClass().getName());
+        }
         completed = true;
         notifyAll();
     }

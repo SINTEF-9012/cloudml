@@ -41,6 +41,7 @@ import org.cloudml.mrt.cmd.CmdWrapper;
 import org.cloudml.mrt.cmd.abstracts.Change;
 import org.cloudml.mrt.cmd.abstracts.Instruction;
 import org.cloudml.mrt.cmd.abstracts.Listener;
+import org.cloudml.mrt.cmd.gen.Ack;
 import org.cloudml.mrt.cmd.gen.CloudMLCmds;
 import org.cloudml.mrt.cmd.gen.Extended;
 import org.cloudml.mrt.cmd.gen.Snapshot;
@@ -64,6 +65,8 @@ public class Coordinator {
     JsonCodec jsonCodec = new JsonCodec();
 
     Instruction lastInstruction = null;
+
+
 
     public Coordinator() {
         ModelRepo repo = new SimpleModelRepo();
@@ -115,6 +118,13 @@ public class Coordinator {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void ack(String status, String identity){
+        Ack change=new Ack(identity);
+        change.fromPeer=identity;
+        change.status=status;
+        changeList.add(change);
     }
 
     public void updateIP(String name, String ip, String identity){
