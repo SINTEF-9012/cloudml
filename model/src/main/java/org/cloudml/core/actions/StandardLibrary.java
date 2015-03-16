@@ -112,4 +112,9 @@ public class StandardLibrary {
     public Map<InternalComponentInstance, InternalComponentInstance> replicateSubGraph(Deployment deployment, VMInstance vmiSource, VMInstance vmiDestination){
         return new ReplicateSubGraph(this, deployment, vmiSource, vmiDestination).applyTo(deployment);
     }
+
+    public VMInstance cloneVM(VMInstance vmi, Deployment deployment){
+        return new CloneVM(this, vmi).applyTo(deployment);
+    }
+
 }
