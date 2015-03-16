@@ -3,7 +3,7 @@ package dsl;
 /**
  * Created by Maksym on 13.03.2015.
  */
-public class ActivityFinalNode extends ActivityNode{
+public class ActivityFinalNode extends ControlNode{
 
     public ActivityFinalNode(){
         super();

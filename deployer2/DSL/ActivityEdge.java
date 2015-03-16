@@ -3,7 +3,7 @@ package dsl;
 /**
  * Created by Maksym on 13.03.2015.
  */
-public class ActivityEdge {
+public class ActivityEdge extends Element{
 
     private ActivityNode source;
     private ActivityNode target;

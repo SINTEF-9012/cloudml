@@ -6,12 +6,11 @@ import java.util.List;
 /**
  * Created by Maksym on 13.03.2015.
  */
-public class ActivityNode {
+public abstract class ActivityNode extends Element{
 
     protected static final String IN = "in";
     protected static final String OUT = "out";
 
-    private String name;
     protected List<ActivityEdge> incoming = new ArrayList<ActivityEdge>();
     protected List<ActivityEdge> outgoing = new ArrayList<ActivityEdge>();
 
@@ -19,11 +18,11 @@ public class ActivityNode {
     public ActivityNode (){}
 
     public ActivityNode (String name){
-        this.setName(name);
+        super(name);
     }
 
     public ActivityNode (String name, ArrayList<ActivityEdge> incoming, ArrayList<ActivityEdge> outgoing){
-        this.setName(name);
+        super(name);
         this.setIncoming(incoming);
         this.setOutgoing(outgoing);
     }
@@ -89,13 +88,6 @@ public class ActivityNode {
     }
 
     // setters and getters
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public ArrayList<ActivityEdge> getIncoming() {
         return (ArrayList<ActivityEdge>) incoming;

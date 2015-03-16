@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by Maksym on 13.03.2015.
  */
-public class Join extends ActivityNode {
+public class Join extends ControlNode {
 
     public Join(ArrayList<ActivityEdge> incoming, ActivityEdge outgoing) throws Exception{
         super();

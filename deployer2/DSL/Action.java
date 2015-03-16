@@ -7,10 +7,8 @@ import java.util.HashMap;
  * Created by Maksym on 13.03.2015.
  */
 public class Action extends ActivityNode{
-    // true means a few instances may start concurrently
-    // private boolean isLocallyReentrant = true;
-    private HashMap<String,? extends Object> inputs;
-    private HashMap<String,? extends Object> outputs;
+    private ObjectNode input;
+    private ObjectNode output;
 
     // constructors
     public Action(String name){
@@ -24,28 +22,28 @@ public class Action extends ActivityNode{
     public Action (String name,
                    ArrayList<ActivityEdge> incoming,
                    ArrayList<ActivityEdge> outgoing,
-                   HashMap<String,? extends Object> inputs,
-                   HashMap<String,? extends Object> outputs){
+                   ObjectNode input,
+                   ObjectNode output){
         super(name, incoming, outgoing);
-        setInputs(inputs);
-        setOutputs(outputs);
+        setInput(input);
+        setOutput(output);
 
     }
 
-    // setters and getters
-    public HashMap<String, ? extends Object> getInputs() {
-        return inputs;
+
+    public ObjectNode getInput() {
+        return input;
     }
 
-    public void setInputs(HashMap<String, ? extends Object> inputs) {
-        this.inputs = inputs;
+    public void setInput(ObjectNode input) {
+        this.input = input;
     }
 
-    public HashMap<String, ? extends Object> getOutputs() {
-        return outputs;
+    public ObjectNode getOutput() {
+        return output;
     }
 
-    public void setOutputs(HashMap<String, ? extends Object> outputs) {
-        this.outputs = outputs;
+    public void setOutput(ObjectNode output) {
+        this.output = output;
     }
 }

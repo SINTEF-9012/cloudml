@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by Maksym on 13.03.2015.
  */
-public class Fork extends ActivityNode {
+public class Fork extends ControlNode {
 
     public Fork(ActivityEdge incoming, ArrayList<ActivityEdge> outgoing) throws Exception{
         super();
