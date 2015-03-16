@@ -60,9 +60,19 @@ public class Scaler {
     }
 
 
+    private VM findVMGenerated(String fromName, String extension){
+        for(VM v: currentModel.getComponents().onlyVMs()){
+            if(v.getName().contains(fromName) && v.getName().contains(extension)){
+                return v;
+            }
+        }
+        return null;
+    }
+
     private VM createNewInstanceOfVMFromImage(VMInstance vmi){
         VM existingVM=vmi.asExternal().asVM().getType();
-        VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
+        //VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
+        VM v = findVMGenerated(existingVM.getName(),"fromImage");
         if(v == null){//in case a type for the snapshot has already been created
             String name=lib.createUniqueComponentInstanceName(currentModel,existingVM);
             v=new VM(name+"-fromImage",existingVM.getProvider());
@@ -275,7 +285,8 @@ public class Scaler {
         }
 
         //VM existingVM=vmi.asExternal().asVM().getType();
-        VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-scaled");
+        //VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-scaled");
+        VM v = findVMGenerated(existingVM.getName(), "scaled");
         if(v == null){//in case a type for the snapshot has already been created
             String name=lib.createUniqueComponentInstanceName(targetModel,existingVM);
             v=new VM(name+"-scaled",provider);

@@ -76,6 +76,14 @@ public class CloudAppDeployer {
         return this.statusMonitor;
     }
 
+    public Coordinator getCoordinator(){
+        return coordinator;
+    }
+
+    public void setCoordinator(Coordinator coordinator){
+        this.coordinator=coordinator;
+    }
+
     /**
      * Deploy from a deployment model
      *
@@ -90,19 +98,6 @@ public class CloudAppDeployer {
         if (currentModel == null) {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
-
-            //set up a coordinator (used to update the model)
-            if (coordinator == null) {
-                if(Coordinator.SINGLE_INSTANCE == null){
-                    //only if there is no WebSocket server running.
-                    coordinator = new Coordinator();
-                    SimpleModelRepo modelRepo = new SimpleModelRepo(currentModel);
-                    coordinator.setModelRepo(modelRepo);
-                    coordinator.start();
-                }
-                else
-                    coordinator = Coordinator.SINGLE_INSTANCE;
-            }
 
             if (statusMonitorProperties.getActivated() && statusMonitor == null) {
                 statusMonitorActive = true;
@@ -158,6 +153,7 @@ public class CloudAppDeployer {
                 }
             }
         }
+
         //start the monitoring of VMs
         if (statusMonitorActive) {
             statusMonitor.start();

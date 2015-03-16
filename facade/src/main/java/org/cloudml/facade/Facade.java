@@ -52,6 +52,8 @@ import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
 import org.cloudml.indicators.Robustness;
+import org.cloudml.mrt.Coordinator;
+import org.cloudml.mrt.SimpleModelRepo;
 import org.jclouds.compute.domain.ComputeMetadata;
 
 /**
@@ -71,6 +73,7 @@ class Facade implements CloudML, CommandHandler {
     private boolean stopOnTimeout = false;
     private final CloudAppDeployer deployer;
     private CloudMLModelComparator diff = null;
+    private Coordinator coordinator;
 
     private static final String JSON_STRING_PREFIX = "json-string:";
 
@@ -95,6 +98,7 @@ class Facade implements CloudML, CommandHandler {
     @Override
     public Execution fireAndForget(CloudMlCommand command) {
         final Execution execution = new Execution(command, this);
+        execution.setCoordinator(coordinator);
         executor.submit(execution);
         return execution;
     }
@@ -102,6 +106,7 @@ class Facade implements CloudML, CommandHandler {
     @Override
     public Execution fireAndWait(CloudMlCommand command) {
         final Execution execution = new Execution(command, this);
+        execution.setCoordinator(coordinator);
         final Future<Boolean> done = executor.submit(execution, true);
         try {
             if (execution.getTimeout() > -1) {
@@ -389,38 +394,52 @@ class Facade implements CloudML, CommandHandler {
             deploy = SensApp.completeSensApp().build();
             final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
             dispatch(message);
-            return;
-        }
 
-        if (path.trim().startsWith(JSON_STRING_PREFIX)) {
+        }else if (path.trim().startsWith(JSON_STRING_PREFIX)) {
             String content = path.trim().substring(JSON_STRING_PREFIX.length()).trim();
             InputStream instream = new ByteArrayInputStream(content.getBytes());
             Deployment deploy2 = (Deployment) new JsonCodec().load(instream);
             saveMetadata(deploy2);
             final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
             dispatch(message);
-            return;
-        }
-
-        final String extension = canHandle(command.getPathToModel());
-
-        if (extension != null) {
-
-            final File f = new File(command.getPathToModel());
-            try {
-                deploy = (Deployment) new JsonCodec().load(new FileInputStream(f));
-                final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
-                dispatch(message);
-            } catch (FileNotFoundException ex) {
-                final Message message = new Message(command, Category.ERROR, "Unable to find file: " + command.getPathToModel());
-                dispatch(message);
-            } catch (Exception e) {
-                final Message message = new Message(command, Category.ERROR, "Error while loading model: " + e.getLocalizedMessage());
-                dispatch(message);
-            }
         } else {
-            wrongFileFormat(command.getPathToModel(), command);
+
+            final String extension = canHandle(command.getPathToModel());
+
+            if (extension != null) {
+
+                final File f = new File(command.getPathToModel());
+                try {
+                    deploy = (Deployment) new JsonCodec().load(new FileInputStream(f));
+                    final Message message = new Message(command, Category.INFORMATION, "Loading Complete.");
+                    dispatch(message);
+                } catch (FileNotFoundException ex) {
+                    final Message message = new Message(command, Category.ERROR, "Unable to find file: " + command.getPathToModel());
+                    dispatch(message);
+                } catch (Exception e) {
+                    final Message message = new Message(command, Category.ERROR, "Error while loading model: " + e.getLocalizedMessage());
+                    dispatch(message);
+                }
+            } else {
+                wrongFileFormat(command.getPathToModel(), command);
+            }
         }
+        initCoordinator();
+    }
+
+    private void initCoordinator(){
+        if (coordinator == null) {
+            if(Coordinator.SINGLE_INSTANCE == null){
+                //only if there is no WebSocket server running.
+                coordinator = new Coordinator();
+                SimpleModelRepo modelRepo = new SimpleModelRepo(deploy);
+                coordinator.setModelRepo(modelRepo);
+                coordinator.start();
+            }
+            else
+                coordinator = Coordinator.SINGLE_INSTANCE;
+        }
+        deployer.setCoordinator(coordinator);
     }
 
     @Override
@@ -453,7 +472,6 @@ class Facade implements CloudML, CommandHandler {
             } else {
                 deployer.deploy(deploy);
             }
-
             final Message success = new Message(command, Category.INFORMATION, "Deployment Complete.");
             dispatch(success);
 
