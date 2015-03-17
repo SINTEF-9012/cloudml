@@ -14,7 +14,7 @@ public class Join extends ControlNode {
         super();
         this.setIncoming(incoming);
         // set outgoing edge and protect outgoing edges list from being expanded
-        this.addEdge(outgoing, "out");
+        this.addEdge(outgoing, Direction.OUT);
         this.outgoing = FixedSizeList.decorate(Arrays.asList(this.getOutgoing()));
     }
 

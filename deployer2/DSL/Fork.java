@@ -15,7 +15,7 @@ public class Fork extends ControlNode {
         super();
         this.setOutgoing(outgoing);
         // set incoming edge and protect incoming edges list from being expanded
-        this.addEdge(incoming, "in");
+        this.addEdge(incoming, Direction.IN);
         this.incoming = FixedSizeList.decorate(Arrays.asList(this.getIncoming()));
     }
 }

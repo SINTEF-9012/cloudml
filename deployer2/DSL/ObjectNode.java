@@ -1,45 +1,54 @@
 package dsl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Created by Maksym on 16.03.2015.
  */
 public class ObjectNode extends ActivityNode {
-    protected HashMap<String,? extends Object> inputs;
-    protected HashMap<String,? extends Object> outputs;
+    //TODO add isControlNode parameter which means that object node may act as control node if needed.
+    //TODO Also object ordering mode may be added: FIFO, LIFO, unordered, ordered. And object state.
+
+    protected ArrayList<? extends Object> objects = new ArrayList<Object>();
+    private long upperBound = Long.MAX_VALUE;
 
     public ObjectNode(String name){
         super(name);
     }
 
+    public ObjectNode(String name, long upperBound) {
+        super(name);
+        setUpperBound(upperBound);
+    }
+
     @Override
-    public void addEdge(ActivityEdge dataFlow, String direction) throws Exception {
+    public void addEdge(ActivityEdge dataFlow, Direction direction) throws Exception {
         if (!dataFlow.isObjectFlow()) {
             throw new Exception("Only object flow to/from object node is allowed: you are trying to add control flow");
-        } else if (direction.equals(IN)) {
+        } else if (direction.equals(Direction.IN)) {
             dataFlow.setTarget(this);
             getIncoming().add(dataFlow);
-        } else if (direction.equals(OUT)){
+        } else {
             dataFlow.setSource(this);
             getOutgoing().add(dataFlow);
         }
     }
 
     // setters and getters
-    public HashMap<String, ? extends Object> getInputs() {
-        return inputs;
+    public ArrayList<? extends Object> getObjects() {
+        return objects;
     }
 
-    public void setInputs(HashMap<String, ? extends Object> inputs) {
-        this.inputs = inputs;
+    public void setObjects(ArrayList<? extends Object> objects) {
+        this.objects = objects;
     }
 
-    public HashMap<String, ? extends Object> getOutputs() {
-        return outputs;
+    public long getUpperBound() {
+        return upperBound;
     }
 
-    public void setOutputs(HashMap<String, ? extends Object> outputs) {
-        this.outputs = outputs;
+    public void setUpperBound(long upperBound) {
+        this.upperBound = upperBound;
     }
 }

@@ -8,8 +8,7 @@ import java.util.List;
  */
 public abstract class ActivityNode extends Element{
 
-    protected static final String IN = "in";
-    protected static final String OUT = "out";
+    public enum Direction {IN, OUT};
 
     protected List<ActivityEdge> incoming = new ArrayList<ActivityEdge>();
     protected List<ActivityEdge> outgoing = new ArrayList<ActivityEdge>();
@@ -28,64 +27,26 @@ public abstract class ActivityNode extends Element{
     }
 
     // methods
-    public void addEdge (ActivityEdge edge, String direction) throws Exception {
-        if (direction.equals(IN)){
+    public void addEdge (ActivityEdge edge, Direction direction) throws Exception {
+        if (direction.equals(Direction.IN)){
             edge.setTarget(this);
             getIncoming().add(edge);
-        } else if (direction.equals(OUT)){
+        } else {
             edge.setSource(this);
             getOutgoing().add(edge);
         }
     }
 
-    public void removeEdge (ActivityEdge edge, String direction){
-        if (direction.equals(IN)){
+    public void removeEdge (ActivityEdge edge, Direction direction){
+        if (direction.equals(Direction.IN)){
             getIncoming().remove(edge);
             edge.setTarget(null);
-        } else if (direction.equals(OUT)){
+        } else {
             getOutgoing().remove(edge);
             edge.setSource(null);
         }
     }
 
-
-    public ArrayList<ActivityEdge> getControlOrObjectFlowEdges(boolean control, String direction){
-        ArrayList<ActivityEdge> result = new ArrayList<ActivityEdge>();
-        if (direction.equals(IN)) {
-            if (control){
-                // retrieve all incoming control edges
-                for(ActivityEdge edge:getIncoming()){
-                    if (!edge.isObjectFlow()){
-                        result.add(edge);
-                    }
-                }
-            } else {
-                // retrieve all incoming object edges
-                for(ActivityEdge edge:getIncoming()){
-                    if (edge.isObjectFlow()){
-                        result.add(edge);
-                    }
-                }
-            }
-        } else if (direction.equals(OUT)){
-            if (control){
-                // retrieve all outgoing control edges
-                for(ActivityEdge edge:getOutgoing()){
-                    if (!edge.isObjectFlow()){
-                        result.add(edge);
-                    }
-                }
-            } else {
-                // retrieve all outgoing object edges
-                for(ActivityEdge edge:getOutgoing()){
-                    if (edge.isObjectFlow()){
-                        result.add(edge);
-                    }
-                }
-            }
-        }
-        return result;
-    }
 
     // setters and getters
 

@@ -12,8 +12,8 @@ public class ActivityInitialNode extends ControlNode{
 
 
     @Override
-    public void addEdge(ActivityEdge edge, String direction) throws Exception{
-        if(direction.matches(IN)){
+    public void addEdge(ActivityEdge edge, Direction direction) throws Exception{
+        if(direction.equals(Direction.IN)){
             throw new Exception("Initial node can not have incoming edges");
         } else if (edge.isObjectFlow()){
             throw new Exception("No object flow from initial node is allowed");
