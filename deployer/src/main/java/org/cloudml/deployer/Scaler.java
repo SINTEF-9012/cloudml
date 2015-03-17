@@ -178,8 +178,6 @@ public class Scaler {
     public void scaleOut(VMInstance vmi) {
         Deployment tmp=currentModel.clone();
 
-        Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-
         //1. instantiate the new VM using the newly created snapshot
         VM v=createNewInstanceOfVMFromImage(vmi);
 
@@ -187,9 +185,15 @@ public class Scaler {
         Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(currentModel,vmi, ci);
 
         //3. For synchronization purpose with provision once the model has been fully updated
-        String ID=c.createImage(vmi);
-        c.closeConnection();
-        v.setImageId(ID);
+        VM temp = findVMGenerated(vmi.getName(),"fromImage");
+        if(temp == null){
+            Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+            String ID=c.createImage(vmi);
+            c.closeConnection();
+            v.setImageId(ID);
+        }else{
+            v.setImageId(temp.getImageId());
+        }
 
         Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
         HashMap<String,String> result=c2.createInstance(ci);
