@@ -1,4 +1,4 @@
- /**
+/**
  * This file is part of CloudML [ http://cloudml.org ]
  *
  * Copyright (C) 2012 - SINTEF ICT
@@ -20,37 +20,31 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
- package camel.workflow;
+package org.cloudml.deployer2.camel;
 
-import org.cloudml.core.VMInstance;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
-import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Provider;
 import org.cloudml.core.VMInstance;
 
 import java.util.HashMap;
-import java.util.logging.Level;
 
 /**
  * Created by Maksym on 06.03.2015.
  */
-public class ProcessOne  {
+public class ProcessTwo {
+    private VMInstance vm;
 
-    private VMInstance n;
-
-    public ProcessOne (VMInstance n){
-        this.n = n;
+    public ProcessTwo(VMInstance n) {
+        this.vm = n;
     }
 
     public void provisionAVM() {
 
-        Provider p = n.getType().getProvider();
+        Provider p = vm.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
 
-        HashMap<String,String> runtimeInformation = jc.createInstance(n);
+        HashMap<String, String> runtimeInformation = jc.createInstance(vm);
 
         try {
             Thread.sleep(1000);
@@ -58,10 +52,12 @@ public class ProcessOne  {
             e.printStackTrace();
         }
 
-        System.out.println("ProcessONE: VM " + n.getName() + "is provisioned with IP " + runtimeInformation.get("publicAddress"));
+        System.out.println("ProcessTWO: VM " + vm.getName() + "is provisioned with IP " + runtimeInformation.get("publicAddress"));
         jc.closeConnection();
     }
+
+
 //    public void hi(){
-//        System.out.println("hi 1");
+//        System.out.println("hi 2");
 //    }
 }

@@ -23,7 +23,7 @@
 /**
  * Created by Maksym on 05.03.2015.
  */
-package camel.workflow;
+package org.cloudml.deployer2.camel;
 
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.util.jndi.JndiContext;
@@ -58,7 +58,7 @@ public class ConcurrentDeployment {
 
             //register execution tasks(or beans, processes..) in the Camel context and save their names
             JndiContext jndiContext = new JndiContext();
-            jndiContext.bind("start","start");
+            jndiContext.bind("start", "start");
 
             while (VMs.hasNext()) {
                 VMInstance vm = VMs.next();

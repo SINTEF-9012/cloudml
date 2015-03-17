@@ -63,54 +63,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-            <version>0.1.48</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.cloud4soa-adapter</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.adapter-rest</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.cloudml.utils</groupId>
-            <artifactId>org.cloud.utils.governance</artifactId>
-            <version>1.0</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.4.1</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>4.0.5.RELEASE</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>commons-jxpath</groupId>
-            <artifactId>commons-jxpath</artifactId>
-            <version>1.3</version>
-        </dependency>
-
     </dependencies>
 
     <repositories>

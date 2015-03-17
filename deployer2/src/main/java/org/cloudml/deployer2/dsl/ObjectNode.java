@@ -1,7 +1,6 @@
-package dsl;
+package org.cloudml.deployer2.dsl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by Maksym on 16.03.2015.
@@ -13,7 +12,7 @@ public class ObjectNode extends ActivityNode {
     protected ArrayList<? extends Object> objects = new ArrayList<Object>();
     private long upperBound = Long.MAX_VALUE;
 
-    public ObjectNode(String name){
+    public ObjectNode(String name) {
         super(name);
     }
 

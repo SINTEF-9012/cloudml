@@ -1,4 +1,4 @@
-package dsl;
+package org.cloudml.deployer2.dsl;
 
 import java.util.HashMap;
 
@@ -10,13 +10,13 @@ abstract public class Element {
 
     private String name;
     private String elementID;
-    private HashMap<String,String> properties = new HashMap<String, String>();
+    private HashMap<String, String> properties = new HashMap<String, String>();
 
-    public Element(){
+    public Element() {
         setName(DEFAULT_NAME);
     }
 
-    public Element(String name){
+    public Element(String name) {
         setName(name);
     }
 

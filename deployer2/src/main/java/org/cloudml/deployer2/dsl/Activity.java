@@ -1,15 +1,15 @@
-package dsl;
+package org.cloudml.deployer2.dsl;
 
 import java.util.ArrayList;
 
 /**
  * Created by Maksym on 16.03.2015.
  */
-public class Activity extends Element{
+public class Activity extends Element {
     private ArrayList<ActivityEdge> edges = new ArrayList<ActivityEdge>();
     private ArrayList<ActivityNode> nodes = new ArrayList<ActivityNode>();
 
-    public Activity(ArrayList<ActivityEdge> edges, ArrayList<ActivityNode> nodes){
+    public Activity(ArrayList<ActivityEdge> edges, ArrayList<ActivityNode> nodes) {
         setEdges(edges);
         setNodes(nodes);
     }

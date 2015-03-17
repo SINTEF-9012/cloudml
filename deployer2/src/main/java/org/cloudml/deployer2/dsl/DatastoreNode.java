@@ -1,6 +1,7 @@
-package dsl;
+package org.cloudml.deployer2.dsl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Created by Maksym on 13.03.2015.
@@ -9,7 +10,7 @@ public class DatastoreNode extends ObjectNode {
     //TODO datastore node may connect only with objectnodes, not actions
     //TODO semantics is that data is used as needed, rather then when available
 
-    public DatastoreNode (String name){
+    public DatastoreNode(String name) {
         super(name);
     }
 

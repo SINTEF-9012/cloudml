@@ -1,13 +1,15 @@
-package dsl;
+package org.cloudml.deployer2.dsl;
 
 import java.util.ArrayList;
 
 /**
  * Created by Maksym on 16.03.2015.
  */
-public class ExpansionRegion extends Action{
+public class ExpansionRegion extends Action {
 
-    public enum ExpansionMode {PARALLEL, ITERATIVE};
+    public enum ExpansionMode {PARALLEL, ITERATIVE}
+
+    ;
     private ExpansionMode mode;
     // ExpansionRegion must have at least one input ExpansionNodes
     private ArrayList<ExpansionNode> inputCollections = new ArrayList<ExpansionNode>(1);
@@ -15,18 +17,18 @@ public class ExpansionRegion extends Action{
     private ArrayList<ActivityEdge> edges = new ArrayList<ActivityEdge>();
     private ArrayList<ActivityNode> nodes = new ArrayList<ActivityNode>();
 
-    public ExpansionRegion(String name, ExpansionMode mode){
+    public ExpansionRegion(String name, ExpansionMode mode) {
         super(name);
         setMode(mode);
     }
 
-    public void addInput(ExpansionNode node){
+    public void addInput(ExpansionNode node) {
         getInputCollections().add(node);
     }
 
-    public void addOutput(ExpansionNode node){
+    public void addOutput(ExpansionNode node) {
         int maxSize = getInputCollections().get(0).getObjects().size();
-        if (node.getObjects().size() > maxSize){
+        if (node.getObjects().size() > maxSize) {
             try {
                 throw new Exception("Output collection can not be bigger than input collections");
             } catch (Exception e) {
@@ -37,8 +39,8 @@ public class ExpansionRegion extends Action{
         }
     }
 
-    public void removeInput(ExpansionNode node){
-        if (getInputCollections().size() == 1){
+    public void removeInput(ExpansionNode node) {
+        if (getInputCollections().size() == 1) {
             try {
                 throw new Exception("ExpansionRegion must have at least one input");
             } catch (Exception e) {
@@ -49,7 +51,7 @@ public class ExpansionRegion extends Action{
         }
     }
 
-    public void removeOutput(ExpansionNode node){
+    public void removeOutput(ExpansionNode node) {
         getOutputCollections().remove(node);
     }
 
@@ -67,8 +69,8 @@ public class ExpansionRegion extends Action{
 
     public void setInputCollections(ArrayList<ExpansionNode> inputCollections) {
         int sameSize = inputCollections.get(0).getObjects().size();
-        for (ExpansionNode node:inputCollections){
-            if (node.getObjects().size() != sameSize){
+        for (ExpansionNode node : inputCollections) {
+            if (node.getObjects().size() != sameSize) {
                 try {
                     throw new Exception("Number of elements in all input expansion nodes must be the same");
                 } catch (Exception e) {

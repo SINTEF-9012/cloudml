@@ -1,6 +1,4 @@
-package dsl;
-
-import java.util.HashMap;
+package org.cloudml.deployer2.dsl;
 
 /**
  * Created by Maksym on 16.03.2015.
@@ -30,18 +28,18 @@ public class ActivityParameterNode extends ObjectNode {
     public void addEdge(ActivityEdge dataFlow, Direction direction) throws Exception {
         if (!dataFlow.isObjectFlow()) {
             throw new Exception("Only object flow to/from object node is allowed: you are trying to add control flow");
-        } else if (direction.equals(Direction.IN)){
-            if(getOutgoing().size() != 0){
+        } else if (direction.equals(Direction.IN)) {
+            if (getOutgoing().size() != 0) {
                 throw new Exception("ActivityParameters can not have both incoming and outgoing object flows:it already has outgoing flow");
-            } else if (getIncoming().size() == 1){
+            } else if (getIncoming().size() == 1) {
                 tooManyEdgesException();
             }
             dataFlow.setTarget(this);
             getIncoming().add(dataFlow);
         } else {
-            if(getIncoming().size() != 0){
+            if (getIncoming().size() != 0) {
                 throw new Exception("ActivityParameters can not have both incoming and outgoing object flows:it already has incoming flow");
-            } else if (getOutgoing().size() == 1){
+            } else if (getOutgoing().size() == 1) {
                 tooManyEdgesException();
             }
             dataFlow.setSource(this);

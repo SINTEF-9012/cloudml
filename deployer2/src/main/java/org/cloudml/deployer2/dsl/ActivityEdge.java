@@ -1,9 +1,9 @@
-package dsl;
+package org.cloudml.deployer2.dsl;
 
 /**
  * Created by Maksym on 13.03.2015.
  */
-public class ActivityEdge extends Element{
+public class ActivityEdge extends Element {
     //TODO maybe add edge guard and edge weight. Also object flow has multicast and multireceive parameters, may be useful later
 
     private ActivityNode source;
@@ -13,9 +13,10 @@ public class ActivityEdge extends Element{
 
 
     // constructors
-    public ActivityEdge(){}
+    public ActivityEdge() {
+    }
 
-    public ActivityEdge(boolean objectFlow){
+    public ActivityEdge(boolean objectFlow) {
         this.setObjectFlow(objectFlow);
     }
 

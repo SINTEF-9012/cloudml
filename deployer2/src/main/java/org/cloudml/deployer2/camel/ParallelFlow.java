@@ -20,19 +20,13 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package camel.workflow;
+package org.cloudml.deployer2.camel;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
-import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.MulticastDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Maksym on 06.03.2015.
@@ -59,7 +53,7 @@ public class ParallelFlow extends RouteBuilder {
 //            method.invoke(multi, "bean:" + task);
 //        }
         String[] list = new String[tasks.size()];
-        for (int i=0; i < tasks.size(); i++){
+        for (int i = 0; i < tasks.size(); i++) {
             list[i] = "bean:" + tasks.get(i);
         }
         from("timer://runOnce?repeatCount=1&delay=4000").multicast().parallelProcessing().to(list);
