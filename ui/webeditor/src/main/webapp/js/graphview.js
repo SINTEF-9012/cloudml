@@ -42,7 +42,6 @@ var brush;
 var contextMenu;
 var cloudMLServerHost;
 var connectedToCloudMLServer = false;
-var SLA;
 var sla_url="http://109.231.122.166:8080/sla-service/violations?agreementId=";
 
 var stateColorMap = {};
@@ -68,23 +67,43 @@ function saveFile(inputDiv){
 /***********************************************
 SLA management
 ***********************************************/
-var tabAgreement = new Array;
 
-function getSLA(agreementId,nameNode){
+function getSLA(agreementId,nameNode,day){
     var xmlhttp;
     if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
         xmlhttp=new XMLHttpRequest();
     }else{// code for IE6, IE5
       xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
-    xmlhttp.onreadystatechange=function(){
-        if (xmlhttp.readyState==4 && xmlhttp.status==200){
-            var obj = JSON.parse(xmlhttp.responseText);
-            tabAgreement[nameNode]=obj;
-            var selector="#agreementid-"+nameNode;
-            $(selector).html(obj.length)
-        }
-    }
+	if(!day){
+		xmlhttp.onreadystatechange=function(){
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				var obj = JSON.parse(xmlhttp.responseText);
+				var selector="#agreementid-"+nameNode;
+				$(selector).html(obj.length)
+			}
+		}
+	}else{
+		xmlhttp.onreadystatechange=function(){
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				var i=0;
+				var obj = JSON.parse(xmlhttp.responseText);
+				var selector="#agreementid-today-"+nameNode;
+				
+				obj.forEach(
+					function (element) {
+						var ymd=element.datetime.split("T")[0].split("-");
+						var d= new Date();
+						if(d.getFullYear() == ymd[0] && (d.getMonth()+1) == ymd[1] && d.getDate() == ymd[2]){
+							i++;
+						}
+					}
+				);
+				
+				$(selector).html(i)
+			}
+		}
+	}
     xmlhttp.open("GET",sla_url+agreementId,true);
     xmlhttp.setRequestHeader("Accept","application/json");
     xmlhttp.send();
@@ -1157,10 +1176,17 @@ function getNodePopover(node){
     if(typeof node.properties != "undefined"){
         var agreementid = getPropValFromCloudMLElement(node,"agreement_id");
         result += '<br/>';
-        result += 'NB of SLA violations: ';
-        result += '<div id=\"agreementid-'+node.name+'\">';
-        result += '<button type=\"button\" onclick=\"getSLA(\''+agreementid+'\',\''+node.name+'\');\" class=\"btn btn-default btn-lg\">';
-        result += '<span>Load</span></button></div>';
+        result += 'NB SLA violations: ';
+        result += '<span id=\"agreementid-'+node.name+'\">';
+        result += '<button type=\"button\" onclick=\"getSLA(\''+agreementid+'\',\''+node.name+'\', false);\" class=\"btn btn-default btn-lg\">';
+        result += '<span>Load</span></button></span>';
+		result += '<br/>';
+		result += 'NB violations today:'
+		result += '<span id=\"agreementid-today-'+node.name+'\">';
+		result += '<button type=\"button\" onclick=\"getSLA(\''+agreementid+'\',\''+node.name+'\', true);\" class=\"btn btn-default btn-lg\">';
+        result += '<span>Load</span></button></span>';
+		result += '<br/>';
+		result += '<a href=\"'+sla_url+agreementid+'\" target=\"_blank\">See violations details</a>';
     }
     if(typeof node.properties != "undefined"){
         var cpuLoad = getPropValFromCloudMLElement(node,"cpu");
