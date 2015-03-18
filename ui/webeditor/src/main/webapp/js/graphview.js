@@ -42,6 +42,7 @@ var brush;
 var contextMenu;
 var cloudMLServerHost;
 var connectedToCloudMLServer = false;
+var sla_url="http://109.231.122.166:8080/sla-service/violations?agreementId=";
 
 var stateColorMap = {};
 stateColorMap['PENDING'] = "#fee08b";
@@ -62,6 +63,51 @@ function saveFile(inputDiv){
         window.open("data:text/json,"+currentJSON);
 }
 
+
+/***********************************************
+SLA management
+***********************************************/
+
+function getSLA(agreementId,nameNode,day){
+    var xmlhttp;
+    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp=new XMLHttpRequest();
+    }else{// code for IE6, IE5
+      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+	if(!day){
+		xmlhttp.onreadystatechange=function(){
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				var obj = JSON.parse(xmlhttp.responseText);
+				var selector="#agreementid-"+nameNode;
+				$(selector).html(obj.length)
+			}
+		}
+	}else{
+		xmlhttp.onreadystatechange=function(){
+			if (xmlhttp.readyState==4 && xmlhttp.status==200){
+				var i=0;
+				var obj = JSON.parse(xmlhttp.responseText);
+				var selector="#agreementid-today-"+nameNode;
+				
+				obj.forEach(
+					function (element) {
+						var ymd=element.datetime.split("T")[0].split("-");
+						var d= new Date();
+						if(d.getFullYear() == ymd[0] && (d.getMonth()+1) == ymd[1] && d.getDate() == ymd[2]){
+							i++;
+						}
+					}
+				);
+				
+				$(selector).html(i)
+			}
+		}
+	}
+    xmlhttp.open("GET",sla_url+agreementId,true);
+    xmlhttp.setRequestHeader("Accept","application/json");
+    xmlhttp.send();
+}
 
 /***********************************************
 JS-YAML parser definitions
@@ -606,13 +652,13 @@ function getData(inputJSONString) {
         layoutExtCompInstances[i].status = 'UNCATEGORIZED';
         // We are assuming that each external component instance has these properties.
         // We use it afterwards to form the content of the popovers.
-        layoutExtCompInstances[i].properties = [
+        /*layoutExtCompInstances[i].properties = [
             {
                 "eClass" :  "net.cloudml.core:Property",
                 'name'   :  'cpu',
                 'value'  :  0
             }
-        ];
+        ];*/
         layoutExtCompInstances[i].isFolded = false;
         layoutExtCompInstances[i].foldedSubNodes = [];
         layoutExtCompInstances[i].foldedSubEdges = [];
@@ -639,6 +685,9 @@ function getData(inputJSONString) {
             svgNodeElement.attr("data-content", function(d){
                 return getNodePopover(d);
             });
+
+
+
             // update the status circle coloring
             decorateNodeCircle(svgNodeElement.select(".internalComponent, .externalComponent")[0][0]);
             for(i=0; i<graphEdges.length;++i){
@@ -1125,6 +1174,21 @@ function getNodePopover(node){
         result += node.publicAddress;
     }
     if(typeof node.properties != "undefined"){
+        var agreementid = getPropValFromCloudMLElement(node,"agreement_id");
+        result += '<br/>';
+        result += 'NB SLA violations: ';
+        result += '<span id=\"agreementid-'+node.name+'\">';
+        result += '<button type=\"button\" onclick=\"getSLA(\''+agreementid+'\',\''+node.name+'\', false);\" class=\"btn btn-default btn-lg\">';
+        result += '<span>Load</span></button></span>';
+		result += '<br/>';
+		result += 'NB violations today:'
+		result += '<span id=\"agreementid-today-'+node.name+'\">';
+		result += '<button type=\"button\" onclick=\"getSLA(\''+agreementid+'\',\''+node.name+'\', true);\" class=\"btn btn-default btn-lg\">';
+        result += '<span>Load</span></button></span>';
+		result += '<br/>';
+		result += '<a href=\"'+sla_url+agreementid+'\" target=\"_blank\">See violations details</a>';
+    }
+    if(typeof node.properties != "undefined"){
         var cpuLoad = getPropValFromCloudMLElement(node,"cpu");
         // TODO add this back when necessary
         //        if(cpuLoad != null){
@@ -1163,9 +1227,9 @@ function refreshNodeState(d,delay){
 
                         if(typeof json.content.properties != 'undefined'){
                             var cpuLoad = getPropValFromCloudMLElement(json.content, "cpu");
-                            if(cpuLoad != null) {
+                            /*if(cpuLoad != null) {
                                 setOrCreatePropValOfCloudMLElement(d, "cpu", cpuLoad);
-                            }
+                            }*/
                         }
                         if(typeof json.content.id != 'undefined'){
                             if(json.content.id != null)
@@ -1835,6 +1899,7 @@ function loadFile(inputDiv) {
     function receivedText() {
         getData(fr.result);
     }
+
 }
 
 /***********************************************

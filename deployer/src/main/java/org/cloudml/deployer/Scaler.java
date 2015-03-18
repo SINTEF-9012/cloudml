@@ -60,9 +60,19 @@ public class Scaler {
     }
 
 
+    private VM findVMGenerated(String fromName, String extension){
+        for(VM v: currentModel.getComponents().onlyVMs()){
+            if(v.getName().contains(fromName) && v.getName().contains(extension)){
+                return v;
+            }
+        }
+        return null;
+    }
+
     private VM createNewInstanceOfVMFromImage(VMInstance vmi){
         VM existingVM=vmi.asExternal().asVM().getType();
-        VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
+        //VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-fromImage");
+        VM v = findVMGenerated(existingVM.getName(),"fromImage");
         if(v == null){//in case a type for the snapshot has already been created
             String name=lib.createUniqueComponentInstanceName(currentModel,existingVM);
             v=new VM(name+"-fromImage",existingVM.getProvider());
@@ -167,9 +177,7 @@ public class Scaler {
      */
     public void scaleOut(VMInstance vmi) {
         Deployment tmp=currentModel.clone();
-
-        Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-
+        VM temp = findVMGenerated(vmi.getType().getName(),"fromImage");
         //1. instantiate the new VM using the newly created snapshot
         VM v=createNewInstanceOfVMFromImage(vmi);
 
@@ -177,9 +185,14 @@ public class Scaler {
         Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(currentModel,vmi, ci);
 
         //3. For synchronization purpose with provision once the model has been fully updated
-        String ID=c.createImage(vmi);
-        c.closeConnection();
-        v.setImageId(ID);
+        if(temp == null){
+            Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+            String ID=c.createImage(vmi);
+            c.closeConnection();
+            v.setImageId(ID);
+        }else{
+            v.setImageId(temp.getImageId());
+        }
 
         Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
         HashMap<String,String> result=c2.createInstance(ci);
@@ -275,7 +288,8 @@ public class Scaler {
         }
 
         //VM existingVM=vmi.asExternal().asVM().getType();
-        VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-scaled");
+        //VM v=currentModel.getComponents().onlyVMs().firstNamed(existingVM.getName()+"-scaled");
+        VM v = findVMGenerated(existingVM.getName(), "scaled");
         if(v == null){//in case a type for the snapshot has already been created
             String name=lib.createUniqueComponentInstanceName(targetModel,existingVM);
             v=new VM(name+"-scaled",provider);
