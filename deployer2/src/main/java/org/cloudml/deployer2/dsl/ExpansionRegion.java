@@ -1,5 +1,7 @@
 package org.cloudml.deployer2.dsl;
 
+import org.cloudml.deployer2.dsl.util.Validator;
+
 import java.util.ArrayList;
 
 /**
@@ -22,30 +24,19 @@ public class ExpansionRegion extends Action {
         setMode(mode);
     }
 
-    public void addInput(ExpansionNode node) {
+    public void addInput(ExpansionNode node) throws Exception {
+        Validator.validateInputSize(node, this);
         getInputCollections().add(node);
     }
 
-    public void addOutput(ExpansionNode node) {
-        int maxSize = getInputCollections().get(0).getObjects().size();
-        if (node.getObjects().size() > maxSize) {
-            try {
-                throw new Exception("Output collection can not be bigger than input collections");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            getOutputCollections().add(node);
-        }
+    public void addOutput(ExpansionNode node) throws Exception {
+        Validator.validateOutputSize(node, this);
+        getOutputCollections().add(node);
     }
 
-    public void removeInput(ExpansionNode node) {
+    public void removeInput(ExpansionNode node) throws Exception {
         if (getInputCollections().size() == 1) {
-            try {
-                throw new Exception("ExpansionRegion must have at least one input");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            throw new Exception("ExpansionRegion must have at least one input");
         } else {
             getInputCollections().remove(node);
         }
@@ -67,16 +58,9 @@ public class ExpansionRegion extends Action {
         return inputCollections;
     }
 
-    public void setInputCollections(ArrayList<ExpansionNode> inputCollections) {
-        int sameSize = inputCollections.get(0).getObjects().size();
+    public void setInputCollections(ArrayList<ExpansionNode> inputCollections) throws Exception {
         for (ExpansionNode node : inputCollections) {
-            if (node.getObjects().size() != sameSize) {
-                try {
-                    throw new Exception("Number of elements in all input expansion nodes must be the same");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            Validator.validateInputSize(node, this);
         }
         this.inputCollections = inputCollections;
     }
@@ -85,7 +69,10 @@ public class ExpansionRegion extends Action {
         return outputCollections;
     }
 
-    public void setOutputCollections(ArrayList<ExpansionNode> outputCollections) {
+    public void setOutputCollections(ArrayList<ExpansionNode> outputCollections) throws Exception {
+        for (ExpansionNode node : outputCollections) {
+            Validator.validateOutputSize(node, this);
+        }
         this.outputCollections = outputCollections;
     }
 

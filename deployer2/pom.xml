@@ -25,6 +25,13 @@
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.5</version>
         </dependency>
+        <!-- Test System methods in JUnit -->
+        <dependency>
+            <groupId>com.github.stefanbirkner</groupId>
+            <artifactId>system-rules</artifactId>
+            <version>1.8.0</version>
+            <scope>test</scope>
+        </dependency>
         <!-- CloudML module dependencies -->
         <dependency>
             <groupId>org.cloudml</groupId>

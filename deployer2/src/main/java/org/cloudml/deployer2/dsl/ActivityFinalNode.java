@@ -24,8 +24,7 @@ public class ActivityFinalNode extends ControlNode {
     }
 
     public void finish() {
-        //TODO change code to zero
-        System.exit(1);
+        System.exit(0);
     }
 
 }

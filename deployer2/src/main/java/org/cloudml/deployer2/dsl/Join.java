@@ -1,9 +1,8 @@
 package org.cloudml.deployer2.dsl;
 
-import org.apache.commons.collections.list.FixedSizeList;
+import org.cloudml.deployer2.dsl.util.Validator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by Maksym on 13.03.2015.
