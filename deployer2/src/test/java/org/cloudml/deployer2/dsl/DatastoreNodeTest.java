@@ -17,7 +17,7 @@ public class DatastoreNodeTest {
         String object1 = "o1";
         String object2 = "o2";
         String object3 = "o1";
-        ArrayList<String> objects = new ArrayList<String>();
+        ArrayList<Object> objects = new ArrayList<Object>();
         objects.add(object1);
         objects.add(object2);
         objects.add(object3);

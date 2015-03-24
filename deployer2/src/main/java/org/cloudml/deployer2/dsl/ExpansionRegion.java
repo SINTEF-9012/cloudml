@@ -37,13 +37,15 @@ public class ExpansionRegion extends Action {
     public void removeInput(ExpansionNode node) throws Exception {
         if (getInputCollections().size() == 1) {
             throw new Exception("ExpansionRegion must have at least one input");
-        } else {
+        } else if (getInputCollections().contains(node)){
             getInputCollections().remove(node);
         }
     }
 
     public void removeOutput(ExpansionNode node) {
-        getOutputCollections().remove(node);
+        if (getOutputCollections().contains(node)){
+            getOutputCollections().remove(node);
+        }
     }
 
     public ExpansionMode getMode() {

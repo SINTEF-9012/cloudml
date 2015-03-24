@@ -21,7 +21,6 @@ public class ActivityParameterNodeTest {
         parameterNode.getIncoming().clear();
 
         try {
-            System.out.print(parameterNode.getIncoming().size());
             parameterNode.addEdge(objectFlow, ActivityNode.Direction.IN);
             parameterNode.addEdge(objectFlow, ActivityNode.Direction.OUT);
             fail("Exception is expected because parameter node already has incoming edge, so we can't add outgoing");

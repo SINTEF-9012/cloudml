@@ -6,8 +6,8 @@ import java.util.ArrayList;
  * Created by Maksym on 13.03.2015.
  */
 public class Action extends ActivityNode {
-    private ArrayList<ObjectNode> inputs;
-    private ArrayList<ObjectNode> outputs;
+    private ArrayList<Object> inputs;
+    private ArrayList<Object> outputs;
 
     // constructors
     public Action(String name) {
@@ -21,28 +21,32 @@ public class Action extends ActivityNode {
     public Action(String name,
                   ArrayList<ActivityEdge> incoming,
                   ArrayList<ActivityEdge> outgoing,
-                  ArrayList<ObjectNode> inputs,
-                  ArrayList<ObjectNode> outputs) {
+                  ArrayList<Object> inputs,
+                  ArrayList<Object> outputs) {
         super(name, incoming, outgoing);
         setInputs(inputs);
         setOutputs(outputs);
 
     }
 
-    public void addInput(ObjectNode object) {
+    public void addInput(Object object) {
         getInputs().add(object);
     }
 
-    public void addOutput(ObjectNode object) {
+    public void addOutput(Object object) {
         getOutputs().add(object);
     }
 
-    public void removeInput(ObjectNode object) {
-        getInputs().remove(object);
+    public void removeInput(Object object) {
+        if (getInputs().contains(object)){
+            getInputs().remove(object);
+        }
     }
 
-    public void removeOutput(ObjectNode object) {
-        getOutputs().remove(object);
+    public void removeOutput(Object object) {
+        if(getOutputs().contains(object)){
+            getOutputs().remove(object);
+        }
     }
 
     public ArrayList<ActivityEdge> getControlOrObjectFlowEdges(boolean control, Direction direction) {
@@ -83,19 +87,19 @@ public class Action extends ActivityNode {
         return result;
     }
 
-    public ArrayList<ObjectNode> getInputs() {
+    public ArrayList<Object> getInputs() {
         return inputs;
     }
 
-    public void setInputs(ArrayList<ObjectNode> inputs) {
+    public void setInputs(ArrayList<Object> inputs) {
         this.inputs = inputs;
     }
 
-    public ArrayList<ObjectNode> getOutputs() {
+    public ArrayList<Object> getOutputs() {
         return outputs;
     }
 
-    public void setOutputs(ArrayList<ObjectNode> outputs) {
+    public void setOutputs(ArrayList<Object> outputs) {
         this.outputs = outputs;
     }
 }

@@ -11,6 +11,7 @@ public class ActivityParameterNode extends ObjectNode {
     public ActivityParameterNode(String name, Object parameter) {
         super(name);
         setParameter(parameter);
+        setObjects(null);
     }
 
     public ActivityParameterNode(String name, Object parameter, ActivityEdge data, Direction direction) {

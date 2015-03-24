@@ -31,11 +31,11 @@ import java.util.ArrayList;
 /**
  * Created by Maksym on 06.03.2015.
  */
-public class ParallelFlow extends RouteBuilder {
-    static Logger LOG = LoggerFactory.getLogger(ParallelFlow.class);
+public class Activity_w extends RouteBuilder {
+    static Logger LOG = LoggerFactory.getLogger(Activity_w.class);
     ArrayList<String> tasks;
 
-    public ParallelFlow(ArrayList<String> tasks) {
+    public Activity_w(ArrayList<String> tasks) {
         this.tasks = tasks;
     }
 

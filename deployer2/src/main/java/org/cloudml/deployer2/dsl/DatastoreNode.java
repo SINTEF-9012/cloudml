@@ -15,7 +15,7 @@ public class DatastoreNode extends ObjectNode {
     }
 
     @Override
-    public void setObjects(ArrayList<? extends Object> objects) {
+    public void setObjects(ArrayList<Object> objects) {
 
         // remove duplicates - semantics of datastore
         HashSet<Object> data = new HashSet<Object>(objects);

@@ -9,7 +9,7 @@ public class ObjectNode extends ActivityNode {
     //TODO add isControlNode parameter which means that object node may act as control node if needed.
     //TODO Also object ordering mode may be added: FIFO, LIFO, unordered, ordered. And object state.
 
-    protected ArrayList<? extends Object> objects = new ArrayList<Object>();
+    protected ArrayList<Object> objects = new ArrayList<Object>();
     private long upperBound = Long.MAX_VALUE;
 
     public ObjectNode(String name) {
@@ -34,12 +34,22 @@ public class ObjectNode extends ActivityNode {
         }
     }
 
+    public void addObject(Object object){
+        objects.add(object);
+    }
+
+    public void removeObject(Object object){
+        if (objects.contains(object)){
+            objects.remove(object);
+        }
+    }
+
     // setters and getters
     public ArrayList<? extends Object> getObjects() {
         return objects;
     }
 
-    public void setObjects(ArrayList<? extends Object> objects) {
+    public void setObjects(ArrayList<Object> objects) {
         this.objects = objects;
     }
 

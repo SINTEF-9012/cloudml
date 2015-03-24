@@ -14,7 +14,6 @@ public class Join extends ControlNode {
         //validate that all edges are of the same nature - UML semantics
         Validator.allEdgesAreControlOrObjectFlows(incoming, outgoing);
         this.setIncoming(incoming);
-        // set outgoing edge and protect outgoing edges list from being expanded
         this.addEdge(outgoing, Direction.OUT);
     }
 

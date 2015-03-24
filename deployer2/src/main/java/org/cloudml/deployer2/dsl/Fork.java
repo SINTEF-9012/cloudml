@@ -14,7 +14,6 @@ public class Fork extends ControlNode {
         //validate that all edges are of the same nature - UML semantics
         Validator.allEdgesAreControlOrObjectFlows(outgoing, incoming);
         this.setOutgoing(outgoing);
-        // set incoming edge and protect incoming edges list from being expanded
         this.addEdge(incoming, Direction.IN);
     }
 

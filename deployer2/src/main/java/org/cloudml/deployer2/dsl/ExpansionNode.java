@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class ExpansionNode extends ObjectNode {
 
-    public ExpansionNode(String name, ArrayList<? extends Object> collection) throws Exception {
+    public ExpansionNode(String name, ArrayList<Object> collection) throws Exception {
         super(name);
         inputIsCollection(collection);
         setObjects(collection);
