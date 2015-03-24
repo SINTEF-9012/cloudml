@@ -22,37 +22,51 @@
  */
 package org.cloudml.deployer2.camel;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.CloudMLQueryUtil;
 import org.cloudml.connectors.util.ConfigValet;
 import org.cloudml.connectors.util.MercurialConnector;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
-import org.cloudml.core.collections.*;
+import org.cloudml.core.collections.ComponentInstanceGroup;
+import org.cloudml.core.collections.ExternalComponentInstanceGroup;
+import org.cloudml.core.collections.RelationshipInstanceGroup;
+import org.cloudml.deployer.CloudAppDeployer;
 import org.cloudml.deployer.CloudMLModelComparator;
 import org.cloudml.deployer.PuppetManifestGenerator;
 import org.cloudml.deployer.Scaler;
+import org.cloudml.deployer2.dsl.*;
 import org.cloudml.monitoring.status.StatusConfiguration;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
 import org.cloudml.monitoring.synchronization.MonitoringSynch;
 import org.cloudml.mrt.Coordinator;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /*
  * The deployment Engine
  * author: Nicolas Ferry
  * author: Hui Song
  */
-public class ActivityDaigram {
+public class ActivityDaigram extends CloudAppDeployer {
+
+    private ArrayList<ActivityNode> nodes = new ArrayList<ActivityNode>();
+    private ArrayList<ActivityEdge> edges = new ArrayList<ActivityEdge>();
+    private HashMap<String, ArrayList<? extends Element>> collector = new HashMap<String, ArrayList<? extends Element>>();
+    private Activity activity = new Activity();
+
+
 
     private static final Logger journal = Logger.getLogger(ActivityDaigram.class.getName());
     private static boolean DEBUG=false;
@@ -90,20 +104,23 @@ public class ActivityDaigram {
      *
      * @param targetModel a deployment model
      */
-    public void deploy(Deployment targetModel) {
+    public void createActivityDiagram(Deployment targetModel) throws Exception {
+
         unlessNotNull("Cannot deploy null!", targetModel);
         this.targetModel = targetModel;
         //set up the monitoring
-        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
-        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
+//        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
+//        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
         if (currentModel == null) {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
 
-            if (statusMonitorProperties.getActivated() && statusMonitor == null) {
-                statusMonitorActive = true;
-                statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
-            }
+//            if (statusMonitorProperties.getActivated() && statusMonitor == null) {
+//                statusMonitorActive = true;
+//                statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
+//            }
+            ActivityParameterNode parameter = new ActivityParameterNode("Model", targetModel);
+
 
             // Provisioning vms and external services
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
@@ -122,9 +139,9 @@ public class ActivityDaigram {
             generatePuppetManifestAndConfigure();
 
             //send the current deployment to the monitoring platform
-            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
-                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
-            }
+//            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
+//                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
+//            }
         } else {
             journal.log(Level.INFO, ">> Updating a deployment...");
             CloudMLModelComparator diff = new CloudMLModelComparator(currentModel, targetModel);
@@ -146,29 +163,32 @@ public class ActivityDaigram {
 
 
             //send the changes to the monitoring platform
-            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
-                MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
-                if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
-                    MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
-                }
-            }
+//            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
+//                MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
+//                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
+//                if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
+//                    MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
+//                }
+//            }
         }
+
+        activity.setEdges(edges);
+        activity.setNodes(nodes);
 
         //start the monitoring of VMs
-        if (statusMonitorActive) {
-            statusMonitor.start();
-        }
+//        if (statusMonitorActive) {
+//            statusMonitor.start();
+//        }
 
         //MODAClouds specific code
-        if(targetModel.getProperties().get("sla_url") != null && targetModel.getProperties().get("agreement_id") != null){
-            Boolean status=startSLA(targetModel.getProperties().get("sla_url").getValue(),targetModel.getProperties().get("agreement_id").getValue());
-            if(status){
-                journal.log(Level.INFO, ">> SLA management started");
-            }else{
-                journal.log(Level.INFO, ">> SLA management not started");
-            }
-        }
+//        if(targetModel.getProperties().get("sla_url") != null && targetModel.getProperties().get("agreement_id") != null){
+//            Boolean status=startSLA(targetModel.getProperties().get("sla_url").getValue(),targetModel.getProperties().get("agreement_id").getValue());
+//            if(status){
+//                journal.log(Level.INFO, ">> SLA management started");
+//            }else{
+//                journal.log(Level.INFO, ">> SLA management not started");
+//            }
+//        }
     }
 
     private Boolean startSLA(String url, String agreementId){
@@ -203,7 +223,11 @@ public class ActivityDaigram {
         journal.log(Level.INFO, ">> Updating a deployment...");
 
         //Added stuff
-        setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
+        try {
+            setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
         configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
         configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
@@ -721,13 +745,74 @@ public class ActivityDaigram {
      *
      * @param ems A list of vms
      */
-    private void setExternalServices(ExternalComponentInstanceGroup ems) {
+    private void setExternalServices(ExternalComponentInstanceGroup ems) throws Exception {
+
+        // *  initial node
+        // *! final node
+        // ===> control flow
+        // ---> data flow
+        // | fork
+        // |& join
+        // |_| object node
+        // () action
+        // P parameter
+
+        // *===>|
+        ActivityInitialNode controlStart = ActivityBuilder.controlStart();
+        // |===>
+        Fork controlFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), false, true);
+        ActivityBuilder.connectInitialToFork(controlStart, controlFork);
+
+        // P--->
+        ActivityParameterNode dataStart = (ActivityParameterNode) ActivityBuilder.objectNode("ExternalComponents",
+                                                                ActivityBuilder.Edges.OUT,
+                                                                ActivityBuilder.ObjectNodeType.OBJECT);
+        DatastoreNode datastore = (DatastoreNode) ActivityBuilder.objectNode("ExternalComponents",
+                                                                            ActivityBuilder.Edges.NOEDGES,
+                                                                            ActivityBuilder.ObjectNodeType.OBJECT);
+        datastore.setIncoming(dataStart.getOutgoing());
+        Fork dataStoreFork = (Fork) ActivityBuilder.forkOrJoin(1, true, true);
+        ActivityBuilder.connectObjectToFork(datastore, dataStoreFork);
+
+        // |_|--->|
+        ObjectNode vmObjects = ActivityBuilder.objectNode("ExternalComponents",
+                                                            ActivityBuilder.Edges.NOEDGES,
+                                                            ActivityBuilder.ObjectNodeType.OBJECT);
+        vmObjects.setIncoming(dataStoreFork.getOutgoing());
+        // |--->
+        Fork dataFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), true, true);
+        ActivityBuilder.connectObjectToFork(vmObjects, dataFork);
+
+        // |--->()
+
+
+
+        Action action;
+        ActivityEdge controlToAction;
+        ActivityEdge dataToAction;
+        ArrayList<Action> provisioning = new ArrayList<Action>(ems.size());
+
         for (ExternalComponentInstance n : ems) {
-            if (n instanceof VMInstance)
-                provisionAVM((VMInstance) n);
-            else
-                provisionAPlatform(n);
+            controlToAction = controlFork.getOutgoing().get(ems.toList().indexOf(n));
+            dataToAction = dataFork.getOutgoing().get(ems.toList().indexOf(n));
+
+            if (n instanceof VMInstance) {
+                action = ActivityBuilder.action(controlToAction, dataToAction, n, "provisionAVM");
+                provisioning.add(action);
+                vmObjects.addObject(n);
+
+//                provisionAVM((VMInstance) n);
+            } else {
+                action = ActivityBuilder.action(controlToAction, dataToAction, n, "provisionAPlatform");
+                provisioning.add(action);
+                vmObjects.addObject(n);
+//                provisionAPlatform(n);
+            }
         }
+
+        ObjectNode IPs = ActivityBuilder.objectNode("ExternalComponents",
+                                                    ActivityBuilder.Edges.NOEDGES,
+                                                    ActivityBuilder.ObjectNodeType.OBJECT);
     }
 
     /**

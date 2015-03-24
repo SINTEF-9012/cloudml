@@ -7,9 +7,12 @@ import java.util.ArrayList;
  */
 public class ExpansionNode extends ObjectNode {
 
+    public ExpansionNode(String name){
+        super(name);
+    }
+
     public ExpansionNode(String name, ArrayList<Object> collection) throws Exception {
         super(name);
-        inputIsCollection(collection);
         setObjects(collection);
     }
 
@@ -17,6 +20,12 @@ public class ExpansionNode extends ObjectNode {
         if (input.size() < 2){
             throw new Exception("ExpansionNode expects collection of size two as minimum as input");
         }
+    }
+
+    @Override
+    public void setObjects(ArrayList<Object> collection) throws Exception {
+        inputIsCollection(collection);
+        this.objects = collection;
     }
 
 }

@@ -1,5 +1,7 @@
 package org.cloudml.deployer2.dsl;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 /**
@@ -49,7 +51,7 @@ public class ObjectNode extends ActivityNode {
         return objects;
     }
 
-    public void setObjects(ArrayList<Object> objects) {
+    public void setObjects(ArrayList<Object> objects) throws Exception {
         this.objects = objects;
     }
 

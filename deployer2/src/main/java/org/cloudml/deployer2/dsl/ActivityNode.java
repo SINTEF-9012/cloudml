@@ -8,9 +8,7 @@ import java.util.List;
  */
 public abstract class ActivityNode extends Element {
 
-    public enum Direction {IN, OUT}
-
-    ;
+    public enum Direction {IN, OUT};
 
     protected ArrayList<ActivityEdge> incoming = new ArrayList<ActivityEdge>();
     protected ArrayList<ActivityEdge> outgoing = new ArrayList<ActivityEdge>();

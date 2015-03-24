@@ -8,7 +8,12 @@ public class ActivityParameterNode extends ObjectNode {
 
     private Object parameter;
 
-    public ActivityParameterNode(String name, Object parameter) {
+    public ActivityParameterNode(String name) throws Exception {
+        super(name);
+        setObjects(null);
+    }
+
+    public ActivityParameterNode(String name, Object parameter) throws Exception {
         super(name);
         setParameter(parameter);
         setObjects(null);
