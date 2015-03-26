@@ -23,9 +23,11 @@
 package org.cloudml.deployer2.camel;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.RouteDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
@@ -56,7 +58,10 @@ public class Activity_w extends RouteBuilder {
         for (int i = 0; i < tasks.size(); i++) {
             list[i] = "bean:" + tasks.get(i);
         }
-        from("timer://runOnce?repeatCount=1&delay=4000").multicast().parallelProcessing().to(list);
+
+
+
+//        from("timer://runOnce?repeatCount=1&delay=4000").multicast().parallelProcessing().to(list);
 
     }
 

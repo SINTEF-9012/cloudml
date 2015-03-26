@@ -1,10 +1,8 @@
-package org.cloudml.deployer2.camel;
+package org.cloudml.deployer2.camel.util;
 
 import org.cloudml.deployer2.dsl.*;
 
 import java.util.ArrayList;
-
-import static org.cloudml.deployer2.camel.ActivityBuilder.Edges.IN;
 
 /**
  * Created by Maksym on 24.03.2015.
@@ -100,9 +98,16 @@ public class ActivityBuilder {
     public static ControlNode forkOrJoin(int parallelEdges, boolean isDataFlow, boolean returnFork) throws Exception {
         ActivityEdge edge;
         ArrayList<ActivityEdge> parallel = new ArrayList<ActivityEdge>(parallelEdges);
-        edge = (isDataFlow) ? new ActivityEdge(true) : new ActivityEdge();
-        while (parallel.size() < parallelEdges){
-            parallel.add(edge);
+        if (isDataFlow) {
+            edge = new ActivityEdge(true);
+            while (parallel.size() < parallelEdges) {
+                parallel.add(new ActivityEdge(true));
+            }
+        } else {
+            edge = new ActivityEdge();
+            while (parallel.size() < parallelEdges) {
+                parallel.add(new ActivityEdge());
+            }
         }
         ControlNode node = (returnFork) ? new Fork(edge, parallel) : new Join(parallel, edge);
         updateActivity(node);
@@ -114,19 +119,21 @@ public class ActivityBuilder {
     public static Action action(ActivityEdge control, ActivityEdge data, Object input, String methodToCall) throws Exception {
         Action action = new Action(methodToCall);
         action.addEdge(control, ActivityNode.Direction.IN);
+        getActivity().removeEdge(control); // to avoid duplication of edges
         if (data != null) {
             action.addEdge(data, ActivityNode.Direction.IN);
+            getActivity().removeEdge(data); // to avoid duplication of edges
         }
         if (input != null) {
             action.addInput(input);
         }
         // add outgoing control flow. outgoing dataflow and actual objects shall be decided upon inside calling method. //TODO Issue is how to update activity with outgoing data edges
-        action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+        //action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
         updateActivity(action);
         return action;
     }
 
-    // sets outgoing edge of intial node as incoming of fork
+    // sets outgoing edge of initial node as incoming of fork
     public static void connectInitialToFork(ActivityInitialNode initial, Fork fork) throws Exception {
         ActivityEdge forkIncoming = fork.getIncoming().get(0);
         if (forkIncoming.isObjectFlow()){
@@ -139,33 +146,73 @@ public class ActivityBuilder {
         }
     }
 
+    // connect Join to Final node
+    public static void connectJoinToFinal(Join join, ActivityFinalNode node) throws Exception {
+        ActivityEdge joinOutgoing = join.getOutgoing().get(0);
+        if (joinOutgoing.isObjectFlow()){
+            throw new Exception("Final node may be connected only with Join with control flow edges, this join node has data flow edges");
+        } else {
+            // when we join initial node and fork we lose one edge, so remove it from activity
+            getActivity().removeEdge(joinOutgoing);
+            // actually connect them via edges
+            join.setOutgoing(node.getIncoming());
+        }
+    }
+
+    // connect object node to fork node with data edges
     public static void connectObjectToFork(ObjectNode node, Fork fork) throws Exception {
         ActivityEdge forkIncoming = fork.getIncoming().get(0);
         if (!forkIncoming.isObjectFlow()){
             throw new Exception("Object node may be connected only to Fork with data flow edges, this fork has control flow edges");
+        } else if (node.getOutgoing().size() > 0){
+            // when we join object node and fork we lose one edge, so remove it from activity
+            getActivity().removeEdge(forkIncoming);
+            // actually connect them via edges
+            fork.setIncoming(node.getOutgoing());
         } else {
-            if (node.getOutgoing().size() > 0){
-                // when we join object node and fork we lose one edge, so remove it from activity
-                getActivity().removeEdge(forkIncoming);
-                // actually connect them via edges
-                fork.setIncoming(node.getOutgoing());
-            } else {
-                node.setOutgoing(fork.getIncoming());
+            node.setOutgoing(fork.getIncoming());
+        }
+    }
+
+
+    public static void connectJoinToObject(Join join, ObjectNode node) throws Exception {
+        ActivityEdge joinOutgoing = join.getOutgoing().get(0);
+        if (!joinOutgoing.isObjectFlow()){
+            throw new Exception("Object node may be connected only to Join with data flow edges, this join node has control flow edges");
+        } else if (node.getIncoming().size() > 0){
+            // when we connect object node and join node we lose one edge, so remove it from activity
+            getActivity().removeEdge(joinOutgoing);
+            // actually connect them via edges
+            join.setOutgoing(node.getIncoming());
+        } else {
+            node.setIncoming(join.getOutgoing());
+        }
+    }
+
+    // connects a set of actions without outgoing edges to Join nodes (control and maybe data join)
+    public static void connectActionsWithJoinNodes(ArrayList<Action> actions, Join control, Join data) throws Exception {
+        for (Action a:actions){
+            int index = actions.indexOf(a);
+            ActivityEdge controlEdge = control.getIncoming().get(index);
+            a.addEdge(controlEdge, ActivityNode.Direction.OUT);
+            if (data != null) {
+                ActivityEdge dataEdge = data.getIncoming().get(index);
+                a.addEdge(dataEdge, ActivityNode.Direction.OUT);
             }
         }
     }
 
 
-    public static void main (String[] args){
-        try {
-            ActivityInitialNode initial = ActivityBuilder.controlStart();
-            System.out.println(ActivityBuilder.getActivity().toString());
-            Fork fork = (Fork) ActivityBuilder.forkOrJoin(3,false,true);
-            System.out.println(ActivityBuilder.getActivity().toString());
-            ActivityBuilder.connectInitialToFork(initial, fork);
-            System.out.println(ActivityBuilder.getActivity().toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void main (String[] args){
+//        try {
+//            ActivityInitialNode initial = ActivityBuilder.controlStart();
+//            System.out.println(ActivityBuilder.getActivity().toString());
+//            Fork fork = (Fork) ActivityBuilder.forkOrJoin(3,false,true);
+//            System.out.println(ActivityBuilder.getActivity().toString());
+//            ActivityBuilder.connectInitialToFork(initial, fork);
+//            System.out.println(ActivityBuilder.getActivity().toString());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

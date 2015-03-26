@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.deployer2.camel;
+package org.cloudml.deployer2.camel.util;
 
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.CloudMLQueryUtil;
@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  * author: Nicolas Ferry
  * author: Hui Song
  */
-public class ActivityDaigram extends CloudAppDeployer {
+public class ActivityDiagram extends CloudAppDeployer {
 
     private ArrayList<ActivityNode> nodes = new ArrayList<ActivityNode>();
     private ArrayList<ActivityEdge> edges = new ArrayList<ActivityEdge>();
@@ -68,7 +68,7 @@ public class ActivityDaigram extends CloudAppDeployer {
 
 
 
-    private static final Logger journal = Logger.getLogger(ActivityDaigram.class.getName());
+    private static final Logger journal = Logger.getLogger(ActivityDiagram.class.getName());
     private static boolean DEBUG=false;
 
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
@@ -79,7 +79,7 @@ public class ActivityDaigram extends CloudAppDeployer {
     private boolean statusMonitorActive;
     private StatusMonitor statusMonitor; //always check if active
 
-    public ActivityDaigram() {
+    public ActivityDiagram() {
         System.setProperty("jsse.enableSNIExtension", "false");
     }
 
@@ -119,8 +119,6 @@ public class ActivityDaigram extends CloudAppDeployer {
 //                statusMonitorActive = true;
 //                statusMonitor = new StatusMonitor(statusMonitorProperties.getFrequency(), false, coordinator);
 //            }
-            ActivityParameterNode parameter = new ActivityParameterNode("Model", targetModel);
-
 
             // Provisioning vms and external services
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
@@ -331,7 +329,7 @@ public class ActivityDaigram extends CloudAppDeployer {
 
                 executeInstallCommand(instance, ownerVM, jc);
 
-                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), ActivityDaigram.class.getName());
+                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
                 //instance.setStatus(State.INSTALLED);
                 jc.closeConnection();
             } else { // If the destination is a PaaS platform
@@ -362,9 +360,9 @@ public class ActivityDaigram extends CloudAppDeployer {
                     connector.configAppParameters(instance.getName(), params);
                 }
                 for(InternalComponentInstance ici: host.hostedComponents()){
-                    coordinator.updateStatus(ici.getName(), State.RUNNING.toString(), ActivityDaigram.class.getName());
+                    coordinator.updateStatus(ici.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                 }
-                coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDaigram.class.getName());
+                coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
             }
         }
     }
@@ -546,7 +544,7 @@ public class ActivityDaigram extends CloudAppDeployer {
                     String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                     start(jc, n, ownerVM, startCommand);
                 }
-                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDaigram.class.getName());
+                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
 
                 alreadyStarted.add(host);
             }
@@ -570,21 +568,21 @@ public class ActivityDaigram extends CloudAppDeployer {
                 executeUploadCommands(host.asInternal(),ownerVM,jc);
                 executeRetrieveCommand(host.asInternal(), ownerVM, jc);
                 executeInstallCommand(host.asInternal(), ownerVM, jc);
-                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), ActivityDaigram.class.getName());
+                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.INSTALLED);
 
                 for (Resource r : host.getType().getResources()) {
                     String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
                     configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                 }
-                coordinator.updateStatusInternalComponent(host.getName(), State.CONFIGURED.toString(), ActivityDaigram.class.getName());
+                coordinator.updateStatusInternalComponent(host.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.CONFIGURED);
 
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                     start(jc, n, ownerVM, startCommand);
                 }
-                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDaigram.class.getName());
+                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.RUNNING);
 
                 alreadyStarted.add(host);
@@ -635,7 +633,7 @@ public class ActivityDaigram extends CloudAppDeployer {
                         }
 
                         if (serverComponent.isInternal()) {
-                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), ActivityDaigram.class.getName());
+                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
                             //serverComponent.asInternal().setStatus(State.INSTALLED);
                         }
 
@@ -644,7 +642,7 @@ public class ActivityDaigram extends CloudAppDeployer {
                             configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
                         }
                         if (serverComponent.isInternal()) {
-                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDaigram.class.getName());
+                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
                             //serverComponent.asInternal().setStatus(State.CONFIGURED);
                         }
 
@@ -653,7 +651,7 @@ public class ActivityDaigram extends CloudAppDeployer {
                             start(jc, n, owner, startCommand);
                         }
                         if (serverComponent.isInternal()) {
-                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDaigram.class.getName());
+                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                             //serverComponent.asInternal().setStatus(State.RUNNING);
                         }
 
@@ -689,14 +687,14 @@ public class ActivityDaigram extends CloudAppDeployer {
                         String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
                         configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
                     }
-                    coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), ActivityDaigram.class.getName());
+                    coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.CONFIGURED);
 
                     for (Resource r : x.getType().getResources()) {
                         String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                         start(jc, n, ownerVM, startCommand);
                     }
-                    coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), ActivityDaigram.class.getName());
+                    coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.RUNNING);
 
                     alreadyStarted.add(x);
@@ -745,101 +743,178 @@ public class ActivityDaigram extends CloudAppDeployer {
      *
      * @param ems A list of vms
      */
-    private void setExternalServices(ExternalComponentInstanceGroup ems) throws Exception {
+    //TODO do not delete - this is expanded version of external components provisioning with all data objects and flows
+//    public void setExternalServices(ExternalComponentInstanceGroup ems) throws Exception {
+//
+//        // *  initial node
+//        // *! final node
+//        // ===> control flow
+//        // ---> data flow
+//        // | fork
+//        // |& join
+//        // |_| object node
+//        // () action
+//        // P parameter
+//
+//        // *===>|
+//        ActivityInitialNode controlStart = ActivityBuilder.controlStart();
+////        System.out.println("Initial: " + ActivityBuilder.getActivity().toString());
+//        // |===>
+//        Fork controlFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), false, true);
+//        ActivityBuilder.connectInitialToFork(controlStart, controlFork);
+////        System.out.println("Control fork: " + ActivityBuilder.getActivity().toString());
+//        // P--->
+//        ActivityParameterNode dataStart = (ActivityParameterNode) ActivityBuilder.objectNode("Model",
+//                                                                ActivityBuilder.Edges.OUT,
+//                                                                ActivityBuilder.ObjectNodeType.PARAMETER);
+//        dataStart.setParameter(getCurrentModel());
+////        System.out.println("Input parameter: " + ActivityBuilder.getActivity().toString());
+//
+//        DatastoreNode datastore = (DatastoreNode) ActivityBuilder.objectNode("Datastore",
+//                                                                            ActivityBuilder.Edges.NOEDGES,
+//                                                                            ActivityBuilder.ObjectNodeType.DATASTORE);
+//        datastore.setIncoming(dataStart.getOutgoing());
+//        datastore.addObject(ems);
+////        System.out.println("Datastore: " + ActivityBuilder.getActivity().toString());
+//
+//        Fork dataStoreFork = (Fork) ActivityBuilder.forkOrJoin(1, true, true);
+//        ActivityBuilder.connectObjectToFork(datastore, dataStoreFork);
+////        System.out.println("Data fork model: " + ActivityBuilder.getActivity().toString());
+//        // |_|--->|
+//        ObjectNode vmObjects = ActivityBuilder.objectNode("ExternalComponents",
+//                                                            ActivityBuilder.Edges.NOEDGES,
+//                                                            ActivityBuilder.ObjectNodeType.OBJECT);
+//        vmObjects.setIncoming(dataStoreFork.getOutgoing());
+////        System.out.println("External components object: " + ActivityBuilder.getActivity().toString());
+//        ArrayList<Object> list = new ArrayList<Object>();
+//        list.addAll(((ExternalComponentInstanceGroup) datastore.getObjects().get(0)).toList());
+//        vmObjects.setObjects(list);
+//        // |--->
+//        Fork dataFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), true, true);
+//        ActivityBuilder.connectObjectToFork(vmObjects, dataFork);
+////        System.out.println("VMs data fork: " + ActivityBuilder.getActivity().toString());
+//        // |--->()
+//
+//
+//
+//        Action action;
+//        ActivityEdge controlEdge;
+//        ActivityEdge dataEdge;
+//        ArrayList<Action> provisioning = new ArrayList<Action>(ems.size());
+////        System.out.println(ems.size());
+//
+//        for (ExternalComponentInstance n : ems) {
+//            controlEdge = controlFork.getOutgoing().get(ems.toList().indexOf(n));
+//            dataEdge = dataFork.getOutgoing().get(ems.toList().indexOf(n));
+//
+//            if (n instanceof VMInstance) {
+//                action = ActivityBuilder.action(controlEdge, dataEdge, n, "provisionAVM");
+//                provisioning.add(action);
+//
+////                provisionAVM((VMInstance) n);
+//            } else {
+//                action = ActivityBuilder.action(controlEdge, dataEdge, n, "provisionAPlatform");
+//                provisioning.add(action);
+//            }
+////            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
+//        }
+//
+//        ObjectNode IPs = ActivityBuilder.objectNode("Public Addresses",
+//                                                    ActivityBuilder.Edges.OUT,
+//                                                    ActivityBuilder.ObjectNodeType.OBJECT);
+//        Join dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
+//        ActivityBuilder.connectJoinToObject(dataJoin, IPs);
+//
+//        ActivityParameterNode dataStop = (ActivityParameterNode) ActivityBuilder.objectNode("End of provisioning",
+//                                                                                ActivityBuilder.Edges.NOEDGES,
+//                                                                                ActivityBuilder.ObjectNodeType.PARAMETER);
+//        dataStop.setParameter(IPs.getObjects());
+//        dataStop.setIncoming(IPs.getOutgoing());
+//
+//        ActivityFinalNode finalNode = ActivityBuilder.controlStop();
+//        Join controlJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), false, false);
+//        ActivityBuilder.connectJoinToFinal(controlJoin, finalNode);
+//
+//        for (Action a:provisioning){
+//            int index = provisioning.indexOf(a);
+//            controlEdge = controlJoin.getIncoming().get(index);
+//            dataEdge = dataJoin.getIncoming().get(index);
+//            a.addEdge(controlEdge, ActivityNode.Direction.OUT);
+//            a.addEdge(dataEdge, ActivityNode.Direction.OUT);
+//        }
+//
+//    }
 
-        // *  initial node
-        // *! final node
-        // ===> control flow
-        // ---> data flow
-        // | fork
-        // |& join
-        // |_| object node
-        // () action
-        // P parameter
+    public void setExternalServices(ExternalComponentInstanceGroup ems) throws Exception{
 
-        // *===>|
-        ActivityInitialNode controlStart = ActivityBuilder.controlStart();
-        // |===>
+        // start and fork
+        ActivityInitialNode controlStart = ActivityBuilder.controlStart();   //System.out.println("Initial: " + ActivityBuilder.getActivity().toString());
         Fork controlFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), false, true);
-        ActivityBuilder.connectInitialToFork(controlStart, controlFork);
+        ActivityBuilder.connectInitialToFork(controlStart, controlFork);     //System.out.println("Fork: " + ActivityBuilder.getActivity().toString());
 
-        // P--->
-        ActivityParameterNode dataStart = (ActivityParameterNode) ActivityBuilder.objectNode("ExternalComponents",
-                                                                ActivityBuilder.Edges.OUT,
-                                                                ActivityBuilder.ObjectNodeType.OBJECT);
-        DatastoreNode datastore = (DatastoreNode) ActivityBuilder.objectNode("ExternalComponents",
-                                                                            ActivityBuilder.Edges.NOEDGES,
-                                                                            ActivityBuilder.ObjectNodeType.OBJECT);
-        datastore.setIncoming(dataStart.getOutgoing());
-        Fork dataStoreFork = (Fork) ActivityBuilder.forkOrJoin(1, true, true);
-        ActivityBuilder.connectObjectToFork(datastore, dataStoreFork);
-
-        // |_|--->|
-        ObjectNode vmObjects = ActivityBuilder.objectNode("ExternalComponents",
-                                                            ActivityBuilder.Edges.NOEDGES,
-                                                            ActivityBuilder.ObjectNodeType.OBJECT);
-        vmObjects.setIncoming(dataStoreFork.getOutgoing());
-        // |--->
-        Fork dataFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), true, true);
-        ActivityBuilder.connectObjectToFork(vmObjects, dataFork);
-
-        // |--->()
-
-
-
+        // list of actions with input data
         Action action;
-        ActivityEdge controlToAction;
-        ActivityEdge dataToAction;
+        ActivityEdge controlEdge;
         ArrayList<Action> provisioning = new ArrayList<Action>(ems.size());
 
         for (ExternalComponentInstance n : ems) {
-            controlToAction = controlFork.getOutgoing().get(ems.toList().indexOf(n));
-            dataToAction = dataFork.getOutgoing().get(ems.toList().indexOf(n));
-
+            controlEdge = controlFork.getOutgoing().get(ems.toList().indexOf(n));
             if (n instanceof VMInstance) {
-                action = ActivityBuilder.action(controlToAction, dataToAction, n, "provisionAVM");
+                action = ActivityBuilder.action(controlEdge, null, n, "provisionAVM");
                 provisioning.add(action);
-                vmObjects.addObject(n);
-
-//                provisionAVM((VMInstance) n);
             } else {
-                action = ActivityBuilder.action(controlToAction, dataToAction, n, "provisionAPlatform");
+                action = ActivityBuilder.action(controlEdge, null, n, "provisionAPlatform");
                 provisioning.add(action);
-                vmObjects.addObject(n);
-//                provisionAPlatform(n);
             }
+//            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
         }
 
-        ObjectNode IPs = ActivityBuilder.objectNode("ExternalComponents",
-                                                    ActivityBuilder.Edges.NOEDGES,
-                                                    ActivityBuilder.ObjectNodeType.OBJECT);
+        // container of all IPs
+        ObjectNode IPs = ActivityBuilder.objectNode("Public Addresses",
+                ActivityBuilder.Edges.NOEDGES,
+                ActivityBuilder.ObjectNodeType.OBJECT);  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
+        Join dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
+        ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
+
+        // control join and finish
+        ActivityFinalNode finalNode = ActivityBuilder.controlStop();  //System.out.println("Final: " + ActivityBuilder.getActivity().toString());
+        Join controlJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), false, false);
+        ActivityBuilder.connectJoinToFinal(controlJoin, finalNode);   //System.out.println("Control Join n: " + ActivityBuilder.getActivity().toString());
+
+        // connect actions with control and data join
+        ActivityBuilder.connectActionsWithJoinNodes(provisioning, controlJoin, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
     }
 
     /**
      * Provision a VM
      *
-     * @param n a VMInstance
+     * @param action action which holds VMInstance as input
      */
-    private void provisionAVM(VMInstance n) {
-        if(DEBUG){
-            journal.log(Level.INFO, ">> Provision: "+n.getName());
-            return;
-        }
+    public static void provisionAVM(Action action) {
+        VMInstance n = (VMInstance) action.getInputs().get(0);
+//        if(DEBUG){
+//            journal.log(Level.INFO, ">> Provision: " + n.getName());
+//            return action;
+//        }
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), ActivityDaigram.class.getName());
+//        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), ActivityDaigram.class.getName());
         HashMap<String,String> runtimeInformation = jc.createInstance(n);
-        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), ActivityDaigram.class.getName());
+//        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), ActivityDaigram.class.getName());
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),ActivityDaigram.class.getName());
+
+        // save IP
+        action.addOutput(runtimeInformation.get("publicAddress"));
+
+//        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),ActivityDaigram.class.getName());
         //enable the monitoring of the new machine
-        if (statusMonitorActive) {
-            statusMonitor.attachModule(jc);
-        }
+//        if (statusMonitorActive) {
+//            statusMonitor.attachModule(jc);
+//        }
         jc.closeConnection();
     }
 
@@ -849,9 +924,10 @@ public class ActivityDaigram extends CloudAppDeployer {
      * platforms are not necessary to be provisioned before deployment, so this
      * method is basically used to launch a DB
      *
-     * @param n: an external component instance for the platform
+     * @param action action which holds ExternalComponentInstance as input
      */
-    private void provisionAPlatform(ExternalComponentInstance n) {
+    public static void provisionAPlatform(Action action) {
+        ExternalComponentInstance n = (ExternalComponentInstance) action.getInputs().get(0);
         ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
         ExternalComponent ec = eci.getType();
         Provider p = eci.getType().getProvider();
@@ -872,8 +948,9 @@ public class ActivityDaigram extends CloudAppDeployer {
                     ec.hasProperty("securityGroup") ? ec.getProperties().valueOf("securityGroup") : "");
             String pa=connector.getDBEndPoint(eci.getName(), 600);
             eci.setPublicAddress(pa);
-            coordinator.updateIP(n.getName(),pa,ActivityDaigram.class.getName());
-            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDaigram.class.getName());
+            action.addOutput(pa);
+//            coordinator.updateIP(n.getName(),pa,ActivityDaigram.class.getName());
+//            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDaigram.class.getName());
             //execute the configure command
             /*if (!n.getType().getResources().isEmpty()) {
                 for (Resource r : n.getType().getResources()) {
@@ -889,6 +966,7 @@ public class ActivityDaigram extends CloudAppDeployer {
             PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
             String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
+            action.addOutput(url);
         }
     }
 
@@ -909,13 +987,13 @@ public class ActivityDaigram extends CloudAppDeployer {
                     if (valet != null)
                         valet.config();
                     else if(res.hasProperty("db-binding-alias")){
-                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING.toString(), ActivityDaigram.class.getName());
+                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING.toString(), ActivityDiagram.class.getName());
                         try{
                             Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
                             PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
                             String alias = res.getProperties().valueOf("db-binding-alias");
                             connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
-                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING.toString(), ActivityDaigram.class.getName());
+                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
                         }catch(Exception ex){
                             ex.printStackTrace();
                             journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
@@ -932,7 +1010,7 @@ public class ActivityDaigram extends CloudAppDeployer {
                         try{
                             PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
                             connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
-                            coordinator.updateStatusInternalComponent(clienti.getName(), State.RUNNING.toString(), ActivityDaigram.class.getName());
+                            coordinator.updateStatusInternalComponent(clienti.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                         }
                         catch(NullPointerException e){
                             journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
@@ -1103,7 +1181,7 @@ public class ActivityDaigram extends CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), ActivityDaigram.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), ActivityDiagram.class.getName());
         //old way without using mrt
         //n.setStatusAsStopped();
     }
@@ -1138,7 +1216,7 @@ public class ActivityDaigram extends CloudAppDeployer {
             }
 
             jc.closeConnection();
-            coordinator.updateStatusInternalComponent(a.getName(), State.UNINSTALLED.toString(), ActivityDaigram.class.getName());
+            coordinator.updateStatusInternalComponent(a.getName(), State.UNINSTALLED.toString(), ActivityDiagram.class.getName());
             //a.setStatus(State.CONFIGURED);
         }
     }

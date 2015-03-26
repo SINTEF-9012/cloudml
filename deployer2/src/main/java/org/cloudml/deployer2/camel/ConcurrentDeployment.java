@@ -30,6 +30,14 @@ import org.apache.camel.util.jndi.JndiContext;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
 import org.cloudml.core.VMInstance;
+import org.cloudml.deployer2.camel.camel_beans.ActionNodeBean;
+import org.cloudml.deployer2.camel.camel_beans.ActivityEdgeBean;
+import org.cloudml.deployer2.camel.camel_beans.ControlNodeBean;
+import org.cloudml.deployer2.camel.camel_beans.ObjectNodeBean;
+import org.cloudml.deployer2.camel.util.ActivityBuilder;
+import org.cloudml.deployer2.camel.util.ActivityDiagram;
+import org.cloudml.deployer2.camel.util.BeansRegistrator;
+import org.cloudml.deployer2.dsl.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,10 +54,14 @@ public class ConcurrentDeployment {
     private Deployment targetModel;
 
     public ConcurrentDeployment(String pathToModel) {
-        targetModel = getDeployment(pathToModel);
+        setTargetModel(getDeployment(pathToModel));
 
-        // get VM instances from the model
-        Iterator<VMInstance> VMs = targetModel.getComponentInstances().onlyVMs().iterator();
+        ActivityDiagram diagram = new ActivityDiagram();
+        try {
+            diagram.setExternalServices(getTargetModel().getComponentInstances().onlyExternals());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // a list of task names which will be used as endpoint names in the Camel routes
         ArrayList<String> tasks = new ArrayList<String>();
@@ -58,24 +70,29 @@ public class ConcurrentDeployment {
 
             //register execution tasks(or beans, processes..) in the Camel context and save their names
             JndiContext jndiContext = new JndiContext();
-            jndiContext.bind("start", "start");
-
-            while (VMs.hasNext()) {
-                VMInstance vm = VMs.next();
-                String name = vm.getName();
-                if (name.equals("zookeeper (Maksym)")) {
-                    jndiContext.bind(name, new ProcessTwo(vm));
-                } else {
-                    jndiContext.bind(name, new ProcessOne(vm));
-                }
-                tasks.add(name);
+            ArrayList<ActivityNode> nodes = ActivityBuilder.getActivity().getNodes();
+            BeansRegistrator.performRegistration(jndiContext, nodes, tasks);
+//            while (VMs.hasNext()) {
+//                VMInstance vm = VMs.next();
+//                String name = vm.getName();
+//                if (name.equals("zookeeper (Maksym)")) {
+//                    jndiContext.bind(name, new ProcessTwo(vm, true));
+//                } else {
+//                    jndiContext.bind(name, new ProcessOne(vm, true));
+//                }
+//                tasks.add(name);
+//            }
+            System.out.println(ActivityBuilder.getActivity().toString());
+            System.out.println(tasks.size() + " registered tasks:");
+            for (String name:tasks) {
+                System.out.println("- " + name);
             }
 
             // Create a CamelContext (which is Camel's runtime system)
             context = new DefaultCamelContext(jndiContext);
 
             // add execution order (flow) to CamelContext
-            new ParallelFlow(tasks).addRoutesToCamelContext(context);
+            new Activity_w(tasks).addRoutesToCamelContext(context);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,15 +119,35 @@ public class ConcurrentDeployment {
         context.stop();
     }
 
+    public Deployment getTargetModel() {
+        return targetModel;
+    }
+
+    public void setTargetModel(Deployment targetModel) {
+        this.targetModel = targetModel;
+    }
+
     public static void main(String[] args) throws Exception {
 
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-        deployment.start();
+//        ActivityDiagram diagram = new ActivityDiagram();
+//        diagram.setExternalServices(deployment.getTargetModel().getComponentInstances().onlyExternals());
+//        System.out.println(ActivityBuilder.getActivity().toString());
+//        for (ActivityNode node:ActivityBuilder.getActivity().getNodes()){
+//            if (node instanceof Action){
+//                ActionNodeBean exec = new ActionNodeBean((Action) node);
+//                exec.execute();
+//            }
+//        }
 
-        while (true) {
-        }
+//        deployment.start();
+//
+//        while (true) {
+//        }
 
 //        deployment.stop();
 
     }
+
+
 }

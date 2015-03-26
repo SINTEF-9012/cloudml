@@ -6,8 +6,8 @@ import java.util.ArrayList;
  * Created by Maksym on 13.03.2015.
  */
 public class Action extends ActivityNode {
-    private ArrayList<Object> inputs;
-    private ArrayList<Object> outputs;
+    private ArrayList<Object> inputs = new ArrayList<Object>();
+    private ArrayList<Object> outputs = new ArrayList<Object>();
 
     // constructors
     public Action(String name) {

@@ -54,6 +54,19 @@ public class Activity extends Element {
 
     @Override
     public String toString(){
-        return "This activity contains " + getNodes().size() + " nodes and " + getEdges().size() + " edges";
+        int control = 0;
+        int data = 0;
+        for (ActivityEdge e:getEdges()){
+            if (e.isObjectFlow()){
+                data++;
+            } else {
+                control ++;
+            }
+        }
+        return "This activity contains " +
+                getNodes().size() + " nodes and " +
+                getEdges().size() + " edges (" +
+                control + " control and " + data  +
+                " data flow edges)";
     }
 }

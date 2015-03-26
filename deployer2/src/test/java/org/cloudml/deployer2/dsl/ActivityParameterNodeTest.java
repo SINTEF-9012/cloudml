@@ -10,9 +10,9 @@ public class ActivityParameterNodeTest {
     @Test
     public void testAddEdge(){
         ActivityEdge objectFlow = new ActivityEdge(true);
-        ActivityParameterNode parameterNode = new ActivityParameterNode("in", "object");
-
+        ActivityParameterNode parameterNode = null;
         try {
+            parameterNode = new ActivityParameterNode("in", "object");
             parameterNode.addEdge(objectFlow, ActivityNode.Direction.IN);
             parameterNode.addEdge(objectFlow, ActivityNode.Direction.IN);
             fail("Exception is expected because parameter node can not have more than one incoming edge");
