@@ -23,27 +23,7 @@
 
 package org.cloudml.core.visitors;
 
-import org.cloudml.core.Cloud;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.ExecuteInstance;
-import org.cloudml.core.ExternalComponent;
-import org.cloudml.core.ExternalComponentInstance;
-import org.cloudml.core.InternalComponent;
-import org.cloudml.core.InternalComponentInstance;
-import org.cloudml.core.ProvidedExecutionPlatform;
-import org.cloudml.core.ProvidedExecutionPlatformInstance;
-import org.cloudml.core.ProvidedPort;
-import org.cloudml.core.ProvidedPortInstance;
-import org.cloudml.core.Provider;
-import org.cloudml.core.Relationship;
-import org.cloudml.core.RelationshipInstance;
-import org.cloudml.core.RequiredExecutionPlatform;
-import org.cloudml.core.RequiredExecutionPlatformInstance;
-import org.cloudml.core.RequiredPort;
-import org.cloudml.core.RequiredPortInstance;
-import org.cloudml.core.VM;
-import org.cloudml.core.VMInstance;
-
+import org.cloudml.core.*;
 
 
 /**
@@ -57,6 +37,10 @@ public abstract class AbstractVisitListener implements VisitListener {
 
     @Override
     public void onProviderEntry(Provider subject) {
+    }
+
+    @Override
+    public void onResourcePoolInstanceEntry(ResourcePoolInstance subject) {
     }
 
     @Override
@@ -230,6 +214,11 @@ public abstract class AbstractVisitListener implements VisitListener {
     @Override
     public void onCloudExit(Cloud cloud) {
     }
-    
+
+    @Override
+    public void onResourcePoolInstanceExit(ResourcePoolInstance cloud) {
+    }
+
+
 
 }

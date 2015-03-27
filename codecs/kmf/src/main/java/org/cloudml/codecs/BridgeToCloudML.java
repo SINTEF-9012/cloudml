@@ -22,6 +22,7 @@
  */
 package org.cloudml.codecs;
 
+import net.cloudml.core.ResourcesPool;
 import org.cloudml.core.*;
 import org.cloudml.core.NamedElement;
 import org.cloudml.core.WithProperties;
@@ -86,10 +87,15 @@ public class BridgeToCloudML {
         internalComponentInstancesToPOJO(kDeploy.getInternalComponentInstances());
         vmsToPOJO(kDeploy.getVms());
         vmInstancesToPOJO(kDeploy.getVmInstances());
+        resourcePoolsToPOJO(kDeploy.getResourcePools());
         relationshipsToPOJO(kDeploy.getRelationships());
         relationshipInstancesToPOJO(kDeploy.getRelationshipInstances());
         executeInstancesToPOJO(kDeploy.getExecutesInstances());
         return model;
+    }
+
+    private void resourcePoolsToPOJO(List<net.cloudml.core.ResourcesPool> kResourcePools) {
+
     }
 
     public void checkForNull(Object obj, String message) {

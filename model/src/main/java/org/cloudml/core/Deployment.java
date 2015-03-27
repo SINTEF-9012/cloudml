@@ -22,15 +22,8 @@
  */
 package org.cloudml.core;
 
-import org.cloudml.core.collections.CloudGroup;
+import org.cloudml.core.collections.*;
 
-import org.cloudml.core.collections.ComponentGroup;
-import org.cloudml.core.collections.ComponentInstanceGroup;
-import org.cloudml.core.collections.ExecuteInstanceGroup;
-import org.cloudml.core.collections.InternalComponentGroup;
-import org.cloudml.core.collections.ProviderGroup;
-import org.cloudml.core.collections.RelationshipGroup;
-import org.cloudml.core.collections.RelationshipInstanceGroup;
 import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.validation.CanBeValidated;
 import org.cloudml.core.validation.Report;
@@ -47,6 +40,7 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
     private final RelationshipGroup relationships;
     private final RelationshipInstanceGroup relationshipInstances;
     private final ExecuteInstanceGroup executeInstances;
+    private final ResourcePoolGroup resourcePoolInstances;
     private final CloudGroup clouds;
 
     public Deployment() {
@@ -62,6 +56,7 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
         this.relationshipInstances = new LocalRelationshipInstanceGroup();
         this.executeInstances = new LocalExecuteInstanceGroup();
         this.clouds = new LocalCloudGroup();
+        this.resourcePoolInstances=new LocalResourcePoolGroup();
     }
 
     public Deployment clone(){
@@ -352,6 +347,22 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
         public boolean remove(Object o) {
             if (o instanceof ExecuteInstance) {
                 ((ExecuteInstance) o).getOwner().discard();
+            }
+            return super.remove(o);
+        }
+    }
+
+    private class LocalResourcePoolGroup extends ResourcePoolGroup{
+        @Override
+        public boolean add(ResourcePoolInstance e) {
+            e.getOwner().set(Deployment.this);
+            return super.add(e);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            if (o instanceof ResourcePoolInstance) {
+                ((ResourcePoolInstance) o).getOwner().discard();
             }
             return super.remove(o);
         }
