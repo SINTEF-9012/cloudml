@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public class BeansRegistrator {
 
-    public static void performRegistration(JndiContext jndiContext, ArrayList<ActivityNode> nodes, ArrayList<String> taskNames) throws NamingException {
+    public static void performRegistration(JndiContext jndiContext, ArrayList<ActivityNode> nodes, ArrayList<String> taskNames, boolean debugMode) throws NamingException {
 
         // indexes are used to distinguish actions with the same name, for instance upload command will be upload 1, upload 2, etc.
         int actionIndex = 1;
@@ -26,7 +26,7 @@ public class BeansRegistrator {
                     //TODO stuff for internal components of expansion region, probably recursion
                 }
                 Action a = (Action) node;
-                ActionNodeBean vm = new ActionNodeBean(a);
+                ActionNodeBean vm = new ActionNodeBean(a, debugMode);
                 String actionName = a.getName() + " " + actionIndex;
                 jndiContext.unbind(actionName); // fixes javax.naming.NamingException: Something already bound at
                 jndiContext.bind(actionName, vm);
@@ -65,7 +65,7 @@ public class BeansRegistrator {
             // register outgoing edge for ActivityInitial node
             identifier = "Start";
             jndiContext.unbind(identifier);
-            jndiContext.bind(identifier, controlNode);
+            jndiContext.bind(identifier, new ControlNodeBean(controlNode));
             taskNames.add(identifier);
             ActivityEdge out = controlNode.getOutgoing().get(0);
             jndiContext.unbind(identifier + ":OUT");
@@ -75,7 +75,7 @@ public class BeansRegistrator {
             // register incoming edge for ActivityFinal node
             identifier = "Stop";
             jndiContext.unbind(identifier);
-            jndiContext.bind(identifier, controlNode);
+            jndiContext.bind(identifier, new ControlNodeBean(controlNode));
             taskNames.add(identifier);
             ActivityEdge in = controlNode.getIncoming().get(0);
             jndiContext.unbind(identifier + ":IN");
@@ -86,14 +86,14 @@ public class BeansRegistrator {
             ActivityNode source = controlNode.getIncoming().get(0).getSource();
             String name = (source.getName().equals("empty")) ? "Start" : source.getName(); //empty name means we are connected to some control node. Only valid possibility is ActivityInitialNode
             jndiContext.unbind("Fork from:" + name);
-            jndiContext.bind("Fork from:" + name, controlNode);
+            jndiContext.bind("Fork from:" + name, new ControlNodeBean(controlNode));
             taskNames.add("Fork from:" + name);
         } else if (controlNode instanceof Join){
             // do not register any edges for join node except the node itself
             ActivityNode target = controlNode.getOutgoing().get(0).getTarget();
             String name = (target.getName().equals("empty")) ? "Stop" : target.getName();  //empty name means we are connected to some control node. Only valid possibility is ActivityFinalNode
             jndiContext.unbind("Join to:" + name);
-            jndiContext.bind("Join to:" + name, controlNode);
+            jndiContext.bind("Join to:" + name, new ControlNodeBean(controlNode));
             taskNames.add("Join to:" + name);
         }
         return taskNames;

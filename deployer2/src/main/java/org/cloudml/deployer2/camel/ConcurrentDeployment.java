@@ -71,17 +71,9 @@ public class ConcurrentDeployment {
             //register execution tasks(or beans, processes..) in the Camel context and save their names
             JndiContext jndiContext = new JndiContext();
             ArrayList<ActivityNode> nodes = ActivityBuilder.getActivity().getNodes();
-            BeansRegistrator.performRegistration(jndiContext, nodes, tasks);
-//            while (VMs.hasNext()) {
-//                VMInstance vm = VMs.next();
-//                String name = vm.getName();
-//                if (name.equals("zookeeper (Maksym)")) {
-//                    jndiContext.bind(name, new ProcessTwo(vm, true));
-//                } else {
-//                    jndiContext.bind(name, new ProcessOne(vm, true));
-//                }
-//                tasks.add(name);
-//            }
+            //TODO don't forget to disable debug mode by changing true to false
+            BeansRegistrator.performRegistration(jndiContext, nodes, tasks, true);
+
             System.out.println(ActivityBuilder.getActivity().toString());
             System.out.println(tasks.size() + " registered tasks:");
             for (String name:tasks) {
@@ -130,20 +122,11 @@ public class ConcurrentDeployment {
     public static void main(String[] args) throws Exception {
 
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-//        ActivityDiagram diagram = new ActivityDiagram();
-//        diagram.setExternalServices(deployment.getTargetModel().getComponentInstances().onlyExternals());
-//        System.out.println(ActivityBuilder.getActivity().toString());
-//        for (ActivityNode node:ActivityBuilder.getActivity().getNodes()){
-//            if (node instanceof Action){
-//                ActionNodeBean exec = new ActionNodeBean((Action) node);
-//                exec.execute();
-//            }
-//        }
 
-//        deployment.start();
+        deployment.start();
 //
-//        while (true) {
-//        }
+        while (true) {
+        }
 
 //        deployment.stop();
 

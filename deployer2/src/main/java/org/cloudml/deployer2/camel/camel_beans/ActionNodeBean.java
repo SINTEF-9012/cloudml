@@ -15,10 +15,12 @@ import java.util.logging.Logger;
 public class ActionNodeBean {
     private static final Logger journal = Logger.getLogger(ObjectNodeBean.class.getName());
     private Action action;
+    private boolean debugMode;
 
 
-    public ActionNodeBean(Action action){
+    public ActionNodeBean(Action action, boolean debugMode){
         this.action = action;
+        this.debugMode = debugMode;
     }
 
     public void execute() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -36,17 +38,26 @@ public class ActionNodeBean {
             String externalComponent = ((VMInstance)action.getInputs().get(0)).getName();
 
             switch (methodName){
-                case "provisionAVM": journal.log(Level.INFO, "Provisioning " + externalComponent);
-                                     method = cls.getDeclaredMethod(methodName, new Class[]{Action.class});
-                                     method.invoke(cls, action); //provision a vm and save its IP inside action
+                case "provisionAVM": journal.log(Level.INFO, "Action: Provisioning " + externalComponent);
+                                     method = cls.getDeclaredMethod(methodName, new Class[]{Action.class, boolean.class});
+                                     method.invoke(cls, action, debugMode); //provision a vm and save its IP inside action
                                      container.addObject(externalComponent + " address is:" + action.getOutputs().get(0)); //save IP in ObjectNode
                                      break;
-                case "provisionAPlatform": journal.log(Level.INFO, "Provisioning " + externalComponent);
-                                           method = cls.getDeclaredMethod(methodName, new Class[]{Action.class});
-                                           method.invoke(cls, action); //provision a platform and save its IP inside action
+                case "provisionAPlatform": journal.log(Level.INFO, "Action: Provisioning " + externalComponent);
+                                           method = cls.getDeclaredMethod(methodName, new Class[]{Action.class, boolean.class});
+                                           method.invoke(cls, action, debugMode); //provision a platform and save its IP inside action
                                            container.addObject(externalComponent + " address is:" + action.getOutputs().get(0)); //save IP in ObjectNode
                                            break;
             }
         }
     }
+
+//    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+//        System.out.println(boolean.class);
+//        Action a = new Action("provisionAVM");
+//        a.addOutput("output");
+//        Class cls = ActivityDiagram.class;
+//        Method method = cls.getDeclaredMethod(a.getName(), new Class[]{Action.class, boolean.class});
+//        method.invoke(cls, a, true);
+//    }
 }

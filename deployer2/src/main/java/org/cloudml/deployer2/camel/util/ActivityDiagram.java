@@ -890,32 +890,34 @@ public class ActivityDiagram extends CloudAppDeployer {
      *
      * @param action action which holds VMInstance as input
      */
-    public static void provisionAVM(Action action) {
+    public static void provisionAVM(Action action, boolean debugMode) {
         VMInstance n = (VMInstance) action.getInputs().get(0);
-//        if(DEBUG){
-//            journal.log(Level.INFO, ">> Provision: " + n.getName());
-//            return action;
-//        }
-        Provider p = n.getType().getProvider();
-        Connector jc = ConnectorFactory.createIaaSConnector(p);
-//        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), ActivityDaigram.class.getName());
-        HashMap<String,String> runtimeInformation = jc.createInstance(n);
-//        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), ActivityDaigram.class.getName());
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
-        // save IP
-        action.addOutput(runtimeInformation.get("publicAddress"));
+        if(debugMode){
+            journal.log(Level.INFO, ">> Provisioning of: " + n.getName() + " is done");
+            action.addOutput("debug IP");
+        } else {
+            Provider p = n.getType().getProvider();
+            Connector jc = ConnectorFactory.createIaaSConnector(p);
+//        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), ActivityDaigram.class.getName());
+            HashMap<String, String> runtimeInformation = jc.createInstance(n);
+//        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), ActivityDaigram.class.getName());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // save IP
+            action.addOutput(runtimeInformation.get("publicAddress"));
 
 //        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),ActivityDaigram.class.getName());
-        //enable the monitoring of the new machine
+            //enable the monitoring of the new machine
 //        if (statusMonitorActive) {
 //            statusMonitor.attachModule(jc);
 //        }
-        jc.closeConnection();
+            jc.closeConnection();
+        }
     }
 
     /**
@@ -926,32 +928,37 @@ public class ActivityDiagram extends CloudAppDeployer {
      *
      * @param action action which holds ExternalComponentInstance as input
      */
-    public static void provisionAPlatform(Action action) {
+    public static void provisionAPlatform(Action action, boolean debugMode) {
         ExternalComponentInstance n = (ExternalComponentInstance) action.getInputs().get(0);
-        ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
-        ExternalComponent ec = eci.getType();
-        Provider p = eci.getType().getProvider();
 
-        if (ec.getServiceType() == null)
-            return;
-        if (ec.getServiceType().toLowerCase().equals("database")) {//For now we use string but this will evolve to an enum
-            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
-            connector.createDBInstance(
-                    ec.hasProperty("DB-Engine") ? ec.getProperties().valueOf("DB-Engine") : null,
-                    ec.hasProperty("DB-Version") ? ec.getProperties().valueOf("DB-Version") : null,
-                    eci.getName(),
-                    ec.hasProperty("DB-Name") ? ec.getProperties().valueOf("DB-Name") : null,
-                    ec.getLogin(),
-                    ec.getPasswd(),
-                    ec.hasProperty("allocatedSize") ? Integer.parseInt(ec.getProperties().valueOf("allocatedSize")) : 0,
-                    null,
-                    ec.hasProperty("securityGroup") ? ec.getProperties().valueOf("securityGroup") : "");
-            String pa=connector.getDBEndPoint(eci.getName(), 600);
-            eci.setPublicAddress(pa);
-            action.addOutput(pa);
+        if(debugMode){
+            journal.log(Level.INFO, ">> Provisioning of: " + n.getName() + " is done");
+            action.addOutput("debug IP");
+        } else {
+            ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
+            ExternalComponent ec = eci.getType();
+            Provider p = eci.getType().getProvider();
+
+            if (ec.getServiceType() == null)
+                return;
+            if (ec.getServiceType().toLowerCase().equals("database")) {//For now we use string but this will evolve to an enum
+                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
+                connector.createDBInstance(
+                        ec.hasProperty("DB-Engine") ? ec.getProperties().valueOf("DB-Engine") : null,
+                        ec.hasProperty("DB-Version") ? ec.getProperties().valueOf("DB-Version") : null,
+                        eci.getName(),
+                        ec.hasProperty("DB-Name") ? ec.getProperties().valueOf("DB-Name") : null,
+                        ec.getLogin(),
+                        ec.getPasswd(),
+                        ec.hasProperty("allocatedSize") ? Integer.parseInt(ec.getProperties().valueOf("allocatedSize")) : 0,
+                        null,
+                        ec.hasProperty("securityGroup") ? ec.getProperties().valueOf("securityGroup") : "");
+                String pa = connector.getDBEndPoint(eci.getName(), 600);
+                eci.setPublicAddress(pa);
+                action.addOutput(pa);
 //            coordinator.updateIP(n.getName(),pa,ActivityDaigram.class.getName());
 //            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDaigram.class.getName());
-            //execute the configure command
+                //execute the configure command
             /*if (!n.getType().getResources().isEmpty()) {
                 for (Resource r : n.getType().getResources()) {
                     if (r.getConfigureCommand() != null) {
@@ -961,12 +968,13 @@ public class ActivityDiagram extends CloudAppDeployer {
                 }
             }*/
 
-        }
-        if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
-            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
-            String url = connector.createQueue(n.getName());
-            eci.setPublicAddress(url);
-            action.addOutput(url);
+            }
+            if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
+                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
+                String url = connector.createQueue(n.getName());
+                eci.setPublicAddress(url);
+                action.addOutput(url);
+            }
         }
     }
 

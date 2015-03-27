@@ -17,10 +17,31 @@ public class ActivityEdgeBean {
     }
 
     public void execute(){
+        String target = edge.getTarget().getClass().getSimpleName();
+        String source = edge.getSource().getClass().getSimpleName();
+        identifyNode(target);
+        identifyNode(source);
         if (edge.isObjectFlow()){
-            journal.log(Level.INFO, "Passing data from " + edge.getSource().getName() + " to " + edge.getTarget().getName());
+            journal.log(Level.INFO, "Passing data from " + source + " to " + target);
         } else {
-            journal.log(Level.INFO, "Moving from " + edge.getSource().getName() + " to " + edge.getTarget().getName());
+            journal.log(Level.INFO, "Moving from " + source + " to " + target);
+        }
+    }
+
+    private void identifyNode(String target) {
+        switch (target){
+            case "ActivityFinalNode":
+                target = "Final node";
+                break;
+            case "ActivityInitialNode":
+                target = "Start node";
+                break;
+            case "Fork":
+                target = "Fork";
+                break;
+            case "Join":
+                target = "Join";
+                break;
         }
     }
 }

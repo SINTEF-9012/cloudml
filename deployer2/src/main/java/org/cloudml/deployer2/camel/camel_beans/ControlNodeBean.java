@@ -17,20 +17,27 @@ public class ControlNodeBean {
     }
 
     public void execute(){
+        String message;
+        int index = 1;
         if (node instanceof Fork){
-            journal.log(Level.INFO, "Inside fork with next targets:");
+            message = "Inside fork with next targets:\n";
             for (ActivityEdge o:node.getOutgoing()){
-                journal.log(Level.INFO, "- " + o.getTarget().getName());
+                message += "- " + o.getTarget().getName() + " " + index + "\n";
+                index++;
             }
+            journal.log(Level.INFO, message);
         } else if (node instanceof Join){
-            journal.log(Level.INFO, "Inside join which synchronizes:");
-            for (ActivityEdge o:node.getOutgoing()){
-                journal.log(Level.INFO, "- " + o.getTarget().getName());
+            message = "Inside join which synchronizes:\n";
+            for (ActivityEdge o:node.getIncoming()){
+                message += "- " + o.getSource().getName() + " " + index + "\n";
+                index++;
             }
+            journal.log(Level.INFO, message);
         } else if (node instanceof ActivityInitialNode){
             journal.log(Level.INFO, "Starting deployment");
         } else {
             journal.log(Level.INFO, "Deployment has finished successfully");
+            ((ActivityFinalNode)node).finish();
         }
     }
 }

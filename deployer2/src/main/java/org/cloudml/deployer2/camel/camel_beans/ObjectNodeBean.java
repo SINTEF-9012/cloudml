@@ -31,7 +31,15 @@ public class ObjectNodeBean {
         } else if (node instanceof ExpansionNode){
             journal.log(Level.INFO, "Inside expansion node " + node.getName() + ", collection size is: " + node.getObjects().size());
         } else {
-            journal.log(Level.INFO, "Inside object node " + node.getName() + " which contains " + node.getObjects().size() + " objects");
+            String message = "Inside object node " + node.getName() + " which contains " + node.getObjects().size() + " objects:\n";
+            for (Object obj:node.getObjects()){
+                if (obj instanceof String){
+                    message += (String)obj + "\n";
+                } else {
+                    //TODO if you can think of other objects which are not String, add output logic here
+                }
+            }
+            journal.log(Level.INFO, message);
         }
     }
 }
