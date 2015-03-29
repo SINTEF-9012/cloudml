@@ -28,7 +28,7 @@ import java.util.Map;
 
 public interface PaaSConnector{
     
-    void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel);
+    String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel);
     
     void createDBInstance(String engine, String version, String dbInstanceIdentifier, String dbName, String username, String password,
             Integer allocatedSize, String dbInstanceClass, String securityGroup);
@@ -48,6 +48,9 @@ public interface PaaSConnector{
     public void configAppParameters(String applicationName, Map<String,String> params);
 
     public void bindDbToApp(String appId, String dbId, String alias);
+
+    public void setEnvVar(String appName, String nameVar, String val);
+
 
 //Should be part of the interface at some point
 	//public void createApplication();
