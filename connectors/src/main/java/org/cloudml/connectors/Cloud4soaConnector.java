@@ -24,6 +24,7 @@ package org.cloudml.connectors;
 
 import cloudadapter.Adapter;
 import cloudadapter.DatabaseObject;
+import com.cloudbees.api.ApplicationDeployArchiveResponse;
 import com.cloudbees.api.BeesClient;
 import com.cloudbees.api.ServiceResourceBindResponse;
 import com.google.common.collect.ImmutableMap;
@@ -92,10 +93,11 @@ public class Cloud4soaConnector implements PaaSConnector {
         this.platform = platform;
     }
 
-    public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+        String tmp2="";
         if(stackName == null || stackName.length()==0){
             try {
-                String tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
+                tmp2 = Adapter.uploadAndDeployToEnv(platform, warFile,
                                  credentials.getPublicKey(), credentials.getPrivateKey(), credentials.getAccountName(),
                                  applicationName, versionLabel, "", "", "", "", "", "deployed by cloudml"
                                 );
@@ -112,14 +114,15 @@ public class Cloud4soaConnector implements PaaSConnector {
             Map<String,String> params = new HashMap<String, String>();
             params.put("containerType", stackName);
             try {
-                client.applicationDeployArchive(this.credentials.getAccountName()+"/"+applicationName,
+                ApplicationDeployArchiveResponse deployArchiveResponse = client.applicationDeployArchive(this.credentials.getAccountName() + "/" + applicationName,
                         envName, "deployed by cloudml", warFile,
                         warFile, "war", false, params, null);
+                tmp2=deployArchiveResponse.getUrl();
             } catch (Exception ex) {
                 Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
+        return tmp2;
     }
 
 //    private Application[] listApplications() throws Cloud4SoaException {
@@ -286,4 +289,10 @@ public class Cloud4soaConnector implements PaaSConnector {
             Logger.getLogger(Cloud4soaConnector.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    @Override
+    public void setEnvVar(String appName, String nameVar, String val) {
+        return;
+    }
+
 }
