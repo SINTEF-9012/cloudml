@@ -34,16 +34,17 @@ import com.heroku.api.connection.ConnectionFactory;
 public class HerokuConnector implements PaaSConnector {
     private static final Logger journal = Logger.getLogger(HerokuConnector.class.getName());
     private HerokuAPI api;
-
+    //8a0de666-f9d7-4d6f-a62e-44e1834021fe
 
     public HerokuConnector(String passwd){
         api=new HerokuAPI(ConnectionFactory.get(),passwd);
     }
 
     @Override
-    public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
         App application=new App().named(applicationName);
-        api.createApp(application);
+        App a=api.createApp(application);
+        return a.getWebUrl();
     }
 
     @Override
@@ -88,6 +89,11 @@ public class HerokuConnector implements PaaSConnector {
 
     @Override
     public void bindDbToApp(String appId, String dbId, String alias) {
+
+    }
+
+    @Override
+    public void setEnvVar(String appName, String nameVar, String val) {
 
     }
 }
