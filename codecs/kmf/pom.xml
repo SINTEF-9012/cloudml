@@ -15,7 +15,7 @@
 
 
     <properties>
-        <metamodel.ecore>metamodel/CloudML-2.0.ecore</metamodel.ecore>
+        <metamodel.ecore>metamodel/CloudML-2.1.ecore</metamodel.ecore>
         <kmf.version>1.3.0-BETA3</kmf.version>
         <kotlin.version>0.5.429</kotlin.version>
     </properties>
