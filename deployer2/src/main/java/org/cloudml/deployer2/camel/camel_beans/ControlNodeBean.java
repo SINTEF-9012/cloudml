@@ -17,6 +17,9 @@ public class ControlNodeBean {
     }
 
     public void execute(){
+
+        node.getProperties().put("Status", String.valueOf(Element.Status.ACTIVE));
+
         String message;
         int index = 1;
         if (node instanceof Fork){
@@ -39,5 +42,7 @@ public class ControlNodeBean {
             journal.log(Level.INFO, "Deployment has finished successfully");
             ((ActivityFinalNode)node).finish();
         }
+
+        node.getProperties().put("Status", String.valueOf(Element.Status.DONE));
     }
 }

@@ -1,9 +1,6 @@
 package org.cloudml.deployer2.camel.camel_beans;
 
-import org.cloudml.deployer2.dsl.ActivityParameterNode;
-import org.cloudml.deployer2.dsl.DatastoreNode;
-import org.cloudml.deployer2.dsl.ExpansionNode;
-import org.cloudml.deployer2.dsl.ObjectNode;
+import org.cloudml.deployer2.dsl.*;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +17,9 @@ public class ObjectNodeBean {
     }
 
     public void execute(){
+
+        node.getProperties().put("Status", String.valueOf(Element.Status.ACTIVE));
+
         if (node instanceof DatastoreNode){
             journal.log(Level.INFO, "Inside datastore " + node.getName() + " which contains:");
             for (Object o:node.getObjects()){
@@ -41,5 +41,7 @@ public class ObjectNodeBean {
             }
             journal.log(Level.INFO, message);
         }
+
+        node.getProperties().put("Status", String.valueOf(Element.Status.DONE));
     }
 }

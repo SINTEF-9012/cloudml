@@ -37,6 +37,7 @@ import org.cloudml.deployer2.camel.camel_beans.ObjectNodeBean;
 import org.cloudml.deployer2.camel.util.ActivityBuilder;
 import org.cloudml.deployer2.camel.util.ActivityDiagram;
 import org.cloudml.deployer2.camel.util.BeansRegistrator;
+import org.cloudml.deployer2.camel.util.Parallel;
 import org.cloudml.deployer2.dsl.*;
 
 import java.io.FileInputStream;
@@ -122,11 +123,11 @@ public class ConcurrentDeployment {
     public static void main(String[] args) throws Exception {
 
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-
-        deployment.start();
-//
-        while (true) {
-        }
+        Parallel parallel = new Parallel(ActivityBuilder.getActivity());
+//        deployment.start();
+////
+//        while (true) {
+//        }
 
 //        deployment.stop();
 

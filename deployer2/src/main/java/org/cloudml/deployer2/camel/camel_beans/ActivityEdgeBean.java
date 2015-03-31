@@ -1,6 +1,7 @@
 package org.cloudml.deployer2.camel.camel_beans;
 
 import org.cloudml.deployer2.dsl.ActivityEdge;
+import org.cloudml.deployer2.dsl.Element;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +18,9 @@ public class ActivityEdgeBean {
     }
 
     public void execute(){
+
+        edge.getProperties().put("Status", String.valueOf(Element.Status.ACTIVE));
+
         String target = edge.getTarget().getClass().getSimpleName();
         String source = edge.getSource().getClass().getSimpleName();
         identifyNode(target);
@@ -26,6 +30,8 @@ public class ActivityEdgeBean {
         } else {
             journal.log(Level.INFO, "Moving from " + source + " to " + target);
         }
+
+        edge.getProperties().put("Status", String.valueOf(Element.Status.DONE));
     }
 
     private void identifyNode(String target) {

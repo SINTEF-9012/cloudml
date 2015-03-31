@@ -24,6 +24,9 @@ public class ActionNodeBean {
     }
 
     public void execute() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+
+        action.getProperties().put("Status", String.valueOf(Element.Status.ACTIVE));
+
         Class cls = ActivityDiagram.class;
         Method method;
 
@@ -32,9 +35,9 @@ public class ActionNodeBean {
         } else {
             String methodName = action.getName();
             // common objects fo provisionAVM and provisionAPlatform cases
-            //TODO make more generic - in this case I know that I save IP to ObjectNode which goes after Fork node
-            Join dataFork = (Join) action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
-            ObjectNode container = (ObjectNode) dataFork.getOutgoing().get(0).getTarget();
+            //TODO make more generic - in this case I know that I save IP to ObjectNode which goes after Join node
+            Join dataJoin = (Join) action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
+            ObjectNode container = (ObjectNode) dataJoin.getOutgoing().get(0).getTarget();
             String externalComponent = ((VMInstance)action.getInputs().get(0)).getName();
 
             switch (methodName){
@@ -50,14 +53,8 @@ public class ActionNodeBean {
                                            break;
             }
         }
+
+        action.getProperties().put("Status", String.valueOf(Element.Status.DONE));
     }
 
-//    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-//        System.out.println(boolean.class);
-//        Action a = new Action("provisionAVM");
-//        a.addOutput("output");
-//        Class cls = ActivityDiagram.class;
-//        Method method = cls.getDeclaredMethod(a.getName(), new Class[]{Action.class, boolean.class});
-//        method.invoke(cls, a, true);
-//    }
 }

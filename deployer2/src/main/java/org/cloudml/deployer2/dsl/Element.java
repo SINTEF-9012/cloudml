@@ -7,6 +7,7 @@ import java.util.HashMap;
  */
 abstract public class Element {
     public static final String DEFAULT_NAME = "empty";
+    public enum Status {INACTIVE, ACTIVE, DONE}
 
     private String name;
     private String elementID;
@@ -14,10 +15,12 @@ abstract public class Element {
 
     public Element() {
         setName(DEFAULT_NAME);
+        getProperties().put("Status", String.valueOf(Status.INACTIVE));
     }
 
     public Element(String name) {
         setName(name);
+        getProperties().put("Status", String.valueOf(Status.INACTIVE));
     }
 
     public String getName() {
