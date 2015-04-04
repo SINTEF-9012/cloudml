@@ -137,7 +137,7 @@ public class Parallel {
                 NewThread thread = new NewThread(outgoing.get(0));
                 thread.compute();
             } else {
-                List<RecursiveAction> forks = new LinkedList<>();
+                List<RecursiveAction> forks = new LinkedList<RecursiveAction>();
                 for (ActivityEdge edge : outgoing) {
                     NewThread thread = new NewThread(edge);
                     forks.add(thread);

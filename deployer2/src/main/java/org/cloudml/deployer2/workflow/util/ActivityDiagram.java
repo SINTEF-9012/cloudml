@@ -293,7 +293,7 @@ public class ActivityDiagram  {
     public void prepareComponents(ComponentInstanceGroup<ComponentInstance<? extends Component>> components, RelationshipInstanceGroup relationships) {
         unlessNotNull("Cannot prepare for deployment null!", components);
         // get VM provisioning tasks
-        ArrayList<Action> provisioned = new ArrayList<>();
+        ArrayList<Action> provisioned = new ArrayList<Action>();
         for (ActivityNode node:ActivityBuilder.getActivity().getNodes()){
             if(node.getName().contains("provision")){
                 provisioned.add((Action) node);

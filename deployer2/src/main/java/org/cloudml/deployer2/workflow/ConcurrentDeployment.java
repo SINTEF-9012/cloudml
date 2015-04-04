@@ -25,7 +25,6 @@
  */
 package org.cloudml.deployer2.workflow;
 
-import org.apache.camel.impl.DefaultCamelContext;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
 import org.cloudml.deployer2.workflow.util.ActivityBuilder;
@@ -41,7 +40,6 @@ public class ConcurrentDeployment {
 
     private static final Logger journal = Logger.getLogger(ConcurrentDeployment.class.getName());
 
-    private DefaultCamelContext context;
     private Deployment targetModel;
 
     public ConcurrentDeployment(String pathToModel) {
@@ -69,14 +67,6 @@ public class ConcurrentDeployment {
             e.printStackTrace();
         }
         return (Deployment) json.load(is);
-    }
-
-    public void start() throws Exception {
-        context.start();
-    }
-
-    public void stop() throws Exception {
-        context.stop();
     }
 
     public Deployment getTargetModel() {
