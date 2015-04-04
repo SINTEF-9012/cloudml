@@ -71,6 +71,12 @@ final class ListenerGroup {
         }
     }
 
+    public void enter(ResourcePoolInstance resourcePoolInstance) {
+        for (VisitListener listener: listeners) {
+            listener.onResourcePoolInstanceEntry(resourcePoolInstance);
+        }
+    }
+
     public void enter(VM vm) {
         for (VisitListener listener: listeners) {
             listener.onVMEntry(vm);
@@ -188,6 +194,12 @@ final class ListenerGroup {
     public void exit(Provider subject) {
         for (VisitListener listener: listeners) {
             listener.onProviderExit(subject);
+        }
+    }
+
+    public void exit(ResourcePoolInstance subject) {
+        for (VisitListener listener: listeners) {
+            listener.onResourcePoolInstanceExit(subject);
         }
     }
 

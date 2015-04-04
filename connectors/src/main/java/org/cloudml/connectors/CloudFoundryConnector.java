@@ -33,10 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,7 +83,7 @@ public class CloudFoundryConnector implements PaaSConnector {
     }
 
     @Override
-    public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
         journal.log(Level.INFO, ">> Creating application ... ");
         List<String> uris = new ArrayList<String>();
         uris.add(computeAppUrl(applicationName, domainName));
@@ -109,9 +106,12 @@ public class CloudFoundryConnector implements PaaSConnector {
         } catch (IOException e) {
             journal.log(Level.SEVERE, e.getMessage());
         }
+        return computeAppUrl(applicationName, domainName);
     }
 
-
+    public String getAppEndPoint(String appName){
+        return connectedClient.getApplication(appName).getUris().get(0);
+    }
 
     @Override
     public void bindDbToApp(String appId, String dbId, String alias) {
@@ -123,6 +123,11 @@ public class CloudFoundryConnector implements PaaSConnector {
             connectedClient.bindService(appName, serviceName);
         }
         connectedClient.restartApplication(appName);
+    }
+
+    @Override
+    public void setEnvVar(String appName, String nameVar, String val){
+        connectedClient.updateApplicationEnv(appName, Collections.singletonMap(nameVar, val));
     }
 
     private Boolean checkIfServiceExist(String serviceName){
@@ -140,6 +145,7 @@ public class CloudFoundryConnector implements PaaSConnector {
         }
         return false;
     }
+
 
     private String findFreePlan(String serviceLabel){
         for(CloudServicePlan csp : findCloudServiceOffering(serviceLabel).getCloudServicePlans()){
@@ -184,6 +190,7 @@ public class CloudFoundryConnector implements PaaSConnector {
 
         connectedClient.createService(service);
     }
+
 
     @Override
     public String getDBEndPoint(String dbInstanceId, int timeout) {

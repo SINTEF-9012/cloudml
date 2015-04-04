@@ -174,7 +174,8 @@ public class BeanstalkConnector implements PaaSConnector {
     }
 
 
-    public void createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+        String endPoint="";
         prepareWar(new File(warFile), versionLabel, applicationName);
         CreateEnvironmentRequest cr = new CreateEnvironmentRequest();
 
@@ -188,6 +189,7 @@ public class BeanstalkConnector implements PaaSConnector {
             if (r.isAvailable()) {
                 cr.setCNAMEPrefix(domainName);
                 CreateEnvironmentResult res = beanstalkClient.createEnvironment(cr);
+                endPoint=res.getEndpointURL();
                 journal.log(Level.INFO, ">> Status of the environment creation: " + res.toString());
             } else {
                 journal.log(Level.INFO, ">> Status of the environment creation: Domain Name already existing");
@@ -195,6 +197,7 @@ public class BeanstalkConnector implements PaaSConnector {
         } else {
             journal.log(Level.INFO, ">> Status of the environment creation: This type of stack does not exist!");
         }
+        return endPoint;
     }
 
     public void uploadWar(String warFile, String versionLabel, String applicationName, String envName, int timeout) {
@@ -501,6 +504,11 @@ public class BeanstalkConnector implements PaaSConnector {
 
     @Override
     public void bindDbToApp(String appId, String dbId, String alias) {
+        return;
+    }
+
+    @Override
+    public void setEnvVar(String appName, String nameVar, String val) {
         return;
     }
 

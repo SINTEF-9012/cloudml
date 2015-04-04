@@ -157,4 +157,10 @@ public class Visitor {
         dispatcher.dispatchTo(this, subject);
         listeners.exit(subject);
     }
+
+    public void visitResourcePoolInstance(ResourcePoolInstance subject){
+        listeners.enter(subject);
+        dispatcher.dispatchTo(this, subject);
+        listeners.exit(subject);
+    }
 }
