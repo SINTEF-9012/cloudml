@@ -360,8 +360,8 @@ public class ActivityDiagram  {
                 install.addInput(ownerVM);
                 install.addInput(jc);
                 install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-                }}
-//
+                }
+
 //                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
 //                //instance.setStatus(State.INSTALLED);
 //                jc.closeConnection();
@@ -378,7 +378,7 @@ public class ActivityDiagram  {
 //                    stack = instance.getType().getProperties().valueOf("buildpack");
 //                if(instance.hasProperty("buildpack"))
 //                    stack = instance.getProperties().valueOf("buildpack");
-//                connector.createEnvironmentWithWar(
+//                String url=connector.createEnvironmentWithWar(
 //                        instance.getName(),
 //                        instance.getName(),
 //                        host.getName(),
@@ -386,18 +386,19 @@ public class ActivityDiagram  {
 //                        instance.getType().getProperties().valueOf("warfile"),
 //                        instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
 //                );
+//                host.setPublicAddress(url);
 //                if(instance.hasProperty("containerSize")){
 //                    String size =instance.getProperties().valueOf("containerSize");
 //                    Map<String, String> params = new HashMap<String, String>();
 //                    params.put("containerSize", size);
 //                    connector.configAppParameters(instance.getName(), params);
 //                }
-////                for(InternalComponentInstance ici: host.hostedComponents()){
-////                    coordinator.updateStatus(ici.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
-////                }
-////                coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
+//                for(InternalComponentInstance ici: host.hostedComponents()){
+//                    coordinator.updateStatus(ici.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
+//                }
+//                coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
 //            }
-//        }
+        }
     }
 
     /**
@@ -1124,13 +1125,14 @@ public class ActivityDiagram  {
                 if(pltfi.isExternal()){
                     ExternalComponent pltf = (ExternalComponent) pltfi.getType();
                     if(!pltf.isVM()){
-                        try{
-                            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                            connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
-                            coordinator.updateStatusInternalComponent(clienti.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
-                        }
-                        catch(NullPointerException e){
-                            journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
+                        if(client.hasProperty("temp-warfile")) {
+                            try {
+                                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+                                connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+                                coordinator.updateStatusInternalComponent(clienti.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                            } catch (NullPointerException e) {
+                                journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
+                            }
                         }
                     }else{
                         journal.log(Level.INFO, ">> Connection IaaS to PaaS ...");
@@ -1173,8 +1175,29 @@ public class ActivityDiagram  {
                 this.bi=bi;
                 retrieveIPandConfigure(serverResource,clientResource,server,client);
             }
+            if(isPaaS2PaaS(bi)) {
+                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+                ComponentInstance s=bi.getProvidedEnd().getOwner().get().asInternal();
+                ExternalComponentInstance serveri = bi.getProvidedEnd().getOwner().get().asInternal().externalHost();
+                ExternalComponent pltf = clienti.asInternal().externalHost().getType();
+                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+                connector.setEnvVar(clienti.getName(), s.getName(), serveri.getPublicAddress());
+            }
         }
     }
+
+    private Boolean isPaaS2PaaS(RelationshipInstance ri){
+        if(bi.getRequiredEnd().getOwner().get().isInternal()){
+            if(bi.getProvidedEnd().getOwner().get().isInternal()){
+                if(!bi.getRequiredEnd().getOwner().get().asInternal().externalHost().isVM()
+                        && !bi.getProvidedEnd().getOwner().get().asInternal().externalHost().isVM()){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private RelationshipInstance bi = null;
 
     public void retrieveIPandConfigure(Resource serverResource, Resource clientResource, PortInstance<? extends Port> server, PortInstance<? extends Port> client){
