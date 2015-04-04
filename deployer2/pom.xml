@@ -14,17 +14,6 @@
 
 
     <dependencies>
-        <!-- Workflow engine -->
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
-            <version>2.14.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.5</version>
-        </dependency>
         <!-- Test System methods in JUnit -->
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
