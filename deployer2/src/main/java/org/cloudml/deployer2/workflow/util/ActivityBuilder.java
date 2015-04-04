@@ -1,4 +1,4 @@
-package org.cloudml.deployer2.camel.util;
+package org.cloudml.deployer2.workflow.util;
 
 import org.cloudml.deployer2.dsl.*;
 
@@ -114,7 +114,7 @@ public class ActivityBuilder {
         return node;
     }
 
-    // returns action with incoming and outgoing control flow and incoming data (unless null)  ===>()===>
+    // returns action                                                                          ===>()
     // this action is already connected to data (unless null) and control source               --->()
     public static Action action(ActivityEdge control, ActivityEdge data, Object input, String methodToCall) throws Exception {
         Action action = new Action(methodToCall);
@@ -193,8 +193,10 @@ public class ActivityBuilder {
     public static void connectActionsWithJoinNodes(ArrayList<Action> actions, Join control, Join data) throws Exception {
         for (Action a:actions){
             int index = actions.indexOf(a);
-            ActivityEdge controlEdge = control.getIncoming().get(index);
-            a.addEdge(controlEdge, ActivityNode.Direction.OUT);
+            if (control != null) {
+                ActivityEdge controlEdge = control.getIncoming().get(index);
+                a.addEdge(controlEdge, ActivityNode.Direction.OUT);
+            }
             if (data != null) {
                 ActivityEdge dataEdge = data.getIncoming().get(index);
                 a.addEdge(dataEdge, ActivityNode.Direction.OUT);

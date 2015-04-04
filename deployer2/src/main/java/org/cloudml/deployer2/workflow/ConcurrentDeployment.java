@@ -23,28 +23,18 @@
 /**
  * Created by Maksym on 05.03.2015.
  */
-package org.cloudml.deployer2.camel;
+package org.cloudml.deployer2.workflow;
 
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.util.jndi.JndiContext;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
-import org.cloudml.core.VMInstance;
-import org.cloudml.deployer2.camel.camel_beans.ActionNodeBean;
-import org.cloudml.deployer2.camel.camel_beans.ActivityEdgeBean;
-import org.cloudml.deployer2.camel.camel_beans.ControlNodeBean;
-import org.cloudml.deployer2.camel.camel_beans.ObjectNodeBean;
-import org.cloudml.deployer2.camel.util.ActivityBuilder;
-import org.cloudml.deployer2.camel.util.ActivityDiagram;
-import org.cloudml.deployer2.camel.util.BeansRegistrator;
-import org.cloudml.deployer2.camel.util.Parallel;
-import org.cloudml.deployer2.dsl.*;
+import org.cloudml.deployer2.workflow.util.ActivityBuilder;
+import org.cloudml.deployer2.workflow.util.ActivityDiagram;
+import org.cloudml.deployer2.workflow.util.Parallel;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Logger;
 
 public class ConcurrentDeployment {
@@ -60,35 +50,12 @@ public class ConcurrentDeployment {
         ActivityDiagram diagram = new ActivityDiagram();
         try {
             diagram.setExternalServices(getTargetModel().getComponentInstances().onlyExternals());
+            diagram.prepareComponents(getTargetModel().getComponentInstances(), getTargetModel().getRelationshipInstances());
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(ActivityBuilder.getActivity().toString());
 
-        // a list of task names which will be used as endpoint names in the Camel routes
-        ArrayList<String> tasks = new ArrayList<String>();
-
-        try {
-
-            //register execution tasks(or beans, processes..) in the Camel context and save their names
-            JndiContext jndiContext = new JndiContext();
-            ArrayList<ActivityNode> nodes = ActivityBuilder.getActivity().getNodes();
-            //TODO don't forget to disable debug mode by changing true to false
-            BeansRegistrator.performRegistration(jndiContext, nodes, tasks, true);
-
-            System.out.println(ActivityBuilder.getActivity().toString());
-            System.out.println(tasks.size() + " registered tasks:");
-            for (String name:tasks) {
-                System.out.println("- " + name);
-            }
-
-            // Create a CamelContext (which is Camel's runtime system)
-            context = new DefaultCamelContext(jndiContext);
-
-            // add execution order (flow) to CamelContext
-            new Activity_w(tasks).addRoutesToCamelContext(context);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -123,13 +90,7 @@ public class ConcurrentDeployment {
     public static void main(String[] args) throws Exception {
 
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-        Parallel parallel = new Parallel(ActivityBuilder.getActivity());
-//        deployment.start();
-////
-//        while (true) {
-//        }
-
-//        deployment.stop();
+        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
 
     }
 

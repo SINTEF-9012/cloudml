@@ -1,4 +1,4 @@
-package org.cloudml.deployer2.camel.camel_beans;
+package org.cloudml.deployer2.workflow.executables;
 
 import org.cloudml.deployer2.dsl.ActivityEdge;
 import org.cloudml.deployer2.dsl.Element;
@@ -9,11 +9,11 @@ import java.util.logging.Logger;
 /**
  * Created by Maksym on 25.03.2015.
  */
-public class ActivityEdgeBean {
-    private static final Logger journal = Logger.getLogger(ObjectNodeBean.class.getName());
+public class EdgeExecutable {
+    private static final Logger journal = Logger.getLogger(ObjectExecutable.class.getName());
     ActivityEdge edge;
 
-    public ActivityEdgeBean(ActivityEdge edge){
+    public EdgeExecutable(ActivityEdge edge){
         this.edge = edge;
     }
 
@@ -21,7 +21,10 @@ public class ActivityEdgeBean {
 
         edge.getProperties().put("Status", String.valueOf(Element.Status.ACTIVE));
 
-        String target = edge.getTarget().getClass().getSimpleName();
+        String target = "no target";
+        if (edge.getTarget() != null) {
+            target = edge.getTarget().getClass().getSimpleName();
+        }
         String source = edge.getSource().getClass().getSimpleName();
         identifyNode(target);
         identifyNode(source);

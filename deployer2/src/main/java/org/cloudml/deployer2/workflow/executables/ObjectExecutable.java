@@ -1,4 +1,4 @@
-package org.cloudml.deployer2.camel.camel_beans;
+package org.cloudml.deployer2.workflow.executables;
 
 import org.cloudml.deployer2.dsl.*;
 
@@ -8,11 +8,11 @@ import java.util.logging.Logger;
 /**
  * Created by Maksym on 25.03.2015.
  */
-public class ObjectNodeBean {
-    private static final Logger journal = Logger.getLogger(ObjectNodeBean.class.getName());
+public class ObjectExecutable {
+    private static final Logger journal = Logger.getLogger(ObjectExecutable.class.getName());
     private ObjectNode node;
 
-    public ObjectNodeBean(ObjectNode node){
+    public ObjectExecutable(ObjectNode node){
         this.node = node;
     }
 

@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.deployer2.camel.util;
+package org.cloudml.deployer2.workflow.util;
 
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.CloudMLQueryUtil;
@@ -50,7 +50,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,7 +58,7 @@ import java.util.logging.Logger;
  * author: Nicolas Ferry
  * author: Hui Song
  */
-public class ActivityDiagram extends CloudAppDeployer {
+public class ActivityDiagram  {
 
     private ArrayList<ActivityNode> nodes = new ArrayList<ActivityNode>();
     private ArrayList<ActivityEdge> edges = new ArrayList<ActivityEdge>();
@@ -71,7 +70,7 @@ public class ActivityDiagram extends CloudAppDeployer {
     private static final Logger journal = Logger.getLogger(ActivityDiagram.class.getName());
     private static boolean DEBUG=false;
 
-    ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
+    static ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
     private Deployment targetModel;
@@ -247,7 +246,7 @@ public class ActivityDiagram extends CloudAppDeployer {
         }
     }
 
-    private void unlessNotNull(String message, Object... obj) {
+    private static void unlessNotNull(String message, Object... obj) {
         if (obj != null) {
             for (Object o : obj) {
                 if (o == null) {
@@ -291,11 +290,22 @@ public class ActivityDiagram extends CloudAppDeployer {
      * @param components a list of components
      * @throws java.net.MalformedURLException
      */
-    private void prepareComponents(ComponentInstanceGroup<ComponentInstance<? extends Component>> components, RelationshipInstanceGroup relationships) {
+    public void prepareComponents(ComponentInstanceGroup<ComponentInstance<? extends Component>> components, RelationshipInstanceGroup relationships) {
         unlessNotNull("Cannot prepare for deployment null!", components);
+        // get VM provisioning tasks
+        ArrayList<Action> provisioned = new ArrayList<>();
+        for (ActivityNode node:ActivityBuilder.getActivity().getNodes()){
+            if(node.getName().contains("provision")){
+                provisioned.add((Action) node);
+            }
+        }
         for (ComponentInstance<? extends Component> x : components) {
             if (x instanceof InternalComponentInstance) {
-                prepareAnInternalComponent((InternalComponentInstance) x, components, relationships);
+                try {
+                    prepareAnInternalComponent((InternalComponentInstance) x, components, relationships, provisioned);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -306,65 +316,88 @@ public class ActivityDiagram extends CloudAppDeployer {
      *
      * @param instance   an InternalComponentInstance
      * @param components a list of components
+     * @param provisioned a list of provisioning actions to connect them with further actions
      * @throws java.net.MalformedURLException
      */
-    private void prepareAnInternalComponent(InternalComponentInstance instance, ComponentInstanceGroup<ComponentInstance<? extends Component>> components, RelationshipInstanceGroup relationships) {
+    private void prepareAnInternalComponent(InternalComponentInstance instance, ComponentInstanceGroup<ComponentInstance<? extends Component>> components, RelationshipInstanceGroup relationships, ArrayList<Action> provisioned) throws Exception {
         unlessNotNull("Cannot deploy null!", instance);
         Connector jc;
         if (!alreadyDeployed.contains(instance) && (instance.getRequiredExecutionPlatform() != null)) {
             ExternalComponentInstance host = instance.externalHost();
+
+            // find corresponding action in activity diagram and add outgoing edge to action
+            ActivityEdge controlOut = null;
+            for (Action action:provisioned){
+                if (action.getInputs().get(0).equals(host)){
+                    controlOut = new ActivityEdge();
+                    action.addEdge(controlOut, ActivityNode.Direction.OUT);
+                }
+            }
+
             if (host.isVM()) {
                 VMInstance ownerVM = host.asVM();
                 VM n = ownerVM.getType();
 
+                // TODO maybe I have to call this from actionNodeBean, because it's not just object - it is opened connection
                 jc = ConnectorFactory.createIaaSConnector(n.getProvider());
 
-                executeUploadCommands(instance, ownerVM, jc);
 
-                executeRetrieveCommand(instance, ownerVM, jc);
+                Action upload = ActivityBuilder.action(controlOut, null, instance, "executeUploadCommands");
+                upload.addInput(ownerVM);
+                upload.addInput(jc);
+                upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+
+                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, instance, "executeRetrieveCommand");
+                retrieve.addInput(ownerVM);
+                retrieve.addInput(jc);
+                retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
 
                 alreadyDeployed.add(instance);
 
-                buildPaas(instance, relationships.toList());
+                ActivityEdge outgoingFromPaas = buildPaas(instance, relationships.toList(),retrieve.getOutgoing().get(0));
 
-                executeInstallCommand(instance, ownerVM, jc);
-
-                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
-                //instance.setStatus(State.INSTALLED);
-                jc.closeConnection();
-            } else { // If the destination is a PaaS platform
-                ExternalComponent ownerType = (ExternalComponent) host.getType();
-                Provider p = ownerType.getProvider();
-                PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
-                String stack = "";
-                if(instance.getType().hasProperty("stack"))
-                    stack = instance.getType().getProperties().valueOf("stack");
-                if(instance.hasProperty("stack"))
-                    stack = instance.getProperties().valueOf("stack");
-                if(instance.getType().hasProperty("buildpack"))
-                    stack = instance.getType().getProperties().valueOf("buildpack");
-                if(instance.hasProperty("buildpack"))
-                    stack = instance.getProperties().valueOf("buildpack");
-                connector.createEnvironmentWithWar(
-                        instance.getName(),
-                        instance.getName(),
-                        host.getName(),
-                        stack,
-                        instance.getType().getProperties().valueOf("warfile"),
-                        instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
-                );
-                if(instance.hasProperty("containerSize")){
-                    String size =instance.getProperties().valueOf("containerSize");
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("containerSize", size);
-                    connector.configAppParameters(instance.getName(), params);
-                }
-                for(InternalComponentInstance ici: host.hostedComponents()){
-                    coordinator.updateStatus(ici.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
-                }
-                coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
-            }
-        }
+                Action install = ActivityBuilder.action(outgoingFromPaas, null, instance, "executeInstallCommand");
+                install.addInput(ownerVM);
+                install.addInput(jc);
+                install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                }}
+//
+//                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
+//                //instance.setStatus(State.INSTALLED);
+//                jc.closeConnection();
+//            } else { // If the destination is a PaaS platform
+//                ExternalComponent ownerType = (ExternalComponent) host.getType();
+//                Provider p = ownerType.getProvider();
+//                PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
+//                String stack = "";
+//                if(instance.getType().hasProperty("stack"))
+//                    stack = instance.getType().getProperties().valueOf("stack");
+//                if(instance.hasProperty("stack"))
+//                    stack = instance.getProperties().valueOf("stack");
+//                if(instance.getType().hasProperty("buildpack"))
+//                    stack = instance.getType().getProperties().valueOf("buildpack");
+//                if(instance.hasProperty("buildpack"))
+//                    stack = instance.getProperties().valueOf("buildpack");
+//                connector.createEnvironmentWithWar(
+//                        instance.getName(),
+//                        instance.getName(),
+//                        host.getName(),
+//                        stack,
+//                        instance.getType().getProperties().valueOf("warfile"),
+//                        instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
+//                );
+//                if(instance.hasProperty("containerSize")){
+//                    String size =instance.getProperties().valueOf("containerSize");
+//                    Map<String, String> params = new HashMap<String, String>();
+//                    params.put("containerSize", size);
+//                    connector.configAppParameters(instance.getName(), params);
+//                }
+////                for(InternalComponentInstance ici: host.hostedComponents()){
+////                    coordinator.updateStatus(ici.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
+////                }
+////                coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
+//            }
+//        }
     }
 
     /**
@@ -373,7 +406,7 @@ public class ActivityDiagram extends CloudAppDeployer {
      * @param jc a connector
      * @param command the command to be executed
      */
-    private void executeCommand(VMInstance owner, Connector jc, String command) {
+    private static void executeCommand(VMInstance owner, Connector jc, String command) {
         if(DEBUG){
             journal.log(Level.INFO, ">> Executing command: " + command);
             journal.log(Level.INFO, ">> On VM: " + owner.getName());
@@ -401,14 +434,18 @@ public class ActivityDiagram extends CloudAppDeployer {
         }
     }
 
-    private void executeInstallCommand(InternalComponentInstance x, VMInstance owner, Connector jc) {
-        unlessNotNull("Cannot install with an argument at null", x, owner, jc);
-        for (Resource r : x.getType().getResources()) {
-            if (!r.getInstallCommand().equals("")) {
-                if (r.getRequireCredentials()) {
-                    jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + " " + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
-                } else {
-                    executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x));
+    public static void executeInstallCommand(InternalComponentInstance x, VMInstance owner, Connector jc, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, ">> Installation of " + x.getType().getName() + " is done.");
+        } else {
+            unlessNotNull("Cannot install with an argument at null", x, owner, jc);
+            for (Resource r : x.getType().getResources()) {
+                if (!r.getInstallCommand().equals("")) {
+                    if (r.getRequireCredentials()) {
+                        jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + " " + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                    } else {
+                        executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x));
+                    }
                 }
             }
         }
@@ -417,18 +454,22 @@ public class ActivityDiagram extends CloudAppDeployer {
     /**
      * Upload resources associated to an internal component on a specified
      * external component
-     *
-     * @param x     the internal component with upload commands
+     *  @param x     the internal component with upload commands
      * @param owner the external component on which the resources are about to
      *              be uploaded
      * @param jc    the connector used to upload
+     * @param debugMode
      */
-    private void executeUploadCommands(InternalComponentInstance x, VMInstance owner, Connector jc) {
-        journal.log(Level.INFO, ">> Upload "+x.getType().getName());
-        unlessNotNull("Cannot upload with an argument at null", x, owner, jc);
-        for (Resource r : x.getType().getResources()) {
-            for (String path : r.getUploadCommand().keySet()) {
-                jc.uploadFile(path, r.getUploadCommand().get(path), owner.getId(), "ubuntu", owner.getType().getPrivateKey());
+    public static void executeUploadCommands(InternalComponentInstance x, VMInstance owner, Connector jc, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, ">> Uploading of " + x.getType().getName() + " is done.");
+        } else {
+            journal.log(Level.INFO, ">> Upload " + x.getType().getName());
+            unlessNotNull("Cannot upload with an argument at null", x, owner, jc);
+            for (Resource r : x.getType().getResources()) {
+                for (String path : r.getUploadCommand().keySet()) {
+                    jc.uploadFile(path, r.getUploadCommand().get(path), owner.getId(), "ubuntu", owner.getType().getPrivateKey());
+                }
             }
         }
     }
@@ -440,14 +481,19 @@ public class ActivityDiagram extends CloudAppDeployer {
      * @param owner the externalComponent on which the resources will be
      *              downloaded
      * @param jc    the connector used to trigger the commands
+     * @param debugMode set debug mode to true or false
      */
-    private void executeRetrieveCommand(InternalComponentInstance x, VMInstance owner, Connector jc) {
-        unlessNotNull("Cannot retrieve resources of null!", x, owner, jc);
-        for (Resource r : x.getType().getResources()) {
-            if (!r.getRetrieveCommand().equals("")) {
-                if (r.getRequireCredentials())
-                    jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + "" + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
-                else executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
+    public static void executeRetrieveCommand(InternalComponentInstance x, VMInstance owner, Connector jc, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, ">> Retrieving " + x.getType().getName() + " is done.");
+        } else {
+            unlessNotNull("Cannot retrieve resources of null!", x, owner, jc);
+            for (Resource r : x.getType().getResources()) {
+                if (!r.getRetrieveCommand().equals("")) {
+                    if (r.getRequireCredentials())
+                        jc.execCommand(owner.getId(), CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x) + " " + owner.getType().getProvider().getCredentials().getLogin() + "" + owner.getType().getProvider().getCredentials().getPassword(), "ubuntu", owner.getType().getPrivateKey());
+                    else executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
+                }
             }
         }
     }
@@ -542,7 +588,7 @@ public class ActivityDiagram extends CloudAppDeployer {
                 startExecutes(host.asInternal());
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                    start(jc, n, ownerVM, startCommand);
+                    start(jc, n, ownerVM, startCommand, true);
                 }
                 coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
 
@@ -552,7 +598,8 @@ public class ActivityDiagram extends CloudAppDeployer {
         jc.closeConnection();
     }
 
-    private void buildExecutes(InternalComponentInstance x) {
+    private ActivityEdge buildExecutes(InternalComponentInstance x, ActivityEdge incoming) throws Exception {
+        ActivityEdge outgoingFromBuildExecutes = incoming;
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
 
@@ -563,26 +610,52 @@ public class ActivityDiagram extends CloudAppDeployer {
 
         if (!alreadyDeployed.contains(host)) {
             if (host.isInternal()) {
-                buildExecutes(host.asInternal());
-                journal.log(Level.INFO, ">> Installing host: " + host.getName());
-                executeUploadCommands(host.asInternal(),ownerVM,jc);
-                executeRetrieveCommand(host.asInternal(), ownerVM, jc);
-                executeInstallCommand(host.asInternal(), ownerVM, jc);
-                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
+                ActivityEdge outgoingTwo = buildExecutes(host.asInternal(), incoming);
+                Action upload = ActivityBuilder.action(outgoingTwo, null, host.asInternal(), "executeUploadCommands");
+                upload.addInput(ownerVM);
+                upload.addInput(jc);
+                upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+
+                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, host.asInternal(), "executeRetrieveCommand");
+                retrieve.addInput(ownerVM);
+                retrieve.addInput(jc);
+                retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+
+                Action install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, host.asInternal(), "executeInstallCommand");
+                install.addInput(ownerVM);
+                install.addInput(jc);
+                install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+
+//                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.INSTALLED);
 
+                Action configure = null;
                 for (Resource r : host.getType().getResources()) {
                     String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
-                    configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
+                    configure = ActivityBuilder.action(install.getOutgoing().get(0), null, ownerVM, "configure");
+                    configure.addInput(n);
+                    configure.addInput(jc);
+                    configure.addInput(configurationCommand);
+                    configure.addInput(r.getRequireCredentials());
+                    configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                 }
-                coordinator.updateStatusInternalComponent(host.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
-                //host.asInternal().setStatus(State.CONFIGURED);
+//                            if (serverComponent.isInternal()) {
+//                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
+//                            }
 
+                Action start = null;
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                    start(jc, n, ownerVM, startCommand);
+                    start = ActivityBuilder.action(configure.getOutgoing().get(0), null, ownerVM, "start");
+                    start.addInput(n);
+                    start.addInput(jc);
+                    start.addInput(startCommand);
+                    start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                 }
-                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
+
+                outgoingFromBuildExecutes = start.getOutgoing().get(0);
+
+//                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.RUNNING);
 
                 alreadyStarted.add(host);
@@ -590,6 +663,7 @@ public class ActivityDiagram extends CloudAppDeployer {
             }
         }
         jc.closeConnection();
+        return outgoingFromBuildExecutes;
     }
 
 
@@ -597,9 +671,10 @@ public class ActivityDiagram extends CloudAppDeployer {
      * Build the paas of an component instance
      *
      * @param x An component instance
-     * @throws java.net.MalformedURLException
+     * @param incoming edge that comes from previous Action
      */
-    private void buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships) {
+    private ActivityEdge buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships, ActivityEdge incoming) {
+        ActivityEdge outgoingFromPaas = incoming;
         unlessNotNull("Cannot deploy null", x, relationships);
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
@@ -607,7 +682,12 @@ public class ActivityDiagram extends CloudAppDeployer {
         Connector jc;
         jc = ConnectorFactory.createIaaSConnector(n.getProvider());
 
-        buildExecutes(x);
+        ActivityEdge outgoingFromBuildExecutes = null;
+        try {
+            outgoingFromBuildExecutes = buildExecutes(x, incoming);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         for (RelationshipInstance bi : relationships) {
             if (bi.getRequiredEnd().getType().isMandatory() && x.getRequiredPorts().contains(bi.getRequiredEnd())) {
@@ -618,50 +698,71 @@ public class ActivityDiagram extends CloudAppDeployer {
                         owner = ownerVM;
                     }
                     if (!alreadyDeployed.contains(serverComponent)) {
-                        for (Resource r : serverComponent.getType().getResources()) {
-                            executeUploadCommands(serverComponent.asInternal(),owner,jc);
-                        }
-                        for (Resource r : serverComponent.getType().getResources()) {
-                            executeRetrieveCommand(serverComponent.asInternal(),owner,jc);
-                            //executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
-                            //jc.execCommand(owner.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
-                        }
-                        for (Resource r : serverComponent.getType().getResources()) {
-                            executeInstallCommand(serverComponent.asInternal(),owner,jc);
-                            //executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getInstallCommand(), r, x));
-                            //jc.execCommand(owner.getId(), r.getInstallCommand(), "ubuntu", n.getPrivateKey());
-                        }
+                        try {
+                            Action upload = null;
+                            for (Resource r : serverComponent.getType().getResources()) {
+                                upload = ActivityBuilder.action(outgoingFromBuildExecutes, null, serverComponent.asInternal(), "executeUploadCommands");
+                                upload.addInput(owner);
+                                upload.addInput(jc);
+                                upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                            }
+                            Action retrieve = null;
+                            for (Resource r : serverComponent.getType().getResources()) {
+                                retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, serverComponent.asInternal(), "executeRetrieveCommand");
+                                retrieve.addInput(owner);
+                                retrieve.addInput(jc);
+                                retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                            }
+                            Action install = null;
+                            for (Resource r : serverComponent.getType().getResources()) {
+                                install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, serverComponent.asInternal(), "executeRetrieveCommand");
+                                install.addInput(owner);
+                                install.addInput(jc);
+                                install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                            }
 
-                        if (serverComponent.isInternal()) {
-                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
-                            //serverComponent.asInternal().setStatus(State.INSTALLED);
-                        }
+//                        if (serverComponent.isInternal()) {
+//                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
+//                        }
+                            Action configure = null;
+                            for (Resource r : serverComponent.getType().getResources()) {
+                                String configurationCommand = r.getConfigureCommand();
+                                configure = ActivityBuilder.action(install.getOutgoing().get(0), null, owner, "configure");
+                                configure.addInput(n);
+                                configure.addInput(jc);
+                                configure.addInput(configurationCommand);
+                                configure.addInput(r.getRequireCredentials());
+                                configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                            }
+//                            if (serverComponent.isInternal()) {
+//                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
+//                            }
 
-                        for (Resource r : serverComponent.getType().getResources()) {
-                            String configurationCommand = r.getConfigureCommand();
-                            configure(jc, n, owner, configurationCommand, r.getRequireCredentials());
+                            Action start = null;
+                            for (Resource r : serverComponent.getType().getResources()) {
+                                String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
+                                start = ActivityBuilder.action(configure.getOutgoing().get(0), null, owner, "start");
+                                start.addInput(n);
+                                start.addInput(jc);
+                                start.addInput(startCommand);
+                                start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                            }
+//                            if (serverComponent.isInternal()) {
+//                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
+//                                //serverComponent.asInternal().setStatus(State.RUNNING);
+//                            }
+                            outgoingFromPaas = start.getOutgoing().get(0);
+                            alreadyStarted.add(serverComponent);
+                            alreadyDeployed.add(serverComponent);
+                        } catch (Exception e){
+                            e.printStackTrace();
                         }
-                        if (serverComponent.isInternal()) {
-                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
-                            //serverComponent.asInternal().setStatus(State.CONFIGURED);
-                        }
-
-                        for (Resource r : serverComponent.getType().getResources()) {
-                            String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                            start(jc, n, owner, startCommand);
-                        }
-                        if (serverComponent.isInternal()) {
-                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
-                            //serverComponent.asInternal().setStatus(State.RUNNING);
-                        }
-
-                        alreadyStarted.add(serverComponent);
-                        alreadyDeployed.add(serverComponent);
                     }
                 }
             }
         }
         jc.closeConnection();
+        return outgoingFromPaas;
 
     }
 
@@ -685,14 +786,14 @@ public class ActivityDiagram extends CloudAppDeployer {
 
                     for (Resource r : x.getType().getResources()) {
                         String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
-                        configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
+                        configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
                     }
                     coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.CONFIGURED);
 
                     for (Resource r : x.getType().getResources()) {
                         String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                        start(jc, n, ownerVM, startCommand);
+                        start(jc, n, ownerVM, startCommand, true);
                     }
                     coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.RUNNING);
@@ -713,11 +814,15 @@ public class ActivityDiagram extends CloudAppDeployer {
      * @param configurationCommand the command to configure the component,
      *                             parameters are: IP IPDest portDest
      */
-    protected void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean keyRequired) {
-        if (!configurationCommand.equals("")) {
-            if(keyRequired)
-                jc.execCommand(ni.getId(), configurationCommand+" "+ni.getType().getProvider().getCredentials().getLogin()+" "+ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
-            else executeCommand(ni, jc, configurationCommand);
+    public static void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean keyRequired, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, "Configuration of " + ni.getName() + " is done");
+        } else {
+            if (!configurationCommand.equals("")) {
+                if (keyRequired)
+                    jc.execCommand(ni.getId(), configurationCommand + " " + ni.getType().getProvider().getCredentials().getLogin() + " " + ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
+                else executeCommand(ni, jc, configurationCommand);
+            }
         }
     }
 
@@ -729,10 +834,14 @@ public class ActivityDiagram extends CloudAppDeployer {
      * @param ni           a VM instance
      * @param startCommand the command to start the component
      */
-    protected void start(Connector jc, VM n, VMInstance ni, String startCommand) {
-        unlessNotNull("Cannot start without connector", jc, n, ni, startCommand);
-        if (!startCommand.equals("")) {
-            executeCommand(ni, jc, startCommand);
+    public static void start(Connector jc, VM n, VMInstance ni, String startCommand, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, ni.getName() + " started");
+        } else {
+            unlessNotNull("Cannot start without connector", jc, n, ni, startCommand);
+            if (!startCommand.equals("")) {
+                executeCommand(ni, jc, startCommand);
+            }
         }
     }
 
@@ -869,20 +978,20 @@ public class ActivityDiagram extends CloudAppDeployer {
 //            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
         }
 
+        Join dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
         // container of all IPs
         ObjectNode IPs = ActivityBuilder.objectNode("Public Addresses",
                 ActivityBuilder.Edges.NOEDGES,
                 ActivityBuilder.ObjectNodeType.OBJECT);  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
-        Join dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
         ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
 
-        // control join and finish
-        ActivityFinalNode finalNode = ActivityBuilder.controlStop();  //System.out.println("Final: " + ActivityBuilder.getActivity().toString());
-        Join controlJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), false, false);
-        ActivityBuilder.connectJoinToFinal(controlJoin, finalNode);   //System.out.println("Control Join n: " + ActivityBuilder.getActivity().toString());
+//        // control join and finish
+//        ActivityFinalNode finalNode = ActivityBuilder.controlStop();  //System.out.println("Final: " + ActivityBuilder.getActivity().toString());
+//        Join controlJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), false, false);
+//        ActivityBuilder.connectJoinToFinal(controlJoin, finalNode);   //System.out.println("Control Join n: " + ActivityBuilder.getActivity().toString());
 
         // connect actions with control and data join
-        ActivityBuilder.connectActionsWithJoinNodes(provisioning, controlJoin, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
+        ActivityBuilder.connectActionsWithJoinNodes(provisioning, null, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
     }
 
     /**
@@ -1045,11 +1154,11 @@ public class ActivityDiagram extends CloudAppDeployer {
                             jcClient.execCommand(ownerVMClient.getId(), clientResource.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
                         if(clientResource.getConfigureCommand() != null && !clientResource.getConfigureCommand().equals("")){
                             String configurationCommand = clientResource.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                            configure(jcClient, VMClient, ownerVMClient, configurationCommand, clientResource.getRequireCredentials());
+                            configure(jcClient, VMClient, ownerVMClient, configurationCommand, clientResource.getRequireCredentials(), true);
                         }
                         if(clientResource.getInstallCommand() != null && !clientResource.getInstallCommand().equals("")){
                             String installationCommand = clientResource.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                            configure(jcClient, VMClient, ownerVMClient, installationCommand, clientResource.getRequireCredentials());
+                            configure(jcClient, VMClient, ownerVMClient, installationCommand, clientResource.getRequireCredentials(), true);
                         }
                         jcClient.closeConnection();
                     }
@@ -1103,27 +1212,27 @@ public class ActivityDiagram extends CloudAppDeployer {
         if(server != null){
             if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
                 String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials());
+                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials(), true);
             }
         }
 
         if(client != null){
             if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
                 String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials());
+                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials(), true);
             }
         }
 
         if(server != null){
             if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
                 String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials());
+                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials(), true);
             }
         }
         if(client != null){
             if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
                 String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials());
+                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials(), true);
             }
         }
         jcServer.closeConnection();
@@ -1154,11 +1263,11 @@ public class ActivityDiagram extends CloudAppDeployer {
             jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
             if (r.getConfigureCommand() != null) {
                 String configurationCommand = r.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials());
+                configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
             }
             if (r.getInstallCommand() != null) {
                 String installationCommand = r.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jc, n, ownerVM, installationCommand, r.getRequireCredentials());
+                configure(jc, n, ownerVM, installationCommand, r.getRequireCredentials(), true);
             }
             jc.closeConnection();
         }
@@ -1310,12 +1419,12 @@ public class ActivityDiagram extends CloudAppDeployer {
     }
 
     public void scaleOut(VMInstance vmi){
-        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        Scaler scaler=new Scaler(currentModel,coordinator,new CloudAppDeployer());
         scaler.scaleOut(vmi);
     }
 
     public void scaleOut(VMInstance vmi,Provider provider){
-        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        Scaler scaler=new Scaler(currentModel,coordinator,new CloudAppDeployer());
         scaler.scaleOut(vmi,provider);
     }
 

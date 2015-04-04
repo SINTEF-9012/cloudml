@@ -1,5 +1,7 @@
 package org.cloudml.deployer2.dsl;
 
+import org.cloudml.core.NamedElement;
+
 import java.util.ArrayList;
 
 /**
@@ -63,10 +65,23 @@ public class Activity extends Element {
                 control ++;
             }
         }
-        return "This activity contains " +
+        String activitySummary = "\nThis activity contains " +
                 getNodes().size() + " nodes and " +
                 getEdges().size() + " edges (" +
                 control + " control and " + data  +
                 " data flow edges)";
+        String nodes = "\nNodes are:";
+        for (ActivityNode node: getNodes()){
+            nodes += "\n- " + node.getClass().getSimpleName() +
+                    ":" + node.getName();
+            if (node instanceof Action){
+                nodes += "_" + ((NamedElement)((Action) node).getInputs().get(0)).getName();
+            }
+        }
+        String edges = "\nEdge are:";
+        for (ActivityEdge edge:getEdges()){
+            edges += "\n- " + edge.toString();
+        }
+        return activitySummary + nodes + edges;
     }
 }

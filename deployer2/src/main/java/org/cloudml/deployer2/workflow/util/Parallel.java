@@ -1,9 +1,9 @@
-package org.cloudml.deployer2.camel.util;
+package org.cloudml.deployer2.workflow.util;
 
-import org.cloudml.deployer2.camel.camel_beans.ActionNodeBean;
-import org.cloudml.deployer2.camel.camel_beans.ActivityEdgeBean;
-import org.cloudml.deployer2.camel.camel_beans.ControlNodeBean;
-import org.cloudml.deployer2.camel.camel_beans.ObjectNodeBean;
+import org.cloudml.deployer2.workflow.executables.ActionExecutable;
+import org.cloudml.deployer2.workflow.executables.EdgeExecutable;
+import org.cloudml.deployer2.workflow.executables.ControlExecutable;
+import org.cloudml.deployer2.workflow.executables.ObjectExecutable;
 import org.cloudml.deployer2.dsl.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -19,8 +19,10 @@ public class Parallel {
     private ForkJoinPool forkJoinPool = null;
     private Join dataJoin;
     private Join controlJoin;
+    private boolean debugMode;
 
-    public Parallel(Activity activity){
+    public Parallel(Activity activity, boolean debugMode){
+        this.debugMode = debugMode;
         try {
             traverse(activity);
         } catch (InterruptedException e) {
@@ -43,7 +45,7 @@ public class Parallel {
         for (ActivityNode initial:activity.getNodes()){
             if (initial instanceof ActivityInitialNode){
                 initialNode = (ActivityInitialNode) initial;
-                new ControlNodeBean(initialNode).execute();
+                new ControlExecutable(initialNode).execute();
             }
         }
 
@@ -64,13 +66,13 @@ public class Parallel {
         } else if (element instanceof Join){
             executeNext(((Join) element).getOutgoing().get(0));
         } else if (element instanceof ActivityFinalNode){
-            new ControlNodeBean((ControlNode) element).execute();
+            new ControlExecutable((ControlNode) element).execute();
         }
     }
 
     private void processObjectNode(ObjectNode element) throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ObjectNode object = element;
-        new ObjectNodeBean(object).execute();
+        new ObjectExecutable(object).execute();
         if (object.getOutgoing().size() > 0) {
             executeNext(object.getOutgoing().get(0));
         }
@@ -94,19 +96,19 @@ public class Parallel {
     //TODO add handling of input data edges
     private void processAction(Action element) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InterruptedException {
         ArrayList<ActivityEdge> edges = element.getOutgoing();
-        new ActionNodeBean(element, true).execute();
-        if (edges.size() == 1){
-            executeNext(edges.get(0));
-        } else {
-            ForkJoinPool actionEdgesPool = new ForkJoinPool(edges.size());
-            actionEdgesPool.invoke(new Concurrent(edges));
+        new ActionExecutable(element, debugMode).execute();
+        if (edges.size() > 1){
+            ForkJoinPool actionEdgesPool = new ForkJoinPool(1);
+            actionEdgesPool.invoke(new NewThread(edges.get(1)));
         }
+        executeNext(edges.get(0));
+
     }
 
     // process data or control edge
     private void processEdge(ActivityEdge edge) throws InterruptedException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Element target = edge.getTarget();
-        new ActivityEdgeBean(edge).execute();
+        new EdgeExecutable(edge).execute();
         if (target instanceof Join){
             if (edge.isObjectFlow()){
                 dataJoin = (Join) target;
@@ -114,7 +116,9 @@ public class Parallel {
                 controlJoin = (Join) target;
             }
         } else {
-            executeNext(target);
+            if (target != null) {
+                executeNext(target);
+            }
         }
     }
 
@@ -129,14 +133,19 @@ public class Parallel {
 
         @Override
         protected void compute() {
-            List<RecursiveAction> forks = new LinkedList<>();
-            for (ActivityEdge edge:outgoing){
-                NewThread thread = new NewThread(edge);
-                forks.add(thread);
-                thread.fork();
-            }
-            for (RecursiveAction action:forks){
-                action.join();
+            if (outgoing.size() == 1){
+                NewThread thread = new NewThread(outgoing.get(0));
+                thread.compute();
+            } else {
+                List<RecursiveAction> forks = new LinkedList<>();
+                for (ActivityEdge edge : outgoing) {
+                    NewThread thread = new NewThread(edge);
+                    forks.add(thread);
+                    thread.fork();
+                }
+                for (RecursiveAction action : forks) {
+                    action.join();
+                }
             }
         }
     }
