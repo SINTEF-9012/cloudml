@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.credentials.NoCredentials;
-import org.cloudml.core.samples.SensApp;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
@@ -79,6 +78,7 @@ public class BridgeToKmf {
 
         relationshipsToKmf(deploy.getRelationships());
         relationshipInstancesToKmf(deploy.getRelationshipInstances().toList());
+        resourcePoolsToKmf(deploy.getResourcePoolInstances().toList());
         return kDeploy;
     }
 
@@ -132,6 +132,31 @@ public class BridgeToKmf {
         if (obj == null) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    public void resourcePoolsToKmf(List<ResourcePoolInstance> poolInstances){
+        for(ResourcePoolInstance rpi: poolInstances){
+            resourcePoolToKMF(rpi);
+        }
+    }
+
+    public void resourcePoolToKMF(ResourcePoolInstance rpi){
+        checkNull(rpi, "Cannot create resource pool from null");
+        net.cloudml.core.ResourcesPool krpi=factory.createResourcesPool();
+        convertResources(rpi, krpi, factory);
+        convertProperties(rpi, krpi, factory);
+        krpi.setName(rpi.getName());
+        krpi.setMaxReplicats(rpi.getMaxReplicats());
+        krpi.setMinReplicats(rpi.getMinReplicats());
+        krpi.setNbReplicats(rpi.getNbOfReplicats());
+        krpi.setType(rpi.getType());
+        List<net.cloudml.core.VMInstance> tmp=new ArrayList<net.cloudml.core.VMInstance>();
+        for(net.cloudml.core.VMInstance kVm:tmp){
+            tmp.add(VMInstances.get(kVm.getName()));
+        }
+        krpi.setBaseInstances(tmp);
+
+        kDeploy.addResourcePools(krpi);
     }
 
     public void providersToKmf(List<Provider> providers) {

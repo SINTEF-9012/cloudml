@@ -37,6 +37,7 @@ import org.cloudml.core.RequiredPort;
 import org.cloudml.core.RequiredPortInstance;
 import org.cloudml.core.Resource;
 import org.cloudml.core.VMInstance;
+import org.cloudml.core.ResourcePoolInstance;
 
 import org.cloudml.core.collections.ProvidedExecutionPlatformInstanceGroup;
 import org.cloudml.core.collections.ProvidedPortInstanceGroup;
@@ -91,11 +92,26 @@ public class BridgeToCloudML {
         relationshipsToPOJO(kDeploy.getRelationships());
         relationshipInstancesToPOJO(kDeploy.getRelationshipInstances());
         executeInstancesToPOJO(kDeploy.getExecutesInstances());
+        resourcePoolsToPOJO(kDeploy.getResourcePools());
         return model;
     }
 
     private void resourcePoolsToPOJO(List<net.cloudml.core.ResourcesPool> kResourcePools) {
+        for(net.cloudml.core.ResourcesPool r: kResourcePools){
+            resourcePoolToPOJO(r);
+        }
+    }
 
+    private void resourcePoolToPOJO(net.cloudml.core.ResourcesPool kr) {
+        checkForNull(kr, "Cannot create Resource pool from null");
+        List<VMInstance> tmp=new ArrayList<VMInstance>();
+        for(net.cloudml.core.VMInstance vmi: kr.getBaseInstances()){
+            tmp.add(vmInstances.get(vmi.getName()));
+        }
+        ResourcePoolInstance rpi=new ResourcePoolInstance(kr.getNbReplicats(), kr.getMaxReplicats(), kr.getMinReplicats(), tmp, kr.getType());
+        convertProperties(kr, rpi);
+        convertResources(kr, rpi);
+        model.getResourcePoolInstances().add(rpi);
     }
 
     public void checkForNull(Object obj, String message) {
