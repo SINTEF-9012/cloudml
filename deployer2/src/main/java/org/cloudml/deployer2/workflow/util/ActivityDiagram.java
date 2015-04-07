@@ -354,9 +354,39 @@ public class ActivityDiagram  {
 
                 alreadyDeployed.add(instance);
 
-                ActivityEdge outgoingFromPaas = buildPaas(instance, relationships.toList(),retrieve.getOutgoing().get(0));
+                ActivityEdge incoming = retrieve.getOutgoing().get(0);
+                ActivityEdge outgoingFromPaas = buildPaas(instance, relationships.toList(),incoming);
 
-                Action install = ActivityBuilder.action(outgoingFromPaas, null, ownerVM, "executeInstallCommand");
+                // if buildPaas  creates some actions we need to find related thread to those actions (e.g. this is supervisor thread, but build pass actions are related to nimbus)
+                // and connect these action to that thread
+                // also we create join node here because we have to synchronize retrieve action from here with actions produced by buildPaas after they
+                // were moved to another thread
+                Join joinBeforeInstall = null;
+                if (!outgoingFromPaas.equals(incoming)){
+                    Action moveToOtherThread = (Action) incoming.getTarget();
+                    for (Action action:provisioned){
+                        if (action.getInputs().get(0).equals(moveToOtherThread.getInputs().get(0))){
+                            // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
+                            retrieve.removeEdge(incoming, ActivityNode.Direction.OUT);
+                            action.addEdge(incoming, ActivityNode.Direction.OUT);
+                        }
+                    }
+                    Action lastFromPaas = (Action) outgoingFromPaas.getSource();
+                    // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
+                    lastFromPaas.removeEdge(outgoingFromPaas, ActivityNode.Direction.OUT);
+                    joinBeforeInstall = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+                    ArrayList<Action> actionsToJoin = new ArrayList<>();
+                    actionsToJoin.add(retrieve);
+                    actionsToJoin.add(lastFromPaas);
+                    ActivityBuilder.connectActionsWithJoinNodes(actionsToJoin, joinBeforeInstall, null);
+                }
+
+                Action install = null;
+                if (joinBeforeInstall == null) {
+                    install = ActivityBuilder.action(outgoingFromPaas, null, ownerVM, "executeInstallCommand");
+                } else {
+                    install = ActivityBuilder.action(joinBeforeInstall.getOutgoing().get(0), null, ownerVM, "executeInstallCommand");
+                }
                 install.addInput(instance);
                 install.addInput(jc);
                 install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);

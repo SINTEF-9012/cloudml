@@ -120,6 +120,7 @@ public class Parallel {
         ArrayList<ActivityEdge> edges = element.getOutgoing();
         new ActionExecutable(element, debugMode).execute();
         if (edges.size() > 1){
+            //TODO get rid of indexes because control flow may be added after data and not before like here
             ForkJoinPool actionEdgesPool = new ForkJoinPool(1);
             actionEdgesPool.invoke(new NewThread(edges.get(1)));
         }

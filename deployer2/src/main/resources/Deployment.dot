@@ -14,7 +14,8 @@ digraph ConcurrentDeployment {
 	node_12 [shape=Mrecord label="executeUploadCommands\nnimbus (Maksym)"];
 	node_13 [shape=Mrecord label="executeRetrieveCommand\nnimbus (Maksym)"];
 	node_14 [shape=Mrecord label="executeInstallCommand\nnimbus (Maksym)"];
-	node_15 [shape=Mrecord label="executeInstallCommand\nsupervisor1 (Maksym)"];
+	node_15 [shape=box label="" style=filled color=black height=0];
+	node_16 [shape=Mrecord label="executeInstallCommand\nsupervisor1 (Maksym)"];
 	node_0 -> node_1;
 	node_1 -> node_2;
 	node_1 -> node_3;
@@ -28,8 +29,10 @@ digraph ConcurrentDeployment {
 	node_8 -> node_9;
 	node_4 -> node_10;
 	node_10 -> node_11;
-	node_11 -> node_12;
+	node_3 -> node_12;
 	node_12 -> node_13;
 	node_13 -> node_14;
+	node_11 -> node_15;
 	node_14 -> node_15;
+	node_15 -> node_16;
 }
