@@ -91,11 +91,19 @@ public class BridgeToCloudML {
         relationshipsToPOJO(kDeploy.getRelationships());
         relationshipInstancesToPOJO(kDeploy.getRelationshipInstances());
         executeInstancesToPOJO(kDeploy.getExecutesInstances());
+        resourcePoolsToPOJO(kDeploy.getResourcePools());
         return model;
     }
 
     private void resourcePoolsToPOJO(List<net.cloudml.core.ResourcesPool> kResourcePools) {
+        checkForNull(kResourcePools, "Cannot iterate on null!");
+        for (net.cloudml.core.ResourcesPool kResourcePool: kResourcePools) {
+            resourcePoolToPOJO(kResourcePool);
+        }
+    }
 
+    private void resourcePoolToPOJO(net.cloudml.core.ResourcesPool kResourcePools){
+        
     }
 
     public void checkForNull(Object obj, String message) {
