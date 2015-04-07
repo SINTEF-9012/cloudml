@@ -1,0 +1,35 @@
+digraph ConcurrentDeployment {
+	node_0 [shape=point];
+	node_1 [shape=box label="" style=filled color=black height=0];
+	node_2 [shape=Mrecord label="provisionAVM\nzookeeper (Maksym)"];
+	node_3 [shape=Mrecord label="provisionAVM\nnimbus (Maksym)"];
+	node_4 [shape=Mrecord label="provisionAVM\nsupervisor1 (Maksym)"];
+	node_5 [shape=box label="" style=filled color=black height=0];
+	node_6 [shape=box, label="Public Addresses"];
+	node_7 [shape=Mrecord label="executeUploadCommands\nzookeeper (Maksym)"];
+	node_8 [shape=Mrecord label="executeRetrieveCommand\nzookeeper (Maksym)"];
+	node_9 [shape=Mrecord label="executeInstallCommand\nzookeeper (Maksym)"];
+	node_10 [shape=Mrecord label="executeUploadCommands\nsupervisor1 (Maksym)"];
+	node_11 [shape=Mrecord label="executeRetrieveCommand\nsupervisor1 (Maksym)"];
+	node_12 [shape=Mrecord label="executeUploadCommands\nnimbus (Maksym)"];
+	node_13 [shape=Mrecord label="executeRetrieveCommand\nnimbus (Maksym)"];
+	node_14 [shape=Mrecord label="executeInstallCommand\nnimbus (Maksym)"];
+	node_15 [shape=Mrecord label="executeInstallCommand\nsupervisor1 (Maksym)"];
+	node_0 -> node_1;
+	node_1 -> node_2;
+	node_1 -> node_3;
+	node_1 -> node_4;
+	node_2 -> node_5 [style=dashed];
+	node_3 -> node_5 [style=dashed];
+	node_4 -> node_5 [style=dashed];
+	node_5 -> node_6 [style=dashed];
+	node_2 -> node_7;
+	node_7 -> node_8;
+	node_8 -> node_9;
+	node_4 -> node_10;
+	node_10 -> node_11;
+	node_11 -> node_12;
+	node_12 -> node_13;
+	node_13 -> node_14;
+	node_14 -> node_15;
+}

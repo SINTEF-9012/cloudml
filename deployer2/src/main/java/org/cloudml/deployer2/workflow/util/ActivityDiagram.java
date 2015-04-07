@@ -342,13 +342,13 @@ public class ActivityDiagram  {
                 jc = ConnectorFactory.createIaaSConnector(n.getProvider());
 
 
-                Action upload = ActivityBuilder.action(controlOut, null, instance, "executeUploadCommands");
-                upload.addInput(ownerVM);
+                Action upload = ActivityBuilder.action(controlOut, null, ownerVM, "executeUploadCommands");
+                upload.addInput(instance);
                 upload.addInput(jc);
                 upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
 
-                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, instance, "executeRetrieveCommand");
-                retrieve.addInput(ownerVM);
+                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, ownerVM, "executeRetrieveCommand");
+                retrieve.addInput(instance);
                 retrieve.addInput(jc);
                 retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
 
@@ -356,8 +356,8 @@ public class ActivityDiagram  {
 
                 ActivityEdge outgoingFromPaas = buildPaas(instance, relationships.toList(),retrieve.getOutgoing().get(0));
 
-                Action install = ActivityBuilder.action(outgoingFromPaas, null, instance, "executeInstallCommand");
-                install.addInput(ownerVM);
+                Action install = ActivityBuilder.action(outgoingFromPaas, null, ownerVM, "executeInstallCommand");
+                install.addInput(instance);
                 install.addInput(jc);
                 install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                 }
@@ -612,18 +612,18 @@ public class ActivityDiagram  {
         if (!alreadyDeployed.contains(host)) {
             if (host.isInternal()) {
                 ActivityEdge outgoingTwo = buildExecutes(host.asInternal(), incoming);
-                Action upload = ActivityBuilder.action(outgoingTwo, null, host.asInternal(), "executeUploadCommands");
-                upload.addInput(ownerVM);
+                Action upload = ActivityBuilder.action(outgoingTwo, null, ownerVM, "executeUploadCommands");
+                upload.addInput(host.asInternal());
                 upload.addInput(jc);
                 upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
 
-                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, host.asInternal(), "executeRetrieveCommand");
-                retrieve.addInput(ownerVM);
+                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, ownerVM, "executeRetrieveCommand");
+                retrieve.addInput(host.asInternal());
                 retrieve.addInput(jc);
                 retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
 
-                Action install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, host.asInternal(), "executeInstallCommand");
-                install.addInput(ownerVM);
+                Action install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, ownerVM, "executeInstallCommand");
+                install.addInput(host.asInternal());
                 install.addInput(jc);
                 install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
 
@@ -633,12 +633,14 @@ public class ActivityDiagram  {
                 Action configure = null;
                 for (Resource r : host.getType().getResources()) {
                     String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
-                    configure = ActivityBuilder.action(install.getOutgoing().get(0), null, ownerVM, "configure");
-                    configure.addInput(n);
-                    configure.addInput(jc);
-                    configure.addInput(configurationCommand);
-                    configure.addInput(r.getRequireCredentials());
-                    configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                    if (configurationCommand != null && !configurationCommand.equals("")) {
+                        configure = ActivityBuilder.action(install.getOutgoing().get(0), null, ownerVM, "configure");
+                        configure.addInput(n);
+                        configure.addInput(jc);
+                        configure.addInput(configurationCommand);
+                        configure.addInput(r.getRequireCredentials());
+                        configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                    }
                 }
 //                            if (serverComponent.isInternal()) {
 //                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
@@ -647,14 +649,19 @@ public class ActivityDiagram  {
                 Action start = null;
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                    start = ActivityBuilder.action(configure.getOutgoing().get(0), null, ownerVM, "start");
-                    start.addInput(n);
-                    start.addInput(jc);
-                    start.addInput(startCommand);
-                    start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                    if (startCommand != null && !startCommand.equals("")) {
+                        start = ActivityBuilder.action(configure.getOutgoing().get(0), null, ownerVM, "start");
+                        start.addInput(n);
+                        start.addInput(jc);
+                        start.addInput(startCommand);
+                        start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                    }
                 }
 
-                outgoingFromBuildExecutes = start.getOutgoing().get(0);
+                outgoingFromBuildExecutes =
+                        start == null ?
+                        (configure == null? install.getOutgoing().get(0): configure.getOutgoing().get(0)) :
+                        start.getOutgoing().get(0);
 
 //                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.RUNNING);
@@ -702,22 +709,22 @@ public class ActivityDiagram  {
                         try {
                             Action upload = null;
                             for (Resource r : serverComponent.getType().getResources()) {
-                                upload = ActivityBuilder.action(outgoingFromBuildExecutes, null, serverComponent.asInternal(), "executeUploadCommands");
-                                upload.addInput(owner);
+                                upload = ActivityBuilder.action(outgoingFromBuildExecutes, null, owner, "executeUploadCommands");
+                                upload.addInput(serverComponent.asInternal());
                                 upload.addInput(jc);
                                 upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                             }
                             Action retrieve = null;
                             for (Resource r : serverComponent.getType().getResources()) {
-                                retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, serverComponent.asInternal(), "executeRetrieveCommand");
-                                retrieve.addInput(owner);
+                                retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, owner, "executeRetrieveCommand");
+                                retrieve.addInput(serverComponent.asInternal());
                                 retrieve.addInput(jc);
                                 retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                             }
                             Action install = null;
                             for (Resource r : serverComponent.getType().getResources()) {
-                                install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, serverComponent.asInternal(), "executeRetrieveCommand");
-                                install.addInput(owner);
+                                install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, owner, "executeInstallCommand");
+                                install.addInput(serverComponent.asInternal());
                                 install.addInput(jc);
                                 install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                             }
@@ -728,12 +735,14 @@ public class ActivityDiagram  {
                             Action configure = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 String configurationCommand = r.getConfigureCommand();
-                                configure = ActivityBuilder.action(install.getOutgoing().get(0), null, owner, "configure");
-                                configure.addInput(n);
-                                configure.addInput(jc);
-                                configure.addInput(configurationCommand);
-                                configure.addInput(r.getRequireCredentials());
-                                configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                if (configurationCommand != null && !configurationCommand.equals("")) {
+                                    configure = ActivityBuilder.action(install.getOutgoing().get(0), null, owner, "configure");
+                                    configure.addInput(n);
+                                    configure.addInput(jc);
+                                    configure.addInput(configurationCommand);
+                                    configure.addInput(r.getRequireCredentials());
+                                    configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                }
                             }
 //                            if (serverComponent.isInternal()) {
 //                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
@@ -742,17 +751,22 @@ public class ActivityDiagram  {
                             Action start = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                                start = ActivityBuilder.action(configure.getOutgoing().get(0), null, owner, "start");
-                                start.addInput(n);
-                                start.addInput(jc);
-                                start.addInput(startCommand);
-                                start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                if (startCommand != null && !startCommand.equals("")) {
+                                    start = ActivityBuilder.action(configure.getOutgoing().get(0), null, owner, "start");
+                                    start.addInput(n);
+                                    start.addInput(jc);
+                                    start.addInput(startCommand);
+                                    start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                }
                             }
 //                            if (serverComponent.isInternal()) {
 //                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
 //                                //serverComponent.asInternal().setStatus(State.RUNNING);
 //                            }
-                            outgoingFromPaas = start.getOutgoing().get(0);
+                            outgoingFromPaas =
+                                    start == null ?
+                                    (configure == null? install.getOutgoing().get(0): configure.getOutgoing().get(0)) :
+                                    start.getOutgoing().get(0);
                             alreadyStarted.add(serverComponent);
                             alreadyDeployed.add(serverComponent);
                         } catch (Exception e){

@@ -43,6 +43,16 @@
 ,
 "externalComponents": [
 { "eClass":"net.cloudml.core:ExternalComponent" ,
+ "name":"granny-cloudml",
+ "provider":"providers[CloudBees]",
+"providedExecutionPlatforms": [
+{ "eClass":"net.cloudml.core:ProvidedExecutionPlatform" ,
+ "name":"tomcatProvided",
+ "owner":"externalComponents[granny-cloudml]"}
+]
+}
+,
+{ "eClass":"net.cloudml.core:ExternalComponent" ,
  "name":"cbdb",
  "login":"sintef",
  "passwd":"password123",
@@ -55,16 +65,6 @@
  "component":"externalComponents[cbdb]"}
 ]
 }
-,
-{ "eClass":"net.cloudml.core:ExternalComponent" ,
- "name":"granny-cloudml",
- "provider":"providers[CloudBees]",
-"providedExecutionPlatforms": [
-{ "eClass":"net.cloudml.core:ProvidedExecutionPlatform" ,
- "name":"tomcatProvided",
- "owner":"externalComponents[granny-cloudml]"}
-]
-}
 ]
 ,
 "internalComponentInstances": [
@@ -73,13 +73,13 @@
  "type":"internalComponents[granny-war]",
 "requiredPortInstances": [
 { "eClass":"net.cloudml.core:RequiredPortInstance" ,
- "name":"dbr1926731054",
+ "name":"dbr-290960100",
  "type":"internalComponents[granny-war]/requiredPorts[dbr]"}
 ]
 ,
 "requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"tomcat-1679945245",
+ "name":"tomcat-2088328306",
  "owner":"internalComponentInstances[granny-war-i]",
  "type":"internalComponents[granny-war]/requiredExecutionPlatform[tomcat]"}
 }
@@ -91,7 +91,7 @@
  "type":"externalComponents[granny-cloudml]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"tomcatProvided1592158830",
+ "name":"tomcatProvided746945896",
  "owner":"externalComponentInstances[granny-cloudml1]",
  "type":"externalComponents[granny-cloudml]/providedExecutionPlatforms[tomcatProvided]"}
 ]
@@ -102,7 +102,7 @@
  "type":"externalComponents[cbdb]",
 "providedPortInstances": [
 { "eClass":"net.cloudml.core:ProvidedPortInstance" ,
- "name":"db323140504",
+ "name":"db-1763310601",
  "type":"externalComponents[cbdb]/providedPorts[db]"}
 ]
 }
@@ -120,36 +120,36 @@
  "executeLocally":false,
 "properties": [
 { "eClass":"net.cloudml.core:Property" ,
- "name":"value_dburl",
- "value":"jdbc:mysql://@instance{providedEnd/owner/value/publicAddress}"}
-,
-{ "eClass":"net.cloudml.core:Property" ,
- "name":"value_dbuser",
- "value":"@instance{providedEnd/owner/value/type/login}"}
-,
-{ "eClass":"net.cloudml.core:Property" ,
- "name":"value_dbpassword",
- "value":"@instance{providedEnd/owner/value/type/passwd}"}
-,
-{ "eClass":"net.cloudml.core:Property" ,
- "name":"valet",
- "value":"war-xml"}
+ "name":"path_dburl",
+ "value":"@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;url&quot;]/@value"}
 ,
 { "eClass":"net.cloudml.core:Property" ,
  "name":"entry_spring",
  "value":"WEB-INF/classes/META-INF/spring/app-context.xml"}
 ,
 { "eClass":"net.cloudml.core:Property" ,
- "name":"path_dburl",
- "value":"@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;url&quot;]/@value"}
+ "name":"value_dburl",
+ "value":"jdbc:mysql://@instance{providedEnd/owner/value/publicAddress}"}
+,
+{ "eClass":"net.cloudml.core:Property" ,
+ "name":"value_dbpassword",
+ "value":"@instance{providedEnd/owner/value/type/passwd}"}
+,
+{ "eClass":"net.cloudml.core:Property" ,
+ "name":"path_dbpassword",
+ "value":"@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;username&quot;]/@value"}
+,
+{ "eClass":"net.cloudml.core:Property" ,
+ "name":"valet",
+ "value":"war-xml"}
 ,
 { "eClass":"net.cloudml.core:Property" ,
  "name":"path_dbuser",
  "value":"@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;username&quot;]/@value"}
 ,
 { "eClass":"net.cloudml.core:Property" ,
- "name":"path_dbpassword",
- "value":"@self{properties/entry_spring}:://bean[@id=&quot;dataSource&quot;]/property[@name=&quot;username&quot;]/@value"}
+ "name":"value_dbuser",
+ "value":"@instance{providedEnd/owner/value/type/login}"}
 ]
 }
 ]
@@ -160,14 +160,14 @@
 { "eClass":"net.cloudml.core:RelationshipInstance" ,
  "name":"dbreli",
  "type":"relationships[dbrel]",
- "requiredPortInstance":"internalComponentInstances[granny-war-i]/requiredPortInstances[dbr1926731054]",
- "providedPortInstance":"externalComponentInstances[cbdb1]/providedPortInstances[db323140504]"}
+ "requiredPortInstance":"internalComponentInstances[granny-war-i]/requiredPortInstances[dbr-290960100]",
+ "providedPortInstance":"externalComponentInstances[cbdb1]/providedPortInstances[db-1763310601]"}
 ]
 ,
 "executesInstances": [
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn1095339526",
- "providedExecutionPlatformInstance":"externalComponentInstances[granny-cloudml1]/providedExecutionPlatformInstances[tomcatProvided1592158830]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[granny-war-i]/requiredExecutionPlatformInstance[tomcat-1679945245]"}
+ "name":"runOn1634980115",
+ "providedExecutionPlatformInstance":"externalComponentInstances[granny-cloudml1]/providedExecutionPlatformInstances[tomcatProvided746945896]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[granny-war-i]/requiredExecutionPlatformInstance[tomcat-2088328306]"}
 ]
 }

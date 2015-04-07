@@ -29,6 +29,7 @@ import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
 import org.cloudml.deployer2.workflow.util.ActivityBuilder;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
+import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
 import org.cloudml.deployer2.workflow.util.Parallel;
 
 import java.io.FileInputStream;
@@ -52,9 +53,9 @@ public class ConcurrentDeployment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(ActivityBuilder.getActivity().toString());
 
-
+        // create graph in a dot file, it is save in the resources folder
+        new ActivityDotCreator(ActivityBuilder.getActivity());
     }
 
     // read model from json file
@@ -68,6 +69,7 @@ public class ConcurrentDeployment {
         }
         return (Deployment) json.load(is);
     }
+
 
     public Deployment getTargetModel() {
         return targetModel;
