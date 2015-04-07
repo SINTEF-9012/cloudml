@@ -22,7 +22,6 @@
  */
 package org.cloudml.codecs;
 
-import net.cloudml.core.ResourcesPool;
 import org.cloudml.core.*;
 import org.cloudml.core.NamedElement;
 import org.cloudml.core.WithProperties;
