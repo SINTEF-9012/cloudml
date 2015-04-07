@@ -47,11 +47,11 @@ public class Scaler {
 
     private static final Logger journal = Logger.getLogger(Scaler.class.getName());
 
-    private Deployment currentModel;
-    private Coordinator coordinator;
+    protected Deployment currentModel;
+    protected Coordinator coordinator;
     StandardLibrary lib = new StandardLibrary();
     VMInstance ci;
-    private CloudAppDeployer dep;
+    protected CloudAppDeployer dep;
 
     public Scaler(Deployment currentModel, Coordinator coordinator, CloudAppDeployer dep){
         this.currentModel=currentModel;
@@ -60,7 +60,7 @@ public class Scaler {
     }
 
 
-    private VM findVMGenerated(String fromName, String extension){
+    protected VM findVMGenerated(String fromName, String extension){
         for(VM v: currentModel.getComponents().onlyVMs()){
             if(v.getName().contains(fromName) && v.getName().contains(extension)){
                 return v;
@@ -111,7 +111,7 @@ public class Scaler {
         return lib.replicateSubGraph(d, vmiSource, vmiDestination);
     }
 
-    private void manageDuplicatedRelationships(RelationshipInstanceGroup rig, Set<ComponentInstance> listOfAllComponentImpacted){
+    protected void manageDuplicatedRelationships(RelationshipInstanceGroup rig, Set<ComponentInstance> listOfAllComponentImpacted){
         if(rig != null){
             dep.configureWithRelationships(rig);
             for(RelationshipInstance ri: rig){
@@ -122,7 +122,7 @@ public class Scaler {
     }
 
 
-    private void configureBindingOfImpactedComponents(Set<ComponentInstance> listOfAllComponentImpacted, Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph){
+    protected void configureBindingOfImpactedComponents(Set<ComponentInstance> listOfAllComponentImpacted, Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph){
         for(InternalComponentInstance ici: duplicatedGraph.values()){
             for(ProvidedPortInstance ppi: ici.getProvidedPorts()){
                 RelationshipInstanceGroup rig=currentModel.getRelationshipInstances().whereEitherEndIs(ppi);
@@ -135,7 +135,7 @@ public class Scaler {
         }
     }
 
-    private void configureImpactedComponents(Set<ComponentInstance> listOfAllComponentImpacted, Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph){
+    protected void configureImpactedComponents(Set<ComponentInstance> listOfAllComponentImpacted, Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph){
         for(ComponentInstance ici: listOfAllComponentImpacted){
             coordinator.updateStatusInternalComponent(ici.getName(), InternalComponentInstance.State.INSTALLED.toString(), CloudAppDeployer.class.getName());
             if(ici.isInternal()){
@@ -150,7 +150,7 @@ public class Scaler {
         }
     }
 
-    private void startImpactedComponents(Set<ComponentInstance> listOfAllComponentImpacted, Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph){
+    protected void startImpactedComponents(Set<ComponentInstance> listOfAllComponentImpacted, Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph){
         for(ComponentInstance ici: listOfAllComponentImpacted){
             if(ici.isInternal()){
                 Provider p=ici.asInternal().externalHost().asVM().getType().getProvider();
@@ -184,7 +184,7 @@ public class Scaler {
         //2. update the deployment model by cloning the PaaS and SaaS hosted on the replicated VM
         Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=duplicateHostedGraph(currentModel,vmi, ci);
 
-        //3. For synchronization purpose with provision once the model has been fully updated
+        //3. For synchronization purpose we provision once the model has been fully updated
         if(temp == null){
             Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
             String ID=c.createImage(vmi);
@@ -219,7 +219,7 @@ public class Scaler {
         journal.log(Level.INFO, ">> Scaling completed!");
     }
 
-    private void restartHostedComponents(VMInstance ci){
+    protected void restartHostedComponents(VMInstance ci){
         for(InternalComponentInstance ici: ci.hostedComponents().onlyInternals()){
             Provider p=ci.getType().getProvider();
             Connector c2=ConnectorFactory.createIaaSConnector(p);
