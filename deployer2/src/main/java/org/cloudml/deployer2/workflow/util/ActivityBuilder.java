@@ -226,6 +226,46 @@ public class ActivityBuilder {
         }
     }
 
+    // connects data Fork with actions
+    //@param fork - fork with outgoing edges
+    //@param actions - list of actions where each action has
+    public static void connectDataForkWithActions(Fork fork, ArrayList<Action> actions) throws Exception {
+        if (fork.getOutgoing().size() != actions.size()){
+            throw new Exception("Number of outgoing fork edges and number of actions doesn't match, check your code.");
+        }
+        ArrayList<ActivityEdge> forkOutgoing = new ArrayList<ActivityEdge>();
+        for (Action action:actions){
+            ActivityEdge data = action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.IN).get(0);
+            forkOutgoing.add(data);
+        }
+        for (ActivityEdge edge:fork.getOutgoing()){
+            getActivity().removeEdge(edge); //avoid duplication
+        }
+        fork.setOutgoing(forkOutgoing);
+    }
+
+    // get node which holds public addresses of VMs and platforms
+    public static ObjectNode getAddressesRegistry(){
+        ObjectNode registry = null;
+        for (ActivityNode node:getActivity().getNodes()){
+            if (node.getName().equals("Public Addresses")){
+                registry = (ObjectNode) node;
+            }
+        }
+        return registry;
+    }
+
+    // return only actions
+    public static ArrayList<Action> getActions(){
+        ArrayList<Action> actions = new ArrayList<Action>();
+        for (ActivityNode node:getActivity().getNodes()){
+            if (node instanceof Action){
+                actions.add((Action) node);
+            }
+        }
+        return actions;
+    }
+
 
 //    public static void main (String[] args){
 //        try {

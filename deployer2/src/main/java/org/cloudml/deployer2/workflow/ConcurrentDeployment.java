@@ -30,7 +30,6 @@ import org.cloudml.core.Deployment;
 import org.cloudml.deployer2.workflow.util.ActivityBuilder;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
-import org.cloudml.deployer2.workflow.util.Parallel;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -50,6 +49,7 @@ public class ConcurrentDeployment {
         try {
             diagram.setExternalServices(getTargetModel().getComponentInstances().onlyExternals());
             diagram.prepareComponents(getTargetModel().getComponentInstances(), getTargetModel().getRelationshipInstances());
+            diagram.configureWithRelationships(getTargetModel().getRelationshipInstances());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,7 +82,8 @@ public class ConcurrentDeployment {
     public static void main(String[] args) throws Exception {
 
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
+//        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
+        System.out.println(ActivityBuilder.getActivity().toString());
 
     }
 

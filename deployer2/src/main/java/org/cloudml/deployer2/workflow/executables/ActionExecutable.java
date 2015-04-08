@@ -27,6 +27,7 @@ import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
 import org.cloudml.deployer2.dsl.*;
+import org.cloudml.deployer2.workflow.util.ActivityBuilder;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 
 import java.lang.reflect.InvocationTargetException;
@@ -88,6 +89,21 @@ public class ActionExecutable {
                 vm = (VMInstance) action.getInputs().get(0);
                 jc = (Connector) action.getInputs().get(2);
                 command = (String) action.getInputs().get(3);
+                // handle connections when we pass ip destinationIP and destinationPort to connection resource' commands
+                if (command.contains("::")){
+                    String actualCommand = command.split("::")[0];
+                    String port = command.split("::")[1];
+                    String destinationVM = command.split("::")[2];
+                    String destinationIP = null;
+                    for (Object provisionedIP: ActivityBuilder.getAddressesRegistry().getObjects()){
+                        if (((String)provisionedIP).contains(destinationVM)){
+                            // objects inside public address look like 'Nimbus ip address is:1.1.1.1'
+                            destinationIP = ((String) provisionedIP).split(":")[1];
+                        }
+                    }
+                    String ip = vm.getPublicAddress();
+                    command = actualCommand + " \"" + ip + "\" \"" + destinationIP + "\" " + port;
+                }
             }
 
             // specific to configure
@@ -107,15 +123,15 @@ public class ActionExecutable {
                                            method.invoke(cls, action, debugMode); //provision a platform and save its IP inside action
                                            container.addObject(externalComponent + " address is:" + action.getOutputs().get(0)); //save IP in ObjectNode
                                            break;
-                case "executeUploadCommands": journal.log(Level.INFO, "Action: Uploading " + instance.getName());
+                case "executeUploadCommands": journal.log(Level.INFO, "Action: Uploading " + vm.getName());
                                               method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, VMInstance.class, Connector.class, boolean.class});
                                               method.invoke(cls, instance, vm, jc, debugMode);
                                               break;
-                case "executeRetrieveCommand": journal.log(Level.INFO, "Action: Retrieving " + instance.getName());
+                case "executeRetrieveCommand": journal.log(Level.INFO, "Action: Retrieving " + vm.getName());
                                                method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, VMInstance.class, Connector.class, boolean.class});
                                                method.invoke(cls, instance, vm, jc, debugMode);
                                                break;
-                case "executeInstallCommand": journal.log(Level.INFO, "Action: Installing " + instance.getName());
+                case "executeInstallCommand": journal.log(Level.INFO, "Action: Installing " + vm.getName());
                                               method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, VMInstance.class, Connector.class, boolean.class});
                                               method.invoke(cls, instance, vm, jc, debugMode);
                                               break;

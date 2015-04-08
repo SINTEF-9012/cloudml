@@ -24,7 +24,6 @@ package org.cloudml.deployer2.workflow.util;
 
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.CloudMLQueryUtil;
-import org.cloudml.connectors.util.ConfigValet;
 import org.cloudml.connectors.util.MercurialConnector;
 import org.cloudml.core.*;
 import org.cloudml.core.InternalComponentInstance.State;
@@ -210,7 +209,7 @@ public class ActivityDiagram  {
     }
 
 
-    public void deploy(Deployment targetModel, CloudMLModelComparator diff){
+    public void deploy(Deployment targetModel, CloudMLModelComparator diff) throws Exception {
         unlessNotNull("Cannot deploy null!", targetModel);
         this.targetModel = targetModel;
         //set up the monitoring
@@ -389,7 +388,6 @@ public class ActivityDiagram  {
                 }
                 install.addInput(instance);
                 install.addInput(jc);
-                install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                 }
 
 //                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
@@ -663,13 +661,8 @@ public class ActivityDiagram  {
                 Action configure = null;
                 for (Resource r : host.getType().getResources()) {
                     String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
-                    if (configurationCommand != null && !configurationCommand.equals("")) {
-                        configure = ActivityBuilder.action(install.getOutgoing().get(0), null, ownerVM, "configure");
-                        configure.addInput(n);
-                        configure.addInput(jc);
-                        configure.addInput(configurationCommand);
-                        configure.addInput(r.getRequireCredentials());
-                        configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                    if (configurationCommand != null && !configurationCommand.isEmpty()) {
+                        configure = getConfigureAction(r, jc, ownerVM, n, install.getOutgoing().get(0), configurationCommand);
                     }
                 }
 //                            if (serverComponent.isInternal()) {
@@ -679,7 +672,7 @@ public class ActivityDiagram  {
                 Action start = null;
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                    if (startCommand != null && !startCommand.equals("")) {
+                    if (startCommand != null && !startCommand.isEmpty()) {
                         start = ActivityBuilder.action(configure.getOutgoing().get(0), null, ownerVM, "start");
                         start.addInput(n);
                         start.addInput(jc);
@@ -765,13 +758,8 @@ public class ActivityDiagram  {
                             Action configure = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 String configurationCommand = r.getConfigureCommand();
-                                if (configurationCommand != null && !configurationCommand.equals("")) {
-                                    configure = ActivityBuilder.action(install.getOutgoing().get(0), null, owner, "configure");
-                                    configure.addInput(n);
-                                    configure.addInput(jc);
-                                    configure.addInput(configurationCommand);
-                                    configure.addInput(r.getRequireCredentials());
-                                    configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                if (configurationCommand != null && !configurationCommand.isEmpty()) {
+                                    configure = getConfigureAction(r, jc, owner, n, install.getOutgoing().get(0), configurationCommand);
                                 }
                             }
 //                            if (serverComponent.isInternal()) {
@@ -781,7 +769,7 @@ public class ActivityDiagram  {
                             Action start = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                                if (startCommand != null && !startCommand.equals("")) {
+                                if (startCommand != null && !startCommand.isEmpty()) {
                                     start = ActivityBuilder.action(configure.getOutgoing().get(0), null, owner, "start");
                                     start.addInput(n);
                                     start.addInput(jc);
@@ -1139,46 +1127,50 @@ public class ActivityDiagram  {
      * @param relationships a list of relationships
      * @throws java.net.MalformedURLException
      */
-    protected void configureWithRelationships(RelationshipInstanceGroup relationships) {
+    public void configureWithRelationships(RelationshipInstanceGroup relationships) throws Exception {
+        ObjectNode publicAddresses = ActivityBuilder.getAddressesRegistry();
+        ArrayList<Action> connectionActions = new ArrayList<Action>();
+
         //Configure on the basis of the relationships
         //parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
         for (RelationshipInstance bi : relationships) {
             if (bi.getProvidedEnd().getOwner().get().isExternal()) {  //For DB
-                for (Resource res : bi.getType().getResources()) {
-                    ConfigValet valet = ConfigValet.createValet(bi, res);
-                    if (valet != null)
-                        valet.config();
-                    else if(res.hasProperty("db-binding-alias")){
-                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING.toString(), ActivityDiagram.class.getName());
-                        try{
-                            Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
-                            PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
-                            String alias = res.getProperties().valueOf("db-binding-alias");
-                            connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
-                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
-                        }catch(Exception ex){
-                            ex.printStackTrace();
-                            journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
-                        }
-                    }
-
-                }
+                //TODO I skipped Paas part for now, get back to it later
+//                for (Resource res : bi.getType().getResources()) {
+//                    ConfigValet valet = ConfigValet.createValet(bi, res);
+//                    if (valet != null)
+//                        valet.config();
+//                    else if(res.hasProperty("db-binding-alias")){
+//                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING.toString(), ActivityDiagram.class.getName());
+//                        try{
+//                            Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
+//                            PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
+//                            String alias = res.getProperties().valueOf("db-binding-alias");
+//                            connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
+//                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
+//                        }catch(Exception ex){
+//                            ex.printStackTrace();
+//                            journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
+//                        }
+//                    }
+//                }
                 ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
                 Component client = clienti.getType();
                 ComponentInstance pltfi = getDestination(clienti);
-                if(pltfi.isExternal()){
+                if (pltfi.isExternal()) {
                     ExternalComponent pltf = (ExternalComponent) pltfi.getType();
-                    if(!pltf.isVM()){
-                        if(client.hasProperty("temp-warfile")) {
-                            try {
-                                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                                connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
-                                coordinator.updateStatusInternalComponent(clienti.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
-                            } catch (NullPointerException e) {
-                                journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
-                            }
-                        }
-                    }else{
+                    if (!pltf.isVM()) {
+                        //TODO get back to Paas later
+//                        if(client.hasProperty("temp-warfile")) {
+//                            try {
+//                                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+//                                connector.uploadWar(client.getProperties().valueOf("temp-warfile"), "db-reconfig", clienti.getName(), pltfi.getName(), 600);
+//                                coordinator.updateStatusInternalComponent(clienti.getName(), State.RUNNING.toString(), CloudAppDeployer.class.getName());
+//                            } catch (NullPointerException e) {
+//                                journal.log(Level.INFO, ">> no temp-warfile specified, no re-deploy");
+//                            }
+//                        }
+                    } else {
                         journal.log(Level.INFO, ">> Connection IaaS to PaaS ...");
                         RequiredPortInstance clientInternal = bi.getRequiredEnd();
                         ProvidedPortInstance server = bi.getProvidedEnd();
@@ -1190,23 +1182,48 @@ public class ActivityDiagram  {
                         VM VMClient = ownerVMClient.getType();
                         jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
 
-                        String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
+//                        String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
                         int destinationPortNumber = server.getType().getPortNumber();
-                        String ipAddress = getDestination(clientInternal.getOwner().get()).getPublicAddress();
-                        if(clientResource == null)
+                        String destinationVM = ((VMInstance) getDestination(server.getOwner().get())).getName();
+
+//                        String ipAddress = getDestination(clientInternal.getOwner().get()).getPublicAddress();
+                        if (clientResource == null)
                             return; // ignore configuration if there is no resource at all
 
-                        if(clientResource.getRetrieveCommand() != null && !clientResource.getRetrieveCommand().equals(""))
-                            jcClient.execCommand(ownerVMClient.getId(), clientResource.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
-                        if(clientResource.getConfigureCommand() != null && !clientResource.getConfigureCommand().equals("")){
-                            String configurationCommand = clientResource.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                            configure(jcClient, VMClient, ownerVMClient, configurationCommand, clientResource.getRequireCredentials(), true);
+                        Action retrieve = null;
+                        if (clientResource.getRetrieveCommand() != null && !clientResource.getRetrieveCommand().equals("")) {
+                            ActivityEdge last = addEdgeToInstall(ownerVMClient);
+                            // :: sign inside command string will indicate that we have to retrieve real IPs during execution inside ActionExecutable.java
+                            String retrieveCommand = clientResource.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                            //finally create retrieve action
+                            retrieve = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, retrieveCommand);
+                            connectionActions.add(retrieve);
+
+//                            String retrieveCommand = (clientResource.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber);
+//                            jcClient.execCommand(ownerVMClient.getId(), clientResource.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
                         }
-                        if(clientResource.getInstallCommand() != null && !clientResource.getInstallCommand().equals("")){
-                            String installationCommand = clientResource.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                            configure(jcClient, VMClient, ownerVMClient, installationCommand, clientResource.getRequireCredentials(), true);
+
+                        Action install = null;
+                        if (clientResource.getInstallCommand() != null && !clientResource.getInstallCommand().equals("")) {
+                            ActivityEdge last = getLastEdge(ownerVMClient, retrieve, null);
+                            String installationCommand = clientResource.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                            install = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, installationCommand);
+                            connectionActions.add(install);
+//                            String installationCommand = clientResource.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                            configure(jcClient, VMClient, ownerVMClient, installationCommand, clientResource.getRequireCredentials(), true);
                         }
-                        jcClient.closeConnection();
+
+                        Action configure = null;
+                        if (clientResource.getConfigureCommand() != null && !clientResource.getConfigureCommand().equals("")) {
+                            ActivityEdge last = getLastEdge(ownerVMClient, install, retrieve);
+                            String configurationCommand = clientResource.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                            configure = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, configurationCommand);
+                            connectionActions.add(configure);
+//                            String configurationCommand = clientResource.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                            configure(jcClient, VMClient, ownerVMClient, configurationCommand, clientResource.getRequireCredentials(), true);
+                        }
+
+//                        jcClient.closeConnection();
                     }
                 }
 
@@ -1217,17 +1234,63 @@ public class ActivityDiagram  {
                 Resource clientResource = bi.getType().getClientResource();
                 Resource serverResource = bi.getType().getServerResource();
                 this.bi=bi;
-                retrieveIPandConfigure(serverResource,clientResource,server,client);
+                retrieveIPandConfigure(serverResource,clientResource,server,client, connectionActions);
             }
-            if(isPaaS2PaaS(bi)) {
-                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
-                ComponentInstance s=bi.getProvidedEnd().getOwner().get().asInternal();
-                ExternalComponentInstance serveri = bi.getProvidedEnd().getOwner().get().asInternal().externalHost();
-                ExternalComponent pltf = clienti.asInternal().externalHost().getType();
-                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                connector.setEnvVar(clienti.getName(), s.getName(), serveri.getPublicAddress());
+//            if(isPaaS2PaaS(bi)) {
+//                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+//                ComponentInstance s=bi.getProvidedEnd().getOwner().get().asInternal();
+//                ExternalComponentInstance serveri = bi.getProvidedEnd().getOwner().get().asInternal().externalHost();
+//                ExternalComponent pltf = clienti.asInternal().externalHost().getType();
+//                PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
+//                connector.setEnvVar(clienti.getName(), s.getName(), serveri.getPublicAddress());
+//            }
+
+        }
+        // we put size of fork equal to N of relationships because we may not need all provisioned VMs addresses
+        Fork addressesFork = (Fork) ActivityBuilder.forkOrJoin(connectionActions.size(), true, true);
+        ActivityBuilder.connectObjectToFork(publicAddresses, addressesFork);
+        ActivityBuilder.connectDataForkWithActions(addressesFork, connectionActions);
+    }
+
+    // returns action with outgoing control flow
+    private Action getConfigureAction(Resource resource, Connector jcConnector, VMInstance ownerVMInstance, VM VM, ActivityEdge incomingControl, String retrieveCommand) throws Exception {
+        Action retrieve;
+        retrieve = ActivityBuilder.action(incomingControl, new ActivityEdge(true), ownerVMInstance, "configure");
+        retrieve.addInput(VM);
+        retrieve.addInput(jcConnector);
+        retrieve.addInput(retrieveCommand);
+        retrieve.addInput(resource.getRequireCredentials());
+        retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+        return retrieve;
+    }
+
+    // order of configuration commands are retrieve, install, configure. When we at configure we have to check both install and retrieve if they equal null
+    private ActivityEdge getLastEdge(VMInstance ownerVMInstance, Action previousAction, Action twoBefore) throws Exception {
+        ActivityEdge last = null;
+        if (previousAction == null && twoBefore == null) {
+            last = addEdgeToInstall(ownerVMInstance);
+        } else {
+            if (previousAction == null){
+                last = twoBefore.getOutgoing().get(0);
+            } else {
+                last = previousAction.getOutgoing().get(0);
             }
         }
+        return last;
+    }
+
+    private ActivityEdge addEdgeToInstall(VMInstance ownerVMClient) throws Exception {
+        ActivityEdge last;// get install command that correspond to this connection instance. For example, if require port is nimbusRequired
+        // then we need to get action "executeInstallCommand" on nimbus VM
+        Action previous = null;
+        for (Action action : ActivityBuilder.getActions()) {
+            if (action.getName().equals("executeInstallCommand") && action.getInputs().get(0).equals(ownerVMClient))
+                previous = action;
+        }
+        // add outgoing control edge to that action
+        last = new ActivityEdge();
+        previous.addEdge(last, ActivityNode.Direction.OUT);
+        return last;
     }
 
     private Boolean isPaaS2PaaS(RelationshipInstance ri){
@@ -1244,21 +1307,22 @@ public class ActivityDiagram  {
 
     private RelationshipInstance bi = null;
 
-    public void retrieveIPandConfigure(Resource serverResource, Resource clientResource, PortInstance<? extends Port> server, PortInstance<? extends Port> client){
-        String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
+    public void retrieveIPandConfigure(Resource serverResource, Resource clientResource, PortInstance<? extends Port> server, PortInstance<? extends Port> client, ArrayList<Action> connectionActions) throws Exception {
+//        String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
         int destinationPortNumber = server.getType().getPortNumber();
-        String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
+        String destinationVM = ((VMInstance) getDestination(server.getOwner().get())).getName();
+//        String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
         if(clientResource == null && serverResource == null)
             return; // ignore configuration if there is no resource at all
-        configureWithIP(serverResource, clientResource, server, client, destinationIpAddress, ipAddress, destinationPortNumber);
+        configureWithIP(serverResource, clientResource, server, client, destinationVM, destinationPortNumber, connectionActions);
     }
 
     private void configureWithIP(Resource server, Resource client,
-                                 PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
-        if(DEBUG){
-            journal.log(Level.INFO, ">> Configure with IP ");
-            return;
-        }
+                                 PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationVM, int destinationPortNumber, ArrayList<Action> connectionActions) throws Exception {
+//        if(DEBUG){
+//            journal.log(Level.INFO, ">> Configure with IP ");
+//            return;
+//        }
         Connector jcServer;
         Connector jcClient;
         VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
@@ -1268,42 +1332,77 @@ public class ActivityDiagram  {
         jcServer = ConnectorFactory.createIaaSConnector(VMserver.getProvider());
         jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
 
+        Action retrieveServer = null;
         if(server != null){
-            if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals(""))
-                jcServer.execCommand(ownerVMServer.getId(), CloudMLQueryUtil.cloudmlStringRecover(server.getRetrieveCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
+            if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals("")){
+                ActivityEdge last = addEdgeToInstall(ownerVMServer);
+                String retrieveCommand = server.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                retrieveServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, retrieveCommand);
+                connectionActions.add(retrieveServer);
+//                jcServer.execCommand(ownerVMServer.getId(), CloudMLQueryUtil.cloudmlStringRecover(server.getRetrieveCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
+            }
         }
+
+        Action retrieveClient = null;
         if(client !=null){
-            if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals(""))
-                jcClient.execCommand(ownerVMClient.getId(), CloudMLQueryUtil.cloudmlStringRecover(client.getRetrieveCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
-        }
-        if(server != null){
-            if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
-                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials(), true);
+            if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals("")) {
+                ActivityEdge last = addEdgeToInstall(ownerVMClient);
+                String retrieveCommand = client.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                retrieveClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, retrieveCommand);
+                connectionActions.add(retrieveClient);
+//                jcClient.execCommand(ownerVMClient.getId(), CloudMLQueryUtil.cloudmlStringRecover(client.getRetrieveCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
             }
         }
 
-        if(client != null){
-            if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
-                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials(), true);
-            }
-        }
-
+        Action installServer = null;
         if(server != null){
             if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
-                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials(), true);
+                ActivityEdge last = getLastEdge(ownerVMServer, retrieveServer, null);
+                String installationCommand = server.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                installServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, installationCommand);
+                connectionActions.add(installServer);
+//                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials(), true);
             }
         }
+
+        Action installClient = null;
         if(client != null){
             if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
-                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials(), true);
+                ActivityEdge last = getLastEdge(ownerVMClient, retrieveClient, null);
+                String installationCommand = client.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                installClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, installationCommand);
+                connectionActions.add(installClient);
+//                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials(), true);
             }
         }
-        jcServer.closeConnection();
-        jcClient.closeConnection();
+
+        Action configureServer = null;
+        if(server != null){
+            if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
+                ActivityEdge last = getLastEdge(ownerVMServer, installServer, retrieveServer);
+                String configurationCommand = server.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                configureServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, configurationCommand);
+                connectionActions.add(configureServer);
+//                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials(), true);
+            }
+        }
+
+        Action configureClient = null;
+        if(client != null){
+            if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
+                ActivityEdge last = getLastEdge(ownerVMClient, installClient, retrieveClient);
+                String configurationCommand = client.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                configureClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, configurationCommand);
+                connectionActions.add(configureClient);
+//                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials(), true);
+            }
+        }
+//        jcServer.closeConnection();
+//        jcClient.closeConnection();
     }
 
     /**

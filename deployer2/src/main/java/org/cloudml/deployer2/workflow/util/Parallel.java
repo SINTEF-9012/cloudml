@@ -119,13 +119,18 @@ public class Parallel {
     private void processAction(Action element) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InterruptedException {
         ArrayList<ActivityEdge> edges = element.getOutgoing();
         new ActionExecutable(element, debugMode).execute();
-        if (edges.size() > 1){
-            //TODO get rid of indexes because control flow may be added after data and not before like here
-            ForkJoinPool actionEdgesPool = new ForkJoinPool(1);
-            actionEdgesPool.invoke(new NewThread(edges.get(1)));
+//        if (edges.size() > 1){
+//            //TODO get rid of indexes because control flow may be added after data and not before like here
+//            ForkJoinPool actionEdgesPool = new ForkJoinPool(1);
+//            actionEdgesPool.invoke(new NewThread(edges.get(1)));
+//        }
+//        executeNext(edges.get(0));
+        if (edges.size() > 1) {
+            ForkJoinPool actionEdgesPool = new ForkJoinPool(edges.size());
+            actionEdgesPool.invoke(new Concurrent(edges));
+        } else if (!edges.isEmpty()){
+            executeNext(edges.get(0));
         }
-        executeNext(edges.get(0));
-
     }
 
     // process data or control edge
@@ -156,19 +161,14 @@ public class Parallel {
 
         @Override
         protected void compute() {
-            if (outgoing.size() == 1){
-                NewThread thread = new NewThread(outgoing.get(0));
-                thread.compute();
-            } else {
-                List<RecursiveAction> forks = new LinkedList<RecursiveAction>();
-                for (ActivityEdge edge : outgoing) {
-                    NewThread thread = new NewThread(edge);
-                    forks.add(thread);
-                    thread.fork();
-                }
-                for (RecursiveAction action : forks) {
-                    action.join();
-                }
+            List<RecursiveAction> forks = new LinkedList<RecursiveAction>();
+            for (ActivityEdge edge : outgoing) {
+                NewThread thread = new NewThread(edge);
+                forks.add(thread);
+                thread.fork();
+            }
+            for (RecursiveAction action : forks) {
+                action.join();
             }
         }
     }
