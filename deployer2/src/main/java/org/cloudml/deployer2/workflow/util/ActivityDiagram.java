@@ -128,7 +128,7 @@ public class ActivityDiagram  {
             configureWithRelationships(targetModel.getRelationshipInstances());
 
             //configuration process at SaaS level
-            configureSaas(targetModel.getComponentInstances().onlyInternals());
+            configureSaas(targetModel.getComponentInstances().onlyInternals(), targetModel.getRelationshipInstances());
 
             //Run puppet
             configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
@@ -149,7 +149,7 @@ public class ActivityDiagram  {
             setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
-            configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
+            configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
             //removed stuff
@@ -226,7 +226,7 @@ public class ActivityDiagram  {
         }
         prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
         configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
-        configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
+        configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
         configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
         //removed stuff
@@ -673,7 +673,8 @@ public class ActivityDiagram  {
                 for (Resource r : host.getType().getResources()) {
                     String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                     if (startCommand != null && !startCommand.isEmpty()) {
-                        start = ActivityBuilder.action(configure.getOutgoing().get(0), null, ownerVM, "start");
+                        ActivityEdge input = configure == null ? install.getOutgoing().get(0) : configure.getOutgoing().get(0);
+                        start = ActivityBuilder.action(input, null, ownerVM, "start");
                         start.addInput(n);
                         start.addInput(jc);
                         start.addInput(startCommand);
@@ -732,60 +733,89 @@ public class ActivityDiagram  {
                         try {
                             Action upload = null;
                             for (Resource r : serverComponent.getType().getResources()) {
-                                upload = ActivityBuilder.action(outgoingFromBuildExecutes, null, owner, "executeUploadCommands");
-                                upload.addInput(serverComponent.asInternal());
-                                upload.addInput(jc);
-                                upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                if (r.getUploadCommand() != null && !r.getUploadCommand().isEmpty()) {
+                                    upload = ActivityBuilder.action(outgoingFromBuildExecutes, null, owner, "executeUploadCommands");
+                                    upload.addInput(serverComponent.asInternal());
+                                    upload.addInput(jc);
+                                    upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                }
                             }
+
                             Action retrieve = null;
                             for (Resource r : serverComponent.getType().getResources()) {
-                                retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, owner, "executeRetrieveCommand");
-                                retrieve.addInput(serverComponent.asInternal());
-                                retrieve.addInput(jc);
-                                retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                if (r.getRetrieveCommand() != null && !r.getRetrieveCommand().isEmpty()) {
+                                    ActivityEdge input = upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0);
+                                    retrieve = ActivityBuilder.action(input, null, owner, "executeRetrieveCommand");
+                                    retrieve.addInput(serverComponent.asInternal());
+                                    retrieve.addInput(jc);
+                                    retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                }
                             }
+
                             Action install = null;
                             for (Resource r : serverComponent.getType().getResources()) {
-                                install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, owner, "executeInstallCommand");
-                                install.addInput(serverComponent.asInternal());
-                                install.addInput(jc);
-                                install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                if (r.getInstallCommand() != null && !r.getInstallCommand().isEmpty()) {
+                                    ActivityEdge input =
+                                                retrieve == null ?
+                                                        (upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0)) :
+                                                        retrieve.getOutgoing().get(0);
+                                    install = ActivityBuilder.action(input, null, owner, "executeInstallCommand");
+                                    install.addInput(serverComponent.asInternal());
+                                    install.addInput(jc);
+                                    install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                }
                             }
 
 //                        if (serverComponent.isInternal()) {
 //                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
 //                        }
-                            Action configure = null;
-                            for (Resource r : serverComponent.getType().getResources()) {
-                                String configurationCommand = r.getConfigureCommand();
-                                if (configurationCommand != null && !configurationCommand.isEmpty()) {
-                                    configure = getConfigureAction(r, jc, owner, n, install.getOutgoing().get(0), configurationCommand);
-                                }
-                            }
+//                            Action configure = null;
+//                            for (Resource r : serverComponent.getType().getResources()) {
+//                                String configurationCommand = r.getConfigureCommand();
+//                                if (configurationCommand != null && !configurationCommand.isEmpty()) {
+//                                    ActivityEdge input =
+//                                                install == null ?
+//                                                        (retrieve == null ?
+//                                                                (upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0)) :
+//                                                                retrieve.getOutgoing().get(0)) :
+//                                                        install.getOutgoing().get(0);
+//                                    configure = getConfigureAction(r, jc, owner, n, input, configurationCommand);
+//                                }
+//                            }
 //                            if (serverComponent.isInternal()) {
 //                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
 //                            }
 
-                            Action start = null;
-                            for (Resource r : serverComponent.getType().getResources()) {
-                                String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                                if (startCommand != null && !startCommand.isEmpty()) {
-                                    start = ActivityBuilder.action(configure.getOutgoing().get(0), null, owner, "start");
-                                    start.addInput(n);
-                                    start.addInput(jc);
-                                    start.addInput(startCommand);
-                                    start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-                                }
-                            }
-//                            if (serverComponent.isInternal()) {
+//                            Action start = null;
+//                            for (Resource r : serverComponent.getType().getResources()) {
+//                                String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
+//                                if (startCommand != null && !startCommand.isEmpty()) {
+//                                    ActivityEdge input =
+//                                            configure == null ?
+//                                            (install == null ?
+//                                                    (retrieve == null ?
+//                                                            (upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0)) :
+//                                                            retrieve.getOutgoing().get(0)) :
+//                                                    install.getOutgoing().get(0)) :
+//                                            configure.getOutgoing().get(0);
+//                                    start = ActivityBuilder.action(input, null, owner, "start");
+//                                    start.addInput(n);
+//                                    start.addInput(jc);
+//                                    start.addInput(startCommand);
+//                                    start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+//                                }
+//                            }
+//                               if (serverComponent.isInternal()) {
 //                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
 //                                //serverComponent.asInternal().setStatus(State.RUNNING);
 //                            }
                             outgoingFromPaas =
-                                    start == null ?
-                                    (configure == null? install.getOutgoing().get(0): configure.getOutgoing().get(0)) :
-                                    start.getOutgoing().get(0);
-                            alreadyStarted.add(serverComponent);
+                                    install == null ?
+                                    (retrieve == null?
+                                            (upload == null? outgoingFromBuildExecutes : upload.getOutgoing().get(0))
+                                            : retrieve.getOutgoing().get(0)) :
+                                    install.getOutgoing().get(0);
+//                            alreadyStarted.add(serverComponent);
                             alreadyDeployed.add(serverComponent);
                         } catch (Exception e){
                             e.printStackTrace();
@@ -803,38 +833,200 @@ public class ActivityDiagram  {
      * Configure and start SaaS components
      *
      * @param components a list of components
+     * @param relationshipInstances
      * @throws java.net.MalformedURLException
      */
-    private void configureSaas(ComponentInstanceGroup<InternalComponentInstance> components) {
+    public void configureSaas(ComponentInstanceGroup<InternalComponentInstance> components, RelationshipInstanceGroup relationshipInstances) throws Exception {
         unlessNotNull("Cannot configure null!", components);
         Connector jc;
+
+        ArrayList<ActivityEdge> edgesToFinalJoin = new ArrayList<ActivityEdge>();
+
+        ArrayList<ActivityEdge> lastFromComponents = new ArrayList<ActivityEdge>();
         for (InternalComponentInstance x : components) {
             if (!alreadyStarted.contains(x)) {
                 ExternalComponentInstance owner = x.externalHost();
                 if (owner instanceof VMInstance) { //TODO: refactor and be more generic for external component in general
                     VMInstance ownerVM = (VMInstance) owner;
+
+                    // find out if some components must be started before this one
+                    ArrayList<VMInstance> providers = new ArrayList<VMInstance>();
+                    for (RequiredPort port:x.getType().getRequiredPorts().toList()){
+                        if (port.isMandatory()) {
+                            for (RelationshipInstance conn : relationshipInstances) {
+                                if (port.equals(conn.getRequiredEnd().getType())){
+                                    VMInstance provider = (VMInstance) getDestination(conn.getProvidedEnd().getOwner().get());
+                                    providers.add(provider);
+                                }
+                            }
+                        }
+                    }
+
+                    // number of providers will be equal to number of forks after connection configuration
+                    ArrayList<Join> joins = new ArrayList<Join>();
+                    if (!providers.isEmpty()) {
+                        for (VMInstance provider : providers) {
+                            //find last configure:connection_'Action' actions with 'oppositeConnectionEnd' property = provider.getName() and input VMInstance = ownerVM
+                            Action lastConnectionConfigure = null;
+                            for (Action action:ActivityBuilder.getActions()){
+                                if (action.getInputs().get(0).equals(ownerVM) &&
+                                        action.getProperties().get("oppositeConnectionEnd") != null &&
+                                        action.getProperties().get("oppositeConnectionEnd").equals(provider.getName())){
+                                    lastConnectionConfigure = action;
+                                }
+                            }
+                            // create join with specific property to be able to retrieve it precisely
+                            Join connectionJoin = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+                            connectionJoin.getProperties().put("missingActionFrom", provider.getName());
+                            // connect configure action and join and update activity
+                            ActivityEdge configureToJoin = connectionJoin.getIncoming().get(0);
+                            // first delete outgoing edge from action.
+                            lastConnectionConfigure.removeEdge(lastConnectionConfigure.getOutgoing().get(0), ActivityNode.Direction.OUT);
+                            // add edge from Join node
+                            lastConnectionConfigure.addEdge(configureToJoin, ActivityNode.Direction.OUT);
+                            joins.add(connectionJoin);
+
+                        }
+                    }
+
+                    // connect all joins into one
+                    ActivityEdge toConfigure = null;
+                    if (!joins.isEmpty() && joins != null){
+                        if (joins.size() > 1){
+                            Join beforeConfigure = (Join) ActivityBuilder.forkOrJoin(joins.size(), false, false);
+                            // remove outgoing edges from every join from the activity diagram and from joins themselves because creation of Join node adds the same amount of edges to activity
+                            for (Join join:joins){
+                                ActivityBuilder.getActivity().removeEdge(join.getOutgoing().get(0));
+                                join.removeEdge(join.getOutgoing().get(0), ActivityNode.Direction.OUT);
+                            }
+                            // add incoming edges of beforeConfigure as outgoing of every join
+                            for (int i = 0; i < joins.size(); i++){
+                                joins.get(i).addEdge(beforeConfigure.getIncoming().get(i), ActivityNode.Direction.OUT);
+                            }
+                            toConfigure = beforeConfigure.getOutgoing().get(0);
+                        } else {
+                            toConfigure = joins.get(0).getOutgoing().get(0);
+                        }
+                    } else {
+                        // if no joins, then there was no connection configuration commands and previous action was executeInstall
+                        for (Action action:ActivityBuilder.getActions()){
+                            if (action.getName().equals("executeInstallCommand") && ((VMInstance)action.getInputs().get(0)).equals(ownerVM)) {
+                                action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                int size = action.getOutgoing().size();
+                                toConfigure = action.getOutgoing().get(size - 1);
+                            }
+                        }
+                    }
+
                     VM n = ownerVM.getType();
                     jc = ConnectorFactory.createIaaSConnector(n.getProvider());
                     //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
+                    Action configure = null;
                     for (Resource r : x.getType().getResources()) {
                         String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
-                        configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
+                        if (configurationCommand != null && !configurationCommand.isEmpty()) {
+                            configure = ActivityBuilder.action(toConfigure, null, ownerVM, "start");
+                            configure.addInput(n);
+                            configure.addInput(jc);
+                            configure.addInput(configurationCommand);
+                            configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                        }
+//                        configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
                     }
-                    coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
+//                    coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.CONFIGURED);
 
+                    Action start = null;
                     for (Resource r : x.getType().getResources()) {
                         String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                        start(jc, n, ownerVM, startCommand, true);
+                        if (startCommand != null && !startCommand.isEmpty()) {
+                            ActivityEdge input = configure == null ? toConfigure : configure.getOutgoing().get(0);
+                            start = ActivityBuilder.action(input, null, ownerVM, "start");
+                            start.addInput(n);
+                            start.addInput(jc);
+                            start.addInput(startCommand);
+                            start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                        }
+//                        start(jc, n, ownerVM, startCommand, true);
                     }
-                    coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
+//                    coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.RUNNING);
+                    ActivityEdge last =
+                            start == null?
+                                    (configure == null ? toConfigure : configure.getOutgoing().get(0)) :
+                                    start.getOutgoing().get(0);
 
-                    alreadyStarted.add(x);
-                    jc.closeConnection();
+                    lastFromComponents.add(last);
+//                    jc.closeConnection();
                 }
             }//TODO if not InternalComponent
+        }
+
+        // because we don't know ordering of components, we hav to go through them again to do some connections
+        for (InternalComponentInstance x : components) {
+            if (!alreadyStarted.contains(x)) {
+                ExternalComponentInstance owner = x.externalHost();
+                if (owner instanceof VMInstance) {
+                    VMInstance ownerVM = (VMInstance) owner;
+                    int index = components.toList().indexOf(x);
+                    ActivityEdge last = lastFromComponents.get(index);
+
+                    // find any Join nodes that expect edge from this component
+                    ArrayList<Join> waitingJoins = new ArrayList<Join>();
+                    ActivityNode lastNode = (ActivityNode) last.getSource();;
+                    for (ControlNode control:ActivityBuilder.getControlNodes()){
+                        if (control instanceof Join){
+                            Join join = (Join) control;
+                            if (join.getProperties().get("missingActionFrom") != null && join.getProperties().get("missingActionFrom").equals(ownerVM.getName())){
+                                // add join incoming edge without source to this action
+                                if (lastNode instanceof Join){
+                                    lastNode.removeEdge(last, ActivityNode.Direction.OUT);
+                                    ActivityBuilder.getActivity().removeEdge(last);
+                                }
+                                lastNode.addEdge(join.getIncoming().get(1), ActivityNode.Direction.OUT);
+                                waitingJoins.add(join);
+                            }
+                        }
+                    }
+
+                    // if we have connections to waiting joins, we don't need to do anything with outgoing edge from last component action, otherwise we connect it to final join
+                    if (waitingJoins.isEmpty())
+                        edgesToFinalJoin.add(last);
+                    else if (lastNode.getOutgoing().contains(last))
+                        lastNode.removeEdge(last, ActivityNode.Direction.OUT);
+
+                    alreadyStarted.add(x);
+                }
+            }
+        }
+
+        // if we have more than one edge, join them, otherwise  - just connect it to final node
+        ActivityFinalNode finalNode = null;
+        if (edgesToFinalJoin.size() > 1){
+            Join finalJoin = (Join) ActivityBuilder.forkOrJoin(edgesToFinalJoin.size(), false, false);
+            for (ActivityEdge edge:edgesToFinalJoin){
+                ActivityNode source = edge.getSource();
+                // if it is action, then we just remove outgoing edge because it has not been added to activity yet
+                // if Join, then we need to remove edge from activity too to avoid duplication
+                source.removeEdge(edge, ActivityNode.Direction.OUT);
+                int index = edgesToFinalJoin.indexOf(edge);
+                if (source instanceof Join){
+                    ActivityBuilder.getActivity().removeEdge(edge);
+                }
+                source.addEdge(finalJoin.getIncoming().get(index), ActivityNode.Direction.OUT);
+            }
+            finalNode = ActivityBuilder.controlStop();
+            ActivityBuilder.connectJoinToFinal(finalJoin, finalNode);
+        } else {
+            ActivityEdge edge = edgesToFinalJoin.get(0);
+            ActivityNode source = edge.getSource();
+            finalNode = ActivityBuilder.controlStop();
+            source.removeEdge(edge, ActivityNode.Direction.OUT);
+            if (source instanceof Join){
+                ActivityBuilder.getActivity().removeEdge(edge);
+            }
+            source.addEdge(finalNode.getIncoming().get(0), ActivityNode.Direction.OUT);
         }
     }
 
@@ -1255,7 +1447,12 @@ public class ActivityDiagram  {
     // returns action with outgoing control flow
     private Action getConfigureAction(Resource resource, Connector jcConnector, VMInstance ownerVMInstance, VM VM, ActivityEdge incomingControl, String retrieveCommand) throws Exception {
         Action retrieve;
-        retrieve = ActivityBuilder.action(incomingControl, new ActivityEdge(true), ownerVMInstance, "configure");
+        String connectionCommand = "";
+        if (retrieveCommand.split("::").length == 4){
+            connectionCommand = ":" + retrieveCommand.split("::")[3];
+            retrieveCommand = retrieveCommand.replaceFirst("::" + connectionCommand, "");
+        }
+        retrieve = ActivityBuilder.action(incomingControl, new ActivityEdge(true), ownerVMInstance, "configure" + connectionCommand);
         retrieve.addInput(VM);
         retrieve.addInput(jcConnector);
         retrieve.addInput(retrieveCommand);
@@ -1336,8 +1533,9 @@ public class ActivityDiagram  {
         if(server != null){
             if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals("")){
                 ActivityEdge last = addEdgeToInstall(ownerVMServer);
-                String retrieveCommand = server.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                String retrieveCommand = server.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
                 retrieveServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, retrieveCommand);
+                retrieveServer.getProperties().put("oppositeConnectionEnd", ownerVMClient.getName());
                 connectionActions.add(retrieveServer);
 //                jcServer.execCommand(ownerVMServer.getId(), CloudMLQueryUtil.cloudmlStringRecover(server.getRetrieveCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
             }
@@ -1347,8 +1545,9 @@ public class ActivityDiagram  {
         if(client !=null){
             if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals("")) {
                 ActivityEdge last = addEdgeToInstall(ownerVMClient);
-                String retrieveCommand = client.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                String retrieveCommand = client.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
                 retrieveClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, retrieveCommand);
+                retrieveClient.getProperties().put("oppositeConnectionEnd", ownerVMServer.getName());
                 connectionActions.add(retrieveClient);
 //                jcClient.execCommand(ownerVMClient.getId(), CloudMLQueryUtil.cloudmlStringRecover(client.getRetrieveCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
             }
@@ -1358,8 +1557,9 @@ public class ActivityDiagram  {
         if(server != null){
             if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
                 ActivityEdge last = getLastEdge(ownerVMServer, retrieveServer, null);
-                String installationCommand = server.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                String installationCommand = server.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionInstall";
                 installServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, installationCommand);
+                installServer.getProperties().put("oppositeConnectionEnd", ownerVMClient.getName());
                 connectionActions.add(installServer);
 //                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials(), true);
@@ -1370,8 +1570,9 @@ public class ActivityDiagram  {
         if(client != null){
             if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
                 ActivityEdge last = getLastEdge(ownerVMClient, retrieveClient, null);
-                String installationCommand = client.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                String installationCommand = client.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionInstall";
                 installClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, installationCommand);
+                installClient.getProperties().put("oppositeConnectionEnd", ownerVMServer.getName());
                 connectionActions.add(installClient);
 //                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials(), true);
@@ -1382,8 +1583,9 @@ public class ActivityDiagram  {
         if(server != null){
             if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
                 ActivityEdge last = getLastEdge(ownerVMServer, installServer, retrieveServer);
-                String configurationCommand = server.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                String configurationCommand = server.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionConfigure";
                 configureServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, configurationCommand);
+                configureServer.getProperties().put("oppositeConnectionEnd", ownerVMClient.getName());
                 connectionActions.add(configureServer);
 //                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials(), true);
@@ -1394,8 +1596,9 @@ public class ActivityDiagram  {
         if(client != null){
             if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
                 ActivityEdge last = getLastEdge(ownerVMClient, installClient, retrieveClient);
-                String configurationCommand = client.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM;
+                String configurationCommand = client.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionConfigure";
                 configureClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, configurationCommand);
+                configureClient.getProperties().put("oppositeConnectionEnd", ownerVMServer.getName());
                 connectionActions.add(configureClient);
 //                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials(), true);

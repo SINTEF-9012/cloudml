@@ -84,7 +84,7 @@ public class ActionExecutable {
             // common objects for configure and start commands
             VM type = null;
             String command = null;
-            if (methodName.equals("configure") || methodName.equals("start")){
+            if (methodName.contains("configure") || methodName.equals("start")){
                 type = (VM) action.getInputs().get(1);
                 vm = (VMInstance) action.getInputs().get(0);
                 jc = (Connector) action.getInputs().get(2);
@@ -108,7 +108,11 @@ public class ActionExecutable {
 
             // specific to configure
             Boolean requireCredentials = null;
-            if (methodName.equals("configure")){
+            if (methodName.contains("configure")){
+                // connection confgiuration method names follow pattern configure:connectionRetrieve
+                if (methodName.contains(":")){
+                    methodName = methodName.split(":")[0];
+                }
                 requireCredentials = (Boolean) action.getInputs().get(4);
             }
 

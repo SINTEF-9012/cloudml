@@ -77,7 +77,10 @@ public class ActivityDotCreator {
     private void addEdges(){
         for (ActivityEdge edge:activity.getEdges()){
             getDotText().append("\t");
-            String source = edge.getSource().getElementID();
+            String source = "";
+            if (edge.getSource() != null){
+                source = edge.getSource().getElementID();
+            }
             String target = "";
             if (edge.getTarget() != null){
                 target = edge.getTarget().getElementID();

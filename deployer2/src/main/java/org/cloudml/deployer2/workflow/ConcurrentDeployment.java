@@ -50,6 +50,7 @@ public class ConcurrentDeployment {
             diagram.setExternalServices(getTargetModel().getComponentInstances().onlyExternals());
             diagram.prepareComponents(getTargetModel().getComponentInstances(), getTargetModel().getRelationshipInstances());
             diagram.configureWithRelationships(getTargetModel().getRelationshipInstances());
+            diagram.configureSaas(getTargetModel().getComponentInstances().onlyInternals(), getTargetModel().getRelationshipInstances());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,7 +84,7 @@ public class ConcurrentDeployment {
 
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
 //        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
-        System.out.println(ActivityBuilder.getActivity().toString());
+//        System.out.println(ActivityBuilder.getActivity().toString());
 
     }
 

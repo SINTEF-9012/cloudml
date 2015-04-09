@@ -266,6 +266,17 @@ public class ActivityBuilder {
         return actions;
     }
 
+    //return only control nodes
+    public static ArrayList<ControlNode> getControlNodes(){
+        ArrayList<ControlNode> controls = new ArrayList<ControlNode>();
+        for (ActivityNode node:getActivity().getNodes()){
+            if (node instanceof ControlNode){
+                controls.add((ControlNode) node);
+            }
+        }
+        return controls;
+    }
+
 
 //    public static void main (String[] args){
 //        try {
