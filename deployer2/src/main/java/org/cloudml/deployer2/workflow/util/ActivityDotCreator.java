@@ -1,5 +1,6 @@
 package org.cloudml.deployer2.workflow.util;
 
+import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.core.VMInstance;
 import org.cloudml.deployer2.dsl.*;
 
@@ -58,7 +59,14 @@ public class ActivityDotCreator {
                 getDotText().append(" [shape=point];\n");
             } else if (node instanceof Action){
                 String action = node.getName();
-                String instance = ((VMInstance)((Action) node).getInputs().get(0)).getName();
+                String instance = null;
+                if (action.contains("execute")){
+                    instance = ((InternalComponentInstance)((Action) node).getInputs().get(1)).getName();
+                } else if (action.contains("configure") || action.contains("start")){
+                    instance = (String)((Action) node).getInputs().get(4);
+                } else {
+                    instance = ((VMInstance) ((Action) node).getInputs().get(0)).getName();
+                }
                 getDotText().append(" [shape=Mrecord label=\"").
                         append(action).
                         append("\\n").

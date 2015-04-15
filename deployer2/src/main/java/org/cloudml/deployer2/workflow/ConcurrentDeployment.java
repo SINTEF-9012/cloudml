@@ -82,6 +82,7 @@ public class ConcurrentDeployment {
 
     public static void main(String[] args) throws Exception {
 
+//        ConcurrentDeployment sensApp = new ConcurrentDeployment("C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\sensappAdmin-v2.json");
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
 //        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
 //        System.out.println(ActivityBuilder.getActivity().toString());

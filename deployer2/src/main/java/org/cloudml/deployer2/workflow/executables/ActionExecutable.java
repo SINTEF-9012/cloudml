@@ -84,11 +84,13 @@ public class ActionExecutable {
             // common objects for configure and start commands
             VM type = null;
             String command = null;
+            String componentInstanceName = null;
             if (methodName.contains("configure") || methodName.equals("start")){
                 type = (VM) action.getInputs().get(1);
                 vm = (VMInstance) action.getInputs().get(0);
                 jc = (Connector) action.getInputs().get(2);
                 command = (String) action.getInputs().get(3);
+                componentInstanceName = (String) action.getInputs().get(4);
                 // handle connections when we pass ip destinationIP and destinationPort to connection resource' commands
                 if (command.contains("::")){
                     String actualCommand = command.split("::")[0];
@@ -113,7 +115,7 @@ public class ActionExecutable {
                 if (methodName.contains(":")){
                     methodName = methodName.split(":")[0];
                 }
-                requireCredentials = (Boolean) action.getInputs().get(4);
+                requireCredentials = (Boolean) action.getInputs().get(5);
             }
 
             switch (methodName){
@@ -127,23 +129,23 @@ public class ActionExecutable {
                                            method.invoke(cls, action, debugMode); //provision a platform and save its IP inside action
                                            container.addObject(externalComponent + " address is:" + action.getOutputs().get(0)); //save IP in ObjectNode
                                            break;
-                case "executeUploadCommands": journal.log(Level.INFO, "Action: Uploading " + vm.getName());
+                case "executeUploadCommands": journal.log(Level.INFO, "Action: Uploading " + instance.getName());
                                               method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, VMInstance.class, Connector.class, boolean.class});
                                               method.invoke(cls, instance, vm, jc, debugMode);
                                               break;
-                case "executeRetrieveCommand": journal.log(Level.INFO, "Action: Retrieving " + vm.getName());
+                case "executeRetrieveCommand": journal.log(Level.INFO, "Action: Retrieving " + instance.getName());
                                                method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, VMInstance.class, Connector.class, boolean.class});
                                                method.invoke(cls, instance, vm, jc, debugMode);
                                                break;
-                case "executeInstallCommand": journal.log(Level.INFO, "Action: Installing " + vm.getName());
+                case "executeInstallCommand": journal.log(Level.INFO, "Action: Installing " + instance.getName());
                                               method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, VMInstance.class, Connector.class, boolean.class});
                                               method.invoke(cls, instance, vm, jc, debugMode);
                                               break;
-                case "configure": journal.log(Level.INFO, "Action: Configuring resource on " + vm.getName());
+                case "configure": journal.log(Level.INFO, "Action: Configuring resource on " + componentInstanceName);
                                   method = cls.getDeclaredMethod(methodName, new Class[]{Connector.class, VM.class, VMInstance.class, String.class, Boolean.class, boolean.class});
                                   method.invoke(cls, jc, type, vm, command, requireCredentials, debugMode);
                                   break;
-                case "start": journal.log(Level.INFO, "Action: Starting " + vm.getName());
+                case "start": journal.log(Level.INFO, "Action: Starting " + componentInstanceName);
                               method = cls.getDeclaredMethod(methodName, new Class[]{Connector.class, VM.class, VMInstance.class, String.class, boolean.class});
                               method.invoke(cls, jc, type, vm, command, debugMode);
                               break;

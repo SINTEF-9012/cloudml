@@ -662,7 +662,7 @@ public class ActivityDiagram  {
                 for (Resource r : host.getType().getResources()) {
                     String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
                     if (configurationCommand != null && !configurationCommand.isEmpty()) {
-                        configure = getConfigureAction(r, jc, ownerVM, n, install.getOutgoing().get(0), configurationCommand);
+                        configure = getConfigureAction(r, jc, ownerVM, n, install.getOutgoing().get(0), configurationCommand, host.getName());
                     }
                 }
 //                            if (serverComponent.isInternal()) {
@@ -678,6 +678,7 @@ public class ActivityDiagram  {
                         start.addInput(n);
                         start.addInput(jc);
                         start.addInput(startCommand);
+                        start.addInput(host.getName());
                         start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                     }
                 }
@@ -850,12 +851,12 @@ public class ActivityDiagram  {
                     VMInstance ownerVM = (VMInstance) owner;
 
                     // find out if some components must be started before this one
-                    ArrayList<VMInstance> providers = new ArrayList<VMInstance>();
+                    ArrayList<String> providers = new ArrayList<String>();
                     for (RequiredPort port:x.getType().getRequiredPorts().toList()){
                         if (port.isMandatory()) {
                             for (RelationshipInstance conn : relationshipInstances) {
                                 if (port.equals(conn.getRequiredEnd().getType())){
-                                    VMInstance provider = (VMInstance) getDestination(conn.getProvidedEnd().getOwner().get());
+                                    String provider = conn.getProvidedEnd().getOwner().get().getName();
                                     providers.add(provider);
                                 }
                             }
@@ -865,23 +866,35 @@ public class ActivityDiagram  {
                     // number of providers will be equal to number of forks after connection configuration
                     ArrayList<Join> joins = new ArrayList<Join>();
                     if (!providers.isEmpty()) {
-                        for (VMInstance provider : providers) {
+                        for (String provider : providers) {
                             //find last configure:connection_'Action' actions with 'oppositeConnectionEnd' property = provider.getName() and input VMInstance = ownerVM
                             Action lastConnectionConfigure = null;
                             for (Action action:ActivityBuilder.getActions()){
-                                if (action.getInputs().get(0).equals(ownerVM) &&
-                                        action.getProperties().get("oppositeConnectionEnd") != null &&
-                                        action.getProperties().get("oppositeConnectionEnd").equals(provider.getName())){
-                                    lastConnectionConfigure = action;
+                                if (action.getName().contains("configure:connection")){
+                                    if (action.getInputs().get(4).equals(x.getName()) &&
+                                            action.getProperties().get("oppositeConnectionEnd") != null &&
+                                            action.getProperties().get("oppositeConnectionEnd").equals(provider)) {
+                                        lastConnectionConfigure = action;
+                                    }
+                                }
+                            }
+                            // connection may be without any commands, in such case we have to get install command
+                            if (lastConnectionConfigure == null){
+                                for (Action action:ActivityBuilder.getActions()){
+                                    if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance)action.getInputs().get(1)).getName().equals(x.getName())){
+                                        lastConnectionConfigure = action;
+                                    }
                                 }
                             }
                             // create join with specific property to be able to retrieve it precisely
                             Join connectionJoin = (Join) ActivityBuilder.forkOrJoin(2, false, false);
-                            connectionJoin.getProperties().put("missingActionFrom", provider.getName());
+                            connectionJoin.getProperties().put("missingActionFrom", provider);
                             // connect configure action and join and update activity
                             ActivityEdge configureToJoin = connectionJoin.getIncoming().get(0);
                             // first delete outgoing edge from action.
-                            lastConnectionConfigure.removeEdge(lastConnectionConfigure.getOutgoing().get(0), ActivityNode.Direction.OUT);
+                            if (!lastConnectionConfigure.getName().equals("executeInstallCommand")) {
+                                lastConnectionConfigure.removeEdge(lastConnectionConfigure.getOutgoing().get(0), ActivityNode.Direction.OUT);
+                            }
                             // add edge from Join node
                             lastConnectionConfigure.addEdge(configureToJoin, ActivityNode.Direction.OUT);
                             joins.add(connectionJoin);
@@ -910,7 +923,7 @@ public class ActivityDiagram  {
                     } else {
                         // if no joins, then there was no connection configuration commands and previous action was executeInstall
                         for (Action action:ActivityBuilder.getActions()){
-                            if (action.getName().equals("executeInstallCommand") && ((VMInstance)action.getInputs().get(0)).equals(ownerVM)) {
+                            if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance)action.getInputs().get(1)).getName().equals(x.getName())) {
                                 action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                                 int size = action.getOutgoing().size();
                                 toConfigure = action.getOutgoing().get(size - 1);
@@ -926,10 +939,12 @@ public class ActivityDiagram  {
                     for (Resource r : x.getType().getResources()) {
                         String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
                         if (configurationCommand != null && !configurationCommand.isEmpty()) {
-                            configure = ActivityBuilder.action(toConfigure, null, ownerVM, "start");
+                            configure = ActivityBuilder.action(toConfigure, null, ownerVM, "configure");
                             configure.addInput(n);
                             configure.addInput(jc);
                             configure.addInput(configurationCommand);
+                            configure.addInput(x.getName());
+                            configure.addInput(r.getRequireCredentials());
                             configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                         }
 //                        configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
@@ -946,6 +961,7 @@ public class ActivityDiagram  {
                             start.addInput(n);
                             start.addInput(jc);
                             start.addInput(startCommand);
+                            start.addInput(x.getName());
                             start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                         }
 //                        start(jc, n, ownerVM, startCommand, true);
@@ -963,7 +979,7 @@ public class ActivityDiagram  {
             }//TODO if not InternalComponent
         }
 
-        // because we don't know ordering of components, we hav to go through them again to do some connections
+        // because we don't know ordering of components, we have to go through them again to do some connections
         for (InternalComponentInstance x : components) {
             if (!alreadyStarted.contains(x)) {
                 ExternalComponentInstance owner = x.externalHost();
@@ -976,14 +992,15 @@ public class ActivityDiagram  {
                     ArrayList<Join> waitingJoins = new ArrayList<Join>();
                     ActivityNode lastNode = (ActivityNode) last.getSource();;
                     for (ControlNode control:ActivityBuilder.getControlNodes()){
-                        if (control instanceof Join){
+                        if (control instanceof Join && !lastNode.equals(control)){
                             Join join = (Join) control;
-                            if (join.getProperties().get("missingActionFrom") != null && join.getProperties().get("missingActionFrom").equals(ownerVM.getName())){
+                            if (join.getProperties().get("missingActionFrom") != null && join.getProperties().get("missingActionFrom").equals(x.getName())){
                                 // add join incoming edge without source to this action
                                 if (lastNode instanceof Join){
                                     lastNode.removeEdge(last, ActivityNode.Direction.OUT);
                                     ActivityBuilder.getActivity().removeEdge(last);
                                 }
+                                // get(1) because we know that this join has only two incoming edges and first one was connected before
                                 lastNode.addEdge(join.getIncoming().get(1), ActivityNode.Direction.OUT);
                                 waitingJoins.add(join);
                             }
@@ -991,10 +1008,11 @@ public class ActivityDiagram  {
                     }
 
                     // if we have connections to waiting joins, we don't need to do anything with outgoing edge from last component action, otherwise we connect it to final join
-                    if (waitingJoins.isEmpty())
+                    if (waitingJoins.isEmpty()) {
                         edgesToFinalJoin.add(last);
-                    else if (lastNode.getOutgoing().contains(last))
+                    } else if (lastNode.getOutgoing().contains(last)) {
                         lastNode.removeEdge(last, ActivityNode.Direction.OUT);
+                    }
 
                     alreadyStarted.add(x);
                 }
@@ -1384,11 +1402,11 @@ public class ActivityDiagram  {
 
                         Action retrieve = null;
                         if (clientResource.getRetrieveCommand() != null && !clientResource.getRetrieveCommand().equals("")) {
-                            ActivityEdge last = addEdgeToInstall(ownerVMClient);
+                            ActivityEdge last = addEdgeToInstall(clienti.getName());
                             // :: sign inside command string will indicate that we have to retrieve real IPs during execution inside ActionExecutable.java
                             String retrieveCommand = clientResource.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM;
                             //finally create retrieve action
-                            retrieve = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, retrieveCommand);
+                            retrieve = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, retrieveCommand, clientInternal.getOwner().get().getName());
                             connectionActions.add(retrieve);
 
 //                            String retrieveCommand = (clientResource.getRetrieveCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber);
@@ -1397,9 +1415,9 @@ public class ActivityDiagram  {
 
                         Action install = null;
                         if (clientResource.getInstallCommand() != null && !clientResource.getInstallCommand().equals("")) {
-                            ActivityEdge last = getLastEdge(ownerVMClient, retrieve, null);
+                            ActivityEdge last = getLastEdge(clientInternal.getOwner().get().getName(), retrieve, null);
                             String installationCommand = clientResource.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM;
-                            install = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, installationCommand);
+                            install = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, installationCommand, clientInternal.getOwner().get().getName());
                             connectionActions.add(install);
 //                            String installationCommand = clientResource.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                            configure(jcClient, VMClient, ownerVMClient, installationCommand, clientResource.getRequireCredentials(), true);
@@ -1407,9 +1425,9 @@ public class ActivityDiagram  {
 
                         Action configure = null;
                         if (clientResource.getConfigureCommand() != null && !clientResource.getConfigureCommand().equals("")) {
-                            ActivityEdge last = getLastEdge(ownerVMClient, install, retrieve);
+                            ActivityEdge last = getLastEdge(clientInternal.getOwner().get().getName(), install, retrieve);
                             String configurationCommand = clientResource.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM;
-                            configure = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, configurationCommand);
+                            configure = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, configurationCommand, clientInternal.getOwner().get().getName());
                             connectionActions.add(configure);
 //                            String configurationCommand = clientResource.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                            configure(jcClient, VMClient, ownerVMClient, configurationCommand, clientResource.getRequireCredentials(), true);
@@ -1445,7 +1463,7 @@ public class ActivityDiagram  {
     }
 
     // returns action with outgoing control flow
-    private Action getConfigureAction(Resource resource, Connector jcConnector, VMInstance ownerVMInstance, VM VM, ActivityEdge incomingControl, String retrieveCommand) throws Exception {
+    private Action getConfigureAction(Resource resource, Connector jcConnector, VMInstance ownerVMInstance, VM VM, ActivityEdge incomingControl, String retrieveCommand, String componentName) throws Exception {
         Action retrieve;
         String connectionCommand = "";
         if (retrieveCommand.split("::").length == 4){
@@ -1456,16 +1474,17 @@ public class ActivityDiagram  {
         retrieve.addInput(VM);
         retrieve.addInput(jcConnector);
         retrieve.addInput(retrieveCommand);
+        retrieve.addInput(componentName);
         retrieve.addInput(resource.getRequireCredentials());
         retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
         return retrieve;
     }
 
     // order of configuration commands are retrieve, install, configure. When we at configure we have to check both install and retrieve if they equal null
-    private ActivityEdge getLastEdge(VMInstance ownerVMInstance, Action previousAction, Action twoBefore) throws Exception {
+    private ActivityEdge getLastEdge(String componentName, Action previousAction, Action twoBefore) throws Exception {
         ActivityEdge last = null;
         if (previousAction == null && twoBefore == null) {
-            last = addEdgeToInstall(ownerVMInstance);
+            last = addEdgeToInstall(componentName);
         } else {
             if (previousAction == null){
                 last = twoBefore.getOutgoing().get(0);
@@ -1476,16 +1495,15 @@ public class ActivityDiagram  {
         return last;
     }
 
-    private ActivityEdge addEdgeToInstall(VMInstance ownerVMClient) throws Exception {
-        ActivityEdge last;// get install command that correspond to this connection instance. For example, if require port is nimbusRequired
+    private ActivityEdge addEdgeToInstall(String componentName) throws Exception {
+        ActivityEdge last = new ActivityEdge();// get install command that correspond to this connection instance. For example, if require port is nimbusRequired
         // then we need to get action "executeInstallCommand" on nimbus VM
         Action previous = null;
         for (Action action : ActivityBuilder.getActions()) {
-            if (action.getName().equals("executeInstallCommand") && action.getInputs().get(0).equals(ownerVMClient))
+            if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance) action.getInputs().get(1)).getName().equals(componentName))
                 previous = action;
         }
         // add outgoing control edge to that action
-        last = new ActivityEdge();
         previous.addEdge(last, ActivityNode.Direction.OUT);
         return last;
     }
@@ -1523,19 +1541,42 @@ public class ActivityDiagram  {
         Connector jcServer;
         Connector jcClient;
         VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
+        String serverComponentName = pserver.getOwner().get().getName();
         VM VMserver = ownerVMServer.getType();
         VMInstance ownerVMClient = (VMInstance) getDestination(pclient.getOwner().get());//TODO:generalization for PaaS
+        String clientComponentName = pclient.getOwner().get().getName();
         VM VMClient = ownerVMClient.getType();
         jcServer = ConnectorFactory.createIaaSConnector(VMserver.getProvider());
         jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
 
+        // join from client and server before we start any configuration actions
+        Join joinBeforeConnections = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+        ActivityEdge serverInstall = addEdgeToInstall(serverComponentName);
+        ActivityEdge clientInstall = addEdgeToInstall(clientComponentName);
+        ActivityNode serverNode = serverInstall.getSource();
+        ActivityNode clientNode = clientInstall.getSource();
+        serverNode.removeEdge(serverInstall, ActivityNode.Direction.OUT);
+        serverNode.addEdge(joinBeforeConnections.getIncoming().get(0), ActivityNode.Direction.OUT);
+        clientNode.removeEdge(clientInstall, ActivityNode.Direction.OUT);
+        clientNode.addEdge(joinBeforeConnections.getIncoming().get(1), ActivityNode.Direction.OUT);
+
+        // if we have resources from client and server, we create another fork for that, otherwise we use outgoing edge from previous join for connection commands
+        Fork forkClientServer = null;
+        if (server != null && client != null){
+            forkClientServer = (Fork) ActivityBuilder.forkOrJoin(2, false, true);
+            ActivityEdge joinOutgoing = joinBeforeConnections.getOutgoing().get(0);
+            joinBeforeConnections.removeEdge(joinOutgoing, ActivityNode.Direction.OUT);
+            ActivityBuilder.getActivity().removeEdge(joinOutgoing);
+            joinBeforeConnections.addEdge(forkClientServer.getIncoming().get(0), ActivityNode.Direction.OUT);
+        }
+
         Action retrieveServer = null;
         if(server != null){
             if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals("")){
-                ActivityEdge last = addEdgeToInstall(ownerVMServer);
+                ActivityEdge last = forkClientServer == null ? joinBeforeConnections.getOutgoing().get(0) : forkClientServer.getOutgoing().get(0);
                 String retrieveCommand = server.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
-                retrieveServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, retrieveCommand);
-                retrieveServer.getProperties().put("oppositeConnectionEnd", ownerVMClient.getName());
+                retrieveServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, retrieveCommand, serverComponentName);
+                retrieveServer.getProperties().put("oppositeConnectionEnd", clientComponentName);
                 connectionActions.add(retrieveServer);
 //                jcServer.execCommand(ownerVMServer.getId(), CloudMLQueryUtil.cloudmlStringRecover(server.getRetrieveCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
             }
@@ -1544,10 +1585,10 @@ public class ActivityDiagram  {
         Action retrieveClient = null;
         if(client !=null){
             if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals("")) {
-                ActivityEdge last = addEdgeToInstall(ownerVMClient);
+                ActivityEdge last = forkClientServer == null ? joinBeforeConnections.getOutgoing().get(0) : forkClientServer.getOutgoing().get(1);
                 String retrieveCommand = client.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
-                retrieveClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, retrieveCommand);
-                retrieveClient.getProperties().put("oppositeConnectionEnd", ownerVMServer.getName());
+                retrieveClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, retrieveCommand, clientComponentName);
+                retrieveClient.getProperties().put("oppositeConnectionEnd", serverComponentName);
                 connectionActions.add(retrieveClient);
 //                jcClient.execCommand(ownerVMClient.getId(), CloudMLQueryUtil.cloudmlStringRecover(client.getRetrieveCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
             }
@@ -1556,10 +1597,10 @@ public class ActivityDiagram  {
         Action installServer = null;
         if(server != null){
             if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
-                ActivityEdge last = getLastEdge(ownerVMServer, retrieveServer, null);
+                ActivityEdge last = getLastEdge(serverComponentName, retrieveServer, null);
                 String installationCommand = server.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionInstall";
-                installServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, installationCommand);
-                installServer.getProperties().put("oppositeConnectionEnd", ownerVMClient.getName());
+                installServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, installationCommand, serverComponentName);
+                installServer.getProperties().put("oppositeConnectionEnd", clientComponentName);
                 connectionActions.add(installServer);
 //                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials(), true);
@@ -1569,10 +1610,10 @@ public class ActivityDiagram  {
         Action installClient = null;
         if(client != null){
             if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
-                ActivityEdge last = getLastEdge(ownerVMClient, retrieveClient, null);
+                ActivityEdge last = getLastEdge(clientComponentName, retrieveClient, null);
                 String installationCommand = client.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionInstall";
-                installClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, installationCommand);
-                installClient.getProperties().put("oppositeConnectionEnd", ownerVMServer.getName());
+                installClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, installationCommand, clientComponentName);
+                installClient.getProperties().put("oppositeConnectionEnd", serverComponentName);
                 connectionActions.add(installClient);
 //                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials(), true);
@@ -1582,10 +1623,10 @@ public class ActivityDiagram  {
         Action configureServer = null;
         if(server != null){
             if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
-                ActivityEdge last = getLastEdge(ownerVMServer, installServer, retrieveServer);
+                ActivityEdge last = getLastEdge(serverComponentName, installServer, retrieveServer);
                 String configurationCommand = server.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionConfigure";
-                configureServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, configurationCommand);
-                configureServer.getProperties().put("oppositeConnectionEnd", ownerVMClient.getName());
+                configureServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, configurationCommand, serverComponentName);
+                configureServer.getProperties().put("oppositeConnectionEnd", clientComponentName);
                 connectionActions.add(configureServer);
 //                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials(), true);
@@ -1595,10 +1636,10 @@ public class ActivityDiagram  {
         Action configureClient = null;
         if(client != null){
             if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
-                ActivityEdge last = getLastEdge(ownerVMClient, installClient, retrieveClient);
+                ActivityEdge last = getLastEdge(clientComponentName, installClient, retrieveClient);
                 String configurationCommand = client.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionConfigure";
-                configureClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, configurationCommand);
-                configureClient.getProperties().put("oppositeConnectionEnd", ownerVMServer.getName());
+                configureClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, configurationCommand, clientComponentName);
+                configureClient.getProperties().put("oppositeConnectionEnd", serverComponentName);
                 connectionActions.add(configureClient);
 //                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
 //                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials(), true);
