@@ -2,10 +2,30 @@
 	"eClass" : "net.cloudml.core:CloudMLModel",
 	"name" : "SensApp",
 	"providers" : [{
-      "eClass": "net.cloudml.core:Provider",
-      "name": "aws-ec2",
-      "credentials": "C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.keys"
-    }
+			"eClass" : "net.cloudml.core:Provider",
+			"name" : "openstack-nova",
+			"credentials" : "credentialsOpenstack",
+			"properties" : [{
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "endPoint",
+					"value" : "http://192.168.1.10:5000/v2.0"
+				}
+			]
+		}, {
+			"eClass" : "net.cloudml.core:Provider",
+			"name" : "aws-ec2",
+			"credentials" : "no given credentials"
+		}, {
+			"eClass" : "net.cloudml.core:Provider",
+			"name" : "flexiant",
+			"credentials" : "no given credentials",
+			"properties" : [{
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "endPoint",
+					"value" : "https://api.sd1.flexiant.net:4442/userapi"
+				}
+			]
+		}
 	],
 	"internalComponents" : [{
 			"eClass" : "net.cloudml.core:InternalComponent",
@@ -257,7 +277,7 @@
 			"sshKey" : "cloudml",
 			"groupName" : "sensapp",
 			"privateKey" : "cloudml.pem",
-			"provider" : "providers[aws-ec2]",
+			"provider" : "providers[openstack-nova]",
 			"providedExecutionPlatforms" : [{
 					"eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
 					"name" : "m1Provided",
@@ -285,7 +305,7 @@
 			"securityGroup" : "sensapp",
 			"sshKey" : "cloudml",
 			"groupName" : "sensapp",
-			"provider" : "providers[aws-ec2]",
+			"provider" : "providers[openstack-nova]",
 			"privateKey" : "cloudml.pem",
 			"providedExecutionPlatforms" : [{
 					"eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
