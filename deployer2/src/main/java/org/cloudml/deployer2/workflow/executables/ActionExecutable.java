@@ -68,7 +68,7 @@ public class ActionExecutable {
                 //TODO make more generic - in this case I know that I save IP to ObjectNode which goes after Join node
                 Join dataJoin = (Join) action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
                 container = (ObjectNode) dataJoin.getOutgoing().get(0).getTarget();
-                externalComponent = ((VMInstance) action.getInputs().get(0)).getName();
+                externalComponent = ((VMInstance) action.getInputs().get(0)).getName(); //TODO fix name if get(0) returns platform instead of vm
             }
 
             //common objects for resource's commands
@@ -111,7 +111,7 @@ public class ActionExecutable {
             // specific to configure
             Boolean requireCredentials = null;
             if (methodName.contains("configure")){
-                // connection confgiuration method names follow pattern configure:connectionRetrieve
+                // connection configuration method names follow pattern configure:connectionRetrieve
                 if (methodName.contains(":")){
                     methodName = methodName.split(":")[0];
                 }

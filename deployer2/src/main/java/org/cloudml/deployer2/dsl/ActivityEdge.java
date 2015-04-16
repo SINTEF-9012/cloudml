@@ -22,7 +22,8 @@
  */
 package org.cloudml.deployer2.dsl;
 
-import org.cloudml.core.NamedElement;
+import org.cloudml.core.InternalComponentInstance;
+import org.cloudml.core.VMInstance;
 
 /**
  * Created by Maksym on 13.03.2015.
@@ -90,7 +91,7 @@ public class ActivityEdge extends Element {
         String targetString;
         if (node instanceof Action) {
             targetString = "(" + node.getClass().getSimpleName()
-                    + ":" + node.getName() + actionInputName(node) + ")";
+                    + ":" + node.getName() + actionInputName((Action)node) + ")";
         } else {
             targetString = "(" + node.getClass().getSimpleName()
                     + ":" + node.getName() + ")";
@@ -98,8 +99,16 @@ public class ActivityEdge extends Element {
         return targetString;
     }
 
-    private String actionInputName(ActivityNode node){
-        return "_" + ((NamedElement)((Action) node).getInputs().get(0)).getName();
+    private String actionInputName(Action node){
+        String name = "";
+        if (node.getName().contains("execute")){
+            name = ((InternalComponentInstance) node.getInputs().get(1)).getName();
+        } else if (node.getName().contains("configure") || node.getName().equals("start")){
+            name = (String) node.getInputs().get(4);
+        } else if (node.getName().contains("provision")){
+            name = ((VMInstance)node.getInputs().get(0)).getName(); //TODO fix name if get(0) returns platform instead of VM
+        }
+        return "_" + name;
     }
 
 }

@@ -354,35 +354,53 @@ public class ActivityDiagram  {
                 alreadyDeployed.add(instance);
 
                 ActivityEdge incoming = retrieve.getOutgoing().get(0);
-                ActivityEdge outgoingFromPaas = buildPaas(instance, relationships.toList(),incoming);
+                ArrayList<ActivityEdge> outgoingFromPaas = buildPaas(instance, relationships.toList(),incoming);
 
                 // if buildPaas  creates some actions we need to find related thread to those actions (e.g. this is supervisor thread, but build pass actions are related to nimbus)
                 // and connect these action to that thread
                 // also we create join node here because we have to synchronize retrieve action from here with actions produced by buildPaas after they
                 // were moved to another thread
                 Join joinBeforeInstall = null;
-                if (!outgoingFromPaas.equals(incoming)){
+                if (outgoingFromPaas.size() > 1 || !outgoingFromPaas.get(0).equals(incoming)){
+                    // last edge represents edges that is related to actions which were created based on relationships
+                    // other edges will be related to requiredExecutionPlatforms or buildExecutes() method to say it more precisely
+                    ActivityEdge lastInArray = outgoingFromPaas.get(outgoingFromPaas.size() - 1);
                     Action moveToOtherThread = (Action) incoming.getTarget();
-                    for (Action action:provisioned){
-                        if (action.getInputs().get(0).equals(moveToOtherThread.getInputs().get(0))){
-                            // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
-                            retrieve.removeEdge(incoming, ActivityNode.Direction.OUT);
-                            action.addEdge(incoming, ActivityNode.Direction.OUT);
+                    if (moveToOtherThread != null) {
+                        for (Action action : provisioned) {
+                            if (action.getInputs().get(0).equals(moveToOtherThread.getInputs().get(0))) {
+                                // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
+                                retrieve.removeEdge(incoming, ActivityNode.Direction.OUT);
+                                action.addEdge(incoming, ActivityNode.Direction.OUT);
+                            }
                         }
                     }
-                    Action lastFromPaas = (Action) outgoingFromPaas.getSource();
+                    Action lastFromPaas = (Action) lastInArray.getSource();
                     // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
-                    lastFromPaas.removeEdge(outgoingFromPaas, ActivityNode.Direction.OUT);
-                    joinBeforeInstall = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+                    lastFromPaas.removeEdge(lastInArray, ActivityNode.Direction.OUT);
+//                    if (outgoingFromPaas.contains(incoming)){
+//                        joinBeforeInstall = (Join) ActivityBuilder.forkOrJoin(outgoingFromPaas.size(), false, false);
+//                    } else {
+                        joinBeforeInstall = (Join) ActivityBuilder.forkOrJoin(outgoingFromPaas.size() + 1, false, false);
+//                    }
                     ArrayList<Action> actionsToJoin = new ArrayList<>();
                     actionsToJoin.add(retrieve);
                     actionsToJoin.add(lastFromPaas);
+                    // now after we handled retrieve action and actions based on connections we need to add actions based on buildExecutes
+                    // so we traverse through outgoingFromPaas array from first to the one before last
+                    if (outgoingFromPaas.size() > 1) {
+                        for (int i = 0; i < (outgoingFromPaas.size() - 1); i++) {
+                            Action source = (Action) outgoingFromPaas.get(i).getSource();
+                            source.removeEdge(outgoingFromPaas.get(i), ActivityNode.Direction.OUT);
+                            actionsToJoin.add(source);
+                        }
+                    }
                     ActivityBuilder.connectActionsWithJoinNodes(actionsToJoin, joinBeforeInstall, null);
                 }
 
                 Action install = null;
                 if (joinBeforeInstall == null) {
-                    install = ActivityBuilder.action(outgoingFromPaas, null, ownerVM, "executeInstallCommand");
+                    install = ActivityBuilder.action(incoming, null, ownerVM, "executeInstallCommand");
                 } else {
                     install = ActivityBuilder.action(joinBeforeInstall.getOutgoing().get(0), null, ownerVM, "executeInstallCommand");
                 }
@@ -639,7 +657,7 @@ public class ActivityDiagram  {
 
         if (!alreadyDeployed.contains(host)) {
             if (host.isInternal()) {
-                ActivityEdge outgoingTwo = buildExecutes(host.asInternal(), incoming);
+                ActivityEdge outgoingTwo = buildExecutes(host.asInternal(), outgoingFromBuildExecutes);
                 Action upload = ActivityBuilder.action(outgoingTwo, null, ownerVM, "executeUploadCommands");
                 upload.addInput(host.asInternal());
                 upload.addInput(jc);
@@ -658,41 +676,48 @@ public class ActivityDiagram  {
 //                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.INSTALLED);
 
-                Action configure = null;
-                for (Resource r : host.getType().getResources()) {
-                    String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
-                    if (configurationCommand != null && !configurationCommand.isEmpty()) {
-                        configure = getConfigureAction(r, jc, ownerVM, n, install.getOutgoing().get(0), configurationCommand, host.getName());
-                    }
-                }
+//                Action configure = null;
+//                for (Resource r : host.getType().getResources()) {
+//                    String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
+//                    if (configurationCommand != null && !configurationCommand.isEmpty()) {
+//                        configure = getConfigureAction(r, jc, ownerVM, n, install.getOutgoing().get(0), configurationCommand, host.getName());
+//                    }
+//                }
 //                            if (serverComponent.isInternal()) {
 //                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
 //                            }
 
-                Action start = null;
-                for (Resource r : host.getType().getResources()) {
-                    String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                    if (startCommand != null && !startCommand.isEmpty()) {
-                        ActivityEdge input = configure == null ? install.getOutgoing().get(0) : configure.getOutgoing().get(0);
-                        start = ActivityBuilder.action(input, null, ownerVM, "start");
-                        start.addInput(n);
-                        start.addInput(jc);
-                        start.addInput(startCommand);
-                        start.addInput(host.getName());
-                        start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-                    }
-                }
+//                Action start = null;
+//                for (Resource r : host.getType().getResources()) {
+//                    String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
+//                    if (startCommand != null && !startCommand.isEmpty()) {
+//                        ActivityEdge input = configure == null ? install.getOutgoing().get(0) : configure.getOutgoing().get(0);
+//                        start = ActivityBuilder.action(input, null, ownerVM, "start");
+//                        start.addInput(n);
+//                        start.addInput(jc);
+//                        start.addInput(startCommand);
+//                        start.addInput(host.getName());
+//                        start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+//                    }
+//                }
 
-                outgoingFromBuildExecutes =
-                        start == null ?
-                        (configure == null? install.getOutgoing().get(0): configure.getOutgoing().get(0)) :
-                        start.getOutgoing().get(0);
+                outgoingFromBuildExecutes = install.getOutgoing().get(0);
 
 //                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                 //host.asInternal().setStatus(State.RUNNING);
 
-                alreadyStarted.add(host);
+//                alreadyStarted.add(host);
                 alreadyDeployed.add(host);
+            }
+        } else {
+            for (Action action:ActivityBuilder.getActions()){
+                if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance) action.getInputs().get(1)).getName().equals(host.getName())) {
+                    if (action.getOutgoing().isEmpty()) {
+                        action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                    }
+                    outgoingFromBuildExecutes = action.getOutgoing().get(0);
+                    break;
+                }
             }
         }
         jc.closeConnection();
@@ -706,8 +731,9 @@ public class ActivityDiagram  {
      * @param x An component instance
      * @param incoming edge that comes from previous Action
      */
-    private ActivityEdge buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships, ActivityEdge incoming) {
-        ActivityEdge outgoingFromPaas = incoming;
+    private ArrayList<ActivityEdge> buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships, ActivityEdge incoming) {
+        ArrayList<ActivityEdge> result = new ArrayList<ActivityEdge>();
+        ActivityEdge outgoingFromPaasByRelationships = incoming;
         unlessNotNull("Cannot deploy null", x, relationships);
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
@@ -720,6 +746,14 @@ public class ActivityDiagram  {
             outgoingFromBuildExecutes = buildExecutes(x, incoming);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        ActivityEdge toUpload = null;
+        if (!outgoingFromBuildExecutes.equals(incoming)){
+            result.add(outgoingFromBuildExecutes);
+            toUpload = incoming;
+        } else {
+            toUpload = outgoingFromBuildExecutes;
         }
 
         for (RelationshipInstance bi : relationships) {
@@ -735,7 +769,7 @@ public class ActivityDiagram  {
                             Action upload = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 if (r.getUploadCommand() != null && !r.getUploadCommand().isEmpty()) {
-                                    upload = ActivityBuilder.action(outgoingFromBuildExecutes, null, owner, "executeUploadCommands");
+                                    upload = ActivityBuilder.action(toUpload, null, owner, "executeUploadCommands");
                                     upload.addInput(serverComponent.asInternal());
                                     upload.addInput(jc);
                                     upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
@@ -745,7 +779,7 @@ public class ActivityDiagram  {
                             Action retrieve = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 if (r.getRetrieveCommand() != null && !r.getRetrieveCommand().isEmpty()) {
-                                    ActivityEdge input = upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0);
+                                    ActivityEdge input = upload == null ? toUpload : upload.getOutgoing().get(0);
                                     retrieve = ActivityBuilder.action(input, null, owner, "executeRetrieveCommand");
                                     retrieve.addInput(serverComponent.asInternal());
                                     retrieve.addInput(jc);
@@ -758,7 +792,7 @@ public class ActivityDiagram  {
                                 if (r.getInstallCommand() != null && !r.getInstallCommand().isEmpty()) {
                                     ActivityEdge input =
                                                 retrieve == null ?
-                                                        (upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0)) :
+                                                        (upload == null ? toUpload : upload.getOutgoing().get(0)) :
                                                         retrieve.getOutgoing().get(0);
                                     install = ActivityBuilder.action(input, null, owner, "executeInstallCommand");
                                     install.addInput(serverComponent.asInternal());
@@ -810,10 +844,10 @@ public class ActivityDiagram  {
 //                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
 //                                //serverComponent.asInternal().setStatus(State.RUNNING);
 //                            }
-                            outgoingFromPaas =
+                            outgoingFromPaasByRelationships =
                                     install == null ?
                                     (retrieve == null?
-                                            (upload == null? outgoingFromBuildExecutes : upload.getOutgoing().get(0))
+                                            (upload == null? toUpload : upload.getOutgoing().get(0))
                                             : retrieve.getOutgoing().get(0)) :
                                     install.getOutgoing().get(0);
 //                            alreadyStarted.add(serverComponent);
@@ -825,8 +859,11 @@ public class ActivityDiagram  {
                 }
             }
         }
+        if (result.isEmpty() || !outgoingFromPaasByRelationships.equals(incoming)) {
+            result.add(outgoingFromPaasByRelationships);
+        }
         jc.closeConnection();
-        return outgoingFromPaas;
+        return result;
 
     }
 
