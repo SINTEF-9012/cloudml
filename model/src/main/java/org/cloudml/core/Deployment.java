@@ -174,6 +174,10 @@ public class Deployment extends WithProperties implements Visitable, CanBeValida
         return builder.toString();
     }
 
+    public ResourcePoolGroup getResourcePoolInstances() {
+        return resourcePoolInstances;
+    }
+
     private class LocalProviderGroup extends ProviderGroup {
 
         @Override
