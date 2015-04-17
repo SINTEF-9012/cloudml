@@ -514,7 +514,7 @@ class Facade implements CloudML, CommandHandler {
     public void handle(ListComponents command) {
         if (isDeploymentLoaded()) {
             final ComponentList data = new ComponentList(command, deploy.getComponents());
-            dispatch(data);
+            dispatch(new Message(command, Category.INFORMATION, data.toString()));
 
         } else {
             reportNoDeploymentLoaded(command);
@@ -526,7 +526,7 @@ class Facade implements CloudML, CommandHandler {
         if (isDeploymentLoaded()) {
             final Collection<ComponentInstance<? extends Component>> instances = deploy.getComponentInstances().toList();
             final ComponentInstanceList data = new ComponentInstanceList(command, instances);
-            dispatch(data);
+            dispatch(new Message(command, Category.INFORMATION, data.toString()));
 
         } else {
             reportNoDeploymentLoaded(command);

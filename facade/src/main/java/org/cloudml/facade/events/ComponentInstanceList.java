@@ -64,4 +64,20 @@ public class ComponentInstanceList extends Data {
     public void accept(EventHandler handler) {
         handler.handle(this);
     }
+
+    public String toString(){
+        String result="   Component instances:\n";
+        for(ComponentInstance c: components){
+            if(c.isExternal()){
+                if(c.asExternal().isVM()){
+                    result+="   VM-> "+c.asExternal().asVM().getId()+"::"+c.getName()+"\n";
+                }else{
+                    result+="   External component-> "+c.getQualifiedName()+"\n";
+                }
+            }else{
+                result+="   Instance component-> "+c.getQualifiedName()+"\n";
+            }
+        }
+        return result;
+    }
 }
