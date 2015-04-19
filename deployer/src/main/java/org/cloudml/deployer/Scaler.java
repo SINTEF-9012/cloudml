@@ -169,6 +169,69 @@ public class Scaler {
     }
 
 
+    public void scaleOut(VMInstance vmi, int n){
+        VM temp = findVMGenerated(vmi.getType().getName(),"fromImage");
+        ArrayList<VM> newbies=new ArrayList<VM>();
+        ArrayList<Map<InternalComponentInstance, InternalComponentInstance>> duplicatedGraphs=new ArrayList<Map<InternalComponentInstance, InternalComponentInstance>>();
+        ArrayList<Thread> ts=new ArrayList<Thread>();
+        //to be in a for loop
+        for(int i=0;i<n;i++) {
+            VM v=createNewInstanceOfVMFromImage(vmi);
+            newbies.add(v);
+            Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph = duplicateHostedGraph(currentModel, vmi, ci);
+            duplicatedGraphs.add(duplicatedGraph);
+            if (temp == null && i == 0) {
+                Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+                String ID = c.createImage(vmi);
+                c.closeConnection();
+                v.setImageId(ID);
+            } else {
+                v.setImageId(temp.getImageId());
+            }
+        }
+        for(int i=0;i<n;i++) {
+            final Map<InternalComponentInstance, InternalComponentInstance> d=duplicatedGraphs.get(i);
+            final VM vm=newbies.get(i);
+            final String name=vmi.getName();
+            ts.add(new Thread(){
+                public void run() {
+                    //once this is done we can work in parallel
+                    Connector c2 = ConnectorFactory.createIaaSConnector(vm.getProvider());
+                    HashMap<String, String> result = c2.createInstance(ci);
+                    c2.closeConnection();
+                    coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
+                    coordinator.updateStatus(name, ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                    coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
+
+                    //4. configure the new VM
+                    //execute the configuration bindings
+                    Set<ComponentInstance> listOfAllComponentImpacted= new HashSet<ComponentInstance>();
+                    configureBindingOfImpactedComponents(listOfAllComponentImpacted,d);
+
+                    //execute configure commands on the components
+                    configureImpactedComponents(listOfAllComponentImpacted,d);
+
+                    //execute start commands on the components
+                    startImpactedComponents(listOfAllComponentImpacted, d);
+
+                    //restart components on the VM scaled
+                    restartHostedComponents(ci);
+                }
+            });
+
+        }
+
+        for(Thread t: ts){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        journal.log(Level.INFO, ">> Scaling completed!");
+    }
+
     /**
      * Method to scale out a VM within the same provider
      * Create a snapshot of the VM and then configure the bindings

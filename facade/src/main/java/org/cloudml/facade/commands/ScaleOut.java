@@ -47,4 +47,5 @@ public class ScaleOut extends CloudMlCommand {
         return String.format("snapshot %s", vmId);
     }
 
+
 }
