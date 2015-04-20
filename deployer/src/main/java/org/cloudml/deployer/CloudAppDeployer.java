@@ -1179,6 +1179,11 @@ public class CloudAppDeployer {
         scaler.scaleOut(vmi);
     }
 
+    public void scaleOut(VMInstance vmi, int nb){
+        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        scaler.scaleOut(vmi,nb);
+    }
+
     public void scaleOut(VMInstance vmi,Provider provider){
         Scaler scaler=new Scaler(currentModel,coordinator,this);
         scaler.scaleOut(vmi,provider);

@@ -65,6 +65,7 @@ public class ComponentInstanceList extends Data {
         handler.handle(this);
     }
 
+
     public String toString(){
         String result="   Component instances:\n";
         for(ComponentInstance c: components){

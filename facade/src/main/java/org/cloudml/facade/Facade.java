@@ -684,7 +684,9 @@ class Facade implements CloudML, CommandHandler {
         if (vmi == null) {
             dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
         } else {
-            deployer.scaleOut(vmi);
+            if(command.getNb() > 1)
+                deployer.scaleOut(vmi,command.getNb());
+            else deployer.scaleOut(vmi);
         }
     }
 

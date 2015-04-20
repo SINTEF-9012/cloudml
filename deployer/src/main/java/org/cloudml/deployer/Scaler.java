@@ -170,17 +170,20 @@ public class Scaler {
 
 
     public void scaleOut(VMInstance vmi, int n){
-        VM temp = findVMGenerated(vmi.getType().getName(),"fromImage");
         ArrayList<VM> newbies=new ArrayList<VM>();
         ArrayList<Map<InternalComponentInstance, InternalComponentInstance>> duplicatedGraphs=new ArrayList<Map<InternalComponentInstance, InternalComponentInstance>>();
         ArrayList<Thread> ts=new ArrayList<Thread>();
-        //to be in a for loop
+        ArrayList<VMInstance> cis=new ArrayList<VMInstance>();
+
+
         for(int i=0;i<n;i++) {
+            VM temp = findVMGenerated(vmi.getType().getName(),"fromImage");
             VM v=createNewInstanceOfVMFromImage(vmi);
             newbies.add(v);
             Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph = duplicateHostedGraph(currentModel, vmi, ci);
             duplicatedGraphs.add(duplicatedGraph);
-            if (temp == null && i == 0) {
+            cis.add(ci);
+            if (temp == null) {
                 Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
                 String ID = c.createImage(vmi);
                 c.closeConnection();
@@ -189,10 +192,12 @@ public class Scaler {
                 v.setImageId(temp.getImageId());
             }
         }
+
         for(int i=0;i<n;i++) {
             final Map<InternalComponentInstance, InternalComponentInstance> d=duplicatedGraphs.get(i);
             final VM vm=newbies.get(i);
             final String name=vmi.getName();
+            final VMInstance ci=cis.get(i);
             ts.add(new Thread(){
                 public void run() {
                     //once this is done we can work in parallel
@@ -218,7 +223,7 @@ public class Scaler {
                     restartHostedComponents(ci);
                 }
             });
-
+            ts.get(i).start();
         }
 
         for(Thread t: ts){
@@ -229,7 +234,7 @@ public class Scaler {
             }
         }
 
-        journal.log(Level.INFO, ">> Scaling completed!");
+        journal.log(Level.INFO, ">> Multiple scaling completed!");
     }
 
     /**

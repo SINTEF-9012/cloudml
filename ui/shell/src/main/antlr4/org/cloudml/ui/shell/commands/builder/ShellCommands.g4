@@ -40,6 +40,7 @@ action
     |   'view' level ID                                     # View
     |   'snapshot' ID                                       # Snapshot
     |   'scale out' ID                                      # ScaleOut
+    |   'multiple scaling' ID times=INTEGER                 # MultipleScaleOut
     |   'burst' ID 'to' ID                                  # Burst
     |   'create image from'  ID                             # Image
     |   'reset deployment'                                  # Reset
