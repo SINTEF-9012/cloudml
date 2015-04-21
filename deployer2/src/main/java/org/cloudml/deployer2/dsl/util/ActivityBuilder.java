@@ -20,7 +20,7 @@
  * Public License along with CloudML. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.cloudml.deployer2.workflow.util;
+package org.cloudml.deployer2.dsl.util;
 
 import org.cloudml.deployer2.dsl.*;
 
@@ -111,6 +111,22 @@ public class ActivityBuilder {
         }
         updateActivity(node);
         return node;
+    }
+
+    //creates Object node with specific name to save IPs of VMs
+    public static ObjectNode createIPregistry(Edges flows, ObjectNodeType returnType) throws Exception {
+        return objectNode("Public Addresses", flows, returnType);
+    }
+
+    // get node which holds public addresses of VMs and platforms
+    public static ObjectNode getIPregistry(){
+        ObjectNode registry = null;
+        for (ActivityNode node:getActivity().getNodes()){
+            if (node.getName().equals("Public Addresses")){
+                registry = (ObjectNode) node;
+            }
+        }
+        return registry;
     }
 
     // returns fork with a given number of outgoing eges (data or control): ===>|===> or --->|--->
@@ -216,10 +232,14 @@ public class ActivityBuilder {
         for (Action a:actions){
             int index = actions.indexOf(a);
             if (control != null) {
+                if (actions.size() > control.getIncoming().size())
+                    throw new Exception("Number of actions is bigger than the number of incoming control edges.");
                 ActivityEdge controlEdge = control.getIncoming().get(index);
                 a.addEdge(controlEdge, ActivityNode.Direction.OUT);
             }
             if (data != null) {
+                if (actions.size() > data.getIncoming().size())
+                    throw new Exception("Number of actions is bigger than the number of incoming data edges.");
                 ActivityEdge dataEdge = data.getIncoming().get(index);
                 a.addEdge(dataEdge, ActivityNode.Direction.OUT);
             }
@@ -244,16 +264,6 @@ public class ActivityBuilder {
         fork.setOutgoing(forkOutgoing);
     }
 
-    // get node which holds public addresses of VMs and platforms
-    public static ObjectNode getAddressesRegistry(){
-        ObjectNode registry = null;
-        for (ActivityNode node:getActivity().getNodes()){
-            if (node.getName().equals("Public Addresses")){
-                registry = (ObjectNode) node;
-            }
-        }
-        return registry;
-    }
 
     // return only actions
     public static ArrayList<Action> getActions(){

@@ -35,6 +35,7 @@ import org.cloudml.deployer.CloudMLModelComparator;
 import org.cloudml.deployer.PuppetManifestGenerator;
 import org.cloudml.deployer.Scaler;
 import org.cloudml.deployer2.dsl.*;
+import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.monitoring.status.StatusConfiguration;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
@@ -293,7 +294,7 @@ public class ActivityDiagram  {
         unlessNotNull("Cannot prepare for deployment null!", components);
         // get VM provisioning tasks
         ArrayList<Action> provisioned = new ArrayList<Action>();
-        for (ActivityNode node:ActivityBuilder.getActivity().getNodes()){
+        for (ActivityNode node: ActivityBuilder.getActivity().getNodes()){
             if(node.getName().contains("provision")){
                 provisioned.add((Action) node);
             }
@@ -1260,9 +1261,7 @@ public class ActivityDiagram  {
 
         Join dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
         // container of all IPs
-        ObjectNode IPs = ActivityBuilder.objectNode("Public Addresses",
-                ActivityBuilder.Edges.NOEDGES,
-                ActivityBuilder.ObjectNodeType.OBJECT);  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
+        ObjectNode IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.NOEDGES, ActivityBuilder.ObjectNodeType.OBJECT);  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
         ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
 
 //        // control join and finish
@@ -1375,7 +1374,7 @@ public class ActivityDiagram  {
      * @throws java.net.MalformedURLException
      */
     public void configureWithRelationships(RelationshipInstanceGroup relationships) throws Exception {
-        ObjectNode publicAddresses = ActivityBuilder.getAddressesRegistry();
+        ObjectNode publicAddresses = ActivityBuilder.getIPregistry();
         ArrayList<Action> connectionActions = new ArrayList<Action>();
 
         //Configure on the basis of the relationships

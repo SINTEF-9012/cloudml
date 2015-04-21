@@ -27,7 +27,8 @@ package org.cloudml.deployer2.workflow;
 
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
-import org.cloudml.deployer2.workflow.util.ActivityBuilder;
+import org.cloudml.deployer2.dsl.util.ActivityBuilder;
+import org.cloudml.deployer2.dsl.util.ActivityValidator;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
 
@@ -55,7 +56,15 @@ public class ConcurrentDeployment {
             e.printStackTrace();
         }
 
+        //validate activity diagram
+        try {
+            ActivityValidator.checkActivity(ActivityBuilder.getActivity());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // create graph in a dot file, it is save in the resources folder
+        // tool to view diagram: http://stamm-wilbrandt.de/GraphvizFiddle/
         new ActivityDotCreator(ActivityBuilder.getActivity());
     }
 
@@ -82,8 +91,8 @@ public class ConcurrentDeployment {
 
     public static void main(String[] args) throws Exception {
 
-        ConcurrentDeployment sensApp = new ConcurrentDeployment("C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\sensappAdmin-v2.json");
-//        ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
+//        ConcurrentDeployment sensApp = new ConcurrentDeployment("C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\sensappAdmin-v2.json");
+        ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
 //        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
 //        System.out.println(ActivityBuilder.getActivity().toString());
 

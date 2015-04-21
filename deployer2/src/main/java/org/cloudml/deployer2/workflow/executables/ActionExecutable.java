@@ -27,7 +27,7 @@ import org.cloudml.core.InternalComponentInstance;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
 import org.cloudml.deployer2.dsl.*;
-import org.cloudml.deployer2.workflow.util.ActivityBuilder;
+import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 
 import java.lang.reflect.InvocationTargetException;
@@ -97,7 +97,7 @@ public class ActionExecutable {
                     String port = command.split("::")[1];
                     String destinationVM = command.split("::")[2];
                     String destinationIP = null;
-                    for (Object provisionedIP: ActivityBuilder.getAddressesRegistry().getObjects()){
+                    for (Object provisionedIP: ActivityBuilder.getIPregistry().getObjects()){
                         if (((String)provisionedIP).contains(destinationVM)){
                             // objects inside public address look like 'Nimbus ip address is:1.1.1.1'
                             destinationIP = ((String) provisionedIP).split(":")[1];

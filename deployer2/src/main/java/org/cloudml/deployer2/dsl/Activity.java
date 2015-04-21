@@ -94,8 +94,7 @@ public class Activity extends Element {
                 " data flow edges)";
         String nodes = "\nNodes are:";
         for (ActivityNode node: getNodes()){
-            nodes += "\n- " + node.getClass().getSimpleName() +
-                    ":" + node.getName();
+            nodes += "\n- " + node.toString();
             if (node instanceof Action){
                 nodes += "_" + ((NamedElement)((Action) node).getInputs().get(0)).getName();
             }

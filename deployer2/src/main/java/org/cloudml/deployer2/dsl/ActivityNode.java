@@ -23,7 +23,6 @@
 package org.cloudml.deployer2.dsl;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Maksym on 13.03.2015.
@@ -93,5 +92,10 @@ public abstract class ActivityNode extends Element {
             edge.setSource(this);
         }
         this.outgoing = outgoing;
+    }
+
+    @Override
+    public String toString(){
+        return this.getClass().getSimpleName() + ":" + this.getName();
     }
 }
