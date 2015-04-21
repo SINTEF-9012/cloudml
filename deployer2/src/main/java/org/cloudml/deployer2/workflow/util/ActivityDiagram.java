@@ -1239,8 +1239,11 @@ public class ActivityDiagram  {
 
         // start and fork
         ActivityInitialNode controlStart = ActivityBuilder.controlStart();   //System.out.println("Initial: " + ActivityBuilder.getActivity().toString());
-        Fork controlFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), false, true);
-        ActivityBuilder.connectInitialToFork(controlStart, controlFork);     //System.out.println("Fork: " + ActivityBuilder.getActivity().toString());
+        Fork controlFork = null;
+        if (ems.size() > 1) {
+            controlFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), false, true);
+            ActivityBuilder.connectInitialToFork(controlStart, controlFork);     //System.out.println("Fork: " + ActivityBuilder.getActivity().toString());
+        }
 
         // list of actions with input data
         Action action;
@@ -1248,7 +1251,7 @@ public class ActivityDiagram  {
         ArrayList<Action> provisioning = new ArrayList<Action>(ems.size());
 
         for (ExternalComponentInstance n : ems) {
-            controlEdge = controlFork.getOutgoing().get(ems.toList().indexOf(n));
+            controlEdge = controlFork == null ? controlStart.getOutgoing().get(0) : controlFork.getOutgoing().get(ems.toList().indexOf(n));
             if (n instanceof VMInstance) {
                 action = ActivityBuilder.action(controlEdge, null, n, "provisionAVM");
                 provisioning.add(action);
@@ -1258,19 +1261,25 @@ public class ActivityDiagram  {
             }
 //            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
         }
-
-        Join dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
-        // container of all IPs
         ObjectNode IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.NOEDGES, ActivityBuilder.ObjectNodeType.OBJECT);  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
-        ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
 
+        Join dataJoin = null;
+        if (ems.size() > 1) {
+            dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
+            // container of all IPs
+            ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
+            // connect actions with control and data join
+            ActivityBuilder.connectActionsWithJoinNodes(provisioning, null, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
+        } else {
+            provisioning.get(0).addEdge(new ActivityEdge(true), ActivityNode.Direction.OUT);
+            IPs.setIncoming(provisioning.get(0).getOutgoing());
+        }
 //        // control join and finish
 //        ActivityFinalNode finalNode = ActivityBuilder.controlStop();  //System.out.println("Final: " + ActivityBuilder.getActivity().toString());
 //        Join controlJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), false, false);
 //        ActivityBuilder.connectJoinToFinal(controlJoin, finalNode);   //System.out.println("Control Join n: " + ActivityBuilder.getActivity().toString());
 
-        // connect actions with control and data join
-        ActivityBuilder.connectActionsWithJoinNodes(provisioning, null, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
+
     }
 
     /**
