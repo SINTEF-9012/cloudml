@@ -22,6 +22,8 @@
  */
 package org.cloudml.facade.commands;
 
+import java.util.List;
+
 /**
  * Factory methods to simplify the creation of CloudML commands
  */
@@ -34,7 +36,7 @@ public class CommandFactory {
      *
      * @return the associated command object
      */
-    public CloudMlCommand startComponent(final String artifactId) {
+    public CloudMlCommand startComponent(final List<String> artifactId) {
         return new StartComponent(artifactId);
     }
 
