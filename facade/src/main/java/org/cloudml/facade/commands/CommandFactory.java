@@ -270,6 +270,10 @@ public class CommandFactory {
         return new ScaleOut(id);
     }
     
+    public CloudMlCommand scaleOut(final String id, int nb) {
+        return new ScaleOut(id, nb);
+    }
+    
     public CloudMlCommand burst(final String vmID, final String providerID){
         return new Burst(vmID, providerID);
     }

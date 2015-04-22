@@ -69,7 +69,17 @@ public class FacadeBridge implements ModelRepo {
             command = factory.startComponent(params.iterator().next());
         }
         else if("ScaleOut".equals(name)){
-            command = factory.scaleOut(params.iterator().next());
+            if(params.size()==1)
+                command = factory.scaleOut(params.iterator().next());
+            else if(params.size()==2){
+                Iterator<String> it = params.iterator();
+                String nm = it.next();
+                String nb = it.next();
+                command = factory.scaleOut(
+                        nm,
+                        Integer.parseInt(nb)
+                );
+            }    
         }
         else if("Image".equals(name)){
             command = factory.image(params.iterator().next());
