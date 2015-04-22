@@ -32,8 +32,8 @@ action
     |   'list' level                                        # List
     |   'load' kind 'from' PATH                             # Load                                       
     |   'shot' 'to' PATH                                    # ShotImage
-    |   'start' ID                                          # Start
-    |   'stop' ID+                                          # Stop
+    |   'start' ID+                                         # Start
+    |   'stop' ID                                           # Stop
     |   'store' kind 'to' PATH                              # Store
     |   'uninstall' component=ID 'from' platform=ID         # Uninstall
     |   'upload' local=PATH 'on' ID 'at' remote=PATH        # Upload

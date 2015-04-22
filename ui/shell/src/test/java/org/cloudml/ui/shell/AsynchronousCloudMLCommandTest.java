@@ -70,8 +70,10 @@ public class AsynchronousCloudMLCommandTest {
         testCases.add(new Object[]{"analyse robustness internal / external", new AnalyseRobustness("internal", "external")});
         testCases.add(new Object[]{"deploy", new Deploy()});
         testCases.add(new Object[]{"connect", new Attach("foo", "bar")}); 
-        testCases.add(new Object[]{"disconnect", new Detach("foo", "bar")}); 
-        testCases.add(new Object[]{"start", new StartComponent("foo")}); 
+        testCases.add(new Object[]{"disconnect", new Detach("foo", "bar")});
+        ArrayList<String> al=new ArrayList<String>();
+        al.add("foo");
+        testCases.add(new Object[]{"start", new StartComponent(al)});
         testCases.add(new Object[]{"stop", new StopComponent("foo")}); 
         testCases.add(new Object[]{"install", new Install("foo", "bar")}); 
         testCases.add(new Object[]{"uninstall", new Uninstall("foo", "bar")}); 

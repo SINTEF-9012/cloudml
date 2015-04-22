@@ -22,11 +22,14 @@
  */
 package org.cloudml.ui.shell.commands;
 
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.*;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsBaseVisitor;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsParser;
+import org.cloudml.ui.shell.terminal.Terminal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.cloudml.facade.commands.ValidateCommand.REPORT_ONLY_ERRORS;
@@ -164,7 +167,11 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitStart(ShellCommandsParser.StartContext ctx) {
-        return new StartComponent(Arrays.asList(ctx.ID().getText().split(" ")));
+        ArrayList<String> al=new ArrayList<String>();
+        for(TerminalNode t:ctx.ID()){
+            al.add(t.getText());
+        }
+        return new StartComponent(al);
     }
 
     @Override

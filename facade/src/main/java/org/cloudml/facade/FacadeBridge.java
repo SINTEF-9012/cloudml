@@ -26,6 +26,8 @@ package org.cloudml.facade;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+
 import org.cloudml.core.Deployment;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.CommandFactory;
@@ -66,7 +68,7 @@ public class FacadeBridge implements ModelRepo {
             command = factory.deploy();
         }
         else if("StartArtefact".equals(name)){
-            command = factory.startComponent(params.iterator().next());
+            command = factory.startComponent((List)params);
         }
         else if("ScaleOut".equals(name)){
             if(params.size()==1)
@@ -92,7 +94,7 @@ public class FacadeBridge implements ModelRepo {
             command = factory.burst(itor.next(), itor.next());
         }
         else if("StartComponent".equals(name)){
-            command = factory.startComponent(params.iterator().next());
+            command = factory.startComponent((List)params);
         }
         else if("StopComponent".equals(name)){
             command = factory.stopComponent(params.iterator().next());
