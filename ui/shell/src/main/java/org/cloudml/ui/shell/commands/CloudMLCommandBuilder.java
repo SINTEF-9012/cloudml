@@ -157,7 +157,11 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitStop(ShellCommandsParser.StopContext ctx) {
-        return new StopComponent(ctx.ID().getText());
+        ArrayList<String> al=new ArrayList<String>();
+        for(TerminalNode t: ctx.ID()){
+            al.add(t.getText());
+        }
+        return new StopComponent(al);
     }
 
     @Override

@@ -290,14 +290,30 @@ class Facade implements CloudML, CommandHandler {
 
     @Override
     public void handle(StopComponent command) {
+        ArrayList<Thread> ts = new ArrayList<Thread>();
         if (isDeploymentLoaded()) {
             dispatch(new Message(command, Category.INFORMATION, "Stopping VM: " + command.getComponentId()));
-            VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getComponentId());
-            if(vmi != null){
-                Provider provider = vmi.getType().getProvider();
-                Connector c=ConnectorFactory.createIaaSConnector(provider);
-                c.stopVM(vmi);
-                coordinator.updateStatus(vmi.getName(), ComponentInstance.State.STOPPED.toString(), Facade.class.getName());
+            for (int i = 0; i <= command.getComponentId().size(); i++) {
+                final String id = command.getComponentId().get(i);
+                ts.add(new Thread() {
+                    public void run() {
+                        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(id);
+                        if (vmi != null) {
+                            Provider provider = vmi.getType().getProvider();
+                            Connector c = ConnectorFactory.createIaaSConnector(provider);
+                            c.stopVM(vmi);
+                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.STOPPED.toString(), Facade.class.getName());
+                        }
+                    }
+                });
+                ts.get(i).start();
+            }
+            for (Thread t : ts) {
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

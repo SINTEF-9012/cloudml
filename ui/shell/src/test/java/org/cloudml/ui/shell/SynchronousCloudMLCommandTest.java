@@ -73,7 +73,7 @@ public class SynchronousCloudMLCommandTest {
         ArrayList<String> al=new ArrayList<String>();
         al.add("foo");
         testCases.add(new Object[]{"start", new StartComponent(al)});
-        testCases.add(new Object[]{"stop", new StopComponent("foo")}); 
+        testCases.add(new Object[]{"stop", new StopComponent(al)});
         testCases.add(new Object[]{"install", new Install("foo", "bar")}); 
         testCases.add(new Object[]{"uninstall", new Uninstall("foo", "bar")}); 
         testCases.add(new Object[]{"load deployment", new LoadDeployment("foo.json")}); 

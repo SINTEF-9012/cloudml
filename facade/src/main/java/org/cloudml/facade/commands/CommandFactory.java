@@ -46,7 +46,7 @@ public class CommandFactory {
      * @param artifactId the ID of the artifact to stop
      * @return the associated command object
      */
-    public CloudMlCommand stopComponent(final String artifactId) {
+    public CloudMlCommand stopComponent(final List<String> artifactId) {
         return new StopComponent(artifactId);
     }
 
