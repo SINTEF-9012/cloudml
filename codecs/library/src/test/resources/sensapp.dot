@@ -1,16 +1,16 @@
 digraph Deployment {
-	node_0 [label="sensApp1"];
-	node_1 [label="mongoDB1"];
-	node_2 [label="jettySC2"];
-	node_3 [label="jettySC1"];
+	node_0 [label="jettySC1"];
+	node_1 [label="sensApp1"];
+	node_2 [label="mongoDB1"];
+	node_3 [label="jettySC2"];
 	node_4 [label="sensAppAdmin1"];
 	node_5 [label="sensapp-sl1", style="filled"];
 	node_6 [label="sensapp-ml1", style="filled"];
-	node_4 -> node_0 [label="sensAppAdminSensApp1" ];
-	node_0 -> node_1 [label="sensAppMongoDB1" ];
-	node_0 -> node_3 [style="dashed" ];
-	node_3 -> node_6 [style="dashed" ];
-	node_1 -> node_6 [style="dashed" ];
-	node_4 -> node_2 [style="dashed" ];
-	node_2 -> node_5 [style="dashed" ];
+	node_4 -> node_1 [label="sensAppAdminSensApp1" ];
+	node_1 -> node_2 [label="sensAppMongoDB1" ];
+	node_4 -> node_3 [style="dashed" ];
+	node_2 -> node_6 [style="dashed" ];
+	node_0 -> node_6 [style="dashed" ];
+	node_1 -> node_0 [style="dashed" ];
+	node_3 -> node_5 [style="dashed" ];
 }

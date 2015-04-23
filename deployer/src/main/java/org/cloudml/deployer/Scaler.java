@@ -324,18 +324,22 @@ public class Scaler {
     }
 
 
-    /**
-     * To scale our a VM on another provider (kind of bursting)
-     *
-     * @param vmi      the vm instance to scale out
-     * @param provider the provider where we want to burst
-     */
-    public void scaleOut(VMInstance vmi, Provider provider) {
-        Connector c = ConnectorFactory.createIaaSConnector(provider);
-        StandardLibrary lib = new StandardLibrary();
+    public void scaleOut(ExternalComponentInstance eci, Provider provider){
+        if(eci.isVM()){
+            scaleOut(eci.asVM(),provider);
+        }else{
+            Deployment targetModel=cloneCurrentModel();
+            ExternalComponentInstance eci2=targetModel.getComponentInstances().onlyExternals().firstNamed(eci.getName());
+            ExternalComponent ec=eci2.getType().asExternal();
+            ec.setProvider(provider);
+            ec.setName(eci.getName()+"-scaled");
+            dep.deploy(targetModel);
+        }
+    }
 
+
+    private Deployment cloneCurrentModel(){
         //need to clone the model
-        //Deployment targetModel=currentModel.clone();
         JsonCodec jsonCodec=new JsonCodec();
         ByteArrayOutputStream baos=new ByteArrayOutputStream();
         jsonCodec.save(currentModel,baos);
@@ -348,6 +352,21 @@ public class Scaler {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+        return targetModel;
+    }
+
+    /**
+     * To scale our a VM on another provider (kind of bursting)
+     *
+     * @param vmi      the vm instance to scale out
+     * @param provider the provider where we want to burst
+     */
+    public void scaleOut(VMInstance vmi, Provider provider) {
+        Connector c = ConnectorFactory.createIaaSConnector(provider);
+        StandardLibrary lib = new StandardLibrary();
+
+        //need to clone the model
+        Deployment targetModel=cloneCurrentModel();
 
         VM existingVM=findSimilarVMFromProvider(vmi.asExternal().asVM().getType(), provider);
         if(existingVM == null){

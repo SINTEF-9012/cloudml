@@ -34,7 +34,6 @@ import com.heroku.api.connection.ConnectionFactory;
 public class HerokuConnector implements PaaSConnector {
     private static final Logger journal = Logger.getLogger(HerokuConnector.class.getName());
     private HerokuAPI api;
-    //8a0de666-f9d7-4d6f-a62e-44e1834021fe
 
     public HerokuConnector(String passwd){
         api=new HerokuAPI(ConnectionFactory.get(),passwd);
@@ -94,6 +93,11 @@ public class HerokuConnector implements PaaSConnector {
 
     @Override
     public void setEnvVar(String appName, String nameVar, String val) {
+
+    }
+
+    @Override
+    public void stopApp(String appName) {
 
     }
 }

@@ -211,6 +211,11 @@ public class CloudFoundryConnector implements PaaSConnector {
     }
 
     @Override
+    public void stopApp(String name){
+        connectedClient.stopApplication(name);
+    }
+
+    @Override
     public String createQueue(String name) {
         return null;
     }

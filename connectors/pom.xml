@@ -127,6 +127,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.jclouds.labs</groupId>
+            <artifactId>azurecompute</artifactId>
+            <version>1.9.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.jclouds.provider</groupId>
             <artifactId>aws-ec2</artifactId>
             <version>${jclouds.version}</version>

@@ -1039,6 +1039,9 @@ public class CloudAppDeployer {
         for (ExternalComponentInstance n : vms) {
             if (n instanceof VMInstance) {
                 terminateVM((VMInstance) n);
+            } else{
+                PaaSConnector pc = ConnectorFactory.createPaaSConnector(n.getType().asExternal().getProvider());
+                pc.stopApp(n.getName());
             }
         }
     }
@@ -1187,6 +1190,11 @@ public class CloudAppDeployer {
     public void scaleOut(VMInstance vmi,Provider provider){
         Scaler scaler=new Scaler(currentModel,coordinator,this);
         scaler.scaleOut(vmi,provider);
+    }
+
+    public void scaleOut(ExternalComponentInstance eci,Provider provider){
+        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        scaler.scaleOut(eci,provider);
     }
 
     public void activeDebug(){

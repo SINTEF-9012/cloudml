@@ -526,17 +526,22 @@ class Facade implements CloudML, CommandHandler {
 
     @Override
     public void handle(Burst command){
-        dispatch(new Message(command, Category.INFORMATION, "Bursting out VM: " + command.getVmId()+" to "+ command.getProviderID()));
-        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        dispatch(new Message(command, Category.INFORMATION, "Bursting out External Component: " + command.getEcId()+" to "+ command.getProviderID()));
+        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getEcId());
         Provider p=deploy.getProviders().firstNamed(command.getProviderID());
+        if(p == null){
+            dispatch(new Message(command, Category.ERROR, "Cannot find a Provider with this ID!"));
+            return;
+        }
         if (vmi == null) {
-            dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
-        } else {
-            if(p == null){
-                dispatch(new Message(command, Category.ERROR, "Cannot find a Provider with this ID!"));
+            ExternalComponentInstance eci=deploy.getComponentInstances().onlyExternals().firstNamed(command.getEcId());
+            if(eci == null || eci.isVM()){
+                dispatch(new Message(command, Category.ERROR, "Cannot find a External component with this ID!"));
             }else{
-                deployer.scaleOut(vmi,p);
+                deployer.scaleOut(eci,p);
             }
+        } else {
+            deployer.scaleOut(vmi,p);
         }
     }
 
