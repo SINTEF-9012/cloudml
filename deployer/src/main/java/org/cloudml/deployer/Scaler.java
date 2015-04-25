@@ -85,6 +85,7 @@ public class Scaler {
             v.setMinStorage(existingVM.getMinStorage());
             v.setSecurityGroup(existingVM.getSecurityGroup());
             v.setSshKey(existingVM.getSshKey());
+            v.setProviderSpecificTypeName(existingVM.getProviderSpecificTypeName());
             v.setPrivateKey(existingVM.getPrivateKey());
             v.setProvider(existingVM.getProvider());
             ProvidedExecutionPlatformGroup pepg=new ProvidedExecutionPlatformGroup();
