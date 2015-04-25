@@ -97,7 +97,7 @@ public class HerokuConnector implements PaaSConnector {
     }
 
     @Override
-    public void stopApp(String appName) {
+    public void deleteApp(String appName) {
 
     }
 }

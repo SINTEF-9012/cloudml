@@ -296,7 +296,7 @@ public class Cloud4soaConnector implements PaaSConnector {
     }
 
     @Override
-    public void stopApp(String appName) {
+    public void deleteApp(String appName) {
         try {
             undeploy(appName);
         } catch (Cloud4SoaException e) {

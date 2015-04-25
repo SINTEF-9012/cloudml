@@ -147,7 +147,7 @@ public class CloudAppDeployer {
             //send the changes to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
                 MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
+                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
                 if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
                     MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
                 }
@@ -217,7 +217,7 @@ public class CloudAppDeployer {
         //send the changes to the monitoring platform
         if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
             MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
+            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
             if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
                 MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
             }
@@ -245,17 +245,20 @@ public class CloudAppDeployer {
      */
     public void updateCurrentModel(CloudMLModelComparator diff) {
         if (diff != null) {
+            currentModel.getComponents().addAll(targetModel.getComponents());
+            currentModel.getRelationships().addAll(targetModel.getRelationships());
+
             currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
             currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
-            currentModel.getComponentInstances().removeAll(diff.getRemovedECs());
+            currentModel.getComponentInstances().removeAll(diff.getRemovedECs().keySet());
             currentModel.getExecuteInstances().removeAll(diff.getRemovedExecutes());
             alreadyDeployed.removeAll(diff.getRemovedComponents());
             alreadyStarted.removeAll(diff.getRemovedComponents());
 
-            currentModel.getComponentInstances().addAll(diff.getAddedComponents());
-            currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
-            currentModel.getComponentInstances().addAll(diff.getAddedECs());
-            currentModel.getExecuteInstances().addAll(diff.getAddedExecutes());
+            currentModel.getComponentInstances().replaceAll(diff.getAddedComponents());
+            currentModel.getRelationshipInstances().replaceAll(diff.getAddedRelationships());
+            currentModel.getComponentInstances().replaceAll(diff.getAddedECs());
+            currentModel.getExecuteInstances().replaceAll(diff.getAddedExecutes());
         } else {
             throw new IllegalArgumentException("Cannot update current model without comparator!");
         }
@@ -1035,13 +1038,17 @@ public class CloudAppDeployer {
      * @param vms A list of vmInstances
      * @throws MalformedURLException
      */
-    private void terminateExternalServices(List<ExternalComponentInstance<? extends ExternalComponent>> vms) {
-        for (ExternalComponentInstance n : vms) {
+    private void terminateExternalServices(Map<ExternalComponentInstance<? extends ExternalComponent>,List<InternalComponentInstance>> vms) {
+        for (ExternalComponentInstance n : vms.keySet()) {
             if (n instanceof VMInstance) {
                 terminateVM((VMInstance) n);
             } else{
                 PaaSConnector pc = ConnectorFactory.createPaaSConnector(n.getType().asExternal().getProvider());
-                pc.stopApp(n.getName());
+                for(InternalComponentInstance c: vms.get(n)){
+                    journal.log(Level.INFO, ">> Terminating app "+c.asInternal().getName());
+                    pc.deleteApp(c.asInternal().getName());
+                }
+                journal.log(Level.INFO, ">> Terminated!");
             }
         }
     }
@@ -1192,9 +1199,9 @@ public class CloudAppDeployer {
         scaler.scaleOut(vmi,provider);
     }
 
-    public void scaleOut(ExternalComponentInstance eci,Provider provider){
+    public Deployment scaleOut(ExternalComponentInstance eci,Provider provider){
         Scaler scaler=new Scaler(currentModel,coordinator,this);
-        scaler.scaleOut(eci,provider);
+        return scaler.scaleOut(eci,provider);
     }
 
     public void activeDebug(){

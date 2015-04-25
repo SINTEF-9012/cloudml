@@ -2002,8 +2002,24 @@ function addContextOptionsExternalComponents(contextMenu, element, node){
             d3.select('#context_menu').remove();
         })
         .text('Scale out');
+		
+		contextMenu.append('hr');
+		for(p in root.providers){
+			contextMenu.append('li')
+			.attr('class', 'contextOption')
+			.attr('id', root.providers[p].name)
+			.style('cursor', 'pointer')
+			.on('click', function(d){
+				burstNode(node,this.id);
+				// if the click of the context menu occurs over a node this will prevent it from bein folded/unfolded
+				d3.event.stopPropagation();
+				d3.select('#context_menu').remove();
+			})
+			.text('Burst to '+root.providers[p].name);
+		}
     }
 }
+
 
 // unfold the current selection of nodes
 function unfoldSelectionOfNodes(nodesSelection){
@@ -2087,6 +2103,7 @@ function getNodeDatumHostFromSelection(datum, selection){
     }
     return result;
 }
+
 
 var dedicatedSocket;
 // call the 'scale out' command for an input node
@@ -2172,6 +2189,95 @@ function scaleOutNode(node){
             }
         }
         dedicatedSocket.close();
+    }, 3000);
+}
+
+
+
+var dedicatedSocket2;
+// call the 'scale out' command for an input node
+function burstNode(node,provider){
+    if(!cloudMLServerHost){
+        alertMessage("error",'Invalid CloudML server host. ', 5000);
+        console.log("host", cloudMLServerHost);
+        return null;
+    }
+    // open a dedicated socket for retrieving the VM identifier so that it doesn't get interference
+    // with other getSnapshot messages
+    dedicatedSocket2 = new WebSocket(cloudMLServerHost);
+
+    // send a message that retrieves the current node state (the listener updates the 'id' field)
+    // this is in case the ID for the node has been reassigned and the listener did not get notified
+    dedicatedSocket2.onopen = function(){
+        var message = 
+            "!getSnapshot"
+        + '\n' 
+        + "  path : /componentInstances[name='" + node.name + "']";
+        sendMessageFromSocket(dedicatedSocket2, message);
+
+    }
+    dedicatedSocket2.onmessage = function(msg){
+        if(msg.data.indexOf("GetSnapshot") >= 0){
+            try{
+                var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+            }catch (error) {
+                alertMessage("error",'Error parsing YAML response from CloudML server.', 5000);
+                console.log(error);
+            }
+
+            if(typeof json.content.name != 'undefined'){
+                if(json.content.name != null){
+                    if(json.content.name != ''){
+                        node.name = json.content.name;
+                        // form the message to initiate the scale out action
+                        var message = "!extended { name: Burst, params: [" + node.name + ","+ provider +"] }";
+                        sendMessageFromSocket(node.socket, message);
+                        alertMessage("success","Initiated  burst action for node " 
+                                     + node.name +"!", 3000);
+
+                        // HACK - wait 3 more seconds and refresh deployment model
+                        setTimeout(function () {
+                            send("!getSnapshot {path : /}");
+                        }, 20000);
+                    }
+                }
+            }
+            if(typeof json.content.publicAddress != 'undefined'){
+                if(json.content.publicAddress != null)
+                    node.publicAddress = json.content.publicAddress;
+            }
+            dedicatedSocket2.close();
+        }
+
+
+
+    }
+    dedicatedSocket2.onclose = function(){
+        console.log("dedicated socket closed for " + node.name);
+    }
+    dedicatedSocket2.onerror = function(error){
+        console.log("error for node " + node.name, dedicatedSocket2.readyState);
+    }
+
+
+    // HACK - displays messages in case there is a problem retrieving the ID of the node
+    // after 5 seconds
+    setTimeout(function () {
+        if(typeof node.name == 'undefined'){
+            alertMessage("error",'The selected node does not have an identifier.', 5000);
+            return null;
+        }
+        if(node.name == null){
+            alertMessage("error",'The selected node has a null identifier.', 5000);
+            return null;
+        }
+        if(node.name == ''){
+            if(node.name == ''){
+                alertMessage("error",'The selected node has an empty identifier.', 5000);
+                return null;
+            }
+        }
+        dedicatedSocket2.close();
     }, 3000);
 }
 

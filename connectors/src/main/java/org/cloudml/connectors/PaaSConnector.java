@@ -51,7 +51,7 @@ public interface PaaSConnector{
 
     public void setEnvVar(String appName, String nameVar, String val);
 
-    public void stopApp(String appName);
+    public void deleteApp(String appName);
 
 
 //Should be part of the interface at some point

@@ -210,9 +210,11 @@ public class CloudFoundryConnector implements PaaSConnector {
         }
     }
 
+
+
     @Override
-    public void stopApp(String name){
-        connectedClient.stopApplication(name);
+    public void deleteApp(String name){
+        connectedClient.deleteApplication(name);
     }
 
     @Override

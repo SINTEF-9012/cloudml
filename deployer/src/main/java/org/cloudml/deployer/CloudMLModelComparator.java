@@ -45,7 +45,7 @@ public class CloudMLModelComparator {
 
     //Attributes related to model comparison
     private Map<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>> matchingECs = new Hashtable<ExternalComponentInstance<? extends ExternalComponent>, ExternalComponentInstance<? extends ExternalComponent>>();
-    private List<ExternalComponentInstance<? extends ExternalComponent>> removedECs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
+    private Map<ExternalComponentInstance<? extends ExternalComponent>,List<InternalComponentInstance>> removedECs = new Hashtable<ExternalComponentInstance<? extends ExternalComponent>,List<InternalComponentInstance>>();
     private List<ExternalComponentInstance<? extends ExternalComponent>> addedECs = new ArrayList<ExternalComponentInstance<? extends ExternalComponent>>();
     
     private Map<InternalComponentInstance, InternalComponentInstance> matchingComponents = new Hashtable<InternalComponentInstance, InternalComponentInstance>();
@@ -140,7 +140,7 @@ public class CloudMLModelComparator {
     }
 
     private void removeEC(ExternalComponentInstance<? extends ExternalComponent> ni) {
-        removedECs.add(ni);
+        removedECs.put(ni,currentDM.getComponentInstances().onlyInternals().hostedOn(ni).toList());
         //create action
 
     }
@@ -315,7 +315,7 @@ public class CloudMLModelComparator {
         return this.addedComponents;
     }
 
-    public List<ExternalComponentInstance<? extends ExternalComponent>> getRemovedECs() {
+    public Map<ExternalComponentInstance<? extends ExternalComponent>,List<InternalComponentInstance>> getRemovedECs() {
         return this.removedECs;
     }
 

@@ -406,7 +406,7 @@ class Facade implements CloudML, CommandHandler {
 
             deploy.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
             deploy.getExecuteInstances().removeAll(diff.getRemovedExecutes());
-            deploy.getComponentInstances().removeAll(diff.getRemovedECs());
+            deploy.getComponentInstances().removeAll(diff.getRemovedECs().keySet());
             deploy.getComponentInstances().removeAll(diff.getRemovedComponents());
 
             deploy.getRelationshipInstances().replaceAll(diff.getAddedRelationships());
@@ -539,6 +539,7 @@ class Facade implements CloudML, CommandHandler {
                 dispatch(new Message(command, Category.ERROR, "Cannot find a External component with this ID!"));
             }else{
                 deployer.scaleOut(eci,p);
+                //deployer.deploy(deploy,diff);
             }
         } else {
             deployer.scaleOut(vmi,p);

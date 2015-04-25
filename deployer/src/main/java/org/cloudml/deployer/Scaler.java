@@ -324,16 +324,18 @@ public class Scaler {
     }
 
 
-    public void scaleOut(ExternalComponentInstance eci, Provider provider){
+    public Deployment scaleOut(ExternalComponentInstance eci, Provider provider){
         if(eci.isVM()){
             scaleOut(eci.asVM(),provider);
+            return currentModel;
         }else{
             Deployment targetModel=cloneCurrentModel();
             ExternalComponentInstance eci2=targetModel.getComponentInstances().onlyExternals().firstNamed(eci.getName());
             ExternalComponent ec=eci2.getType().asExternal();
             ec.setProvider(provider);
-            ec.setName(eci.getName()+"-scaled");
+            eci2.setStatus(ComponentInstance.State.STOPPED);
             dep.deploy(targetModel);
+            return targetModel;
         }
     }
 
