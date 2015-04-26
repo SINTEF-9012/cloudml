@@ -253,6 +253,7 @@ class Facade implements CloudML, CommandHandler {
                             Provider provider = vmi.getType().getProvider();
                             Connector c = ConnectorFactory.createIaaSConnector(provider);
                             c.startVM(vmi);
+                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), Facade.class.getName());
                         }
                     }});
                 ts.get(i).start();
