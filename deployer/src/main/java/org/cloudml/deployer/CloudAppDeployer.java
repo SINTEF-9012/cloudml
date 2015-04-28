@@ -977,7 +977,7 @@ public class CloudAppDeployer {
         
     }
 
-    private Boolean isPaaS2PaaS(RelationshipInstance ri){
+    private Boolean isPaaS2PaaS(RelationshipInstance bi){
         if(bi.getRequiredEnd().getOwner().get().isInternal()){
             if(bi.getProvidedEnd().getOwner().get().isInternal()){
                 if(!bi.getRequiredEnd().getOwner().get().asInternal().externalHost().isVM()
