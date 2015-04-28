@@ -929,22 +929,22 @@ public class CloudAppDeployer {
                 }
 
             } 
-            else if (clienti.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) clienti).getType().getServiceType())) {  //For Loadbalancer
+            else if (serveri.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For Loadbalancer
                 PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(clienti.getType().asExternal().getEndPoint());
                 String ipAddress = null;
                 String port = null;
-                if(serveri.isExternal()){
-                    ExternalComponentInstance<ExternalComponent> exserveri = ((ExternalComponentInstance) serveri);
-                    ipAddress = exserveri.getPublicAddress();
-                    port = String.valueOf(bi.getProvidedEnd().getType().getPortNumber());
+                if(clienti.isExternal()){
+                    ExternalComponentInstance<ExternalComponent> exclienti = ((ExternalComponentInstance) clienti);
+                    ipAddress = exclienti.getPublicAddress();
+                    port = String.valueOf(bi.getRequiredEnd().getType().getPortNumber());
                     //port = exserveri.getType().getProvidedPorts().toArray()[0].toString(); //TODO: always use the first provided port, should be fixed.
                 }
                 else{
-                    ipAddress = getDestination(serveri).getPublicAddress();
-                    port = String.valueOf(bi.getProvidedEnd().getType().getPortNumber());
+                    ipAddress = getDestination(clienti).getPublicAddress();
+                    port = String.valueOf(bi.getRequiredEnd().getType().getPortNumber());
                 }
-                Map backend = connector.getBackEnd(clienti.getName()+"Back");
-                ((Map)backend.get("targets")).put(serveri.getName(), ipAddress+":"+port);
+                Map backend = connector.getBackEnd(serveri.getName()+"Back");
+                ((Map)backend.get("targets")).put(clienti.getName(), ipAddress+":"+port);
             }
             else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
