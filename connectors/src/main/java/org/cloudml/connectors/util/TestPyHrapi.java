@@ -97,9 +97,11 @@ public class TestPyHrapi {
         
         Map defaultback = connector.getBackEnd(TESTPOOL);
         System.out.println(defaultback);
-        ((Map)defaultback.get("targets")).put("targetOne", "109.105.109.218:80");
+        ((Map)defaultback.get("targets")).remove("targetOne");
+        ((Map)defaultback.get("targets")).put("targetTwo", "127.0.0.1:980");
         System.out.println("Modify pool:" + connector.addPool(TESTPOOL, defaultback));
-        
+        System.out.println("DeleteTaget" + connector.deleteTarget(TESTPOOL, "targetOne"));
+        System.out.println("DeleteTaget" + connector.deleteTarget(TESTPOOL, "targetOne"));
         //System.out.println("Add target:"+ connector.addTarget(TESTPOOL, "targetOne", targetm));
         
         //System.out.println("Add gateway pool: "+connector._generalAdd("http://127.0.0.1:5000/v1/gateways/gateHTTP/pools", targets, TESTPOOL));

@@ -951,9 +951,10 @@ public class CloudAppDeployer {
                     port = String.valueOf(bi.getRequiredEnd().getType().getPortNumber());
                 }
                 Map backend = connector.getBackEnd(serveri.getName()+"Back");
-                ((Map)backend.get("targets")).remove("targetOneHold");
+                //((Map)backend.get("targets")).remove("targetOneHold");
                 ((Map)backend.get("targets")).put(clienti.getName(), ipAddress+":"+port);
-                connector.addPool(serveri.getName()+"Back", backend);
+                System.out.println("Modify backend: "+connector.addPool(serveri.getName()+"Back", backend));
+                System.out.println("Delete Target: "+connector.deleteTarget(serveri.getName()+"Back", "targetOneHold"));
                 connector.start();
             }
             else if (bi.getRequiredEnd().getType().isRemote()) {
