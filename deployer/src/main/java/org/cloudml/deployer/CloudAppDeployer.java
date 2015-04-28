@@ -840,7 +840,7 @@ public class CloudAppDeployer {
             Map<String, Object> testPool = new HashMap<String, Object>();
                 testPool.put("enabled", Boolean.TRUE);
                 Map<String, String> targets = new HashMap<String, String>();
-                    //targets.put("targetOne","109.105.109.218:80");
+                    targets.put("targetOneHold","109.105.109.218:80");
                 testPool.put("targets", targets);
 
             System.out.println("Add pool:" + connector.addPool(eci.getName()+"Back", testPool));
@@ -951,6 +951,7 @@ public class CloudAppDeployer {
                     port = String.valueOf(bi.getRequiredEnd().getType().getPortNumber());
                 }
                 Map backend = connector.getBackEnd(serveri.getName()+"Back");
+                ((Map)backend.get("targets")).remove("targetOneHold");
                 ((Map)backend.get("targets")).put(clienti.getName(), ipAddress+":"+port);
                 connector.addPool(serveri.getName()+"Back", backend);
                 connector.start();
