@@ -932,7 +932,7 @@ public class CloudAppDeployer {
 
             } 
 
-            else if (clienti.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) clienti).getType().getServiceType())) {  //For Loadbalancer
+            else if (serveri.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For Loadbalancer
                 String endpoint = clienti.getType().asExternal().getEndPoint();
                 if(endpoint==null)
                     endpoint = "http://192.168.11.2:5000";
