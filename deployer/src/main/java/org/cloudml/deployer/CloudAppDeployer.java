@@ -952,6 +952,8 @@ public class CloudAppDeployer {
                 }
                 Map backend = connector.getBackEnd(serveri.getName()+"Back");
                 ((Map)backend.get("targets")).put(clienti.getName(), ipAddress+":"+port);
+                connector.addPool(serveri.getName()+"Back", backend);
+                connector.start();
             }
             else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
