@@ -822,9 +822,32 @@ public class CloudAppDeployer {
             String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
         }
+        if(ec.getServiceType().toLowerCase().equals("loadbalancer")){
+           
+            PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(ec.getEndPoint());
+            Map<String, Object> gateway = new HashMap<String, Object>();
+                String GATEWAY = eci.getName()+"GateWay";
+                gateway.put("gateway", GATEWAY);
+                gateway.put("protocol", "http");
+                gateway.put("defaultBack", eci.getName()+"Back");
+                Map<String, String> endpoints = new HashMap<String, String>();
+                    endpoints.put("endOne", "0.0.0.0:8080");   //TODO: Now only support one load balancer
+            gateway.put("endpoints", endpoints);
+            gateway.put("enable", "True");
+            
+            Map<String, Object> testPool = new HashMap<String, Object>();
+                testPool.put("enabled", Boolean.TRUE);
+                Map<String, String> targets = new HashMap<String, String>();
+                    //targets.put("targetOne","109.105.109.218:80");
+                testPool.put("targets", targets);
+
+            System.out.println("Add pool:" + connector.addPool(eci.getName()+"Back", testPool));
+
+            System.out.println(connector.addGateway(gateway));
+        }
     }
 
-
+    private Map<String, String> loadbalancerTargets = new HashMap<String, String>();  //only useful for load balancer
     /**
      * Configure components according to the relationships
      *
@@ -832,10 +855,13 @@ public class CloudAppDeployer {
      * @throws MalformedURLException
      */
     protected void configureWithRelationships(RelationshipInstanceGroup relationships) {
+        loadbalancerTargets.clear();
         //Configure on the basis of the relationships
         //parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
         for (RelationshipInstance bi : relationships) {
-            if (bi.getProvidedEnd().getOwner().get().isExternal()) {  //For DB
+            ComponentInstance serveri = bi.getProvidedEnd().getOwner().get();
+            ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+            if (serveri.isExternal() && "database".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For DB
                 for (Resource res : bi.getType().getResources()) {
                     ConfigValet valet = ConfigValet.createValet(bi, res);
                     if (valet != null)
@@ -855,7 +881,7 @@ public class CloudAppDeployer {
                     }
 
                 }
-                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+               
                 Component client = clienti.getType();
                 ComponentInstance pltfi = getDestination(clienti);
                 if(pltfi.isExternal()){
@@ -902,7 +928,25 @@ public class CloudAppDeployer {
                     }
                 }
 
-            } else if (bi.getRequiredEnd().getType().isRemote()) {
+            } 
+            else if (clienti.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) clienti).getType().getServiceType())) {  //For Loadbalancer
+                PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(clienti.getType().asExternal().getEndPoint());
+                String ipAddress = null;
+                String port = null;
+                if(serveri.isExternal()){
+                    ExternalComponentInstance<ExternalComponent> exserveri = ((ExternalComponentInstance) serveri);
+                    ipAddress = exserveri.getPublicAddress();
+                    port = String.valueOf(bi.getProvidedEnd().getType().getPortNumber());
+                    //port = exserveri.getType().getProvidedPorts().toArray()[0].toString(); //TODO: always use the first provided port, should be fixed.
+                }
+                else{
+                    ipAddress = getDestination(serveri).getPublicAddress();
+                    port = String.valueOf(bi.getProvidedEnd().getType().getPortNumber());
+                }
+                Map backend = connector.getBackEnd(clienti.getName()+"Back");
+                ((Map)backend.get("targets")).put(serveri.getName(), ipAddress+":"+port);
+            }
+            else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
                 ProvidedPortInstance server = bi.getProvidedEnd();
 
@@ -912,14 +956,16 @@ public class CloudAppDeployer {
                 retrieveIPandConfigure(serverResource,clientResource,server,client);
             }
             if(isPaaS2PaaS(bi)) {
-                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+                //ComponentInstance clienti2 = bi.getRequiredEnd().getOwner().get();
                 ComponentInstance s=bi.getProvidedEnd().getOwner().get().asInternal();
-                ExternalComponentInstance serveri = bi.getProvidedEnd().getOwner().get().asInternal().externalHost();
+                ExternalComponentInstance serveri2 = bi.getProvidedEnd().getOwner().get().asInternal().externalHost();
                 ExternalComponent pltf = clienti.asInternal().externalHost().getType();
                 PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                connector.setEnvVar(clienti.getName(), s.getName(), serveri.getPublicAddress());
+                connector.setEnvVar(clienti.getName(), s.getName(), serveri2.getPublicAddress());
             }
         }
+        
+        
     }
 
     private Boolean isPaaS2PaaS(RelationshipInstance ri){

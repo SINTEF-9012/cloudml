@@ -124,6 +124,65 @@ public class TestPyHrapi extends TestCase{
         
     }
     
+    @Test
+    @Ignore
+    public void testUse(){
+        PyHrapiConnector connector = new PyHrapiConnector("http://172.17.42.1:5000", PyHrapiConnector.Version.V1);
+        
+        
+        for(String gateway : connector.getGateways()){
+            connector.deleteGateway(gateway);
+        }
+        
+        assertTrue(connector.getGateways().isEmpty());
+        
+        Map<String, Object> gateway = new HashMap<String, Object>();
+            String GATEWAY = "gateHTTP";
+            gateway.put("gateway", GATEWAY);
+            gateway.put("protocol", "http");
+            Map<String, String> endpoints = new HashMap<String, String>();
+                endpoints.put("endOne", "0.0.0.0:8080");
+        gateway.put("endpoints", endpoints);
+        gateway.put("enable", "True");
+        
+        System.out.println(connector.addGateway(gateway));
+        
+        assertEquals(1, connector.getEndpoints(GATEWAY).size());
+        
+       
+        for(String pool : connector.getPools()){
+            connector.deletePool(pool);
+        }
+        
+        assertEquals(0, connector.getPools().size());
+        
+        Map<String, Object> testPool = new HashMap<String, Object>();
+            String TESTPOOL = "testPool";
+            testPool.put("enabled", Boolean.TRUE);
+            Map<String, String> targets = new HashMap<String, String>();
+                targets.put("targetOne","109.105.109.216:80");
+            testPool.put("targets", targets);
+        
+        System.out.println("Add pool:" + connector.addPool(TESTPOOL, testPool));
+        
+        assertEquals(TESTPOOL, connector.getPools().get(0));
+        assertEquals(1, connector.getTargets(TESTPOOL).size());
+        
+        Map m = connector.getPoolTarget(TESTPOOL, "targetOne");
+        assertEquals("10.0.0.1:8080", m.get("address"));
+        
+        m.put("address", "127.0.0.1:8888");
+        System.out.println(connector.addTarget(TESTPOOL, "targetOne", m));
+        assertEquals("127.0.0.1:8888", connector.getPoolTarget(TESTPOOL, "targetOne").get("address"));
+        
+        
+        assertTrue(connector.start().contains("Started"));
+        
+        
+    }
     
+    public static void main(String[] args){
+        new TestPyHrapi().testUse();
+    }
     
 }

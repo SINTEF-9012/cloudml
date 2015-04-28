@@ -65,4 +65,16 @@ public class ConnectorFactory {
                     p.getProperties().valueOf("org"), p.getProperties().valueOf("space"));
         throw new IllegalArgumentException("No such connector");
     }
+    private static PyHrapiConnector loadbalancerConnector = null;
+    /**
+     * Now we assume that there is only one type of connector for load balancer
+     * @param endpoint
+     * @param version
+     * @return 
+     */
+    public static PyHrapiConnector createLoadBalancerProvider(String endpoint){
+        if(loadbalancerConnector == null)
+            loadbalancerConnector = new PyHrapiConnector(endpoint, PyHrapiConnector.Version.V1);
+        return loadbalancerConnector;
+    }
 }
