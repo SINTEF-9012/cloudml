@@ -204,6 +204,9 @@ public class BridgeToCloudML {
             if (kExternalComponent.getServiceType() != null) {
                 ec.setServiceType(kExternalComponent.getServiceType());
             }
+            if(kExternalComponent.getEndPoint() != null){
+                ec.setEndPoint(kExternalComponent.getEndPoint());
+            }
 
             convertAndAddProvidedPortsToPOJO(kExternalComponent.getProvidedPorts(), ec);
             initProvidedExecutionPlatforms(kExternalComponent, ec);
