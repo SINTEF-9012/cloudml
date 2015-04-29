@@ -128,6 +128,7 @@ public class CloudFoundryConnector implements PaaSConnector {
     @Override
     public void setEnvVar(String appName, String nameVar, String val){
         connectedClient.updateApplicationEnv(appName, Collections.singletonMap(nameVar, val));
+        connectedClient.restartApplication(appName);
     }
 
     private Boolean checkIfServiceExist(String serviceName){
