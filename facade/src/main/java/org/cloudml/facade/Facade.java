@@ -550,11 +550,10 @@ class Facade implements CloudML, CommandHandler {
         }
         if (vmi == null) {
             ExternalComponentInstance eci=deploy.getComponentInstances().onlyExternals().firstNamed(command.getEcId());
-            if(eci == null || eci.isVM()){
+            if(eci == null){
                 dispatch(new Message(command, Category.ERROR, "Cannot find a External component with this ID!"));
             }else{
                 deployer.scaleOut(eci,p);
-                //deployer.deploy(deploy,diff);
             }
         } else {
             deployer.scaleOut(vmi,p);
