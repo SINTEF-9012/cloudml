@@ -824,8 +824,8 @@ public class CloudAppDeployer {
         }
         if(ec.getServiceType().toLowerCase().equals("loadbalancer")){
             String endpoint = ec.getEndPoint();
-            if(endpoint==null)
-                endpoint = "http://192.168.11.2:5000";
+//            if(endpoint==null)
+//                endpoint = "http://192.168.11.2:5000";
             PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(endpoint);
             Map<String, Object> gateway = new HashMap<String, Object>();
                 String GATEWAY = eci.getName()+"GateWay";
@@ -933,9 +933,9 @@ public class CloudAppDeployer {
             } 
 
             else if (serveri.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For Loadbalancer
-                String endpoint = clienti.getType().asExternal().getEndPoint();
-                if(endpoint==null)
-                    endpoint = "http://192.168.11.2:5000";
+                String endpoint = serveri.getType().asExternal().getEndPoint();
+                //if(endpoint==null)
+                //    endpoint = "http://192.168.11.2:5000";
                 PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(endpoint);
 
                 String ipAddress = null;
