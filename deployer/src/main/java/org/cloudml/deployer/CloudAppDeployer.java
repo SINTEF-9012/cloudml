@@ -843,9 +843,9 @@ public class CloudAppDeployer {
                     targets.put("targetOneHold","109.105.109.218:80");
                 testPool.put("targets", targets);
 
-            System.out.println("Add pool:" + connector.addPool(eci.getName()+"Back", testPool));
+            journal.log(Level.INFO, ">>Add pool:" + connector.addPool(eci.getName()+"Back", testPool));
 
-            System.out.println(connector.addGateway(gateway));
+            journal.log(Level.INFO, ">> "+connector.addGateway(gateway));
         }
     }
 
@@ -953,8 +953,8 @@ public class CloudAppDeployer {
                 Map backend = connector.getBackEnd(serveri.getName()+"Back");
                 //((Map)backend.get("targets")).remove("targetOneHold");
                 ((Map)backend.get("targets")).put(clienti.getName(), ipAddress+":"+port);
-                System.out.println("Modify backend: "+connector.addPool(serveri.getName()+"Back", backend));
-                System.out.println("Delete Target: "+connector.deleteTarget(serveri.getName()+"Back", "targetOneHold"));
+                journal.log(Level.INFO, ">>Modify backend: "+connector.addPool(serveri.getName()+"Back", backend));
+                journal.log(Level.INFO, ">>Delete Target: "+connector.deleteTarget(serveri.getName()+"Back", "targetOneHold"));
                 connector.start();
             }
             else if (bi.getRequiredEnd().getType().isRemote()) {

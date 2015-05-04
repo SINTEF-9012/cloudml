@@ -26,6 +26,7 @@ package org.cloudml.monitoring.synchronization;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,27 +65,36 @@ public class MonitoringPlatformConfiguration {
         Properties prop = new Properties();
         InputStream input = null;
         MonitoringPlatformProperties properties = new MonitoringPlatformProperties();
-        try {
 
-            input = new FileInputStream("monitoringPlatform.properties");
+        Map<String, String> env = System.getenv();
+        if(env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP")
+            && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")){
+            String ipAddress=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP")+":"+env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+            properties = new MonitoringPlatformProperties(true, ipAddress);
+        }else{
 
-            // load a properties file
-            prop.load(input);
+            try {
 
-            // get the property
-            boolean monitoringPlatformGiven = Boolean.parseBoolean(((prop.getProperty("use"))));
-            String ipAddress = ((prop.getProperty("address")));
+                input = new FileInputStream("monitoringPlatform.properties");
 
-            properties = new MonitoringPlatformProperties(monitoringPlatformGiven, ipAddress);
+                // load a properties file
+                prop.load(input);
 
-        } catch (IOException ex) {
-            journal.log(Level.INFO, ">> monitoringPlatform.properties not found monitoring platform not in use");
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                // get the property
+                boolean monitoringPlatformGiven = Boolean.parseBoolean(((prop.getProperty("use"))));
+                String ipAddress = ((prop.getProperty("address")));
+
+                properties = new MonitoringPlatformProperties(monitoringPlatformGiven, ipAddress);
+
+            } catch (IOException ex) {
+                journal.log(Level.INFO, ">> monitoringPlatform.properties not found monitoring platform not in use");
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
