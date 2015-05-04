@@ -824,8 +824,13 @@ public class CloudAppDeployer {
         }
         if(ec.getServiceType().toLowerCase().equals("loadbalancer")){
             String endpoint = ec.getEndPoint();
-//            if(endpoint==null)
-//                endpoint = "http://192.168.11.2:5000";
+            if(endpoint==null){
+                Map<String, String> env = System.getenv();
+                if(env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")
+                        && env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT")){
+                    endpoint=env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")+":"+env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT");
+                }
+            }
             PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(endpoint);
             Map<String, Object> gateway = new HashMap<String, Object>();
                 String GATEWAY = eci.getName()+"GateWay";
@@ -843,9 +848,9 @@ public class CloudAppDeployer {
                     targets.put("targetOneHold","109.105.109.218:80");
                 testPool.put("targets", targets);
 
-            journal.log(Level.INFO, ">>Add pool:" + connector.addPool(eci.getName()+"Back", testPool));
+            journal.log(Level.INFO, ">>Add pool:" + connector.addPool(eci.getName() + "Back", testPool));
 
-            journal.log(Level.INFO, ">> "+connector.addGateway(gateway));
+            journal.log(Level.INFO, ">> " + connector.addGateway(gateway));
         }
     }
 
@@ -934,8 +939,14 @@ public class CloudAppDeployer {
 
             else if (serveri.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For Loadbalancer
                 String endpoint = serveri.getType().asExternal().getEndPoint();
-                //if(endpoint==null)
-                //    endpoint = "http://192.168.11.2:5000";
+                if(endpoint==null){
+                    Map<String, String> env = System.getenv();
+                    if(env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")
+                            && env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT")){
+                        endpoint=env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")+":"+env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT");
+                    }
+                }
+                  
                 PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(endpoint);
 
                 String ipAddress = null;
