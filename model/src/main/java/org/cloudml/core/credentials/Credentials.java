@@ -30,5 +30,9 @@ public interface Credentials {
     public String getLogin();
     
     public String getPassword();
-    
+
+    public void setLogin(String login);
+
+    public void setPassword(String password);
+
 }

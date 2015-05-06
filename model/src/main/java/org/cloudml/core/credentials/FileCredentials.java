@@ -37,10 +37,15 @@ public class FileCredentials implements Credentials {
     
     private static final String NONE = null;
     private String path;
+
     private String login;
     private String password;
     
-    
+    public FileCredentials(String login, String password){
+        this.login=login;
+        this.password=password;
+    }
+
     public FileCredentials() {
         this(DEFAULT_PATH);
     }
@@ -63,6 +68,16 @@ public class FileCredentials implements Credentials {
     public String getPassword() {
         initializeIfNeeded();
         return password;
+    }
+
+    @Override
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     private boolean notYetInitialized() {

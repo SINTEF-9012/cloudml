@@ -42,15 +42,18 @@ import org.cloudml.core.collections.ProvidedExecutionPlatformInstanceGroup;
 import org.cloudml.core.collections.ProvidedPortInstanceGroup;
 import org.cloudml.core.collections.RequiredPortInstanceGroup;
 import org.cloudml.core.credentials.FileCredentials;
+import org.cloudml.core.credentials.MemoryCredentials;
 import org.cloudml.core.util.ModelUtils;
 import org.cloudml.core.util.OwnedBy;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
  */
 public class BridgeToCloudML {
-
+    private static final Logger journal = Logger.getLogger(BridgeToCloudML.class.getName());
     private Map<String, VM> vms = new HashMap<String, VM>();
     private Map<String, ExternalComponent> externalComponents = new HashMap<String, ExternalComponent>();
     private Map<String, Provider> providers = new HashMap<String, Provider>();
@@ -120,9 +123,18 @@ public class BridgeToCloudML {
 
     public void providersToPOJO(Collection<net.cloudml.core.Provider> kproviders) {
         checkForNull(kproviders, "Cannot iterate on null!");
-
+        Provider p;
         for (net.cloudml.core.Provider kProvider: kproviders) {
-            Provider p = new Provider(kProvider.getName(), new FileCredentials(kProvider.getCredentials()));
+            if(kProvider.getCredentials() == null || kProvider.getCredentials().equals("")){
+                if((kProvider.getLogin() != null && kProvider.getPassword() != null)
+                        || (kProvider.getLogin().equals("") && !kProvider.getPassword().equals(""))){
+                    p = new Provider(kProvider.getName(), new MemoryCredentials(kProvider.getLogin(), kProvider.getPassword()));
+                }else{
+                    throw new IllegalArgumentException("No credentials");
+                }
+            }else{
+                p = new Provider(kProvider.getName(), new FileCredentials(kProvider.getCredentials()));
+            }
             convertProperties(kProvider, p);
             model.getProviders().add(p);
             providers.put(p.getName(), p);
@@ -509,7 +521,7 @@ public class BridgeToCloudML {
             //assert !vmInstances.isEmpty();
             RequiredExecutionPlatformInstance repi
                     = new RequiredExecutionPlatformInstance(kInternalComponentInstance.getRequiredExecutionPlatformInstance().getName(),
-                                                            ai.getType().getRequiredExecutionPlatform());
+                    ai.getType().getRequiredExecutionPlatform());
             repi.getOwner().set(ai);
             convertProperties(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
             convertResources(kInternalComponentInstance.getRequiredExecutionPlatformInstance(), repi);
@@ -575,7 +587,7 @@ public class BridgeToCloudML {
         }
 
         RelationshipInstance b = new RelationshipInstance(kRelationshipInstance.getName(), requiredPortInstances.get(r.getName()),
-                                                          providedPortInstances.get(p.getName()), relationships.get(kRelationshipInstance.getType().getName()));
+                providedPortInstances.get(p.getName()), relationships.get(kRelationshipInstance.getType().getName()));
         model.getRelationshipInstances().add(b);
     }
 
@@ -605,8 +617,8 @@ public class BridgeToCloudML {
         if (kei != null) {
 
             ExecuteInstance ei = new ExecuteInstance(kei.getName(),
-                                                     requiredExecutionPlatformInstances.get(kei.getRequiredExecutionPlatformInstance().getName()),
-                                                     providedExecutionPlatformInstances.get(kei.getProvidedExecutionPlatformInstance().getName()));
+                    requiredExecutionPlatformInstances.get(kei.getRequiredExecutionPlatformInstance().getName()),
+                    providedExecutionPlatformInstances.get(kei.getProvidedExecutionPlatformInstance().getName()));
             model.getExecuteInstances().add(ei);
         }
     }
@@ -663,7 +675,7 @@ public class BridgeToCloudML {
                 break;
             }else{
 
-            element.getResources().add(r);
+                element.getResources().add(r);
             }
         }
     }

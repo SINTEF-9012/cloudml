@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.cloudml.core.credentials.FileCredentials;
+import org.cloudml.core.credentials.MemoryCredentials;
 import org.cloudml.core.credentials.NoCredentials;
 
 /**
@@ -166,10 +167,11 @@ public class BridgeToKmf {
             kProvider.setName(p.getName());
             if (p.getCredentials() instanceof NoCredentials) { // FIXME: Remove this dirty type conditional
                 kProvider.setCredentials("no given credentials");
-            }
-            else {
+            } else if(p.getCredentials() instanceof MemoryCredentials){
+                kProvider.setLogin(p.getCredentials().getLogin());
+                kProvider.setPassword(p.getCredentials().getPassword());
+            } else {
                 kProvider.setCredentials(((FileCredentials) p.getCredentials()).getPathToCredentials());
-
             }
             kDeploy.addProviders(kProvider);
 
