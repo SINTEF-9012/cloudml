@@ -787,11 +787,12 @@ public class CloudAppDeployer {
         ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
         ExternalComponent ec = eci.getType();
         Provider p = eci.getType().getProvider();
+        PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
 
         if (ec.getServiceType() == null)
             return;
         if (ec.getServiceType().toLowerCase().equals("database")) {//For now we use string but this will evolve to an enum
-            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
+
             connector.createDBInstance(
                     ec.hasProperty("DB-Engine") ? ec.getProperties().valueOf("DB-Engine") : null,
                     ec.hasProperty("DB-Version") ? ec.getProperties().valueOf("DB-Version") : null,
@@ -818,7 +819,6 @@ public class CloudAppDeployer {
 
         }
         if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
-            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
             String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
         }
@@ -831,7 +831,7 @@ public class CloudAppDeployer {
                     endpoint=env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")+":"+env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT");
                 }
             }
-            PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(endpoint);
+            PyHrapiConnector pConnector = ConnectorFactory.createLoadBalancerProvider(endpoint);
             Map<String, Object> gateway = new HashMap<String, Object>();
                 String GATEWAY = eci.getName()+"GateWay";
                 gateway.put("gateway", GATEWAY);
@@ -848,9 +848,12 @@ public class CloudAppDeployer {
                     targets.put("targetOneHold","109.105.109.218:80");
                 testPool.put("targets", targets);
 
-            journal.log(Level.INFO, ">>Add pool:" + connector.addPool(eci.getName() + "Back", testPool));
+            journal.log(Level.INFO, ">>Add pool:" + pConnector.addPool(eci.getName() + "Back", testPool));
 
-            journal.log(Level.INFO, ">> " + connector.addGateway(gateway));
+            journal.log(Level.INFO, ">> " + pConnector.addGateway(gateway));
+        }
+        if (statusMonitorActive) {
+            statusMonitor.attachModule(connector);
         }
     }
 

@@ -82,7 +82,7 @@ public class StatusConfiguration {
             properties = new StatusMonitorProperties(activated, frequency);
 
         } catch (IOException ex) {
-            journal.log(Level.INFO, ">> monitoring.properties not found status monitor not in use");
+            properties = new StatusMonitorProperties(true, 60);
         } finally {
             if (input != null) {
                 try {

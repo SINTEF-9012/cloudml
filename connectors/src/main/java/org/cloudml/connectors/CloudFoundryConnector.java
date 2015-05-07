@@ -139,6 +139,10 @@ public class CloudFoundryConnector implements PaaSConnector {
         return connectedClient.getApplication(appName) != null;
     }
 
+    public List<CloudApplication> listApplications(){
+        return connectedClient.getApplications();
+    }
+
     private Boolean checkIfPlanExist(String planName, String serviceLabel){
         for(CloudServicePlan csp : findCloudServiceOffering(serviceLabel).getCloudServicePlans()){
             if(csp.getMeta().equals(serviceLabel))
