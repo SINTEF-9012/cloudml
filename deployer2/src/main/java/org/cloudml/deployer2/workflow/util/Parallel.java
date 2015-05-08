@@ -22,25 +22,28 @@
  */
 package org.cloudml.deployer2.workflow.util;
 
-import org.cloudml.deployer2.workflow.executables.ActionExecutable;
-import org.cloudml.deployer2.workflow.executables.EdgeExecutable;
-import org.cloudml.deployer2.workflow.executables.ControlExecutable;
-import org.cloudml.deployer2.workflow.executables.ObjectExecutable;
 import org.cloudml.deployer2.dsl.*;
+import org.cloudml.deployer2.workflow.executables.ActionExecutable;
+import org.cloudml.deployer2.workflow.executables.ControlExecutable;
+import org.cloudml.deployer2.workflow.executables.EdgeExecutable;
+import org.cloudml.deployer2.workflow.executables.ObjectExecutable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 /**
  * Created by Maksym on 30.03.2015.
  */
 public class Parallel {
-    private ForkJoinPool forkJoinPool = null;
-    private Join dataJoin;
-    private Join controlJoin;
+    private ForkJoinPool forkJoinPool = new ForkJoinPool();
+    private List<Join> dataJoin = new CopyOnWriteArrayList<Join>();
+    private List<Join> controlJoin = new CopyOnWriteArrayList<Join>();
+    private List<Join> alreadyExecuted = new CopyOnWriteArrayList<Join>();
     private boolean debugMode;
 
     public Parallel(Activity activity, boolean debugMode){
@@ -77,6 +80,12 @@ public class Parallel {
     }
 
     private void executeNext(Element element) throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        // check for new threads because of Join nodes
+        if (!(element instanceof Join))
+            if (!dataJoin.isEmpty() || !controlJoin.isEmpty())
+                checkForNewThreads();
+
+        //process next element
         if (element instanceof ActivityEdge){
             processEdge((ActivityEdge) element);
         } else if (element instanceof ObjectNode){
@@ -85,11 +94,69 @@ public class Parallel {
             processAction((Action) element);
         } else if (element instanceof Fork){
             processFork((Fork) element);
-        } else if (element instanceof Join){
-            executeNext(((Join) element).getOutgoing().get(0));
+        } else if (element instanceof Join ){
+            processJoin((Join) element);
         } else if (element instanceof ActivityFinalNode){
             new ControlExecutable((ControlNode) element).execute();
         }
+    }
+
+    private void checkForNewThreads() throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ArrayList<Join> readyJoins = new ArrayList<Join>();
+        if (!dataJoin.isEmpty()) {
+            for (Join join:dataJoin){
+                synchronizeJoin(readyJoins, join);
+            }
+        }
+        if (!controlJoin.isEmpty()) {
+            for (Join join:controlJoin){
+                synchronizeJoin(readyJoins, join);
+            }
+        }
+        if (!readyJoins.isEmpty()) {
+            ArrayList<ActivityEdge> joinEdges = new ArrayList<ActivityEdge>();
+            for (Join j:readyJoins){
+                processJoin(j);
+                joinEdges.addAll(j.getOutgoing());
+            }
+            forkJoinPool.invoke(new Concurrent(joinEdges));
+        }
+    }
+
+    /**
+     *  Let's say this join must be executed in parallel with 3 other actions.
+     *  Before every action starts, it will check if there are any joins that must be executed, so all three actions will find that there is 1 Join that must be executed.
+     *  We want this join to be executed only once, so whichever action will fire first, it will add Join to the list of "alreadyExecuted" joins
+     *  and other actions will skip it.
+     * @param readyJoins
+     * @param join
+     */
+    private synchronized void synchronizeJoin(ArrayList<Join> readyJoins, Join join) {
+        if (!alreadyExecuted.contains(join)) {
+            boolean joinIsReadToExecute = true;
+            for (ActivityEdge edge:join.getIncoming()){
+                if (!edge.getProperties().get("Status").equals("DONE")) {
+                    joinIsReadToExecute = false;
+                    break;
+                }
+            }
+            if (joinIsReadToExecute) {
+                readyJoins.add(join);
+                alreadyExecuted.add(join);
+            }
+        }
+    }
+
+    private void processJoin(Join join) throws InterruptedException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+
+        // if you try to modify dataJoin or controlJoin within checkForNewThreads and consequently synchronizeJoin methods, you will get concurrency exceptions
+        if (dataJoin.contains(join)) {
+            dataJoin.remove(join);
+        } else if (controlJoin.contains(join)) {
+            controlJoin.remove(join);
+        }
+
+        new ControlExecutable(join).execute();
     }
 
     private void processObjectNode(ObjectNode element) throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -102,35 +169,40 @@ public class Parallel {
 
     // each fork ends with control and optionally data join,
     // so when all tasks inside fork are done, we run control and data joins concurrently
-    //TODO add handling of multiple data joins
-    private void processFork(Fork element) {
+    private void processFork(Fork element) throws InterruptedException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        new ControlExecutable(element).execute();
         ArrayList<ActivityEdge> edges = element.getOutgoing();
-        forkJoinPool = new ForkJoinPool(edges.size());
         forkJoinPool.invoke(new Concurrent(edges));
-        if (dataJoin != null){
-            forkJoinPool.invoke(new NewThread(dataJoin));
-        }
-        if (controlJoin != null){
-            forkJoinPool.invoke(new NewThread(controlJoin));
-        }
+        checkForNewThreads();
     }
 
-    //TODO add handling of input data edges
     private void processAction(Action element) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InterruptedException {
         ArrayList<ActivityEdge> edges = element.getOutgoing();
+
+        // if we have a few incoming edges we have to wait before all of them execute
+        if (element.getIncoming().size() > 1) {
+            while (true) {
+                ArrayList<ActivityEdge> firedEdges = new ArrayList<ActivityEdge>();
+                for (ActivityEdge edge : element.getIncoming()) {
+                    if (edge.getProperties().get("Status").equals("DONE"))
+                        firedEdges.add(edge);
+                }
+                if (firedEdges.size() == element.getIncoming().size()) {
+                    break;
+                }
+            }
+        }
+
         new ActionExecutable(element, debugMode).execute();
-//        if (edges.size() > 1){
-//            //TODO get rid of indexes because control flow may be added after data and not before like here
-//            ForkJoinPool actionEdgesPool = new ForkJoinPool(1);
-//            actionEdgesPool.invoke(new NewThread(edges.get(1)));
-//        }
-//        executeNext(edges.get(0));
+
+        //handle outgoing edges
         if (edges.size() > 1) {
             ForkJoinPool actionEdgesPool = new ForkJoinPool(edges.size());
             actionEdgesPool.invoke(new Concurrent(edges));
         } else if (!edges.isEmpty()){
             executeNext(edges.get(0));
         }
+        checkForNewThreads();
     }
 
     // process data or control edge
@@ -139,10 +211,17 @@ public class Parallel {
         new EdgeExecutable(edge).execute();
         if (target instanceof Join){
             if (edge.isObjectFlow()){
-                dataJoin = (Join) target;
+                if (!dataJoin.contains((Join) target))
+                    dataJoin.add((Join) target);
             } else {
-                controlJoin = (Join) target;
+                if (!controlJoin.contains((Join) target))
+                    controlJoin.add((Join) target);
             }
+            // handle case when edge goes from one join to another
+//            if (edge.getSource() instanceof Join)
+//                checkForNewThreads();
+        } else if ((target instanceof Action) && edge.isObjectFlow()){
+            // do nothing, stop traversing the graph
         } else {
             if (target != null) {
                 executeNext(target);

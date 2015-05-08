@@ -31,6 +31,7 @@ import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.deployer2.dsl.util.ActivityValidator;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
+import org.cloudml.deployer2.workflow.util.Parallel;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -91,9 +92,9 @@ public class ConcurrentDeployment {
 
     public static void main(String[] args) throws Exception {
 
-        ConcurrentDeployment sensApp = new ConcurrentDeployment("C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\sensappAdmin-v2.json");
-//        ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-//        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
+//        ConcurrentDeployment sensApp = new ConcurrentDeployment("C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\sensappAdmin-v2.json");
+        ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
+        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
 //        System.out.println(ActivityBuilder.getActivity().toString());
 
     }
