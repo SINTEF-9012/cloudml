@@ -102,7 +102,7 @@ public class Parallel {
     }
 
     private void checkForNewThreads() throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        ArrayList<Join> readyJoins = new ArrayList<Join>();
+        List<Join> readyJoins = new CopyOnWriteArrayList<Join>();
         if (!dataJoin.isEmpty()) {
             for (Join join:dataJoin){
                 synchronizeJoin(readyJoins, join);
@@ -131,7 +131,7 @@ public class Parallel {
      * @param readyJoins
      * @param join
      */
-    private synchronized void synchronizeJoin(ArrayList<Join> readyJoins, Join join) {
+    private void synchronizeJoin(List<Join> readyJoins, Join join) {
         if (!alreadyExecuted.contains(join)) {
             boolean joinIsReadToExecute = true;
             for (ActivityEdge edge:join.getIncoming()){
@@ -179,35 +179,39 @@ public class Parallel {
     private void processAction(Action element) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InterruptedException {
         ArrayList<ActivityEdge> edges = element.getOutgoing();
 
+        boolean processAction = true;
         // if we have a few incoming edges we have to wait before all of them execute
         if (element.getIncoming().size() > 1) {
-            while (true) {
-                ArrayList<ActivityEdge> firedEdges = new ArrayList<ActivityEdge>();
-                for (ActivityEdge edge : element.getIncoming()) {
-                    if (edge.getProperties().get("Status").equals("DONE"))
-                        firedEdges.add(edge);
-                }
-                if (firedEdges.size() == element.getIncoming().size()) {
-                    break;
-                }
+
+            ArrayList<ActivityEdge> firedEdges = new ArrayList<ActivityEdge>();
+            for (ActivityEdge edge : element.getIncoming()) {
+                if (edge.getProperties().get("Status").equals("DONE"))
+                    firedEdges.add(edge);
             }
+            if (firedEdges.size() != element.getIncoming().size()) {
+                processAction = false;
+            }
+
         }
 
-        new ActionExecutable(element, debugMode).execute();
+        // process action only if all incoming edges fired or we have only one incoming edge
+        if (processAction) {
+            new ActionExecutable(element, debugMode).execute();
 
-        //handle outgoing edges
-        if (edges.size() > 1) {
-            ForkJoinPool actionEdgesPool = new ForkJoinPool(edges.size());
-            actionEdgesPool.invoke(new Concurrent(edges));
-        } else if (!edges.isEmpty()){
-            executeNext(edges.get(0));
+            //handle outgoing edges
+            if (edges.size() > 1) {
+                ForkJoinPool actionEdgesPool = new ForkJoinPool(edges.size());
+                actionEdgesPool.invoke(new Concurrent(edges));
+            } else if (!edges.isEmpty()) {
+                executeNext(edges.get(0));
+            }
+            checkForNewThreads();
         }
-        checkForNewThreads();
     }
 
     // process data or control edge
     private void processEdge(ActivityEdge edge) throws InterruptedException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Element target = edge.getTarget();
+        Element target = edge.getTarget();  //System.out.println(edge.toString() + " active threads now: " + forkJoinPool.getActiveThreadCount());
         new EdgeExecutable(edge).execute();
         if (target instanceof Join){
             if (edge.isObjectFlow()){
@@ -220,8 +224,8 @@ public class Parallel {
             // handle case when edge goes from one join to another
 //            if (edge.getSource() instanceof Join)
 //                checkForNewThreads();
-        } else if ((target instanceof Action) && edge.isObjectFlow()){
-            // do nothing, stop traversing the graph
+//        } else if ((target instanceof Action) && edge.isObjectFlow()){
+//            // do nothing, stop traversing the graph
         } else {
             if (target != null) {
                 executeNext(target);

@@ -50,11 +50,7 @@ public class EdgeExecutable {
         String source = edge.getSource().getClass().getSimpleName();
         identifyNode(target);
         identifyNode(source);
-        if (edge.isObjectFlow()){
-            journal.log(Level.INFO, "Passing data from " + source + " to " + target);
-        } else {
-            journal.log(Level.INFO, "Moving from " + source + " to " + target);
-        }
+        journal.log(Level.INFO, "Executing: " + edge.toString());
 
         edge.getProperties().put("Status", String.valueOf(Element.Status.DONE));
     }

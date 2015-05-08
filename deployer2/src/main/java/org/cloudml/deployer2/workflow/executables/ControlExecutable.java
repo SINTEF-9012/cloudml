@@ -43,25 +43,22 @@ public class ControlExecutable {
         node.getProperties().put("Status", String.valueOf(Element.Status.ACTIVE));
 
         String message;
-        int index = 1;
         if (node instanceof Fork){
-            message = "Inside fork with next targets:\n";
+            message = "\n\nInside fork with next parallel flows:\n";
             for (ActivityEdge o:node.getOutgoing()){
-                message += "- " + o.getTarget().getName() + " " + index + "\n";
-                index++;
+                message += "- " + o.toString() + "\n";
             }
             journal.log(Level.INFO, message);
         } else if (node instanceof Join){
-            message = "Inside join which synchronizes:\n";
+            message = "\n\nInside join which synchronizes:\n";
             for (ActivityEdge o:node.getIncoming()){
-                message += "- " + o.getSource().getName() + " " + index + "\n";
-                index++;
+                message += "- " + o.toString() + "\n";
             }
             journal.log(Level.INFO, message);
         } else if (node instanceof ActivityInitialNode){
-            journal.log(Level.INFO, "Starting deployment");
+            journal.log(Level.INFO, "\n\nStarting deployment\n");
         } else {
-            journal.log(Level.INFO, "Deployment has finished successfully");
+            journal.log(Level.INFO, "\n\nDeployment has finished successfully\n");
             ((ActivityFinalNode)node).finish();
         }
 

@@ -53,10 +53,10 @@ public class ObjectExecutable {
         } else if (node instanceof ExpansionNode){
             journal.log(Level.INFO, "Inside expansion node " + node.getName() + ", collection size is: " + node.getObjects().size());
         } else {
-            String message = "Inside object node " + node.getName() + " which contains " + node.getObjects().size() + " objects:\n";
+            String message = "\n\nInside object node " + node.getName() + " which contains " + node.getObjects().size() + " objects:\n";
             for (Object obj:node.getObjects()){
                 if (obj instanceof String){
-                    message += (String)obj + "\n";
+                    message += "- " + (String)obj + "\n";
                 } else {
                     //TODO if you can think of other objects which are not String, add output logic here
                 }
