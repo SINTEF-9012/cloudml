@@ -41,8 +41,7 @@ import java.util.concurrent.RecursiveAction;
  */
 public class Parallel {
     private ForkJoinPool forkJoinPool = new ForkJoinPool();
-    private List<Join> dataJoin = new CopyOnWriteArrayList<Join>();
-    private List<Join> controlJoin = new CopyOnWriteArrayList<Join>();
+    private List<Join> joinNodes = new CopyOnWriteArrayList<Join>();
     private List<Join> alreadyExecuted = new CopyOnWriteArrayList<Join>();
     private boolean debugMode;
 
@@ -76,14 +75,13 @@ public class Parallel {
 
         // move down the tree
         executeNext(initialNode.getOutgoing().get(0));
-
     }
 
     private void executeNext(Element element) throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         // check for new threads because of Join nodes
-        if (!(element instanceof Join))
-            if (!dataJoin.isEmpty() || !controlJoin.isEmpty())
-                checkForNewThreads();
+        if (!(element instanceof Join || element instanceof ActivityEdge))
+            if (!joinNodes.isEmpty())
+                checkJoinNodes();
 
         //process next element
         if (element instanceof ActivityEdge){
@@ -101,15 +99,10 @@ public class Parallel {
         }
     }
 
-    private void checkForNewThreads() throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void checkJoinNodes() throws InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         List<Join> readyJoins = new CopyOnWriteArrayList<Join>();
-        if (!dataJoin.isEmpty()) {
-            for (Join join:dataJoin){
-                synchronizeJoin(readyJoins, join);
-            }
-        }
-        if (!controlJoin.isEmpty()) {
-            for (Join join:controlJoin){
+        if (!joinNodes.isEmpty()) {
+            for (Join join:joinNodes){
                 synchronizeJoin(readyJoins, join);
             }
         }
@@ -149,12 +142,9 @@ public class Parallel {
 
     private void processJoin(Join join) throws InterruptedException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
 
-        // if you try to modify dataJoin or controlJoin within checkForNewThreads and consequently synchronizeJoin methods, you will get concurrency exceptions
-        if (dataJoin.contains(join)) {
-            dataJoin.remove(join);
-        } else if (controlJoin.contains(join)) {
-            controlJoin.remove(join);
-        }
+        // if you try to modify dataJoin or controlJoin within checkJoinNodes and consequently synchronizeJoin methods, you will get concurrency exceptions
+        if (joinNodes.contains(join))
+            joinNodes.remove(join);
 
         new ControlExecutable(join).execute();
     }
@@ -173,7 +163,7 @@ public class Parallel {
         new ControlExecutable(element).execute();
         ArrayList<ActivityEdge> edges = element.getOutgoing();
         forkJoinPool.invoke(new Concurrent(edges));
-        checkForNewThreads();
+        checkJoinNodes();
     }
 
     private void processAction(Action element) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InterruptedException {
@@ -205,7 +195,7 @@ public class Parallel {
             } else if (!edges.isEmpty()) {
                 executeNext(edges.get(0));
             }
-            checkForNewThreads();
+            checkJoinNodes();
         }
     }
 
@@ -214,16 +204,12 @@ public class Parallel {
         Element target = edge.getTarget();  //System.out.println(edge.toString() + " active threads now: " + forkJoinPool.getActiveThreadCount());
         new EdgeExecutable(edge).execute();
         if (target instanceof Join){
-            if (edge.isObjectFlow()){
-                if (!dataJoin.contains((Join) target))
-                    dataJoin.add((Join) target);
-            } else {
-                if (!controlJoin.contains((Join) target))
-                    controlJoin.add((Join) target);
-            }
+            if (!joinNodes.contains((Join) target))
+                joinNodes.add((Join) target);
+
             // handle case when edge goes from one join to another
 //            if (edge.getSource() instanceof Join)
-//                checkForNewThreads();
+//                checkJoinNodes();
 //        } else if ((target instanceof Action) && edge.isObjectFlow()){
 //            // do nothing, stop traversing the graph
         } else {
