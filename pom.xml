@@ -262,7 +262,7 @@
         <snapshotRepository>
             <id>deploymentRepo</id>
             <name>deploymentRepo</name>
-            <url>http://cml.cloudapp.net:8081/nexus/content/repositories/snapshots/</url>
+            <url>scp://cml.cloudapp.net:8081/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
 
     </distributionManagement>
