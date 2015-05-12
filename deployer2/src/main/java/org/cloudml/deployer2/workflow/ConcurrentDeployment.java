@@ -94,8 +94,9 @@ public class ConcurrentDeployment {
 
 //        ConcurrentDeployment sensApp = new ConcurrentDeployment("C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\sensappAdmin-v2.json");
         ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), true);
+        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), false);
 //        System.out.println(ActivityBuilder.getActivity().toString());
+//        ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), false);
 
     }
 

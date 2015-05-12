@@ -486,6 +486,8 @@ public class ActivityDiagram  {
         if (debugMode){
             journal.log(Level.INFO, ">> Installation of " + x.getType().getName() + " is done.");
         } else {
+            journal.log(Level.INFO, ">> Install " + x.getType().getName());
+            jc = ConnectorFactory.createIaaSConnector(owner.getType().getProvider());
             unlessNotNull("Cannot install with an argument at null", x, owner, jc);
             for (Resource r : x.getType().getResources()) {
                 if (!r.getInstallCommand().equals("")) {
@@ -496,6 +498,7 @@ public class ActivityDiagram  {
                     }
                 }
             }
+            jc.closeConnection();
         }
     }
 
@@ -513,12 +516,14 @@ public class ActivityDiagram  {
             journal.log(Level.INFO, ">> Uploading of " + x.getType().getName() + " is done.");
         } else {
             journal.log(Level.INFO, ">> Upload " + x.getType().getName());
+            jc = ConnectorFactory.createIaaSConnector(owner.getType().getProvider());
             unlessNotNull("Cannot upload with an argument at null", x, owner, jc);
             for (Resource r : x.getType().getResources()) {
                 for (String path : r.getUploadCommand().keySet()) {
                     jc.uploadFile(path, r.getUploadCommand().get(path), owner.getId(), "ubuntu", owner.getType().getPrivateKey());
                 }
             }
+            jc.closeConnection();
         }
     }
 
@@ -535,6 +540,8 @@ public class ActivityDiagram  {
         if (debugMode){
             journal.log(Level.INFO, ">> Retrieving " + x.getType().getName() + " is done.");
         } else {
+            journal.log(Level.INFO, ">> Retrieve " + x.getType().getName());
+            jc = ConnectorFactory.createIaaSConnector(owner.getType().getProvider());
             unlessNotNull("Cannot retrieve resources of null!", x, owner, jc);
             for (Resource r : x.getType().getResources()) {
                 if (!r.getRetrieveCommand().equals("")) {
@@ -543,6 +550,7 @@ public class ActivityDiagram  {
                     else executeCommand(owner, jc, CloudMLQueryUtil.cloudmlStringRecover(r.getRetrieveCommand(), r, x));
                 }
             }
+            jc.closeConnection();
         }
     }
 
@@ -1099,11 +1107,14 @@ public class ActivityDiagram  {
         if (debugMode){
             journal.log(Level.INFO, "Configuration of " + ni.getName() + " is done");
         } else {
+            journal.log(Level.INFO, "Configure " + ni.getName());
+            jc = ConnectorFactory.createIaaSConnector(ni.getType().getProvider());
             if (!configurationCommand.equals("")) {
                 if (keyRequired)
                     jc.execCommand(ni.getId(), configurationCommand + " " + ni.getType().getProvider().getCredentials().getLogin() + " " + ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
                 else executeCommand(ni, jc, configurationCommand);
             }
+            jc.closeConnection();
         }
     }
 
@@ -1119,10 +1130,13 @@ public class ActivityDiagram  {
         if (debugMode){
             journal.log(Level.INFO, ni.getName() + " started");
         } else {
+            journal.log(Level.INFO, "Start " + ni.getName());
+            jc = ConnectorFactory.createIaaSConnector(ni.getType().getProvider());
             unlessNotNull("Cannot start without connector", jc, n, ni, startCommand);
             if (!startCommand.equals("")) {
                 executeCommand(ni, jc, startCommand);
             }
+            jc.closeConnection();
         }
     }
 

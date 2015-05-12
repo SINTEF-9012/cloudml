@@ -96,14 +96,8 @@ public class ActionExecutable {
                     String actualCommand = command.split("::")[0];
                     String port = command.split("::")[1];
                     String destinationVM = command.split("::")[2];
-                    String destinationIP = null;
-                    for (Object provisionedIP: ActivityBuilder.getIPregistry().getObjects()){
-                        if (((String)provisionedIP).contains(destinationVM)){
-                            // objects inside public address look like 'Nimbus ip address is:1.1.1.1'
-                            destinationIP = ((String) provisionedIP).split(":")[1];
-                        }
-                    }
-                    String ip = vm.getPublicAddress();
+                    String destinationIP = getProvisionedVMaddress(destinationVM);
+                    String ip = getProvisionedVMaddress(vm.getName());
                     command = actualCommand + " \"" + ip + "\" \"" + destinationIP + "\" " + port;
                 }
             }
@@ -153,6 +147,17 @@ public class ActionExecutable {
         }
 
         action.getProperties().put("Status", String.valueOf(Element.Status.DONE));
+    }
+
+    private String getProvisionedVMaddress(String vmName) {
+        String ip = null;
+        for (Object provisionedIP: ActivityBuilder.getIPregistry().getObjects()){
+            if (((String)provisionedIP).contains(vmName)){
+                // objects inside public address look like 'Nimbus ip address is:1.1.1.1'
+                ip = ((String) provisionedIP).split(":")[1];
+            }
+        }
+        return ip;
     }
 
 }

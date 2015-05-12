@@ -134,8 +134,12 @@ public class Parallel {
                 }
             }
             if (joinIsReadToExecute) {
-                readyJoins.add(join);
-                alreadyExecuted.add(join);
+                synchronized (readyJoins) {
+                    readyJoins.add(join);
+                }
+                synchronized (alreadyExecuted) {
+                    alreadyExecuted.add(join);
+                }
             }
         }
     }
@@ -143,8 +147,10 @@ public class Parallel {
     private void processJoin(Join join) throws InterruptedException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
 
         // if you try to modify dataJoin or controlJoin within checkJoinNodes and consequently synchronizeJoin methods, you will get concurrency exceptions
-        if (joinNodes.contains(join))
-            joinNodes.remove(join);
+        synchronized (joinNodes) {
+            if (joinNodes.contains(join))
+                joinNodes.remove(join);
+        }
 
         new ControlExecutable(join).execute();
     }
@@ -204,8 +210,10 @@ public class Parallel {
         Element target = edge.getTarget();  //System.out.println(edge.toString() + " active threads now: " + forkJoinPool.getActiveThreadCount());
         new EdgeExecutable(edge).execute();
         if (target instanceof Join){
-            if (!joinNodes.contains((Join) target))
-                joinNodes.add((Join) target);
+            synchronized (joinNodes) {
+                if (!joinNodes.contains((Join) target))
+                    joinNodes.add((Join) target);
+            }
 
             // handle case when edge goes from one join to another
 //            if (edge.getSource() instanceof Join)
