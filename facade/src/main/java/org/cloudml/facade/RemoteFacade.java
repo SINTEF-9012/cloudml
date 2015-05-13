@@ -23,13 +23,22 @@
 package org.cloudml.facade;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.amazonaws.util.StringInputStream;
+import org.cloudml.codecs.JsonCodec;
+import org.cloudml.core.Deployment;
+import org.cloudml.core.Provider;
+import org.cloudml.core.credentials.FileCredentials;
+import org.cloudml.core.credentials.MemoryCredentials;
 import org.cloudml.facade.commands.Deploy;
 import org.cloudml.facade.commands.LoadDeployment;
 import org.cloudml.facade.util.WSClient;
@@ -70,7 +79,25 @@ public class RemoteFacade extends Facade{
         final File f = new File(command.getPathToModel());
         try {
             String json=new String(Files.readAllBytes(f.toPath()));
-            wsClient.send("!additional json-string:" + json);
+            JsonCodec jc=new JsonCodec();
+            InputStream is = new StringInputStream(json);
+            Deployment temp=(Deployment)jc.load(is);
+            for(Provider p: temp.getProviders()){
+                if(p.getCredentials() instanceof FileCredentials){
+                    String login = "";
+                    String password = "";
+                    if(p.getCredentials().getLogin() != null)
+                        login=p.getCredentials().getLogin();
+                    if(p.getCredentials().getPassword() != null)
+                        password=p.getCredentials().getPassword();
+                    MemoryCredentials mc=new MemoryCredentials(login, password);
+                    p.setCredentials(mc);
+                }
+            }
+            JsonCodec jsonCodec=new JsonCodec();
+            ByteArrayOutputStream baos=new ByteArrayOutputStream();
+            jsonCodec.save(temp,baos);
+            wsClient.send("!additional json-string:" + baos.toString());
             Thread.sleep(3000);
         } catch (IOException e) {
             e.printStackTrace();

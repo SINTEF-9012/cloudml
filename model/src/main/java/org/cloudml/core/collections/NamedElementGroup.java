@@ -75,6 +75,7 @@ public abstract class NamedElementGroup<T extends NamedElement> implements Colle
         return false;
     }
 
+
     @Override
     public boolean add(T e) {
         content.add(e);

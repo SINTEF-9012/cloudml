@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 
 /**
@@ -58,7 +59,9 @@ public class TestFacade extends TestCase implements EventHandler {
         CommandFactory factory = new CommandFactory();
 
         // Send a dummy command
-        CloudMlCommand command = factory.startComponent("foo");
+        ArrayList<String> vms=new ArrayList<String>();
+        vms.add("foo");
+        CloudMlCommand command = factory.startComponent(vms);
         final Execution execution = cloudml.fireAndWait(command);
         assertTrue(execution.isCompleted());
 

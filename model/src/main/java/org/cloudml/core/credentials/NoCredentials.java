@@ -47,6 +47,16 @@ public class NoCredentials implements Credentials {
     public String getPassword() {
         return "";
     }
-    
-    
+
+    @Override
+    public void setLogin(String login) {
+
+    }
+
+    @Override
+    public void setPassword(String password) {
+
+    }
+
+
 }

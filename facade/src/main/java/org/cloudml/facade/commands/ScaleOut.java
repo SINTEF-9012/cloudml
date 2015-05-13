@@ -28,9 +28,15 @@ package org.cloudml.facade.commands;
 public class ScaleOut extends CloudMlCommand {
 
     private final String vmId;
+    private int nb=1;
 
     public ScaleOut(String vmId) {
         this.vmId = vmId;
+    }
+
+    public ScaleOut(String vmId, int nb){
+        this.vmId = vmId;
+        this.nb=nb;
     }
 
     @Override
@@ -47,4 +53,7 @@ public class ScaleOut extends CloudMlCommand {
         return String.format("snapshot %s", vmId);
     }
 
+    public int getNb() {
+        return nb;
+    }
 }

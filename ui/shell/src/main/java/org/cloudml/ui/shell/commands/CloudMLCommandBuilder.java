@@ -22,10 +22,15 @@
  */
 package org.cloudml.ui.shell.commands;
 
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.*;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsBaseVisitor;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsParser;
+import org.cloudml.ui.shell.terminal.Terminal;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.cloudml.facade.commands.ValidateCommand.REPORT_ONLY_ERRORS;
 import static org.cloudml.facade.commands.ValidateCommand.REPORT_WARNINGS_AND_ERRORS;
@@ -135,6 +140,12 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
     }
 
     @Override
+    public CloudMlCommand visitMultipleScaleOut(ShellCommandsParser.MultipleScaleOutContext ctx){
+          return new ScaleOut(ctx.ID().getText(), Integer.parseInt(ctx.times.getText()));
+    }
+
+
+    @Override
     public CloudMlCommand visitImage(ShellCommandsParser.ImageContext ctx) {
         return new Image(ctx.ID().getText());
     }
@@ -146,7 +157,11 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitStop(ShellCommandsParser.StopContext ctx) {
-        return new StopComponent(ctx.ID().getText());
+        ArrayList<String> al=new ArrayList<String>();
+        for(TerminalNode t: ctx.ID()){
+            al.add(t.getText());
+        }
+        return new StopComponent(al);
     }
 
     @Override
@@ -156,7 +171,11 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
 
     @Override
     public CloudMlCommand visitStart(ShellCommandsParser.StartContext ctx) {
-        return new StartComponent(ctx.ID().getText());
+        ArrayList<String> al=new ArrayList<String>();
+        for(TerminalNode t:ctx.ID()){
+            al.add(t.getText());
+        }
+        return new StartComponent(al);
     }
 
     @Override

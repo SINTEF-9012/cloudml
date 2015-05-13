@@ -128,6 +128,7 @@ public class CloudFoundryConnector implements PaaSConnector {
     @Override
     public void setEnvVar(String appName, String nameVar, String val){
         connectedClient.updateApplicationEnv(appName, Collections.singletonMap(nameVar, val));
+        connectedClient.restartApplication(appName);
     }
 
     private Boolean checkIfServiceExist(String serviceName){
@@ -136,6 +137,10 @@ public class CloudFoundryConnector implements PaaSConnector {
 
     private Boolean checkIfApplicationExist(String appName){
         return connectedClient.getApplication(appName) != null;
+    }
+
+    public List<CloudApplication> listApplications(){
+        return connectedClient.getApplications();
     }
 
     private Boolean checkIfPlanExist(String planName, String serviceLabel){
@@ -208,6 +213,13 @@ public class CloudFoundryConnector implements PaaSConnector {
         } catch (IOException e) {
             journal.log(Level.SEVERE, e.getMessage());
         }
+    }
+
+
+
+    @Override
+    public void deleteApp(String name){
+        connectedClient.deleteApplication(name);
     }
 
     @Override

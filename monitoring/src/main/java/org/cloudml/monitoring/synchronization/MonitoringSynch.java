@@ -26,6 +26,7 @@ import org.cloudml.core.*;
 import org.cloudml.core.collections.ComponentInstanceGroup;
 import org.cloudml.core.collections.VMInstanceGroup;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -67,7 +68,7 @@ public class MonitoringSynch {
      * @param removedECs removed components
      * @return boolean, true if the models are synch, false if there is a mismatch
      */
-    public static boolean sendRemovedComponents(String monitoringAddress, List<ExternalComponentInstance<? extends ExternalComponent>> removedECs,
+    public static boolean sendRemovedComponents(String monitoringAddress, Collection<ExternalComponentInstance<? extends ExternalComponent>> removedECs,
                                                 List<InternalComponentInstance> removedICs) {
         MonitoringAPI request = new MonitoringAPI(monitoringAddress);
         boolean modelMatching = true;

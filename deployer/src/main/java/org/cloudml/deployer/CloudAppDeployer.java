@@ -147,7 +147,7 @@ public class CloudAppDeployer {
             //send the changes to the monitoring platform
             if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
                 MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
+                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
                 if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
                     MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
                 }
@@ -217,7 +217,7 @@ public class CloudAppDeployer {
         //send the changes to the monitoring platform
         if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
             MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs(), diff.getRemovedComponents());
+            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
             if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
                 MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
             }
@@ -245,17 +245,20 @@ public class CloudAppDeployer {
      */
     public void updateCurrentModel(CloudMLModelComparator diff) {
         if (diff != null) {
+            currentModel.getComponents().addAll(targetModel.getComponents());
+            currentModel.getRelationships().addAll(targetModel.getRelationships());
+
             currentModel.getComponentInstances().removeAll(diff.getRemovedComponents());
             currentModel.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
-            currentModel.getComponentInstances().removeAll(diff.getRemovedECs());
+            currentModel.getComponentInstances().removeAll(diff.getRemovedECs().keySet());
             currentModel.getExecuteInstances().removeAll(diff.getRemovedExecutes());
             alreadyDeployed.removeAll(diff.getRemovedComponents());
             alreadyStarted.removeAll(diff.getRemovedComponents());
 
-            currentModel.getComponentInstances().addAll(diff.getAddedComponents());
-            currentModel.getRelationshipInstances().addAll(diff.getAddedRelationships());
-            currentModel.getComponentInstances().addAll(diff.getAddedECs());
-            currentModel.getExecuteInstances().addAll(diff.getAddedExecutes());
+            currentModel.getComponentInstances().replaceAll(diff.getAddedComponents());
+            currentModel.getRelationshipInstances().replaceAll(diff.getAddedRelationships());
+            currentModel.getComponentInstances().replaceAll(diff.getAddedECs());
+            currentModel.getExecuteInstances().replaceAll(diff.getAddedExecutes());
         } else {
             throw new IllegalArgumentException("Cannot update current model without comparator!");
         }
@@ -784,11 +787,12 @@ public class CloudAppDeployer {
         ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
         ExternalComponent ec = eci.getType();
         Provider p = eci.getType().getProvider();
+        PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
 
         if (ec.getServiceType() == null)
             return;
         if (ec.getServiceType().toLowerCase().equals("database")) {//For now we use string but this will evolve to an enum
-            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
+
             connector.createDBInstance(
                     ec.hasProperty("DB-Engine") ? ec.getProperties().valueOf("DB-Engine") : null,
                     ec.hasProperty("DB-Version") ? ec.getProperties().valueOf("DB-Version") : null,
@@ -815,13 +819,45 @@ public class CloudAppDeployer {
 
         }
         if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
-            PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(p);
             String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
         }
+        if(ec.getServiceType().toLowerCase().equals("loadbalancer")){
+            String endpoint = ec.getEndPoint();
+            if(endpoint==null){
+                Map<String, String> env = System.getenv();
+                if(env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")
+                        && env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT")){
+                    endpoint=env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")+":"+env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT");
+                }
+            }
+            PyHrapiConnector pConnector = ConnectorFactory.createLoadBalancerProvider(endpoint);
+            Map<String, Object> gateway = new HashMap<String, Object>();
+                String GATEWAY = eci.getName()+"GateWay";
+                gateway.put("gateway", GATEWAY);
+                gateway.put("protocol", "http");
+                gateway.put("defaultBack", eci.getName()+"Back");
+                Map<String, String> endpoints = new HashMap<String, String>();
+                    endpoints.put("endOne", "0.0.0.0:8080");   //TODO: Now only support one load balancer
+            gateway.put("endpoints", endpoints);
+            gateway.put("enable", "True");
+            
+            Map<String, Object> testPool = new HashMap<String, Object>();
+                testPool.put("enabled", Boolean.TRUE);
+                Map<String, String> targets = new HashMap<String, String>();
+                    targets.put("targetOneHold","109.105.109.218:80");
+                testPool.put("targets", targets);
+
+            journal.log(Level.INFO, ">>Add pool:" + pConnector.addPool(eci.getName() + "Back", testPool));
+
+            journal.log(Level.INFO, ">> " + pConnector.addGateway(gateway));
+        }
+        if (statusMonitorActive) {
+            statusMonitor.attachModule(connector);
+        }
     }
 
-
+    private Map<String, String> loadbalancerTargets = new HashMap<String, String>();  //only useful for load balancer
     /**
      * Configure components according to the relationships
      *
@@ -829,10 +865,13 @@ public class CloudAppDeployer {
      * @throws MalformedURLException
      */
     protected void configureWithRelationships(RelationshipInstanceGroup relationships) {
+        loadbalancerTargets.clear();
         //Configure on the basis of the relationships
         //parameters transmitted to the configuration scripts are "ip ipDestination portDestination"
         for (RelationshipInstance bi : relationships) {
-            if (bi.getProvidedEnd().getOwner().get().isExternal()) {  //For DB
+            ComponentInstance serveri = bi.getProvidedEnd().getOwner().get();
+            ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+            if (serveri.isExternal() && "database".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For DB
                 for (Resource res : bi.getType().getResources()) {
                     ConfigValet valet = ConfigValet.createValet(bi, res);
                     if (valet != null)
@@ -852,7 +891,7 @@ public class CloudAppDeployer {
                     }
 
                 }
-                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+               
                 Component client = clienti.getType();
                 ComponentInstance pltfi = getDestination(clienti);
                 if(pltfi.isExternal()){
@@ -899,7 +938,40 @@ public class CloudAppDeployer {
                     }
                 }
 
-            } else if (bi.getRequiredEnd().getType().isRemote()) {
+            } 
+
+            else if (serveri.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For Loadbalancer
+                String endpoint = serveri.getType().asExternal().getEndPoint();
+                if(endpoint==null){
+                    Map<String, String> env = System.getenv();
+                    if(env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")
+                            && env.containsKey("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT")){
+                        endpoint=env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")+":"+env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT");
+                    }
+                }
+                  
+                PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(endpoint);
+
+                String ipAddress = null;
+                String port = null;
+                if(clienti.isExternal()){
+                    ExternalComponentInstance<ExternalComponent> exclienti = ((ExternalComponentInstance) clienti);
+                    ipAddress = exclienti.getPublicAddress();
+                    port = String.valueOf(bi.getRequiredEnd().getType().getPortNumber());
+                    //port = exserveri.getType().getProvidedPorts().toArray()[0].toString(); //TODO: always use the first provided port, should be fixed.
+                }
+                else{
+                    ipAddress = getDestination(clienti).getPublicAddress();
+                    port = String.valueOf(bi.getRequiredEnd().getType().getPortNumber());
+                }
+                Map backend = connector.getBackEnd(serveri.getName()+"Back");
+                //((Map)backend.get("targets")).remove("targetOneHold");
+                ((Map)backend.get("targets")).put(clienti.getName(), ipAddress+":"+port);
+                journal.log(Level.INFO, ">>Modify backend: "+connector.addPool(serveri.getName()+"Back", backend));
+                journal.log(Level.INFO, ">>Delete Target: "+connector.deleteTarget(serveri.getName()+"Back", "targetOneHold"));
+                connector.start();
+            }
+            else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
                 ProvidedPortInstance server = bi.getProvidedEnd();
 
@@ -909,17 +981,19 @@ public class CloudAppDeployer {
                 retrieveIPandConfigure(serverResource,clientResource,server,client);
             }
             if(isPaaS2PaaS(bi)) {
-                ComponentInstance clienti = bi.getRequiredEnd().getOwner().get();
+                //ComponentInstance clienti2 = bi.getRequiredEnd().getOwner().get();
                 ComponentInstance s=bi.getProvidedEnd().getOwner().get().asInternal();
-                ExternalComponentInstance serveri = bi.getProvidedEnd().getOwner().get().asInternal().externalHost();
+                ExternalComponentInstance serveri2 = bi.getProvidedEnd().getOwner().get().asInternal().externalHost();
                 ExternalComponent pltf = clienti.asInternal().externalHost().getType();
                 PaaSConnector connector = (PaaSConnector) ConnectorFactory.createPaaSConnector(pltf.getProvider());
-                connector.setEnvVar(clienti.getName(), s.getName(), serveri.getPublicAddress());
+                connector.setEnvVar(clienti.getName(), s.getName(), serveri2.getPublicAddress());
             }
         }
+        
+        
     }
 
-    private Boolean isPaaS2PaaS(RelationshipInstance ri){
+    private Boolean isPaaS2PaaS(RelationshipInstance bi){
         if(bi.getRequiredEnd().getOwner().get().isInternal()){
             if(bi.getProvidedEnd().getOwner().get().isInternal()){
                 if(!bi.getRequiredEnd().getOwner().get().asInternal().externalHost().isVM()
@@ -1035,10 +1109,17 @@ public class CloudAppDeployer {
      * @param vms A list of vmInstances
      * @throws MalformedURLException
      */
-    private void terminateExternalServices(List<ExternalComponentInstance<? extends ExternalComponent>> vms) {
-        for (ExternalComponentInstance n : vms) {
+    private void terminateExternalServices(Map<ExternalComponentInstance<? extends ExternalComponent>,List<InternalComponentInstance>> vms) {
+        for (ExternalComponentInstance n : vms.keySet()) {
             if (n instanceof VMInstance) {
                 terminateVM((VMInstance) n);
+            } else{
+                PaaSConnector pc = ConnectorFactory.createPaaSConnector(n.getType().asExternal().getProvider());
+                for(InternalComponentInstance c: vms.get(n)){
+                    journal.log(Level.INFO, ">> Terminating app "+c.asInternal().getName());
+                    pc.deleteApp(c.asInternal().getName());
+                }
+                journal.log(Level.INFO, ">> Terminated!");
             }
         }
     }
@@ -1179,9 +1260,19 @@ public class CloudAppDeployer {
         scaler.scaleOut(vmi);
     }
 
+    public void scaleOut(VMInstance vmi, int nb){
+        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        scaler.scaleOut(vmi,nb);
+    }
+
     public void scaleOut(VMInstance vmi,Provider provider){
         Scaler scaler=new Scaler(currentModel,coordinator,this);
         scaler.scaleOut(vmi,provider);
+    }
+
+    public Deployment scaleOut(ExternalComponentInstance eci,Provider provider){
+        Scaler scaler=new Scaler(currentModel,coordinator,this);
+        return scaler.scaleOut(eci,provider);
     }
 
     public void activeDebug(){

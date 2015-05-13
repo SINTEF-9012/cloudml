@@ -27,17 +27,17 @@ package org.cloudml.facade.commands;
  */
 public class Burst extends CloudMlCommand {
 
-    private final String vmId;
+    private final String ecId;
 
     private final String providerID;
 
     public Burst(String vmId, String providerID) {
-        this.vmId = vmId;
+        this.ecId = vmId;
         this.providerID = providerID;
     }
 
-    public String getVmId() {
-        return vmId;
+    public String getEcId() {
+        return ecId;
     }
 
     public String getProviderID() {
@@ -51,6 +51,6 @@ public class Burst extends CloudMlCommand {
 
     @Override
     public String toString() {
-        return String.format("Burst %s to %s", vmId, providerID);
+        return String.format("Burst %s to %s", ecId, providerID);
     }
 }

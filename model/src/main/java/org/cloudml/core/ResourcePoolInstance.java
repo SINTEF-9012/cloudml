@@ -44,6 +44,7 @@ public class ResourcePoolInstance extends WithResources implements DeploymentEle
 
     private List<VMInstance> baseInstances;
     private List<VMInstance> replicats;
+    private List<ComponentInstance> excluded;
 
     public ResourcePoolInstance(int nbOfReplicats, int maxReplicats, int minReplicats, List<VMInstance> baseInstances, String type){
         this.maxReplicats = maxReplicats;
@@ -79,12 +80,19 @@ public class ResourcePoolInstance extends WithResources implements DeploymentEle
         }
     }
 
-    public void replicate(VMInstance vmi, Deployment target){
-        if(nbOfReplicats <= maxReplicats){
+    public void replicate(int n, Deployment target){
+        for(VMInstance i:baseInstances){
+            replicate(i,target,n);
+        }
+    }
+
+    public Map<InternalComponentInstance, InternalComponentInstance> replicate(VMInstance vmi, Deployment target){
+        if(nbOfReplicats < maxReplicats){
             if(baseInstances.contains(vmi)){
                 VMInstance newVM=lib.cloneVM(vmi, target);
                 Map<InternalComponentInstance, InternalComponentInstance> duplicatedGraph=lib.replicateSubGraph(target, vmi, newVM);
                 nbOfReplicats++;
+                return duplicatedGraph;
             }else{
                 throw new IllegalArgumentException("This VM is not part of the Pool");
             }
@@ -151,5 +159,13 @@ public class ResourcePoolInstance extends WithResources implements DeploymentEle
     @Override
     public void accept(Visitor visitor) {
         visitor.visitResourcePoolInstance(this);
+    }
+
+    public List<ComponentInstance> getExcluded() {
+        return excluded;
+    }
+
+    public void setExcluded(List<ComponentInstance> excluded) {
+        this.excluded = excluded;
     }
 }

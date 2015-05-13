@@ -192,6 +192,9 @@ public class PyHrapiConnector {
         return _generalGet(prefix+"/gateways/"+gateway, NO_SUCH_GATEWAY);
     }
     
+    public Map getBackEnd(String backend){
+        return _generalGet(prefix+"/pools/"+backend, "No such pool");
+    }
     
     
     public String addGateway(Map gateway){
@@ -261,7 +264,6 @@ public class PyHrapiConnector {
     }
     
     public String start() {
-
         try {
             return invoke(prefix+"/controller/commit", "POST", null);
         } catch (Exception ex) {

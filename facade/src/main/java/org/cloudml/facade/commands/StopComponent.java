@@ -22,26 +22,28 @@
  */
 package org.cloudml.facade.commands;
 
+import java.util.List;
+
 /**
  * Stop the component whose ID is given
  */
 public class StopComponent extends CloudMlCommand {
 
-    private final String componentId;
+    private final List<String> componentId;
 
     /**
      * Create a new StopComponent request from the ID of the artifact to stop
      *
      * @param componentId the ID of the artifact to stop
      */
-    public StopComponent(String componentId) {
+    public StopComponent(List<String> componentId) {
         this.componentId = componentId;
     }
 
     /**
      * @return the componentId to stop
      */
-    public String getComponentId() {
+    public List<String> getComponentId() {
         return componentId;
     }
 

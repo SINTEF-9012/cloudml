@@ -63,5 +63,12 @@ public class ComponentList extends Data {
     public void accept(EventHandler handler) {
         handler.handle(this);
     }
-    
+
+    public String toString(){
+        String result="Component instances:\n";
+        for(Component c: components)
+            result+=c.getQualifiedName()+"\n";
+        return result;
+    }
+
 }

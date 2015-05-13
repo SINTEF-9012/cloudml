@@ -60,9 +60,21 @@ public class ConnectorFactory {
             return new BeanstalkConnector(p.getCredentials().getLogin(), p.getCredentials().getPassword(), "eu-west-1");
         if("cloudbees".equals(p.getName().toLowerCase()))
             return new Cloud4soaConnector(p);
-        if("cf".equals(p.getName().toLowerCase()) || "cloudfoundry".equals(p.getName().toLowerCase()))
+        if("cf".equals(p.getName().toLowerCase()) || p.getName().toLowerCase().contains("cloudfoundry"))
             return new CloudFoundryConnector(p.getProperties().valueOf("endPoint"),p.getCredentials().getLogin(), p.getCredentials().getPassword(),
                     p.getProperties().valueOf("org"), p.getProperties().valueOf("space"));
         throw new IllegalArgumentException("No such connector");
+    }
+    private static PyHrapiConnector loadbalancerConnector = null;
+    /**
+     * Now we assume that there is only one type of connector for load balancer
+     * @param endpoint
+     * @param version
+     * @return 
+     */
+    public static PyHrapiConnector createLoadBalancerProvider(String endpoint){
+        if(loadbalancerConnector == null)
+            loadbalancerConnector = new PyHrapiConnector(endpoint, PyHrapiConnector.Version.V1);
+        return loadbalancerConnector;
     }
 }

@@ -89,7 +89,7 @@ public class StatusMonitor {
      *
      * @param connector the connector
      */
-    public void attachModule(Connector connector) {
+    public void attachModule(Object connector) {
         Module module = null;
         if (connector instanceof FlexiantConnector) {
             module = new FlexiantModule((FlexiantConnector) connector, coord);
@@ -99,6 +99,8 @@ public class StatusMonitor {
             module = new JCloudsModule((JCloudsConnector) connector, coord);
         }else if (connector instanceof CloudSigmaConnector) {
             module = new CloudSigmaModule((CloudSigmaConnector) connector, coord);
+        }else if (connector instanceof CloudFoundryConnector) {
+            module = new CloudFoundyModule((CloudFoundryConnector) connector, coord);
         } else {
             //TODO exception
             System.out.println("error");

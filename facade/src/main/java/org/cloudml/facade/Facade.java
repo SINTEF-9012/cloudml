@@ -241,13 +241,36 @@ class Facade implements CloudML, CommandHandler {
 
     @Override
     public void handle(StartComponent command) {
+        ArrayList<Thread> ts=new ArrayList<Thread>();
         if (isDeploymentLoaded()) {
             dispatch(new Message(command, Category.INFORMATION, "Starting VM: " + command.getComponentId()));
-            VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getComponentId());
-            if(vmi != null){
-                Provider provider = vmi.getType().getProvider();
-                Connector c=ConnectorFactory.createIaaSConnector(provider);
-                c.startVM(vmi);
+            for(int i = 0; i <= command.getComponentId().size();i++) {
+                final String id=command.getComponentId().get(i);
+                ts.add(new Thread(){
+                    public void run() {
+                        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(id);
+                        if (vmi != null) {
+                            Provider provider = vmi.getType().getProvider();
+                            Connector c = ConnectorFactory.createIaaSConnector(provider);
+                            c.startVM(vmi);
+                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), Facade.class.getName());
+                            for(InternalComponentInstance ici : vmi.hostedComponents()){
+                                InternalComponent ic=ici.getType();
+                                for(Resource r : ic.getResources()){
+                                    c.execCommand(vmi.getId(),r.getStartCommand(),"ubuntu",vmi.getType().getPrivateKey());
+                                }
+                            }
+                            c.closeConnection();
+                        }
+                    }});
+                ts.get(i).start();
+            }
+            for(Thread t: ts){
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -275,14 +298,37 @@ class Facade implements CloudML, CommandHandler {
 
     @Override
     public void handle(StopComponent command) {
+        ArrayList<Thread> ts = new ArrayList<Thread>();
         if (isDeploymentLoaded()) {
             dispatch(new Message(command, Category.INFORMATION, "Stopping VM: " + command.getComponentId()));
-            VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getComponentId());
-            if(vmi != null){
-                Provider provider = vmi.getType().getProvider();
-                Connector c=ConnectorFactory.createIaaSConnector(provider);
-                c.stopVM(vmi);
-                coordinator.updateStatus(vmi.getName(), ComponentInstance.State.STOPPED.toString(), Facade.class.getName());
+            for (int i = 0; i <= command.getComponentId().size(); i++) {
+                final String id = command.getComponentId().get(i);
+                ts.add(new Thread() {
+                    public void run() {
+                        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(id);
+                        if (vmi != null) {
+                            Provider provider = vmi.getType().getProvider();
+                            Connector c = ConnectorFactory.createIaaSConnector(provider);
+                            for(InternalComponentInstance ici : vmi.hostedComponents()){
+                                InternalComponent ic=ici.getType();
+                                for(Resource r : ic.getResources()){
+                                    c.execCommand(vmi.getId(),r.getStopCommand(),"ubuntu",vmi.getType().getPrivateKey());
+                                }
+                            }
+                            c.stopVM(vmi);
+                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.STOPPED.toString(), Facade.class.getName());
+                            c.closeConnection();
+                        }
+                    }
+                });
+                ts.get(i).start();
+            }
+            for (Thread t : ts) {
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -375,7 +421,7 @@ class Facade implements CloudML, CommandHandler {
 
             deploy.getRelationshipInstances().removeAll(diff.getRemovedRelationships());
             deploy.getExecuteInstances().removeAll(diff.getRemovedExecutes());
-            deploy.getComponentInstances().removeAll(diff.getRemovedECs());
+            deploy.getComponentInstances().removeAll(diff.getRemovedECs().keySet());
             deploy.getComponentInstances().removeAll(diff.getRemovedComponents());
 
             deploy.getRelationshipInstances().replaceAll(diff.getAddedRelationships());
@@ -495,17 +541,22 @@ class Facade implements CloudML, CommandHandler {
 
     @Override
     public void handle(Burst command){
-        dispatch(new Message(command, Category.INFORMATION, "Bursting out VM: " + command.getVmId()+" to "+ command.getProviderID()));
-        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getVmId());
+        dispatch(new Message(command, Category.INFORMATION, "Bursting out External Component: " + command.getEcId()+" to "+ command.getProviderID()));
+        VMInstance vmi = deploy.getComponentInstances().onlyVMs().withID(command.getEcId());
         Provider p=deploy.getProviders().firstNamed(command.getProviderID());
+        if(p == null){
+            dispatch(new Message(command, Category.ERROR, "Cannot find a Provider with this ID!"));
+            return;
+        }
         if (vmi == null) {
-            dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
-        } else {
-            if(p == null){
-                dispatch(new Message(command, Category.ERROR, "Cannot find a Provider with this ID!"));
+            ExternalComponentInstance eci=deploy.getComponentInstances().onlyExternals().firstNamed(command.getEcId());
+            if(eci == null){
+                dispatch(new Message(command, Category.ERROR, "Cannot find a External component with this ID!"));
             }else{
-                deployer.scaleOut(vmi,p);
+                deployer.scaleOut(eci,p);
             }
+        } else {
+            deployer.scaleOut(vmi,p);
         }
     }
 
@@ -514,7 +565,7 @@ class Facade implements CloudML, CommandHandler {
     public void handle(ListComponents command) {
         if (isDeploymentLoaded()) {
             final ComponentList data = new ComponentList(command, deploy.getComponents());
-            dispatch(data);
+            dispatch(new Message(command, Category.INFORMATION, data.toString()));
 
         } else {
             reportNoDeploymentLoaded(command);
@@ -526,7 +577,7 @@ class Facade implements CloudML, CommandHandler {
         if (isDeploymentLoaded()) {
             final Collection<ComponentInstance<? extends Component>> instances = deploy.getComponentInstances().toList();
             final ComponentInstanceList data = new ComponentInstanceList(command, instances);
-            dispatch(data);
+            dispatch(new Message(command, Category.INFORMATION, data.toString()));
 
         } else {
             reportNoDeploymentLoaded(command);
@@ -684,7 +735,9 @@ class Facade implements CloudML, CommandHandler {
         if (vmi == null) {
             dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
         } else {
-            deployer.scaleOut(vmi);
+            if(command.getNb() > 1)
+                deployer.scaleOut(vmi,command.getNb());
+            else deployer.scaleOut(vmi);
         }
     }
 

@@ -295,4 +295,13 @@ public class Cloud4soaConnector implements PaaSConnector {
         return;
     }
 
+    @Override
+    public void deleteApp(String appName) {
+        try {
+            undeploy(appName);
+        } catch (Cloud4SoaException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

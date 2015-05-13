@@ -22,21 +22,24 @@
  */
 package org.cloudml.facade.commands;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Starting the component whose ID is given
  */
 public class StartComponent extends CloudMlCommand {
 
-    private final String componentId;
+    private final List<String> componentId;
 
-    public StartComponent(String componentId) {
+    public StartComponent(List<String> componentId) {
         this.componentId = componentId;
     }
 
     /**
      * @return the ID of the component to start
      */
-    public String getComponentId() {
+    public List<String> getComponentId() {
         return componentId;
     }
 

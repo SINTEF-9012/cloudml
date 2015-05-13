@@ -22,6 +22,8 @@
  */
 package org.cloudml.facade.commands;
 
+import java.util.List;
+
 /**
  * Factory methods to simplify the creation of CloudML commands
  */
@@ -34,7 +36,7 @@ public class CommandFactory {
      *
      * @return the associated command object
      */
-    public CloudMlCommand startComponent(final String artifactId) {
+    public CloudMlCommand startComponent(final List<String> artifactId) {
         return new StartComponent(artifactId);
     }
 
@@ -44,7 +46,7 @@ public class CommandFactory {
      * @param artifactId the ID of the artifact to stop
      * @return the associated command object
      */
-    public CloudMlCommand stopComponent(final String artifactId) {
+    public CloudMlCommand stopComponent(final List<String> artifactId) {
         return new StopComponent(artifactId);
     }
 
@@ -268,6 +270,10 @@ public class CommandFactory {
      */
     public CloudMlCommand scaleOut(final String id) {
         return new ScaleOut(id);
+    }
+    
+    public CloudMlCommand scaleOut(final String id, int nb) {
+        return new ScaleOut(id, nb);
     }
     
     public CloudMlCommand burst(final String vmID, final String providerID){

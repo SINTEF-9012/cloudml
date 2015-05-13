@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.cloudml.core.credentials.FileCredentials;
+import org.cloudml.core.credentials.MemoryCredentials;
 import org.cloudml.core.credentials.NoCredentials;
-import org.cloudml.core.samples.SensApp;
 
 /**
  * Created by Nicolas Ferry on 25.02.14.
@@ -134,6 +134,31 @@ public class BridgeToKmf {
         }
     }
 
+    public void resourcePoolsToKmf(List<ResourcePoolInstance> poolInstances){
+        for(ResourcePoolInstance rpi: poolInstances){
+            resourcePoolToKMF(rpi);
+        }
+    }
+
+    public void resourcePoolToKMF(ResourcePoolInstance rpi){
+        checkNull(rpi, "Cannot create resource pool from null");
+        net.cloudml.core.ResourcesPool krpi=factory.createResourcesPool();
+        convertResources(rpi, krpi, factory);
+        convertProperties(rpi, krpi, factory);
+        krpi.setName(rpi.getName());
+        krpi.setMaxReplicats(rpi.getMaxReplicats());
+        krpi.setMinReplicats(rpi.getMinReplicats());
+        krpi.setNbReplicats(rpi.getNbOfReplicats());
+        krpi.setType(rpi.getType());
+        List<net.cloudml.core.VMInstance> tmp=new ArrayList<net.cloudml.core.VMInstance>();
+        for(net.cloudml.core.VMInstance kVm:tmp){
+            tmp.add(VMInstances.get(kVm.getName()));
+        }
+        krpi.setBaseInstances(tmp);
+
+        kDeploy.addResourcePools(krpi);
+    }
+
     public void providersToKmf(List<Provider> providers) {
         checkNull(providers, "Cannot iterate on null!");
         for (Provider p: providers) {
@@ -142,10 +167,11 @@ public class BridgeToKmf {
             kProvider.setName(p.getName());
             if (p.getCredentials() instanceof NoCredentials) { // FIXME: Remove this dirty type conditional
                 kProvider.setCredentials("no given credentials");
-            }
-            else {
+            } else if(p.getCredentials() instanceof MemoryCredentials){
+                kProvider.setLogin(p.getCredentials().getLogin());
+                kProvider.setPassword(p.getCredentials().getPassword());
+            } else {
                 kProvider.setCredentials(((FileCredentials) p.getCredentials()).getPathToCredentials());
-
             }
             kDeploy.addProviders(kProvider);
 
@@ -209,6 +235,8 @@ public class BridgeToKmf {
                     kNode.setPasswd(ec.getPasswd());
                 if(((VM) ec).getProviderSpecificTypeName() != null)
                     kNode.setProviderSpecificTypeName(((VM) ec).getProviderSpecificTypeName());
+                if(ec.getEndPoint() != null)
+                    kNode.setEndPoint(ec.getEndPoint());
 
                 vms.put(kNode.getName(), kNode);
                 initProvidedExecutionPlatforms(ec, kNode);

@@ -26,6 +26,8 @@ package org.cloudml.facade;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+
 import org.cloudml.core.Deployment;
 import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.CommandFactory;
@@ -66,10 +68,20 @@ public class FacadeBridge implements ModelRepo {
             command = factory.deploy();
         }
         else if("StartArtefact".equals(name)){
-            command = factory.startComponent(params.iterator().next());
+            command = factory.startComponent((List)params);
         }
         else if("ScaleOut".equals(name)){
-            command = factory.scaleOut(params.iterator().next());
+            if(params.size()==1)
+                command = factory.scaleOut(params.iterator().next());
+            else if(params.size()==2){
+                Iterator<String> it = params.iterator();
+                String nm = it.next();
+                String nb = it.next();
+                command = factory.scaleOut(
+                        nm,
+                        Integer.parseInt(nb)
+                );
+            }    
         }
         else if("Image".equals(name)){
             command = factory.image(params.iterator().next());
@@ -82,10 +94,10 @@ public class FacadeBridge implements ModelRepo {
             command = factory.burst(itor.next(), itor.next());
         }
         else if("StartComponent".equals(name)){
-            command = factory.startComponent(params.iterator().next());
+            command = factory.startComponent((List)params);
         }
         else if("StopComponent".equals(name)){
-            command = factory.stopComponent(params.iterator().next());
+            command = factory.stopComponent((List)params);
         }
         else{
             throw new RuntimeException("Command not defined in facade");

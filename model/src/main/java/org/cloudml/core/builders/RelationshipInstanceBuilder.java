@@ -26,10 +26,14 @@ package org.cloudml.core.builders;
 
 import org.cloudml.core.*;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static org.cloudml.core.builders.Commons.*;
 
 public class RelationshipInstanceBuilder extends WithResourcesBuilder<RelationshipInstance, RelationshipInstanceBuilder> implements SubPartBuilder<Deployment> {
     public static final String DEFAULT_RELATIONSHIP_INSTANCE_NAME = "Default relationship instance name";
+    private static final Logger journal = Logger.getLogger(RelationshipInstanceBuilder.class.getName());
 
     private String typeName;
     private String client;

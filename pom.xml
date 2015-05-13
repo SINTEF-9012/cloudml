@@ -251,8 +251,8 @@
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-webdav-jackrabbit</artifactId>
-                <version>2.2</version>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.4</version>
             </extension>
         </extensions>
         
@@ -260,16 +260,10 @@
 
     <distributionManagement>
 
-        <repository>
-            <id>cloudbees-release</id>
-            <name>cloudbees-release</name>
-            <url>dav:https://repository-mod4cloud.forge.cloudbees.com/release/</url>
-        </repository>
-
         <snapshotRepository>
-            <id>cloudbees-snapshot</id>
-            <name>cloudbees-snapshot</name>
-            <url>dav:https://repository-mod4cloud.forge.cloudbees.com/snapshot/</url>
+            <id>deploymentRepo</id>
+            <name>deploymentRepo</name>
+            <url>scp://cml.cloudapp.net:8081/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
 
     </distributionManagement>

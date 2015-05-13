@@ -512,4 +512,9 @@ public class BeanstalkConnector implements PaaSConnector {
         return;
     }
 
+    @Override
+    public void deleteApp(String appName) {
+        terminateEnvironment(appName);
+    }
+
 }
