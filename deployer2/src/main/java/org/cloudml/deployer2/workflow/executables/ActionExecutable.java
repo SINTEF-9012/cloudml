@@ -65,9 +65,14 @@ public class ActionExecutable {
             String externalComponent = null;
             ObjectNode container = null;
             if (methodName.contains("provision")) {
-                //TODO make more generic - in this case I know that I save IP to ObjectNode which goes after Join node
-                Join dataJoin = (Join) action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
-                container = (ObjectNode) dataJoin.getOutgoing().get(0).getTarget();
+                //TODO make more generic - in this case I know that I save IP to ObjectNode which goes after Join node or after
+                ActivityNode afterAction = action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
+//                Join dataJoin = (Join) action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
+                if (afterAction instanceof Join) {
+                    container = (ObjectNode) afterAction.getOutgoing().get(0).getTarget();
+                } else if (afterAction instanceof ObjectNode){
+                    container = (ObjectNode) afterAction;
+                }
                 externalComponent = ((VMInstance) action.getInputs().get(0)).getName(); //TODO fix name if get(0) returns platform instead of vm
             }
 

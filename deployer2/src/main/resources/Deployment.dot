@@ -42,8 +42,9 @@ digraph ConcurrentDeployment {
 	node_40 [shape=Mrecord label="configure:connectionRetrieve\nsupervisor2-i"];
 	node_41 [shape=Mrecord label="configure:connectionConfigure\nsupervisor2-i"];
 	node_42 [shape=box label="" style=filled color=black height=0];
-	node_43 [shape=Mrecord label="start\nsupervisor2-i"];
-	node_44 [shape=point];
+	node_43 [shape=box label="" style=filled color=black height=0];
+	node_44 [shape=Mrecord label="start\nsupervisor2-i"];
+	node_45 [shape=point];
 	node_0 -> node_1;
 	node_1 -> node_2;
 	node_1 -> node_3;
@@ -105,6 +106,8 @@ digraph ConcurrentDeployment {
 	node_40 -> node_41;
 	node_42 -> node_41 [style=dashed];
 	node_34 -> node_42 [style=dashed];
-	node_37 -> node_43;
+	node_41 -> node_43;
+	node_39 -> node_43;
 	node_43 -> node_44;
+	node_44 -> node_45;
 }

@@ -147,10 +147,10 @@ public class ActivityDiagram  {
             diff.compareCloudMLModel();
 
             // to know what was dpeloyed before we add all old component instance to already deployed and started
-            for (ComponentInstance component:currentModel.getComponentInstances()){
-                alreadyDeployed.add(component);
-                alreadyStarted.add(component);
-            }
+//            for (ComponentInstance component:currentModel.getComponentInstances()){
+//                alreadyDeployed.add(component);
+//                alreadyStarted.add(component);
+//            }
 
             updateCurrentModel(diff);
 
