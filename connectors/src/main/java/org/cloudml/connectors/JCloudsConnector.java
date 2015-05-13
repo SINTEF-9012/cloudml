@@ -252,10 +252,15 @@ public class JCloudsConnector implements Connector{
         runtimeInformation=new HashMap<String, String>();
         VM vm = a.getType();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
-        ComputeMetadata cm= getVMByName(a.getName());
+        NodeMetadata cm= (NodeMetadata)getVMByName(a.getName());
+
 		/* UPDATE THE MODEL */
         if(cm != null){
-            updateVMMetadata(a);
+            if(cm.getStatus() != NodeMetadata.Status.TERMINATED){
+                updateVMMetadata(a);
+            }else{
+                throw new IllegalStateException("A VM NAMED "+a.getName()+" ALREADY EXIST AND IS IN TERMINATED STATE!!!");
+            }
         }else{
             Template template=null;
             NodeMetadata nodeInstance = null;
