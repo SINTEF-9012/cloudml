@@ -101,17 +101,20 @@ public class ActivityDiagram  {
     /**
      * Deploy from a deployment model
      *
-     * @param targetModel a deployment model
+     * @param newModel an updated deployment model
+     * @param oldModel initial deployment model
      */
-    public void createActivityDiagram(Deployment targetModel) throws Exception {
+    public void createActivityDiagram(Deployment oldModel, Deployment newModel) throws Exception {
 
-        unlessNotNull("Cannot deploy null!", targetModel);
-        this.targetModel = targetModel;
+//        unlessNotNull("Cannot deploy null!", targetModel);
+        this.targetModel = newModel;
+        if (oldModel != null)
+            currentModel = oldModel;
         //set up the monitoring
 //        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
 //        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
         if (currentModel == null) {
-            journal.log(Level.INFO, ">> First deployment...");
+            journal.log(Level.INFO, ">> First deployment plan ...");
             this.currentModel = targetModel;
 
 //            if (statusMonitorProperties.getActivated() && statusMonitor == null) {
@@ -132,17 +135,23 @@ public class ActivityDiagram  {
             configureSaas(targetModel.getComponentInstances().onlyInternals(), targetModel.getRelationshipInstances());
 
             //Run puppet
-            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
-            generatePuppetManifestAndConfigure();
+//            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+//            generatePuppetManifestAndConfigure();
 
             //send the current deployment to the monitoring platform
 //            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
 //                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
 //            }
         } else {
-            journal.log(Level.INFO, ">> Updating a deployment...");
+            journal.log(Level.INFO, ">> Generating deployment plan to update running application...");
             CloudMLModelComparator diff = new CloudMLModelComparator(currentModel, targetModel);
             diff.compareCloudMLModel();
+
+            // to know what was dpeloyed before we add all old component instance to already deployed and started
+            for (ComponentInstance component:currentModel.getComponentInstances()){
+                alreadyDeployed.add(component);
+                alreadyStarted.add(component);
+            }
 
             updateCurrentModel(diff);
 
@@ -151,7 +160,7 @@ public class ActivityDiagram  {
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
-            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+//            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
@@ -909,10 +918,21 @@ public class ActivityDiagram  {
                         }
                     }
 
+                    //TODO - check what happens when components are removed
+                    // this code snippet is related to diff. Currently - works for cases when new components are added
+                    boolean drawConnections = true;
+                    for (ComponentInstance component:alreadyStarted){
+                        if (providers.contains(component.getName())){
+                            providers.remove(component.getName());
+                        }
+                    }
+                    ArrayList<ActivityEdge> edgesFromConfigureConnections = new ArrayList<>();
+
                     // number of providers will be equal to number of forks after connection configuration
                     ArrayList<Join> joins = new ArrayList<Join>();
                     if (!providers.isEmpty()) {
                         for (String provider : providers) {
+
                             //find last configure:connection_'Action' actions with 'oppositeConnectionEnd' property = provider.getName() and input VMInstance = ownerVM
                             Action lastConnectionConfigure = null;
                             for (Action action:ActivityBuilder.getActions()){
@@ -932,18 +952,33 @@ public class ActivityDiagram  {
                                     }
                                 }
                             }
-                            // create join with specific property to be able to retrieve it precisely
-                            Join connectionJoin = (Join) ActivityBuilder.forkOrJoin(2, false, false);
-                            connectionJoin.getProperties().put("missingActionFrom", provider);
-                            // connect configure action and join and update activity
-                            ActivityEdge configureToJoin = connectionJoin.getIncoming().get(0);
-                            // first delete outgoing edge from action.
-                            if (!lastConnectionConfigure.getName().equals("executeInstallCommand")) {
-                                lastConnectionConfigure.removeEdge(lastConnectionConfigure.getOutgoing().get(0), ActivityNode.Direction.OUT);
+
+                            //TODO - check what happens when components are removed
+                            // this code snippet is related to diff. Currently - works for cases when new components are added
+                            boolean drawJoins = true;
+                            for (ComponentInstance component:alreadyStarted){
+                                if (component.getName().equals(provider)){
+                                    drawJoins = false;
+                                    break;
+                                }
                             }
-                            // add edge from Join node
-                            lastConnectionConfigure.addEdge(configureToJoin, ActivityNode.Direction.OUT);
-                            joins.add(connectionJoin);
+
+                            if (drawJoins) {
+                                // create join with specific property to be able to retrieve it precisely
+                                Join connectionJoin = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+                                connectionJoin.getProperties().put("missingActionFrom", provider);
+                                // connect configure action and join and update activity
+                                ActivityEdge configureToJoin = connectionJoin.getIncoming().get(0);
+                                // first delete outgoing edge from action.
+                                if (!lastConnectionConfigure.getName().equals("executeInstallCommand")) {
+                                    lastConnectionConfigure.removeEdge(lastConnectionConfigure.getOutgoing().get(0), ActivityNode.Direction.OUT);
+                                }
+                                // add edge from Join node
+                                lastConnectionConfigure.addEdge(configureToJoin, ActivityNode.Direction.OUT);
+                                joins.add(connectionJoin);
+                            } else {
+                                edgesFromConfigureConnections.add(lastConnectionConfigure.getOutgoing().get(0));
+                            }
 
                         }
                     }
@@ -965,6 +1000,16 @@ public class ActivityDiagram  {
                             toConfigure = beforeConfigure.getOutgoing().get(0);
                         } else {
                             toConfigure = joins.get(0).getOutgoing().get(0);
+                        }  // this code snippet  " else if (!edgesFromConfigureConnections.isEmpty()) " is related to the diff part
+                    } else if (!edgesFromConfigureConnections.isEmpty()) {
+                        if (edgesFromConfigureConnections.size() > 1){
+                            Join beforeConfigure = (Join) ActivityBuilder.forkOrJoin(edgesFromConfigureConnections.size(), false, false);
+                            ActivityBuilder.getActivity().getEdges().removeAll(beforeConfigure.getIncoming());
+                            ActivityBuilder.getActivity().getEdges().addAll(edgesFromConfigureConnections);
+                            beforeConfigure.setIncoming(edgesFromConfigureConnections);
+                            toConfigure = beforeConfigure.getOutgoing().get(0);
+                        } else {
+                            toConfigure = edgesFromConfigureConnections.get(0);
                         }
                     } else {
                         // if no joins, then there was no connection configuration commands and previous action was executeInstall
@@ -1275,18 +1320,19 @@ public class ActivityDiagram  {
             }
 //            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
         }
-        ObjectNode IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.NOEDGES, ActivityBuilder.ObjectNodeType.OBJECT);  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
+        ObjectNode IPs = null;  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
 
         Join dataJoin = null;
         if (ems.size() > 1) {
+            IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.NOEDGES, ActivityBuilder.ObjectNodeType.OBJECT);
             dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
             // container of all IPs
             ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
             // connect actions with control and data join
             ActivityBuilder.connectActionsWithJoinNodes(provisioning, null, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
         } else {
-            provisioning.get(0).addEdge(new ActivityEdge(true), ActivityNode.Direction.OUT);
-            IPs.setIncoming(provisioning.get(0).getOutgoing());
+            IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.IN, ActivityBuilder.ObjectNodeType.OBJECT);
+            provisioning.get(0).addEdge(IPs.getIncoming().get(0), ActivityNode.Direction.OUT);
         }
 //        // control join and finish
 //        ActivityFinalNode finalNode = ActivityBuilder.controlStop();  //System.out.println("Final: " + ActivityBuilder.getActivity().toString());
@@ -1609,17 +1655,34 @@ public class ActivityDiagram  {
         jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
 
         // join from client and server before we start any configuration actions
-        Join joinBeforeConnections = (Join) ActivityBuilder.forkOrJoin(2, false, false);
-        ActivityEdge serverInstall = addEdgeToInstall(serverComponentName);
+        Join joinBeforeConnections = null;
+
+        //TODO - check what happens when components are removed
+        // this code snippet is related to diff. Currently - works for cases when new components are added
+        boolean drawServerConnection = true;
+        for (ComponentInstance component:alreadyStarted){
+            if (component.getName().equals(serverComponentName)){
+                drawServerConnection = false;
+                break;
+            }
+        }
+
         ActivityEdge clientInstall = addEdgeToInstall(clientComponentName);
-        ActivityNode serverNode = serverInstall.getSource();
-        ActivityNode clientNode = clientInstall.getSource();
-        serverNode.removeEdge(serverInstall, ActivityNode.Direction.OUT);
-        serverNode.addEdge(joinBeforeConnections.getIncoming().get(0), ActivityNode.Direction.OUT);
-        clientNode.removeEdge(clientInstall, ActivityNode.Direction.OUT);
-        clientNode.addEdge(joinBeforeConnections.getIncoming().get(1), ActivityNode.Direction.OUT);
+
+        if (drawServerConnection) {
+            joinBeforeConnections = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+            ActivityEdge serverInstall = addEdgeToInstall(serverComponentName);
+            ActivityNode serverNode = serverInstall.getSource();
+            serverNode.removeEdge(serverInstall, ActivityNode.Direction.OUT);
+            serverNode.addEdge(joinBeforeConnections.getIncoming().get(0), ActivityNode.Direction.OUT);
+
+            ActivityNode clientNode = clientInstall.getSource();
+            clientNode.removeEdge(clientInstall, ActivityNode.Direction.OUT);
+            clientNode.addEdge(joinBeforeConnections.getIncoming().get(1), ActivityNode.Direction.OUT);
+        }
 
         // if we have resources from client and server, we create another fork for that, otherwise we use outgoing edge from previous join for connection commands
+        //TODO never had connections with two resources, maybe this won't work properly, did not test
         Fork forkClientServer = null;
         if (server != null && client != null){
             forkClientServer = (Fork) ActivityBuilder.forkOrJoin(2, false, true);
@@ -1629,10 +1692,12 @@ public class ActivityDiagram  {
             joinBeforeConnections.addEdge(forkClientServer.getIncoming().get(0), ActivityNode.Direction.OUT);
         }
 
+        // this code snippet is related to diff: "toFirstConfigureAction". Before that joinBeforeConnections.getOutgoing().get(0) was used
+        ActivityEdge toFirstConfigureAction = joinBeforeConnections == null ? clientInstall : joinBeforeConnections.getOutgoing().get(0);
         Action retrieveServer = null;
         if(server != null){
             if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals("")){
-                ActivityEdge last = forkClientServer == null ? joinBeforeConnections.getOutgoing().get(0) : forkClientServer.getOutgoing().get(0);
+                ActivityEdge last = forkClientServer == null ? toFirstConfigureAction : forkClientServer.getOutgoing().get(0);
                 String retrieveCommand = server.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
                 retrieveServer = getConfigureAction(server, jcServer, ownerVMServer, VMserver, last, retrieveCommand, serverComponentName);
                 retrieveServer.getProperties().put("oppositeConnectionEnd", clientComponentName);
@@ -1644,7 +1709,7 @@ public class ActivityDiagram  {
         Action retrieveClient = null;
         if(client !=null){
             if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals("")) {
-                ActivityEdge last = forkClientServer == null ? joinBeforeConnections.getOutgoing().get(0) : forkClientServer.getOutgoing().get(1);
+                ActivityEdge last = forkClientServer == null ? toFirstConfigureAction : forkClientServer.getOutgoing().get(1);
                 String retrieveCommand = client.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
                 retrieveClient = getConfigureAction(client, jcClient, ownerVMClient, VMClient, last, retrieveCommand, clientComponentName);
                 retrieveClient.getProperties().put("oppositeConnectionEnd", serverComponentName);

@@ -31,7 +31,6 @@ import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.deployer2.dsl.util.ActivityValidator;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
-import org.cloudml.deployer2.workflow.util.Parallel;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,21 +43,19 @@ public class ConcurrentDeployment {
 
     private Deployment targetModel;
 
-    public ConcurrentDeployment(String pathToModel) {
-        setTargetModel(getDeployment(pathToModel));
+    public ConcurrentDeployment(String pathToOldModel, String pathToNewModel) {
+        setTargetModel(getDeployment(pathToNewModel));
+
+        Deployment oldModel = null;
+        if (pathToOldModel != null)
+            oldModel = getDeployment(pathToOldModel);
 
         ActivityDiagram diagram = new ActivityDiagram();
         try {
-            diagram.setExternalServices(getTargetModel().getComponentInstances().onlyExternals());
-            diagram.prepareComponents(getTargetModel().getComponentInstances(), getTargetModel().getRelationshipInstances());
-            diagram.configureWithRelationships(getTargetModel().getRelationshipInstances());
-            diagram.configureSaas(getTargetModel().getComponentInstances().onlyInternals(), getTargetModel().getRelationshipInstances());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            //create deployment plan
+            diagram.createActivityDiagram(oldModel, getTargetModel());
 
-        //validate activity diagram
-        try {
+            //validate activity diagram (deployment plan)
             ActivityValidator.checkActivity(ActivityBuilder.getActivity());
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,6 +64,11 @@ public class ConcurrentDeployment {
         // create graph in a dot file, it is save in the resources folder
         // tool to view diagram: http://stamm-wilbrandt.de/GraphvizFiddle/
         new ActivityDotCreator(ActivityBuilder.getActivity());
+
+        // traverse graph (execute deployment plan)
+//        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), false);
+//        System.out.println(ActivityBuilder.getActivity().toString());
+//        ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), false);
     }
 
     // read model from json file
@@ -93,10 +95,9 @@ public class ConcurrentDeployment {
     public static void main(String[] args) throws Exception {
 
 //        ConcurrentDeployment sensApp = new ConcurrentDeployment("C:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\sensappAdmin-v2.json");
-        ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
-        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), false);
-//        System.out.println(ActivityBuilder.getActivity().toString());
-//        ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), false);
+//        ConcurrentDeployment deployment = new ConcurrentDeployment(null, "c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json");
+        ConcurrentDeployment deployment = new ConcurrentDeployment("c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2.json", "c:\\Users\\Maksym\\Dropbox\\Documents\\Master thesis papers\\ec2 - Copy.json");
+
 
     }
 
