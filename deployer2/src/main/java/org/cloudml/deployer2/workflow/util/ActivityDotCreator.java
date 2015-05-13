@@ -44,7 +44,8 @@ public class ActivityDotCreator {
     public ActivityDotCreator(Activity activity){
         this.activity = activity;
         printDot();
-        saveToFile(root + defaultPath);
+        String path = root.split("cloudml")[0] + "cloudml" +defaultPath;
+        saveToFile(path);
     }
 
     public  ActivityDotCreator(Activity activity, String pathToFile){
@@ -128,4 +129,5 @@ public class ActivityDotCreator {
     public StringBuilder getDotText() {
         return dotText;
     }
+
 }

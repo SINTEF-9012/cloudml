@@ -22,16 +22,6 @@
  */
 package org.cloudml.facade;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
 import org.cloudml.codecs.DrawnIconVertexDemo;
 import org.cloudml.codecs.JsonCodec;
@@ -40,14 +30,14 @@ import org.cloudml.codecs.XmiCodec;
 import org.cloudml.codecs.commons.Codec;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
-import org.cloudml.core.*;
-import org.cloudml.deployer.CloudAppDeployer;
 import org.cloudml.connectors.JCloudsConnector;
+import org.cloudml.core.*;
 import org.cloudml.core.credentials.Credentials;
 import org.cloudml.core.samples.SensApp;
 import org.cloudml.core.validation.DeploymentValidator;
 import org.cloudml.core.validation.Report;
 import org.cloudml.deployer.CloudMLModelComparator;
+import org.cloudml.deployer2.workflow.ConcurrentDeployer;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
@@ -55,6 +45,12 @@ import org.cloudml.indicators.Robustness;
 import org.cloudml.mrt.Coordinator;
 import org.cloudml.mrt.SimpleModelRepo;
 import org.jclouds.compute.domain.ComputeMetadata;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class implements an easier access to typical CloudML features, such as
@@ -71,7 +67,7 @@ class Facade implements CloudML, CommandHandler {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Deployment deploy;
     private boolean stopOnTimeout = false;
-    private final CloudAppDeployer deployer;
+    private final ConcurrentDeployer deployer;
     private CloudMLModelComparator diff = null;
     private Coordinator coordinator;
 
@@ -80,7 +76,7 @@ class Facade implements CloudML, CommandHandler {
     public Facade() {
         XmiCodec.init();
         JsonCodec.init();
-        this.deployer = new CloudAppDeployer();
+        this.deployer = new ConcurrentDeployer();
     }
 
     @Override

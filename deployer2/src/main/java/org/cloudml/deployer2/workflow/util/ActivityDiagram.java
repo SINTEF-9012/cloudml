@@ -39,7 +39,6 @@ import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.monitoring.status.StatusConfiguration;
 import org.cloudml.monitoring.status.StatusMonitor;
 import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
-import org.cloudml.monitoring.synchronization.MonitoringSynch;
 import org.cloudml.mrt.Coordinator;
 
 import java.io.IOException;
@@ -102,15 +101,14 @@ public class ActivityDiagram  {
     /**
      * Deploy from a deployment model
      *
-     * @param newModel an updated deployment model
-     * @param oldModel initial deployment model
+     * @param targetModel an updated deployment model
      */
-    public void createActivityDiagram(Deployment oldModel, Deployment newModel) throws Exception {
+    public void deploy(Deployment targetModel) throws Exception {
 
-//        unlessNotNull("Cannot deploy null!", targetModel);
-        this.targetModel = newModel;
-        if (oldModel != null)
-            currentModel = oldModel;
+        unlessNotNull("Cannot deploy null!", targetModel);
+//        this.targetModel = newModel;
+//        if (oldModel != null)
+//            currentModel = oldModel;
         //set up the monitoring
 //        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
 //        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
@@ -247,13 +245,13 @@ public class ActivityDiagram  {
 
 
         //send the changes to the monitoring platform
-        if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
-            MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
-            if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
-                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
-            }
-        }
+//        if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
+//            MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
+//            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
+//            if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
+//                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
+//            }
+//        }
     }
 
     private static void unlessNotNull(String message, Object... obj) {
@@ -1965,9 +1963,19 @@ public class ActivityDiagram  {
         scaler.scaleOut(vmi);
     }
 
+    public void scaleOut(VMInstance vmi, int nb){
+        Scaler scaler=new Scaler(currentModel,coordinator,new CloudAppDeployer());
+        scaler.scaleOut(vmi,nb);
+    }
+
     public void scaleOut(VMInstance vmi,Provider provider){
         Scaler scaler=new Scaler(currentModel,coordinator,new CloudAppDeployer());
         scaler.scaleOut(vmi,provider);
+    }
+
+    public Deployment scaleOut(ExternalComponentInstance eci,Provider provider){
+        Scaler scaler=new Scaler(currentModel,coordinator,new CloudAppDeployer());
+        return scaler.scaleOut(eci,provider);
     }
 
     public void activeDebug(){

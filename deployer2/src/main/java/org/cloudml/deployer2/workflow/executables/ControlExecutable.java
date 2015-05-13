@@ -59,7 +59,7 @@ public class ControlExecutable {
             journal.log(Level.INFO, "\n\nStarting deployment\n");
         } else {
             journal.log(Level.INFO, "\n\nDeployment has finished successfully\n");
-            ((ActivityFinalNode)node).finish();
+//            ((ActivityFinalNode)node).finish();
         }
 
         node.getProperties().put("Status", String.valueOf(Element.Status.DONE));
