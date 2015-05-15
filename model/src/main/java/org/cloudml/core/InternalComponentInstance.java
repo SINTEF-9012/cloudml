@@ -37,6 +37,7 @@ public class InternalComponentInstance extends ComponentInstance<InternalCompone
         INSTALLED ("INSTALLED"),
         CONFIGURED ("CONFIGURED"),
         RUNNING ("RUNNING"),
+        UNRECOGNIZED("UNRECOGNIZED"),
         ERROR ("ERROR");
 
         private String name="UNINSTALLED";

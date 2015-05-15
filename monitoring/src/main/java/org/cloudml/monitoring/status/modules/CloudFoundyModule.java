@@ -22,6 +22,7 @@
  */
 package org.cloudml.monitoring.status.modules;
 
+import net.cloudml.core.InternalComponentInstance;
 import org.cloudfoundry.client.lib.domain.CloudApplication;
 import org.cloudml.connectors.*;
 import org.cloudml.core.ComponentInstance;

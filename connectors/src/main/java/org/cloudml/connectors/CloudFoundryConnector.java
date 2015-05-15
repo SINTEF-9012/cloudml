@@ -128,6 +128,14 @@ public class CloudFoundryConnector implements PaaSConnector {
     @Override
     public void setEnvVar(String appName, String nameVar, String val){
         connectedClient.updateApplicationEnv(appName, Collections.singletonMap(nameVar, val));
+        CloudApplication ca=connectedClient.getApplication(appName);
+        while(connectedClient.getApplicationInstances(ca) == null){
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         connectedClient.restartApplication(appName);
     }
 
