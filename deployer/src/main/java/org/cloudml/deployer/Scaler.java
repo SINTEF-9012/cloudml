@@ -209,6 +209,8 @@ public class Scaler {
                     coordinator.updateStatus(name, ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
                     coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
 
+                    dep.setAllEnvVarComponent(currentModel);
+
                     //4. configure the new VM
                     //execute the configuration bindings
                     Set<ComponentInstance> listOfAllComponentImpacted= new HashSet<ComponentInstance>();
@@ -270,6 +272,8 @@ public class Scaler {
         coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
         coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
         coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
+
+        dep.setAllEnvVarComponent(currentModel);
 
         //4. configure the new VM
         //execute the configuration bindings

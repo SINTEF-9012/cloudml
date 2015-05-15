@@ -31,6 +31,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.JXPathNotFoundException;
 import org.cloudml.connectors.*;
 import org.cloudml.connectors.util.CloudMLQueryUtil;
 import org.cloudml.connectors.util.ConfigValet;
@@ -107,6 +109,9 @@ public class CloudAppDeployer {
             // Provisioning vms and external services
             setExternalServices(targetModel.getComponentInstances().onlyExternals());
 
+            //Set env Variables
+            setAllEnvVarComponent(targetModel);
+
             // Deploying on vms
             prepareComponents(targetModel.getComponentInstances(), targetModel.getRelationshipInstances());
 
@@ -133,6 +138,7 @@ public class CloudAppDeployer {
 
             //Added stuff
             setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
+            setAllEnvVarComponent(targetModel);
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
@@ -833,20 +839,20 @@ public class CloudAppDeployer {
             }
             PyHrapiConnector pConnector = ConnectorFactory.createLoadBalancerProvider(endpoint);
             Map<String, Object> gateway = new HashMap<String, Object>();
-                String GATEWAY = eci.getName()+"GateWay";
-                gateway.put("gateway", GATEWAY);
-                gateway.put("protocol", "http");
-                gateway.put("defaultBack", eci.getName()+"Back");
-                Map<String, String> endpoints = new HashMap<String, String>();
-                    endpoints.put("endOne", "0.0.0.0:8080");   //TODO: Now only support one load balancer
+            String GATEWAY = eci.getName()+"GateWay";
+            gateway.put("gateway", GATEWAY);
+            gateway.put("protocol", "http");
+            gateway.put("defaultBack", eci.getName()+"Back");
+            Map<String, String> endpoints = new HashMap<String, String>();
+            endpoints.put("endOne", "0.0.0.0:8080");   //TODO: Now only support one load balancer
             gateway.put("endpoints", endpoints);
             gateway.put("enable", "True");
-            
+
             Map<String, Object> testPool = new HashMap<String, Object>();
-                testPool.put("enabled", Boolean.TRUE);
-                Map<String, String> targets = new HashMap<String, String>();
-                    targets.put("targetOneHold","109.105.109.218:80");
-                testPool.put("targets", targets);
+            testPool.put("enabled", Boolean.TRUE);
+            Map<String, String> targets = new HashMap<String, String>();
+            targets.put("targetOneHold","109.105.109.218:80");
+            testPool.put("targets", targets);
 
             journal.log(Level.INFO, ">>Add pool:" + pConnector.addPool(eci.getName() + "Back", testPool));
 
@@ -891,7 +897,7 @@ public class CloudAppDeployer {
                     }
 
                 }
-               
+
                 Component client = clienti.getType();
                 ComponentInstance pltfi = getDestination(clienti);
                 if(pltfi.isExternal()){
@@ -938,7 +944,7 @@ public class CloudAppDeployer {
                     }
                 }
 
-            } 
+            }
 
             else if (serveri.isExternal() && "loadbalancer".equals(((ExternalComponentInstance<ExternalComponent>) serveri).getType().getServiceType())) {  //For Loadbalancer
                 String endpoint = serveri.getType().asExternal().getEndPoint();
@@ -949,7 +955,7 @@ public class CloudAppDeployer {
                         endpoint=env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_IP")+":"+env.get("MODACLOUDS_LOAD_BALANCER_CONTROLLER_ENDPOINT_PORT");
                     }
                 }
-                  
+
                 PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(endpoint);
 
                 String ipAddress = null;
@@ -989,8 +995,8 @@ public class CloudAppDeployer {
                 connector.setEnvVar(clienti.getName(), s.getName(), serveri2.getPublicAddress());
             }
         }
-        
-        
+
+
     }
 
     private Boolean isPaaS2PaaS(RelationshipInstance bi){
@@ -1253,6 +1259,64 @@ public class CloudAppDeployer {
             }
             return null;
         }
+    }
+
+
+    private void prepareSetEnv(Deployment d, InternalComponentInstance c, Property p){
+        String value="";
+        if(p.getValue().startsWith("$")){
+            if(p.getValue().equals("${this.host.id}")){
+                value=c.getHost().asExternal().asVM().getId();
+            }
+            if(p.getValue().equals("${this.host.name}")){
+                value=c.getHost().asExternal().asVM().getName();
+            }
+        }else{
+            try{
+                JXPathContext jxpc = JXPathContext.newContext(d);
+                Object o=jxpc.getValue(p.getValue());
+                value=o.toString();
+            }catch(NullPointerException e){
+                journal.log(Level.INFO, ">> Environment variable cannot be defined, xpath expression not valid");
+            }
+            catch(JXPathNotFoundException e){
+                journal.log(Level.INFO, ">> Environment variable cannot be defined, xpath expression not valid");
+            }
+        }
+        if(value != null){
+            setEnvVar(c.getHost().asExternal().asVM(), p.getName(), value);
+        }
+    }
+
+    public void setAllEnvVarComponent(Deployment d){
+        for(InternalComponentInstance c: d.getComponentInstances().onlyInternals()){
+            for(Property p : c.getProperties()){
+                if(p.getName().contains("_ENV")){
+                    if(c.getHost().asExternal().isVM()){
+                        prepareSetEnv(d,c,p);
+                    }
+                }
+            }
+        }
+        for(InternalComponent ic: d.getComponents().onlyInternals()){
+            for(Property p : ic.getProperties()){
+                if(p.getName().contains("_ENV")){
+                    for(InternalComponentInstance ici: d.getComponentInstances().ofType(ic.getName()).onlyInternals()){
+                        prepareSetEnv(d,ici,p);
+                    }
+                }
+            }
+        }
+
+    }
+
+
+
+    private void setEnvVar(VMInstance vmi, String varName, String value){
+        String command="echo "+varName+"="+value+" >> .bashrc";
+        Connector jc = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+        jc.execCommand(vmi.getId(), command, "ubuntu", vmi.getType().getPrivateKey());
+        jc.closeConnection();
     }
 
     public void scaleOut(VMInstance vmi){
