@@ -29,11 +29,17 @@ import org.cloudml.core.*;
 import org.cloudml.deployer.CloudMLModelComparator;
 import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.deployer2.dsl.util.ActivityValidator;
+import org.cloudml.deployer2.workflow.frontend.Browser;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
 import org.cloudml.deployer2.workflow.util.Parallel;
 import org.cloudml.mrt.Coordinator;
 
+import java.awt.*;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.net.URI;
 import java.util.logging.Logger;
 
 public class ConcurrentDeployer {
@@ -42,6 +48,7 @@ public class ConcurrentDeployer {
     private Coordinator coordinator;
     private ActivityDiagram diagram = new ActivityDiagram();
     private boolean debugMode = true;
+    private static final String BROWSER = "browser";
 
 //    private Deployment targetModel;
 
@@ -63,18 +70,21 @@ public class ConcurrentDeployer {
         new ActivityDotCreator(ActivityBuilder.getActivity());
 
         // open deployment plan in browser which will check for the plan updates ever N seconds
-//        Runnable r = new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Desktop.getDesktop().browse(URI.create("http://localhost:8000/plan.html"));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                Browser br = new Browser();
-//            }
-//        };
-//        new Thread(r).start();
+        //TODO looks like thread checking does not work, so you will get "java.net.BindException: Address already in use: bind" but it does not affect deployment anyhow
+        if (!ThreadValidator.threadExists(BROWSER)) {
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Desktop.getDesktop().browse(URI.create("http://localhost:8000/plan.html"));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Browser br = new Browser();
+                }
+            };
+            new Thread(null, r, BROWSER).start();
+        }
 
         // traverse graph (execute deployment plan)
         Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
@@ -137,6 +147,56 @@ public class ConcurrentDeployer {
 
     public void setCurrentModel(Deployment current){
         diagram.setCurrentModel(current);
+    }
+
+
+    /*
+        A class with one public method to check if a Thread with a given Name exists.
+        May be refactored later into a separate Java file if you see it useful in other cases.
+        Currently it is used to check if the thread that displays deployment plan in a browser already exists.
+        We need to do this in situations with redeployments.
+     */
+    private static class ThreadValidator {
+        private static ThreadGroup rootThreadGroup = null;
+
+        public static boolean threadExists(String threadName){
+            boolean exists = false;
+
+            Thread[] threads = getAllThreads();
+            for (Thread t:threads){
+                if (t.getName().equals(threadName)){
+                    exists = true;
+                    break;
+                }
+            }
+
+            return exists;
+        }
+
+        private static ThreadGroup getRootThreadGroup( ) {
+            if ( rootThreadGroup != null )
+                return rootThreadGroup;
+            ThreadGroup tg = Thread.currentThread( ).getThreadGroup( );
+            ThreadGroup ptg;
+            while ( (ptg = tg.getParent( )) != null )
+                tg = ptg;
+            return tg;
+        }
+
+        private static Thread[] getAllThreads( ) {
+            final ThreadGroup root = getRootThreadGroup( );
+            final ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
+            int nAlloc = thbean.getThreadCount( );
+            int n = 0;
+            Thread[] threads;
+            do {
+                nAlloc *= 2;
+                threads = new Thread[ nAlloc ];
+                n = root.enumerate( threads, true );
+            } while ( n == nAlloc );
+            return java.util.Arrays.copyOf( threads, n );
+        }
+
     }
 
     // read model from json file

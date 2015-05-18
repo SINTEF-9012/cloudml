@@ -224,4 +224,12 @@ public class ActivityDotCreator {
         return dotText;
     }
 
+//    public static void main(String[] args){
+//        ActivityDotCreator dot = new ActivityDotCreator(ActivityBuilder.getActivity());
+//        System.out.println(dot.defaultPath);
+//        System.out.println(dot.root);
+//        System.out.println(dot.root.split("cloudml")[0] + "cloudml" + dot.defaultPath);
+//        System.out.println(dot.root.split("cloudml")[0] + "cloudml" + dot.dagrePath);
+//    }
+
 }
