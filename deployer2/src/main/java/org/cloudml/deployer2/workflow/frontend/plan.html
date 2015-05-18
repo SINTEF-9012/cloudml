@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+
+    <meta charset="UTF-8">
+
+    <title>Deployment plan</title>
+
+    <style type='text/css'>
+        #outer {
+            width: 100%;
+            height: auto;
+            text-align: center;
+        }
+
+        text {
+            font-weight: 300;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
+            font-size: 14px;
+        }
+
+        .node rect {
+            stroke: #333;
+            fill: #fff;
+            stroke-width: 1.5px;
+        }
+
+        .edgePath path.path {
+            stroke: #333;
+            fill: none;
+            stroke-width: 1.5px;
+        }
+    </style>
+
+    <meta http-equiv="refresh" content="30" />
+
+</head>
+
+<body>
+    <div id="outer">
+        <h1>Deployment plan in real time</h1>
+        <a href="/dot" target="_blank">A DOT file representing this plan</a>
+
+        <div>
+            <svg width=1200 id="svg">
+                <g/>
+            </svg>
+        </div>
+    </div>
+
+
+    <script type='text/javascript' src="http://d3js.org/d3.v3.js"></script>
+    <script type='text/javascript' src="http://cpettitt.github.io/project/dagre-d3/v0.3.0/dagre-d3.min.js"></script>
+    <script type='text/javascript' src="http://cpettitt.github.io/project/graphlib-dot/v0.6.1/graphlib-dot.min.js"></script>
+    <script type='text/javascript'>
+        window.onload=function(){
+
+            // read Deployment.dot file
+            var oRequest = new XMLHttpRequest();
+            oRequest.open("GET", "http://localhost:8000/dot", false);
+            oRequest.send(null);
+
+            // Parse the local DOT file into a graphlib object.
+            var g = graphlibDot.read(oRequest.responseText);
+
+            // setup zoom support
+            var svg = d3.select("svg");
+            inner = svg.select("g");
+            var zoom = d3.behavior.zoom().on("zoom", function() {
+                  inner.attr("transform", "translate(" + d3.event.translate + ")" +
+                                              "scale(" + d3.event.scale + ")");
+                });
+            svg.call(zoom);
+
+            // Render the graphlib object using d3.
+            var render = new dagreD3.render();
+            render(inner, g);
+
+            //center graph
+            var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
+            inner.attr("transform", "translate(" + xCenterOffset + ", 20)");
+            svg.attr("height", g.graph().height + 40);
+
+        }
+    </script>
+
+</body>
+</html>

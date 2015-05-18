@@ -29,6 +29,7 @@ import org.cloudml.core.VMInstance;
 import org.cloudml.deployer2.dsl.*;
 import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
+import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,6 +53,9 @@ public class ActionExecutable {
     public void execute() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         action.getProperties().put("Status", String.valueOf(Element.Status.ACTIVE));
+
+        //update DOT file
+        new ActivityDotCreator(ActivityBuilder.getActivity());
 
         Class cls = ActivityDiagram.class;
         Method method;
@@ -152,6 +156,9 @@ public class ActionExecutable {
         }
 
         action.getProperties().put("Status", String.valueOf(Element.Status.DONE));
+
+        //update DOT file
+        new ActivityDotCreator(ActivityBuilder.getActivity());
     }
 
     private String getProvisionedVMaddress(String vmName) {

@@ -62,6 +62,20 @@ public class ConcurrentDeployer {
         // tool to view diagram: http://stamm-wilbrandt.de/GraphvizFiddle/
         new ActivityDotCreator(ActivityBuilder.getActivity());
 
+        // open deployment plan in browser which will check for the plan updates ever N seconds
+//        Runnable r = new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    Desktop.getDesktop().browse(URI.create("http://localhost:8000/plan.html"));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                Browser br = new Browser();
+//            }
+//        };
+//        new Thread(r).start();
+
         // traverse graph (execute deployment plan)
         Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
 //        System.out.println(ActivityBuilder.getActivity().toString());

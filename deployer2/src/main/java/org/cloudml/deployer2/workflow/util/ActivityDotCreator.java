@@ -39,19 +39,113 @@ public class ActivityDotCreator {
     private Activity activity;
     private StringBuilder dotText = new StringBuilder();
     private String defaultPath = "\\deployer2\\src\\main\\resources\\Deployment.dot";
+    private String dagrePath = "\\deployer2\\src\\main\\resources\\DagreD3.dot";
     private String root = System.getProperty("user.dir");
 
     public ActivityDotCreator(Activity activity){
         this.activity = activity;
+
         printDot();
-        String path = root.split("cloudml")[0] + "cloudml" +defaultPath;
+        String path = root.split("cloudml")[0] + "cloudml" + defaultPath;
         saveToFile(path);
+
+        //clear string builder
+        getDotText().replace(0, getDotText().length(), "");
+
+        printDagreD3();
+        String dagreD3Path = root.split("cloudml")[0] + "cloudml" + dagrePath;
+        saveToFile(dagreD3Path);
     }
 
-    public  ActivityDotCreator(Activity activity, String pathToFile){
-        this.activity = activity;
-        printDot();
-        saveToFile(pathToFile);
+    private void printDagreD3() {
+        getDotText().append("digraph ConcurrentDeployment {\n");
+        addDagreNodes();
+        addDagreEdges();
+    }
+
+    private String setElementColor(Element element) {
+        String property = element.getProperties().get("Status");
+        if (property.equals("ACTIVE")){
+            return "orange";
+        } else if (property.equals("DONE")){
+            return "#58D658";
+        } else
+            return null;
+    }
+
+    private void addDagreEdges() {
+        for (ActivityEdge edge:activity.getEdges()){
+            String color = setElementColor(edge);
+            getDotText().append("\t");
+            String source = "";
+            if (edge.getSource() != null){
+                source = edge.getSource().getElementID();
+            }
+            String target = "";
+            if (edge.getTarget() != null){
+                target = edge.getTarget().getElementID();
+            }
+            getDotText().append(source).append(" -> ").append(target);
+
+            if (edge.isObjectFlow()) {
+                if (color == null) {
+                    getDotText().append(" [style=\"");
+                    getDotText().append(" stroke-dasharray: 5,5;");
+                } else {
+                    getDotText().append(" [style=\"stroke: " + color + ";");
+                    getDotText().append(" stroke-dasharray: 5,5;");
+                }
+                getDotText().append("\"");
+            } else {
+                if (color == null)
+                    getDotText().append(" [");
+                else
+                    getDotText().append(" [style=\"stroke: " + color + ";\"");
+            }
+            getDotText().append(" lineInterpolate=basis];\n");
+            if (activity.getEdges().indexOf(edge) == (activity.getEdges().size() - 1))
+                getDotText().append("}");
+        }
+    }
+
+
+    private void addDagreNodes() {
+        int nodeIndex = 0;
+        for (ActivityNode node:activity.getNodes()){
+            String color = setElementColor(node);
+            String nodeID = "node_" + nodeIndex;
+            nodeIndex++;
+            node.setElementID(nodeID);
+            getDotText().append("\t").append(nodeID);
+            if (node instanceof ActivityInitialNode || node instanceof ActivityFinalNode){
+                getDotText().append(" [shape=circle];\n");
+            } else if (node instanceof Action){
+                String action = node.getName();
+                String instance = null;
+                if (action.contains("execute")){
+                    instance = ((InternalComponentInstance)((Action) node).getInputs().get(1)).getName();
+                } else if (action.contains("configure") || action.contains("start")){
+                    instance = (String)((Action) node).getInputs().get(4);
+                } else {
+                    instance = ((VMInstance) ((Action) node).getInputs().get(0)).getName();
+                }
+                getDotText().append(" [shape=rect rx=10 label=\"").
+                        append(action).
+                        append("\\n").
+                        append(instance + "\"");
+                if (color != null)
+                    getDotText().append(" style=\"fill: " + color + ";\"");
+                getDotText().append("];\n");
+            } else if (node instanceof ObjectNode){
+                getDotText().append(" [shape=rect, label=\"").
+                        append(node.getName() + "\"");
+                if (color != null)
+                    getDotText().append(" style=\"fill: " + color + ";\"");
+                getDotText().append("];\n");
+            } else if (node instanceof ControlNode){
+                getDotText().append(" [shape=rect width=60 label=\"\" style=\"fill: black\"];\n");
+            }
+        }
     }
 
     private void saveToFile(String path){
