@@ -1266,10 +1266,16 @@ public class CloudAppDeployer {
         String value="";
         if(p.getValue().startsWith("$")){
             if(p.getValue().equals("${this.host.id}")){
-                value=c.getHost().asExternal().asVM().getId();
+                value=c.externalHost().asVM().getId();
             }
             if(p.getValue().equals("${this.host.name}")){
-                value=c.getHost().asExternal().asVM().getName();
+                value=c.externalHost().asVM().getName();
+            }
+            if(p.getValue().equals("${this.provider.id}")){
+                value=c.externalHost().asVM().getType().getProvider().getName();
+            }
+            if(p.getValue().equals("${this.name}") || p.getValue().equals("${this.id}")){
+                value=c.getName();
             }
         }else{
             try{
@@ -1283,8 +1289,8 @@ public class CloudAppDeployer {
                 journal.log(Level.INFO, ">> Environment variable cannot be defined, xpath expression not valid");
             }
         }
-        if(value != null){
-            setEnvVar(c.getHost().asExternal().asVM(), p.getName(), value);
+        if(!value.equals("")){
+            setEnvVar(c.externalHost().asVM(), p.getName(), value);
         }
     }
 
