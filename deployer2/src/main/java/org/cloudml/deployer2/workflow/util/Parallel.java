@@ -214,12 +214,6 @@ public class Parallel {
                 if (!joinNodes.contains((Join) target))
                     joinNodes.add((Join) target);
             }
-
-            // handle case when edge goes from one join to another
-//            if (edge.getSource() instanceof Join)
-//                checkJoinNodes();
-//        } else if ((target instanceof Action) && edge.isObjectFlow()){
-//            // do nothing, stop traversing the graph
         } else {
             if (target != null) {
                 executeNext(target);

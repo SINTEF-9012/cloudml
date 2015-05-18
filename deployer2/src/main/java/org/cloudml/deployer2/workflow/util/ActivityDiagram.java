@@ -36,9 +36,7 @@ import org.cloudml.deployer.PuppetManifestGenerator;
 import org.cloudml.deployer.Scaler;
 import org.cloudml.deployer2.dsl.*;
 import org.cloudml.deployer2.dsl.util.ActivityBuilder;
-import org.cloudml.monitoring.status.StatusConfiguration;
 import org.cloudml.monitoring.status.StatusMonitor;
-import org.cloudml.monitoring.synchronization.MonitoringPlatformConfiguration;
 import org.cloudml.mrt.Coordinator;
 
 import java.io.IOException;
@@ -60,12 +58,12 @@ import java.util.logging.Logger;
  */
 public class ActivityDiagram  {
 
-    private ArrayList<ActivityNode> nodes = new ArrayList<ActivityNode>();
-    private ArrayList<ActivityEdge> edges = new ArrayList<ActivityEdge>();
     private HashMap<String, ArrayList<? extends Element>> collector = new HashMap<String, ArrayList<? extends Element>>();
-    private Activity activity = new Activity();
-
-
+    private Activity oldPlan; //this variable is used only as a flag for some checks during the redeployment
+    // oldEdges and oldNodes are actually used to store components of the old plan
+    // I couldn't use oldPlan = ActivityBuilder.getActivity() because plan is a static variable and it will change oldPlan variable when I add new nodes
+    private ArrayList<ActivityEdge> oldEdges = new ArrayList<ActivityEdge>();
+    private ArrayList<ActivityNode> oldNodes = new ArrayList<ActivityNode>();
 
     private static final Logger journal = Logger.getLogger(ActivityDiagram.class.getName());
     private static boolean DEBUG=false;
@@ -112,6 +110,7 @@ public class ActivityDiagram  {
         //set up the monitoring
 //        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
 //        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
+
         if (currentModel == null) {
             journal.log(Level.INFO, ">> First deployment plan ...");
             this.currentModel = targetModel;
@@ -154,12 +153,31 @@ public class ActivityDiagram  {
 
             updateCurrentModel(diff);
 
+            // when we redeploy, old depoyment plan is in memory, so we save it separately before we add any new nodes
+            oldPlan = ActivityBuilder.getActivity();
+            oldNodes.addAll(oldPlan.getNodes());
+            oldEdges.addAll(oldPlan.getEdges());
+
             //Added stuff
-            setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
-            prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
-            configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
-            configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
+            if (!diff.getAddedECs().isEmpty())
+                setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
+            if (!diff.getAddedComponents().isEmpty())
+                prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
+            if (!diff.getAddedRelationships().isEmpty())
+                configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
+            if (!diff.getAddedComponents().isEmpty())
+                configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
 //            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+
+            // if we do redeployment, we have to clean deployment plan from old nodes and edges
+            ActivityBuilder.getActivity().getEdges().removeAll(oldEdges);
+            //with nodes removeAll removes both IPAddresses nodes, so here is workaround to avoid that
+            for (ActivityNode node:oldNodes){
+                if (ActivityBuilder.getActivity().getNodes().contains(node))
+                    ActivityBuilder.getActivity().getNodes().remove(node);
+                if (node instanceof ActivityFinalNode)
+                    break;
+            }
 
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
@@ -177,8 +195,6 @@ public class ActivityDiagram  {
 //            }
         }
 
-        activity.setEdges(edges);
-        activity.setNodes(nodes);
 
         //start the monitoring of VMs
 //        if (statusMonitorActive) {
@@ -222,21 +238,36 @@ public class ActivityDiagram  {
         unlessNotNull("Cannot deploy null!", targetModel);
         this.targetModel = targetModel;
         //set up the monitoring
-        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
-        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
+//        StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
+//        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
 
         journal.log(Level.INFO, ">> Updating a deployment...");
 
+        // when we redeploy, old depoyment plan is in memory, so we save it separately before we add any new nodes
+        oldPlan = ActivityBuilder.getActivity();
+        oldNodes.addAll(oldPlan.getNodes());
+        oldEdges.addAll(oldPlan.getEdges());
+
         //Added stuff
-        try {
+        if (!diff.getAddedECs().isEmpty())
             setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!diff.getAddedComponents().isEmpty())
+            prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
+        if (!diff.getAddedRelationships().isEmpty())
+            configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
+        if (!diff.getAddedComponents().isEmpty())
+            configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
+//        configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+
+        // if we do redeployment, we have to clean deployment plan from old nodes and edges
+        ActivityBuilder.getActivity().getEdges().removeAll(oldEdges);
+        //with nodes removeAll removes both IPAddresses nodes, so here is workaround to avoid that
+        for (ActivityNode node:oldNodes){
+            if (ActivityBuilder.getActivity().getNodes().contains(node))
+                ActivityBuilder.getActivity().getNodes().remove(node);
+            if (node instanceof ActivityFinalNode)
+                break;
         }
-        prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
-        configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
-        configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
-        configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
         //removed stuff
         unconfigureRelationships(diff.getRemovedRelationships());
@@ -1319,18 +1350,34 @@ public class ActivityDiagram  {
             }
 //            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
         }
+
         ObjectNode IPs = null;  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
+
+        if (oldPlan != null) {
+            IPs = ActivityBuilder.getIPregistry();
+            IPs.getIncoming().clear();
+            IPs.getOutgoing().clear();
+            IPs.getProperties().put("Status", String.valueOf(Element.Status.INACTIVE));
+            ActivityBuilder.getActivity().addNode(IPs);
+        }
 
         Join dataJoin = null;
         if (ems.size() > 1) {
-            IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.NOEDGES, ActivityBuilder.ObjectNodeType.OBJECT);
+            if (IPs == null)
+                IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.NOEDGES, ActivityBuilder.ObjectNodeType.OBJECT);
             dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
             // container of all IPs
             ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
             // connect actions with control and data join
             ActivityBuilder.connectActionsWithJoinNodes(provisioning, null, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
         } else {
-            IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.IN, ActivityBuilder.ObjectNodeType.OBJECT);
+            if (IPs == null)
+                IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.IN, ActivityBuilder.ObjectNodeType.OBJECT);
+            else {
+                ActivityEdge dataFlow = new ActivityEdge(true);
+                IPs.addEdge(dataFlow, ActivityNode.Direction.IN);
+                ActivityBuilder.getActivity().addEdge(dataFlow);
+            }
             provisioning.get(0).addEdge(IPs.getIncoming().get(0), ActivityNode.Direction.OUT);
         }
 //        // control join and finish
