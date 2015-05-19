@@ -678,7 +678,7 @@ class Facade implements CloudML, CommandHandler {
     public void handle(Reset command) {
         dispatch(new Message(command, Category.INFORMATION, "The deployment engine has been reset ..."));
         this.deploy = null;
-        this.deployer.setCurrentModel(null);
+        this.deployer.reset();
     }
 
     @Override

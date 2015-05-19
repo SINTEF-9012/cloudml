@@ -33,7 +33,6 @@ import org.cloudml.deployer2.workflow.frontend.Browser;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
 import org.cloudml.deployer2.workflow.util.Parallel;
-import org.cloudml.deployer2.workflow.util.ParallelBFS;
 import org.cloudml.mrt.Coordinator;
 
 import java.awt.*;
@@ -87,9 +86,9 @@ public class ConcurrentDeployer {
         }
 
         // traverse graph (execute deployment plan)
-//        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
+        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
 //        System.out.println(ActivityBuilder.getActivity().toString());
-        ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), debugMode);
+//        ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), debugMode);
     }
 
     public void deploy(Deployment model, CloudMLModelComparator diff){
@@ -145,8 +144,8 @@ public class ConcurrentDeployer {
         diagram.scaleOut(vmi, nb);
     }
 
-    public void setCurrentModel(Deployment current){
-        diagram.setCurrentModel(current);
+    public void reset(){
+        diagram.reset();
     }
 
     // read model from json file

@@ -402,9 +402,7 @@ public class ActivityDiagram  {
                 // were moved to another thread
                 Join joinBeforeInstall = null;
                 if (outgoingFromPaas.size() > 1 || !outgoingFromPaas.get(0).equals(incoming)){
-                    // last edge represents edges that is related to actions which were created based on relationships
-                    // other edges will be related to requiredExecutionPlatforms or buildExecutes() method to say it more precisely
-                    ActivityEdge lastInArray = outgoingFromPaas.get(outgoingFromPaas.size() - 1);
+
                     Action moveToOtherThread = (Action) incoming.getTarget();
                     if (moveToOtherThread != null) {
                         for (Action action : provisioned) {
@@ -415,6 +413,10 @@ public class ActivityDiagram  {
                             }
                         }
                     }
+
+                    // last edge represents edges that is related to actions which were created based on relationships
+                    // other edges will be related to requiredExecutionPlatforms or buildExecutes() method to say it more precisely
+                    ActivityEdge lastInArray = outgoingFromPaas.get(outgoingFromPaas.size() - 1);
                     Action lastFromPaas = (Action) lastInArray.getSource();
                     // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
                     lastFromPaas.removeEdge(lastInArray, ActivityNode.Direction.OUT);
@@ -430,9 +432,18 @@ public class ActivityDiagram  {
                     // so we traverse through outgoingFromPaas array from first to the one before last
                     if (outgoingFromPaas.size() > 1) {
                         for (int i = 0; i < (outgoingFromPaas.size() - 1); i++) {
+                            Action target = (Action) outgoingFromPaas.get(i).getTarget();
                             Action source = (Action) outgoingFromPaas.get(i).getSource();
+
+                            // prepare action for join
                             source.removeEdge(outgoingFromPaas.get(i), ActivityNode.Direction.OUT);
                             actionsToJoin.add(source);
+                            // move actions resulted from dependencies to separate thread
+                            for (Action action : provisioned) {
+                                if (action.getInputs().get(0).equals(target.getInputs().get(0))) {
+                                    action.addEdge(target.getIncoming().get(0), ActivityNode.Direction.OUT);
+                                }
+                            }
                         }
                     }
                     ActivityBuilder.connectActionsWithJoinNodes(actionsToJoin, joinBeforeInstall, null);
@@ -760,10 +771,10 @@ public class ActivityDiagram  {
         } else {
             for (Action action:ActivityBuilder.getActions()){
                 if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance) action.getInputs().get(1)).getName().equals(host.getName())) {
-                    if (action.getOutgoing().isEmpty()) {
-                        action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-                    }
-                    outgoingFromBuildExecutes = action.getOutgoing().get(0);
+//                    if (action.getOutgoing().isEmpty()) {
+                    action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+//                    }
+                    outgoingFromBuildExecutes = action.getOutgoing().get(action.getOutgoing().size() - 1);
                     break;
                 }
             }
@@ -799,10 +810,10 @@ public class ActivityDiagram  {
         ActivityEdge toUpload = null;
         if (!outgoingFromBuildExecutes.equals(incoming)){
             result.add(outgoingFromBuildExecutes);
-            toUpload = incoming;
-        } else {
-            toUpload = outgoingFromBuildExecutes;
         }
+
+        toUpload = outgoingFromBuildExecutes;
+
 
         for (RelationshipInstance bi : relationships) {
             if (bi.getRequiredEnd().getType().isMandatory() && x.getRequiredPorts().contains(bi.getRequiredEnd())) {
@@ -1981,6 +1992,12 @@ public class ActivityDiagram  {
                 jc.updateVMMetadata(vm);
             }
         }
+    }
+
+    public void reset(){
+        setCurrentModel(null);
+        alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
+        alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     }
 
     /**
