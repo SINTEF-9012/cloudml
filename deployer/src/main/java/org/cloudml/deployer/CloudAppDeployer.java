@@ -198,6 +198,12 @@ public class CloudAppDeployer {
     }
 
 
+    public void reset(){
+        setCurrentModel(null);
+        alreadyDeployed=new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
+        alreadyStarted=new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
+    }
+
     public void deploy(Deployment targetModel, CloudMLModelComparator diff){
         unlessNotNull("Cannot deploy null!", targetModel);
         this.targetModel = targetModel;
