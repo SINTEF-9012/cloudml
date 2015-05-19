@@ -22,6 +22,8 @@
  */
 package org.cloudml.facade.commands;
 
+import org.cloudml.mrt.cmd.gen.CloudMLCmds;
+
 import java.util.List;
 
 /**
@@ -278,5 +280,13 @@ public class CommandFactory {
     
     public CloudMlCommand burst(final String vmID, final String providerID){
         return new Burst(vmID, providerID);
+    }
+
+    public CloudMlCommand offlineMigration(final String source, final String destination, final int nbThreads){
+        return new offlineMigration(source, destination, nbThreads);
+    }
+
+    public CloudMlCommand onlineMigration(final String source, final String destination, final int nbThreads, final int vdpSize){
+        return new onlineMigration(source,destination,nbThreads,vdpSize);
     }
 }

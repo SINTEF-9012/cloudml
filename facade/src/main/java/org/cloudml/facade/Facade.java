@@ -48,6 +48,7 @@ import org.cloudml.core.samples.SensApp;
 import org.cloudml.core.validation.DeploymentValidator;
 import org.cloudml.core.validation.Report;
 import org.cloudml.deployer.CloudMLModelComparator;
+import org.cloudml.deployer.DataMigration;
 import org.cloudml.facade.commands.*;
 import org.cloudml.facade.events.*;
 import org.cloudml.facade.events.Message.Category;
@@ -684,6 +685,21 @@ class Facade implements CloudML, CommandHandler {
         this.deploy = null;
         this.deployer.reset();
     }
+
+    @Override
+    public void handle(offlineMigration command) {
+        dispatch(new Message(command, Category.INFORMATION, "Start offline data migration..."));
+        DataMigration dm= new DataMigration();
+        dm.switchOver(command.getSource(),command.getDestination(),command.getNbThread());
+    }
+
+    @Override
+    public void handle(onlineMigration command) {
+        dispatch(new Message(command, Category.INFORMATION, "Start online data migration..."));
+        DataMigration dm= new DataMigration();
+        dm.switchOverPartitioned(command.getSource(),command.getDestination(),command.getNbThread(), command.getVdpSize());
+    }
+
 
     @Override
     public void handle(ValidateCommand command) {

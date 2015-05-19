@@ -81,5 +81,9 @@ public interface CommandHandler {
     public void handle(DebugMode command);
 
     public void handle(Burst command);
+
+    public void handle(offlineMigration command);
+
+    public void handle(onlineMigration command);
     
 }

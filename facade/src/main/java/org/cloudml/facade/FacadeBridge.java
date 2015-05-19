@@ -99,6 +99,25 @@ public class FacadeBridge implements ModelRepo {
         else if("StopComponent".equals(name)){
             command = factory.stopComponent((List)params);
         }
+        else if("OfflineDataMigration".equals(name)){
+            if(params.size() >= 3){
+                Iterator<String> it = params.iterator();
+                String source=it.next();
+                String destination=it.next();
+                int nbThread=Integer.parseInt(it.next());
+                command=factory.offlineMigration(source,destination,nbThread);
+            }
+        }
+        else if("OnlineDataMigration".equals(name)){
+            if(params.size() >= 4){
+                Iterator<String> it = params.iterator();
+                String source=it.next();
+                String destination=it.next();
+                int nbThread=Integer.parseInt(it.next());
+                int vdpSize=Integer.parseInt(it.next());
+                command=factory.onlineMigration(source,destination,nbThread, vdpSize);
+            }
+        }
         else{
             throw new RuntimeException("Command not defined in facade");
         }
