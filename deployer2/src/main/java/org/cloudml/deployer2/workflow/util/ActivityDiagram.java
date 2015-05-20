@@ -458,6 +458,8 @@ public class ActivityDiagram  {
                                 action.addEdge(incoming, ActivityNode.Direction.OUT);
                             }
                         }
+                    } else {
+                        retrieve.removeEdge(incoming, ActivityNode.Direction.OUT);
                     }
 
                     // last edge represents edges that is related to actions which were created based on relationships
@@ -2154,10 +2156,10 @@ public class ActivityDiagram  {
     }
 
     public void reset(){
-        setCurrentModel(null);
         ActivityBuilder.setActivity(null);
         alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
         alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
+        setCurrentModel(null);
     }
 
     /**

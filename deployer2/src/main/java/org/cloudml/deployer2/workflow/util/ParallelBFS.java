@@ -151,8 +151,10 @@ public class ParallelBFS {
                 if (addSynchronizationNode) {
                     elements.add(target);
                     target.getProperties().put(VISITED, String.valueOf(true));
-                } else
-                    delayedNodes.add(target); //if we do not add node on this level, we record it and will check if it is ready on the next level
+                } else {
+                    if (!delayedNodes.contains(target))
+                        delayedNodes.add(target); //if we do not add node on this level, we record it and will check if it is ready on the next level
+                }
             }
         } else {
             ActivityNode node = (ActivityNode) parent;
