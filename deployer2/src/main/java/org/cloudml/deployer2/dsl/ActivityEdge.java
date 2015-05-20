@@ -23,6 +23,7 @@
 package org.cloudml.deployer2.dsl;
 
 import org.cloudml.core.InternalComponentInstance;
+import org.cloudml.core.PortInstance;
 import org.cloudml.core.VMInstance;
 
 /**
@@ -103,10 +104,14 @@ public class ActivityEdge extends Element {
         String name = "";
         if (node.getName().contains("execute")){
             name = ((InternalComponentInstance) node.getInputs().get(1)).getName();
-        } else if (node.getName().contains("configure") || node.getName().equals("start")){
+        } else if (node.getName().startsWith("configure") || node.getName().equals("start")){
             name = (String) node.getInputs().get(4);
-        } else if (node.getName().contains("provision")){
+        } else if(node.getName().equals("unconfigureWithIP")){
+            name = ((PortInstance)((Action) node).getInputs().get(1)).getType().getName();
+        } else if (node.getName().contains("provision") || node.getName().equals("terminateVM")){
             name = ((VMInstance)node.getInputs().get(0)).getName(); //TODO fix name if get(0) returns platform instead of VM
+        } else if (node.getName().equals("stopInternalComponent")){
+            name = ((InternalComponentInstance)((Action) node).getInputs().get(0)).getName();
         }
         return "_" + name;
     }

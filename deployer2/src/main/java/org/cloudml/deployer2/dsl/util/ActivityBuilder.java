@@ -287,6 +287,26 @@ public class ActivityBuilder {
         return controls;
     }
 
+    public static ActivityInitialNode getStartNode(){
+        ActivityInitialNode initialNode = null;
+        for (ActivityNode initial:activity.getNodes()){
+            if (initial instanceof ActivityInitialNode){
+                initialNode = (ActivityInitialNode) initial;
+            }
+        }
+        return  initialNode;
+    }
+
+    public static ActivityFinalNode getFinalNode(){
+        ActivityFinalNode finalNode = null;
+        for (ActivityNode node:activity.getNodes()){
+            if (node instanceof ActivityFinalNode){
+                finalNode = (ActivityFinalNode) node;
+            }
+        }
+        return  finalNode;
+    }
+
 
 //    public static void main (String[] args){
 //        try {

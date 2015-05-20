@@ -179,10 +179,34 @@ public class ActivityDiagram  {
                     break;
             }
 
+            // in case we only rmove things, our adaptation plan shall start here
+            if (ActivityBuilder.getStartNode() == null && ActivityBuilder.getFinalNode() == null)
+                ActivityBuilder.controlStart();
+
             //removed stuff
+            /*
+                To keep it more or less simple: in each method check if FinalNodeExists.
+                If it does - remove final node and connect remove actions to the previous edge. Leave an outgoing edge from the remove action and
+                    add it to the Activity.
+                If it does not, get last edge from activity and connect actions to it. Again, leave some outgoing edge in the end.
+                Finally, after all remove actions get last outgoing edge and add Final node to it.
+             */
             unconfigureRelationships(diff.getRemovedRelationships());
             stopInternalComponents(diff.getRemovedComponents());
             terminateExternalServices(diff.getRemovedECs());
+
+            // if final node does not exist, it means we have some remove actions, so we get last edge's Source and add Final node
+            ActivityFinalNode finalNode = ActivityBuilder.getFinalNode();
+            if (finalNode == null){
+                ActivityFinalNode stop = ActivityBuilder.controlStop();
+                                                                            // index -2 because controlStop method just added one more edge
+                ActivityEdge lastEdge = ActivityBuilder.getActivity().getEdges().get(ActivityBuilder.getActivity().getEdges().size() - 2);
+                ActivityNode source = lastEdge.getSource();
+                source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
+                ActivityBuilder.getActivity().removeEdge(lastEdge);
+                source.addEdge(stop.getIncoming().get(0), ActivityNode.Direction.OUT);
+            }
+
 
 
             //send the changes to the monitoring platform
@@ -194,7 +218,6 @@ public class ActivityDiagram  {
 //                }
 //            }
         }
-
 
         //start the monitoring of VMs
 //        if (statusMonitorActive) {
@@ -210,6 +233,29 @@ public class ActivityDiagram  {
 //                journal.log(Level.INFO, ">> SLA management not started");
 //            }
 //        }
+    }
+
+    // connects remove action from the diff part to the end of graph. This remove action has incoming control edge
+    private void connectRemoveToPlan(ActivityNode node) throws Exception {
+        ActivityFinalNode finalNode = ActivityBuilder.getFinalNode();
+        if (finalNode == null){
+            /*
+              We need to substract as many edges from the last one, as input node has in total
+             */
+            int discountedEdges = node.getIncoming().size() + node.getOutgoing().size();
+            ActivityEdge lastEdge = ActivityBuilder.getActivity().getEdges().get(ActivityBuilder.getActivity().getEdges().size() - 1 - discountedEdges);
+            ActivityNode source = lastEdge.getSource();
+            source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
+            ActivityBuilder.getActivity().removeEdge(lastEdge);
+            source.addEdge(node.getIncoming().get(0), ActivityNode.Direction.OUT);
+        } else {
+            ActivityEdge lastEdge = finalNode.getIncoming().get(0);
+            ActivityNode source = lastEdge.getSource();
+            source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
+            ActivityBuilder.getActivity().removeEdge(lastEdge);
+            ActivityBuilder.getActivity().removeNode(finalNode);
+            source.addEdge(node.getIncoming().get(0), ActivityNode.Direction.OUT);
+        }
     }
 
     private Boolean startSLA(String url, String agreementId){
@@ -1870,19 +1916,43 @@ public class ActivityDiagram  {
      * @param vms A list of vmInstances
      * @throws java.net.MalformedURLException
      */
-    private void terminateExternalServices(Map<ExternalComponentInstance<? extends ExternalComponent>,List<InternalComponentInstance>> vms) {
+    private void terminateExternalServices(Map<ExternalComponentInstance<? extends ExternalComponent>,List<InternalComponentInstance>> vms) throws Exception {
+        List<VMInstance> VMs = new ArrayList<VMInstance>();
+
         for (ExternalComponentInstance n : vms.keySet()) {
             if (n instanceof VMInstance) {
-                terminateVM((VMInstance) n);
+                VMs.add((VMInstance) n);
             } else{
-                PaaSConnector pc = ConnectorFactory.createPaaSConnector(n.getType().asExternal().getProvider());
-                for(InternalComponentInstance c: vms.get(n)){
-                    journal.log(Level.INFO, ">> Terminating app "+c.asInternal().getName());
-                    pc.deleteApp(c.asInternal().getName());
-                }
-                journal.log(Level.INFO, ">> Terminated!");
+//                PaaSConnector pc = ConnectorFactory.createPaaSConnector(n.getType().asExternal().getProvider());
+//                for(InternalComponentInstance c: vms.get(n)){
+//                    journal.log(Level.INFO, ">> Terminating app "+c.asInternal().getName());
+//                    pc.deleteApp(c.asInternal().getName());
+//                }
+//                journal.log(Level.INFO, ">> Terminated!");
             }
         }
+
+        if (VMs.size() > 1){
+            Fork forkVMs = (Fork) ActivityBuilder.forkOrJoin(VMs.size(), false, true);
+            connectRemoveToPlan(forkVMs);
+
+            ArrayList<Action> actions = new ArrayList<Action>();
+            for (VMInstance a : VMs) {
+                int componentIndex = VMs.indexOf(a);
+                Action stop = ActivityBuilder.action(forkVMs.getOutgoing().get(componentIndex), null, a, "terminateVM");
+                actions.add(stop);
+            }
+
+            Join joinVMs = (Join) ActivityBuilder.forkOrJoin(VMs.size(), false, false);
+            ActivityBuilder.connectActionsWithJoinNodes(actions, joinVMs, null);
+        } else if (!VMs.isEmpty()) {
+            Action stop = ActivityBuilder.action(new ActivityEdge(), null, VMs.get(0), "terminateVM");
+            connectRemoveToPlan(stop);
+            ActivityEdge out = new ActivityEdge();
+            stop.addEdge(out, ActivityNode.Direction.OUT);
+            ActivityBuilder.getActivity().addEdge(out);
+        }
+
     }
 
     /**
@@ -1891,14 +1961,18 @@ public class ActivityDiagram  {
      * @param n A VM instance to be terminated
      * @throws java.net.MalformedURLException
      */
-    private void terminateVM(VMInstance n) {
-        Provider p = n.getType().getProvider();
-        Connector jc = ConnectorFactory.createIaaSConnector(p);
-        jc.destroyVM(n.getId());
-        jc.closeConnection();
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), ActivityDiagram.class.getName());
-        //old way without using mrt
-        //n.setStatusAsStopped();
+    private void terminateVM(VMInstance n, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, ">> Stop vm " + n.getName());
+        } else {
+            Provider p = n.getType().getProvider();
+            Connector jc = ConnectorFactory.createIaaSConnector(p);
+            jc.destroyVM(n.getId());
+            jc.closeConnection();
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), ActivityDiagram.class.getName());
+            //old way without using mrt
+            //n.setStatusAsStopped();
+        }
     }
 
     /**
@@ -1907,9 +1981,26 @@ public class ActivityDiagram  {
      * @param components a list of ComponentInstance
      * @throws java.net.MalformedURLException
      */
-    private void stopInternalComponents(List<InternalComponentInstance> components) {//TODO: List<InternalComponentInstances>
-        for (InternalComponentInstance a : components) {
-            stopInternalComponent((InternalComponentInstance) a);
+    private void stopInternalComponents(List<InternalComponentInstance> components) throws Exception {//TODO: List<InternalComponentInstances>
+        if (components.size() > 1) {
+            Fork forkComponents = (Fork) ActivityBuilder.forkOrJoin(components.size(), false, true);
+            connectRemoveToPlan(forkComponents);
+
+            ArrayList<Action> actions = new ArrayList<Action>();
+            for (InternalComponentInstance a : components) {
+                int componentIndex = components.indexOf(a);
+                Action stop = ActivityBuilder.action(forkComponents.getOutgoing().get(componentIndex), null, a, "stopInternalComponent");
+                actions.add(stop);
+            }
+
+            Join joinRelationships = (Join) ActivityBuilder.forkOrJoin(components.size(), false, false);
+            ActivityBuilder.connectActionsWithJoinNodes(actions,joinRelationships, null);
+        } else if (!components.isEmpty()){
+            Action stop = ActivityBuilder.action(new ActivityEdge(), null, components.get(0), "stopInternalComponent");
+            connectRemoveToPlan(stop);
+            ActivityEdge out = new ActivityEdge();
+            stop.addEdge(out, ActivityNode.Direction.OUT);
+            ActivityBuilder.getActivity().addEdge(out);
         }
     }
 
@@ -1919,20 +2010,24 @@ public class ActivityDiagram  {
      * @param a An InternalComponent Instance
      * @throws java.net.MalformedURLException
      */
-    private void stopInternalComponent(InternalComponentInstance a) {
-        VMInstance ownerVM = (VMInstance) findDestinationWhenNoRequiredExecutionPlatformSpecified(a); //TODO: to be generalized
-        if (ownerVM != null) {
-            VM n = ownerVM.getType();
-            Connector jc = ConnectorFactory.createIaaSConnector(n.getProvider());
+    public void stopInternalComponent(InternalComponentInstance a, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, ">> Stop component " + a.getName());
+        } else {
+            VMInstance ownerVM = (VMInstance) findDestinationWhenNoRequiredExecutionPlatformSpecified(a); //TODO: to be generalized
+            if (ownerVM != null) {
+                VM n = ownerVM.getType();
+                Connector jc = ConnectorFactory.createIaaSConnector(n.getProvider());
 
-            for (Resource r : a.getType().getResources()) {
-                String stopCommand = r.getStopCommand();
-                jc.execCommand(ownerVM.getId(), stopCommand, "ubuntu", n.getPrivateKey());
+                for (Resource r : a.getType().getResources()) {
+                    String stopCommand = r.getStopCommand();
+                    jc.execCommand(ownerVM.getId(), stopCommand, "ubuntu", n.getPrivateKey());
+                }
+
+                jc.closeConnection();
+                coordinator.updateStatusInternalComponent(a.getName(), State.UNINSTALLED.toString(), ActivityDiagram.class.getName());
+                //a.setStatus(State.CONFIGURED);
             }
-
-            jc.closeConnection();
-            coordinator.updateStatusInternalComponent(a.getName(), State.UNINSTALLED.toString(), ActivityDiagram.class.getName());
-            //a.setStatus(State.CONFIGURED);
         }
     }
 
@@ -1942,13 +2037,35 @@ public class ActivityDiagram  {
      *
      * @param relationships list of relationships removed
      */
-    private void unconfigureRelationships(List<RelationshipInstance> relationships) {
-        for (RelationshipInstance b : relationships) {
-            unconfigureRelationship(b);
+    private void unconfigureRelationships(List<RelationshipInstance> relationships) throws Exception {
+        ArrayList<ActivityEdge> fromUnconfigure = new ArrayList<>();
+
+        if (relationships.size() > 1) {
+            Fork forkRelationships = (Fork) ActivityBuilder.forkOrJoin(relationships.size(), false, true);
+            connectRemoveToPlan(forkRelationships);
+
+            for (RelationshipInstance b : relationships) {
+                int edgeIndex = relationships.indexOf(b);
+                unconfigureRelationship(b, forkRelationships.getOutgoing().get(edgeIndex), fromUnconfigure);
+            }
+
+            Join joinRelationships = (Join) ActivityBuilder.forkOrJoin(relationships.size(), false, false);
+            ActivityBuilder.getActivity().getEdges().removeAll(joinRelationships.getIncoming());
+            joinRelationships.getIncoming().clear();
+            joinRelationships.getIncoming().addAll(fromUnconfigure);
+
+        } else if (!relationships.isEmpty()){
+            ActivityEdge incoming = new ActivityEdge();
+            unconfigureRelationship(relationships.get(0), incoming, fromUnconfigure);
+            if (fromUnconfigure.get(0) != incoming) {
+                ActivityNode singleAction = incoming.getTarget();
+                connectRemoveToPlan(singleAction);
+            }
         }
+
     }
 
-    private void unconfigureRelationship(RelationshipInstance b) {
+    private void unconfigureRelationship(RelationshipInstance b, ActivityEdge incomingEdge, ArrayList<ActivityEdge> outgoingEdgesContainer) throws Exception {
         if (!b.getRequiredEnd().getType().isLocal()) {
             RequiredPortInstance client = b.getRequiredEnd();
             ProvidedPortInstance server = b.getProvidedEnd();
@@ -1956,24 +2073,66 @@ public class ActivityDiagram  {
             Resource clientResource = b.getType().getClientResource();
             Resource serverResource = b.getType().getServerResource();
 
-            //client resources
-            unconfigureWithIP(clientResource, client);
+            if (clientResource == null && serverResource == null) {
+                outgoingEdgesContainer.add(incomingEdge);
+                return;
+            } else if (clientResource != null && serverResource != null) {
+                Fork forkResources = (Fork) ActivityBuilder.forkOrJoin(2, false, true);
+                ActivityBuilder.getActivity().removeEdge(forkResources.getIncoming().get(0));
+                forkResources.getIncoming().clear();
+                forkResources.getIncoming().add(incomingEdge);
+                ActivityBuilder.getActivity().addEdge(incomingEdge);
 
-            //server resources
-            unconfigureWithIP(serverResource, server);
+                Action clientAction = ActivityBuilder.action(forkResources.getOutgoing().get(0), null, clientResource, "unconfigureWithIP");
+                clientAction.addInput(client);
+
+
+                Action serverAction = ActivityBuilder.action(forkResources.getOutgoing().get(1), null, serverResource, "unconfigureWithIP");
+                serverAction.addInput(server);
+
+                Join joinResources = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+                clientAction.addEdge(joinResources.getIncoming().get(0), ActivityNode.Direction.OUT);
+                serverAction.addEdge(joinResources.getIncoming().get(1), ActivityNode.Direction.OUT);
+
+                outgoingEdgesContainer.add(joinResources.getOutgoing().get(0));
+            } else {
+                //client resources
+                if (clientResource != null) {
+                    Action clientAction = ActivityBuilder.action(incomingEdge, null, clientResource, "unconfigureWithIP");
+                    clientAction.addInput(client);
+                    ActivityEdge out = new ActivityEdge();
+                    clientAction.addEdge(out, ActivityNode.Direction.OUT);
+                    outgoingEdgesContainer.add(out);
+                    ActivityBuilder.getActivity().addEdge(out);
+                }
+
+                //server resources
+                if (serverResource != null) {
+                    Action serverAction = ActivityBuilder.action(incomingEdge, null, serverResource, "unconfigureWithIP");
+                    serverAction.addInput(server);
+                    ActivityEdge out = new ActivityEdge();
+                    serverAction.addEdge(out, ActivityNode.Direction.OUT);
+                    outgoingEdgesContainer.add(out);
+                    ActivityBuilder.getActivity().addEdge(out);
+                }
+            }
         }
     }
 
-    private void unconfigureWithIP(Resource r, PortInstance<? extends Port> i) {
-        Connector jc;
-        if (r != null) {
-            VMInstance ownerVM = (VMInstance) getDestination(i.getOwner().get()); //TODO: generalize to PaaS
-            VM n = ownerVM.getType();
-            jc = ConnectorFactory.createIaaSConnector(n.getProvider());
-            //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());
-            ;
-            jc.closeConnection();
+    public void unconfigureWithIP(Resource r, PortInstance<? extends Port> i, boolean debugMode) {
+        if (debugMode){
+            journal.log(Level.INFO, ">> Unconfigure with IP " + i.getOwner().get().getName());
+        } else {
+            Connector jc;
+            if (r != null) {
+                VMInstance ownerVM = (VMInstance) getDestination(i.getOwner().get()); //TODO: generalize to PaaS
+                VM n = ownerVM.getType();
+                jc = ConnectorFactory.createIaaSConnector(n.getProvider());
+                //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+                jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());
+                ;
+                jc.closeConnection();
+            }
         }
     }
 
@@ -1996,6 +2155,7 @@ public class ActivityDiagram  {
 
     public void reset(){
         setCurrentModel(null);
+        ActivityBuilder.setActivity(null);
         alreadyDeployed = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
         alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     }

@@ -23,6 +23,7 @@
 package org.cloudml.deployer2.workflow.util;
 
 import org.cloudml.deployer2.dsl.*;
+import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.deployer2.workflow.executables.ActionExecutable;
 import org.cloudml.deployer2.workflow.executables.ControlExecutable;
 import org.cloudml.deployer2.workflow.executables.EdgeExecutable;
@@ -65,13 +66,8 @@ public class Parallel {
     private void traverse(Activity activity) throws InterruptedException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
         // start execution from the initial node
-        ActivityInitialNode initialNode = null;
-        for (ActivityNode initial:activity.getNodes()){
-            if (initial instanceof ActivityInitialNode){
-                initialNode = (ActivityInitialNode) initial;
-                new ControlExecutable(initialNode).execute();
-            }
-        }
+        ActivityInitialNode initialNode = ActivityBuilder.getStartNode();
+        new ControlExecutable(initialNode).execute();
 
         // move down the tree
         executeNext(initialNode.getOutgoing().get(0));

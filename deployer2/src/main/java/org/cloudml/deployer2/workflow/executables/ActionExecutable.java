@@ -23,9 +23,7 @@
 package org.cloudml.deployer2.workflow.executables;
 
 import org.cloudml.connectors.Connector;
-import org.cloudml.core.InternalComponentInstance;
-import org.cloudml.core.VM;
-import org.cloudml.core.VMInstance;
+import org.cloudml.core.*;
 import org.cloudml.deployer2.dsl.*;
 import org.cloudml.deployer2.dsl.util.ActivityBuilder;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
@@ -33,6 +31,7 @@ import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,11 +89,16 @@ public class ActionExecutable {
                 jc = (Connector) action.getInputs().get(2);
             }
 
+            if (methodName.equals("terminateVM")){
+                vm = (VMInstance) action.getInputs().get(0);
+                externalComponent = vm.getName();
+            }
+
             // common objects for configure and start commands
             VM type = null;
             String command = null;
             String componentInstanceName = null;
-            if (methodName.contains("configure") || methodName.equals("start")){
+            if (methodName.startsWith("configure") || methodName.equals("start")){
                 type = (VM) action.getInputs().get(1);
                 vm = (VMInstance) action.getInputs().get(0);
                 jc = (Connector) action.getInputs().get(2);
@@ -113,12 +117,26 @@ public class ActionExecutable {
 
             // specific to configure
             Boolean requireCredentials = null;
-            if (methodName.contains("configure")){
+            if (methodName.startsWith("configure")){
                 // connection configuration method names follow pattern configure:connectionRetrieve
                 if (methodName.contains(":")){
                     methodName = methodName.split(":")[0];
                 }
                 requireCredentials = (Boolean) action.getInputs().get(5);
+            }
+
+            String unconfigureRelationship = null;
+            Resource resource = null;
+            PortInstance<? extends Port> port = null;
+            if (methodName.equals("unconfigureWithIP")){
+                resource = (Resource) action.getInputs().get(0);
+                port = (PortInstance<? extends Port>) action.getInputs().get(1);
+                unconfigureRelationship = port.getOwner().get().getName();
+            }
+
+            if (methodName.equals("stopInternalComponent")) {
+                instance = (InternalComponentInstance) action.getInputs().get(0);
+                componentInstanceName = instance.getName();
             }
 
             switch (methodName){
@@ -152,6 +170,18 @@ public class ActionExecutable {
                               method = cls.getDeclaredMethod(methodName, new Class[]{Connector.class, VM.class, VMInstance.class, String.class, boolean.class});
                               method.invoke(cls, jc, type, vm, command, debugMode);
                               break;
+                case "unconfigureWithIP": journal.log(Level.INFO, "Action: unconfiguring relationship " + unconfigureRelationship);
+//                                          method = cls.getDeclaredMethod(methodName, new Class[]{Resource.class, PortInstance.class, boolean.class});
+//                                          method.invoke(resource, port, debugMode);
+                                          break;
+                case "stopInternalComponent": journal.log(Level.INFO, "Action: Stop component " + componentInstanceName);
+                                              method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, boolean.class});
+                                              method.invoke(instance, debugMode);
+                                              break;
+                case "terminateVM":  journal.log(Level.INFO, "Action: Stop vm " + externalComponent);
+                                     method = cls.getDeclaredMethod(methodName, new Class[]{VMInstance.class, boolean.class});
+                                     method.invoke(vm, debugMode);
+                                     break;
             }
         }
 
@@ -162,14 +192,49 @@ public class ActionExecutable {
     }
 
     private String getProvisionedVMaddress(String vmName) {
-        String ip = null;
-        for (Object provisionedIP: ActivityBuilder.getIPregistry().getObjects()){
-            if (((String)provisionedIP).contains(vmName)){
-                // objects inside public address look like 'Nimbus ip address is:1.1.1.1'
-                ip = ((String) provisionedIP).split(":")[1];
+        if (debugMode){
+            return "Debug IP";
+        } else {
+            String ip = null;
+            for (Object provisionedIP : ActivityBuilder.getIPregistry().getObjects()) {
+                if (((String) provisionedIP).contains(vmName)) {
+                    // objects inside public address look like 'Nimbus ip address is:1.1.1.1'
+                    ip = ((String) provisionedIP).split(":")[1];
+                }
             }
+            return ip;
         }
-        return ip;
+    }
+
+    public static void main(String[] args){
+        Class cls = ActivityDiagram.class;
+        try {
+//            Method method = cls.getDeclaredMethod("unconfigureWithIP", new Class[]{Resource.class, PortInstance.class, boolean.class});
+//            System.out.println(method.getName());
+//            Type[] genericParameterTypes = method.getGenericParameterTypes();
+//            int index = 0;
+//            for (Type t:genericParameterTypes){
+//                System.out.println(index++ + " " + t.toString());
+//            }
+//            Type[] parameterArgTypes = ((ParameterizedType)genericParameterTypes[1]).getActualTypeArguments();
+//            for (Type t:parameterArgTypes){
+//               System.out.println(((WildcardTypeImpl)t).getUpperBounds()[0]);
+//            }
+//            RequiredPortInstance port = new RequiredPortInstance("bla", new RequiredPort("la", true, true));
+//            System.out.println(port.getClass());
+//            Resource res = new Resource();
+//            method.invoke(res, port, true);
+            Method method = cls.getDeclaredMethod("stopInternalComponent", new Class[]{org.cloudml.core.InternalComponentInstance.class, boolean.class});
+            InternalComponentInstance instance = new InternalComponentInstance(new InternalComponent("bla", new RequiredExecutionPlatform("name", new ArrayList<Property>())));
+            System.out.println(instance.getClass());
+            method.invoke(instance, true);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
 }
