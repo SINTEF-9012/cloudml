@@ -68,7 +68,47 @@ component data | Contain the details of a selected component type | DATA | Yes |
 component instance list | Contain the list of requested component instances | DATA | Yes | ComponentInstanceList
 component instance data | Contain the details of a specific component instance | DATA | Yes | ComponentInstanceData
 
+Here is an example of event handler:
+```java
+CloudML cml= Factory.getInstance().getCloudML();
+        EventHandler eh=new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                System.out.println(event);
+            }
 
+            @Override
+            public void handle(Message message) {
+                this.handle((Event) message);
+            }
+
+            @Override
+            public void handle(Data data) {
+                this.handle((Event) data);
+            }
+
+            @Override
+            public void handle(ComponentList componentList) {
+                this.handle((Event) componentList);
+            }
+
+            @Override
+            public void handle(ComponentData componentData) {
+                this.handle((Event) componentData);
+            }
+
+            @Override
+            public void handle(ComponentInstanceList componentInstanceList) {
+                this.handle((Event) componentInstanceList);
+            }
+
+            @Override
+            public void handle(ComponentInstanceData componentInstanceData) {
+                this.handle((Event) componentInstanceData);
+            }
+        };
+        cml.register(eh);
+```
 ## References ##
 
 1. Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). Design patterns: elements of reusable object-oriented software. Pearson Education.
