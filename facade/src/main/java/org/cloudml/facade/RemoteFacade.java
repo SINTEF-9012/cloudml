@@ -39,8 +39,7 @@ import org.cloudml.core.Deployment;
 import org.cloudml.core.Provider;
 import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.credentials.MemoryCredentials;
-import org.cloudml.facade.commands.Deploy;
-import org.cloudml.facade.commands.LoadDeployment;
+import org.cloudml.facade.commands.*;
 import org.cloudml.facade.util.WSClient;
 
 /**
@@ -55,7 +54,7 @@ public class RemoteFacade extends Facade{
     public RemoteFacade(String serverURI){
         super();
         try {
-            wsClient=new WSClient(new URI(serverURI));
+            wsClient=new WSClient(new URI(serverURI), this);
             t =new Thread(wsClient);
             t.start();
             while(!wsClient.getConnected()){
@@ -106,9 +105,17 @@ public class RemoteFacade extends Facade{
         }
     }
 
+
+
     @Override
     public void handle(Deploy command) {
         wsClient.send("!listenToAny");
         wsClient.send("!extended { name : Deploy }");
+    }
+
+    @Override
+    public void handle(GetDeployment command) {
+        wsClient.send("!getSnapshot\n" +
+                "  path : /");
     }
 }

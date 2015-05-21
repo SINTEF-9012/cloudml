@@ -152,7 +152,7 @@ class Facade implements CloudML, CommandHandler {
      *
      * @param event the event to dispatch
      */
-    private void dispatch(Event event) {
+    public void dispatch(Event event) {
         for (EventHandler handler: handlers) {
             event.accept(handler);
         }
@@ -567,7 +567,7 @@ class Facade implements CloudML, CommandHandler {
         if (isDeploymentLoaded()) {
             final ComponentList data = new ComponentList(command, deploy.getComponents());
             dispatch(new Message(command, Category.INFORMATION, data.toString()));
-
+            dispatch(data);
         } else {
             reportNoDeploymentLoaded(command);
         }
@@ -579,7 +579,7 @@ class Facade implements CloudML, CommandHandler {
             final Collection<ComponentInstance<? extends Component>> instances = deploy.getComponentInstances().toList();
             final ComponentInstanceList data = new ComponentInstanceList(command, instances);
             dispatch(new Message(command, Category.INFORMATION, data.toString()));
-
+            dispatch(data);
         } else {
             reportNoDeploymentLoaded(command);
 
@@ -698,6 +698,11 @@ class Facade implements CloudML, CommandHandler {
         dispatch(new Message(command, Category.INFORMATION, "Start online data migration..."));
         DataMigration dm= new DataMigration();
         dm.switchOverPartitioned(command.getSource(),command.getDestination(),command.getNbThread(), command.getVdpSize());
+    }
+
+    @Override
+    public void handle(GetDeployment command) {
+
     }
 
 

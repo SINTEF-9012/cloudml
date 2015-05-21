@@ -289,4 +289,8 @@ public class CommandFactory {
     public CloudMlCommand onlineMigration(final String source, final String destination, final int nbThreads, final int vdpSize){
         return new onlineMigration(source,destination,nbThreads,vdpSize);
     }
+
+    public CloudMlCommand getDeployment(){
+        return new GetDeployment();
+    }
 }

@@ -22,6 +22,8 @@
  */
 package org.cloudml.facade.util;
 
+import org.cloudml.facade.RemoteFacade;
+import org.cloudml.facade.events.Message;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ServerHandshake;
@@ -37,9 +39,11 @@ public class WSClient extends WebSocketClient {
 
     private Boolean connected=false;
     private static final Logger journal = Logger.getLogger(WSClient.class.getName());
+    private final RemoteFacade facade;
 
-    public WSClient(URI serverURI) throws InterruptedException {
+    public WSClient(URI serverURI, RemoteFacade facade) throws InterruptedException {
         super(serverURI,new Draft_17());
+        this.facade=facade;
     }
 
     @Override
@@ -51,6 +55,7 @@ public class WSClient extends WebSocketClient {
     @Override
     public void onMessage(String s) {
         journal.log(Level.INFO, ">> "+s);
+        facade.dispatch(new Message(Message.Category.INFORMATION, s));
     }
 
     @Override

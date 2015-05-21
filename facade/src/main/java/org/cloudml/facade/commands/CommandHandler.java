@@ -85,5 +85,7 @@ public interface CommandHandler {
     public void handle(offlineMigration command);
 
     public void handle(onlineMigration command);
+
+    public void handle(GetDeployment command);
     
 }
