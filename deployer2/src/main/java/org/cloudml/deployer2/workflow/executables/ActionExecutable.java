@@ -175,12 +175,12 @@ public class ActionExecutable {
 //                                          method.invoke(resource, port, debugMode);
                                           break;
                 case "stopInternalComponent": journal.log(Level.INFO, "Action: Stop component " + componentInstanceName);
-                                              method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, boolean.class});
-                                              method.invoke(instance, debugMode);
+//                                              method = cls.getDeclaredMethod(methodName, new Class[]{InternalComponentInstance.class, boolean.class});
+//                                              method.invoke(instance, debugMode);
                                               break;
                 case "terminateVM":  journal.log(Level.INFO, "Action: Stop vm " + externalComponent);
-                                     method = cls.getDeclaredMethod(methodName, new Class[]{VMInstance.class, boolean.class});
-                                     method.invoke(vm, debugMode);
+//                                     method = cls.getDeclaredMethod(methodName, new Class[]{VMInstance.class, boolean.class});
+//                                     method.invoke(vm, debugMode);
                                      break;
             }
         }

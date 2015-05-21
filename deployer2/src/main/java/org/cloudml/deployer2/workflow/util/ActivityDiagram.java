@@ -169,15 +169,7 @@ public class ActivityDiagram  {
                 configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()), targetModel.getRelationshipInstances());
 //            configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
-            // if we do redeployment, we have to clean deployment plan from old nodes and edges
-            ActivityBuilder.getActivity().getEdges().removeAll(oldEdges);
-            //with nodes removeAll removes both IPAddresses nodes, so here is workaround to avoid that
-            for (ActivityNode node:oldNodes){
-                if (ActivityBuilder.getActivity().getNodes().contains(node))
-                    ActivityBuilder.getActivity().getNodes().remove(node);
-                if (node instanceof ActivityFinalNode)
-                    break;
-            }
+            removeOldActivityDiagram();
 
             // in case we only rmove things, our adaptation plan shall start here
             if (ActivityBuilder.getStartNode() == null && ActivityBuilder.getFinalNode() == null)
@@ -233,6 +225,39 @@ public class ActivityDiagram  {
 //                journal.log(Level.INFO, ">> SLA management not started");
 //            }
 //        }
+    }
+
+    private void removeOldActivityDiagram() {
+        boolean plansAreDifferent = true;
+
+        if (ActivityBuilder.getActivity().getEdges().size() == oldEdges.size()) {
+            for (int i = 0; i < ActivityBuilder.getActivity().getEdges().size(); i++) {
+                if (ActivityBuilder.getActivity().getEdges().get(i) != oldEdges.get(i))
+                    plansAreDifferent = false;
+            }
+        }
+
+        if (ActivityBuilder.getActivity().getNodes().size() == oldNodes.size()) {
+            for (int i = 0; i < ActivityBuilder.getActivity().getNodes().size(); i++) {
+                if (ActivityBuilder.getActivity().getNodes().get(i) != oldNodes.get(i))
+                    plansAreDifferent = false;
+            }
+        }
+
+        if (plansAreDifferent) {
+            // if we do redeployment, we have to clean deployment plan from old nodes and edges
+            ActivityBuilder.getActivity().getEdges().removeAll(oldEdges);
+            //with nodes removeAll removes both IPAddresses nodes, so here is workaround to avoid that
+            for (ActivityNode node : oldNodes) {
+                if (ActivityBuilder.getActivity().getNodes().contains(node))
+                    ActivityBuilder.getActivity().getNodes().remove(node);
+                if (node instanceof ActivityFinalNode)
+                    break;
+            }
+        } else {
+            ActivityBuilder.getActivity().getEdges().clear();
+            ActivityBuilder.getActivity().getNodes().clear();
+        }
     }
 
     // connects remove action from the diff part to the end of graph. This remove action has incoming control edge
@@ -306,14 +331,7 @@ public class ActivityDiagram  {
 //        configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
 
         // if we do redeployment, we have to clean deployment plan from old nodes and edges
-        ActivityBuilder.getActivity().getEdges().removeAll(oldEdges);
-        //with nodes removeAll removes both IPAddresses nodes, so here is workaround to avoid that
-        for (ActivityNode node:oldNodes){
-            if (ActivityBuilder.getActivity().getNodes().contains(node))
-                ActivityBuilder.getActivity().getNodes().remove(node);
-            if (node instanceof ActivityFinalNode)
-                break;
-        }
+        removeOldActivityDiagram();
 
         //removed stuff
         unconfigureRelationships(diff.getRemovedRelationships());
@@ -996,25 +1014,27 @@ public class ActivityDiagram  {
 
                     // find out if some components must be started before this one
                     ArrayList<String> providers = new ArrayList<String>();
+                    //TODO some components may have to be started not because required port, but because require execution platform. Refactor
                     for (RequiredPort port:x.getType().getRequiredPorts().toList()){
                         if (port.isMandatory()) {
                             for (RelationshipInstance conn : relationshipInstances) {
                                 if (port.equals(conn.getRequiredEnd().getType())){
                                     String provider = conn.getProvidedEnd().getOwner().get().getName();
-                                    providers.add(provider);
+                                    if (!providers.contains(provider))
+                                        providers.add(provider);
                                 }
                             }
                         }
                     }
 
-                    //TODO - check what happens when components are removed
-                    // this code snippet is related to diff. Currently - works for cases when new components are added
-                    boolean drawConnections = true;
-                    for (ComponentInstance component:alreadyStarted){
-                        if (providers.contains(component.getName())){
-                            providers.remove(component.getName());
-                        }
-                    }
+//                    //TODO - check what happens when components are removed
+//                    // this code snippet is related to diff. Currently - works for cases when new components are added
+//                    boolean drawConnections = true;
+//                    for (ComponentInstance component:alreadyStarted){
+//                        if (providers.contains(component.getName())){
+//                            providers.remove(component.getName());
+//                        }
+//                    }
                     ArrayList<ActivityEdge> edgesFromConfigureConnections = new ArrayList<>();
 
                     // number of providers will be equal to number of forks after connection configuration
@@ -1103,6 +1123,7 @@ public class ActivityDiagram  {
                     } else {
                         // if no joins, then there was no connection configuration commands and previous action was executeInstall
                         for (Action action:ActivityBuilder.getActions()){
+                            //TODO theoritically, component may not have install command, and previous could be upload or retrieve, but this is highly unlikely
                             if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance)action.getInputs().get(1)).getName().equals(x.getName())) {
                                 action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
                                 int size = action.getOutgoing().size();
@@ -2054,7 +2075,9 @@ public class ActivityDiagram  {
             Join joinRelationships = (Join) ActivityBuilder.forkOrJoin(relationships.size(), false, false);
             ActivityBuilder.getActivity().getEdges().removeAll(joinRelationships.getIncoming());
             joinRelationships.getIncoming().clear();
-            joinRelationships.getIncoming().addAll(fromUnconfigure);
+            for (ActivityEdge edge:fromUnconfigure){
+                joinRelationships.addEdge(edge, ActivityNode.Direction.IN);
+            }
 
         } else if (!relationships.isEmpty()){
             ActivityEdge incoming = new ActivityEdge();
@@ -2082,7 +2105,7 @@ public class ActivityDiagram  {
                 Fork forkResources = (Fork) ActivityBuilder.forkOrJoin(2, false, true);
                 ActivityBuilder.getActivity().removeEdge(forkResources.getIncoming().get(0));
                 forkResources.getIncoming().clear();
-                forkResources.getIncoming().add(incomingEdge);
+                forkResources.addEdge(incomingEdge, ActivityNode.Direction.IN);
                 ActivityBuilder.getActivity().addEdge(incomingEdge);
 
                 Action clientAction = ActivityBuilder.action(forkResources.getOutgoing().get(0), null, clientResource, "unconfigureWithIP");
