@@ -98,11 +98,22 @@ public class SSHConnector {
             session = jsch.getSession(user, host, 22);
             if(!keyPath.equals("")){
                 journal.log(Level.INFO, ">> Connection using an ssh key");
-                jsch.addIdentity(keyPath);
+                if(keyPath.endsWith(".pem")){
+                    jsch.addIdentity(keyPath);
+                }else{
+                    final byte[] prvkey = keyPath.getBytes(); // Private key must be byte array
+                    final byte[] emptyPassPhrase = new byte[0]; // Empty passphrase for now, get real passphrase from MyUserInfo
+
+                    jsch.addIdentity(
+                            user,            // String userName
+                            prvkey,          // byte[] privateKey
+                            null,            // byte[] publicKey
+                            emptyPassPhrase  // byte[] passPhrase
+                    );
+                }
             }else{
                 session.setPassword(passwd);
             }
-
             session.setConfig(config);
             session.connect(0);
 

@@ -150,13 +150,20 @@ public class JCloudsConnector implements Connector{
     private org.jclouds.domain.LoginCredentials.Builder initCredentials(String login, String key){
         String contentKey;
         org.jclouds.domain.LoginCredentials.Builder b= LoginCredentials.builder();
-        try {
-            contentKey = FileUtils.readFileToString(new File(key));
+        File f = new File(key);
+        if(f.exists() && !f.isDirectory()) {
+            try {
+                contentKey = FileUtils.readFileToString(new File(key));
+                b.user(login);
+                b.noPassword();
+                b.privateKey(contentKey);
+            } catch (IOException e) {
+                journal.log(Level.SEVERE, e.getMessage());
+            }
+        }else{
             b.user(login);
             b.noPassword();
-            b.privateKey(contentKey);
-        } catch (IOException e) {
-            journal.log(Level.SEVERE, e.getMessage());
+            b.privateKey(key);
         }
         return b;
     }

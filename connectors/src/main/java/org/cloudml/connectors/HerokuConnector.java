@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import com.heroku.api.*;
 import com.heroku.api.connection.ConnectionFactory;
+import com.heroku.platform.api.AppTransfer;
 
 /**
  * Created by ferrynico on 06/03/15.
@@ -41,9 +42,12 @@ public class HerokuConnector implements PaaSConnector {
 
     @Override
     public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
-        App application=new App().named(applicationName);
-        App a=api.createApp(application);
-        return a.getWebUrl();
+        if(api.isAppNameAvailable(applicationName)){
+            App application=new App().named(applicationName);
+            App a=api.createApp(application);
+            return a.getWebUrl();
+        }
+        throw new IllegalArgumentException("Application name not available!");
     }
 
     @Override
@@ -98,6 +102,6 @@ public class HerokuConnector implements PaaSConnector {
 
     @Override
     public void deleteApp(String appName) {
-
+        api.destroyApp(appName);
     }
 }

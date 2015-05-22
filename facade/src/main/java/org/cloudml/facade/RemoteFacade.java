@@ -34,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.amazonaws.util.StringInputStream;
+import org.apache.commons.io.FileUtils;
+import org.cloudml.core.VM;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.Deployment;
 import org.cloudml.core.Provider;
@@ -91,6 +93,13 @@ public class RemoteFacade extends Facade{
                         password=p.getCredentials().getPassword();
                     MemoryCredentials mc=new MemoryCredentials(login, password);
                     p.setCredentials(mc);
+                }
+            }
+            for(VM v : temp.getComponents().onlyVMs()){
+                File file = new File(v.getPrivateKey());
+                if(file.exists() && !file.isDirectory()) {
+                    String contentKey = FileUtils.readFileToString(new File(v.getPrivateKey()));
+                    v.setPrivateKey(contentKey);
                 }
             }
             JsonCodec jsonCodec=new JsonCodec();
