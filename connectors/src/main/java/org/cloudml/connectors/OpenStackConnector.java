@@ -306,6 +306,7 @@ public class OpenStackConnector implements Connector{
             if(((NodeMetadata)cm).getPublicAddresses().size() > 0)
                 a.setPublicAddress(((NodeMetadata)cm).getPublicAddresses().iterator().next());
             a.setId(cm.getId());
+            a.setStatus(ComponentInstance.State.RUNNING);
         }
     }
 
@@ -344,6 +345,7 @@ public class OpenStackConnector implements Connector{
 		/* UPDATE THE MODEL */
         if(cm != null){
             updateVMMetadata(a);
+            state=ComponentInstance.State.RUNNING;
         }else{
             Template template=null;
             NodeMetadata nodeInstance = null;

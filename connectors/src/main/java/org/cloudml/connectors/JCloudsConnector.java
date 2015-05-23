@@ -247,6 +247,7 @@ public class JCloudsConnector implements Connector{
         if(cm != null){
             a.setPublicAddress(getVMById(cm.getId()).getPublicAddresses().iterator().next());
             a.setId(cm.getId());
+            a.setStatus(ComponentInstance.State.RUNNING);
         }
     }
 
@@ -265,6 +266,7 @@ public class JCloudsConnector implements Connector{
         if(cm != null){
             if(cm.getStatus() != NodeMetadata.Status.TERMINATED){
                 updateVMMetadata(a);
+                state = ComponentInstance.State.RUNNING;
             }else{
                 throw new IllegalStateException("A VM NAMED "+a.getName()+" ALREADY EXIST AND IS IN TERMINATED STATE!!!");
             }
