@@ -69,6 +69,7 @@
                     <finalName>CloudML-Websocket</finalName>
                     <descriptors>
                         <descriptor>../assembly/zip.xml</descriptor>
+                        <descriptor>../assembly/tar.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
