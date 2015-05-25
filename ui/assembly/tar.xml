@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    This file is part of CloudML [ http://cloudml.org ]
+
+    Copyright (C) 2012 - SINTEF ICT
+    Contact: Franck Chauvel <franck.chauvel@sintef.no>
+
+    Module: root
+
+    CloudML is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
+
+    CloudML is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General
+    Public License along with CloudML. If not, see
+    <http://www.gnu.org/licenses/>.
+
+-->
+
+<assembly>
+
+    <id>distribution</id>
+
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+
+        <fileSet>
+            <directory>src/main/resources/</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>*.properties</include>
+                <include>*.ps1</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+
+    </fileSets>
+
+    <dependencySets>
+
+        <dependencySet>
+            <outputDirectory>/distribution/</outputDirectory>
+            <scope>runtime</scope>
+            <useProjectArtifact>true</useProjectArtifact>
+            <useProjectAttachments>true</useProjectAttachments>
+            <unpack>false</unpack>
+        </dependencySet>
+
+    </dependencySets>
+
+</assembly>
