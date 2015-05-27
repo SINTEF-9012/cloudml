@@ -130,18 +130,30 @@ public class CloudSigmaConnector implements Connector {
         runtimeInformation=new HashMap<String, String>();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
 
-        // First of all we're going to select the desired drive from the library
-        FluentIterable<LibraryDrive> drives = cloudSigmaApi.listLibraryDrives().concat();
-        DriveInfo libraryDrive =null;
+        // First try to find the desired template drive in MyDrives
+        DriveInfo driveToClone =null;
+        FluentIterable<DriveInfo> drives = cloudSigmaApi.listDrivesInfo().concat();
         for(DriveInfo d : drives){
-            if(d.getName().contains(vm.getImageId())){
-                libraryDrive =d;
+            if(d.getName().contains(vm.getImageId()) && 
+               d.getStatus() == DriveStatus.UNMOUNTED){
+                driveToClone =d;
                 break;
+            }
+        }
+        
+        if(null == driveToClone) {
+            // We had no luck with MyDrives, so try the market place / library
+            FluentIterable<LibraryDrive> libraryDrives = cloudSigmaApi.listLibraryDrives().concat();
+            for(DriveInfo d : libraryDrives){
+                if(d.getName().contains(vm.getImageId())){
+                    driveToClone =d;
+                    break;
+                }
             }
         }
 
         // Next step is to clone the drive and identify it in our drive list
-        cloudSigmaApi.cloneLibraryDrive(libraryDrive.getUuid(), null);
+        cloudSigmaApi.cloneLibraryDrive(driveToClone.getUuid(), null);
 
         try {//TODO: to be removed
             Thread.sleep(60000);
