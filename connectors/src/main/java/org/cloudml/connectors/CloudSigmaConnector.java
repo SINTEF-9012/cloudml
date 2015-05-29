@@ -26,7 +26,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
-import net.flexiant.extility.Firewall;
 import org.apache.commons.io.FileUtils;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.VM;
@@ -129,7 +128,7 @@ public class CloudSigmaConnector implements Connector {
         VM vm = a.getType();
         runtimeInformation=new HashMap<String, String>();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
-
+        
         // First try to find the desired template drive in MyDrives
         DriveInfo driveToClone =null;
         FluentIterable<DriveInfo> drives = cloudSigmaApi.listDrivesInfo().concat();
@@ -153,7 +152,12 @@ public class CloudSigmaConnector implements Connector {
         }
 
         // Next step is to clone the drive and identify it in our drive list
-        cloudSigmaApi.cloneLibraryDrive(driveToClone.getUuid(), null);
+        LibraryDrive driveProperties = new LibraryDrive.Builder()
+                .name(a.getName() + "-root")
+                .description("root drive for " + vm.getImageId())
+                .media(MediaType.DISK)
+                .build();
+        cloudSigmaApi.cloneLibraryDrive(driveToClone.getUuid(), driveProperties);
 
         try {//TODO: to be removed
             Thread.sleep(60000);
@@ -165,7 +169,8 @@ public class CloudSigmaConnector implements Connector {
         DriveInfo cloned=null;
 
         for(DriveInfo d : concat){
-            if(d.getName().contains(vm.getImageId()) && d.getStatus() == DriveStatus.UNMOUNTED){
+            if(d.getName().equals(a.getName() + "-root") &&
+               d.getStatus() == DriveStatus.UNMOUNTED){
                 cloned = d;
                 break;
             }
