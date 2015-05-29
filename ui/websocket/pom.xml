@@ -68,7 +68,7 @@
                 <configuration>
                     <finalName>service</finalName>
                     <descriptors>
-                        <descriptor>../assembly/tar.xml</descriptor>
+                        <descriptor>../assembly/zip.xml</descriptor>
                         <descriptor>../assembly/standalone-jar.xml</descriptor>
                     </descriptors>
                 </configuration>
