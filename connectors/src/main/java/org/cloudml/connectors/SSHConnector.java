@@ -60,7 +60,19 @@ public class SSHConnector {
         try {
             session = jsch.getSession(user, host, 22);
             if(!keyPath.equals("")){
-                jsch.addIdentity(keyPath);
+                if(keyPath.endsWith(".pem")){
+                    jsch.addIdentity(keyPath);
+                }else{
+                    final byte[] prvkey = keyPath.getBytes(); // Private key must be byte array
+                    final byte[] emptyPassPhrase = new byte[0]; // Empty passphrase for now, get real passphrase from MyUserInfo
+
+                    jsch.addIdentity(
+                            user,            // String userName
+                            prvkey,          // byte[] privateKey
+                            null,            // byte[] publicKey
+                            emptyPassPhrase  // byte[] passPhrase
+                    );
+                }
             }else{
                 session.setPassword(passwd);
             }
@@ -70,7 +82,7 @@ public class SSHConnector {
             channel = session.openChannel("exec");
             ChannelExec channelExec=((ChannelExec)channel);
         } catch (JSchException e) {
-            journal.log(Level.SEVERE, e.getMessage());
+            journal.log(Level.SEVERE, "Connection not yet available or refused");
             return false;
         } finally {
             if(channel != null)

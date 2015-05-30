@@ -42,17 +42,22 @@ import org.cloudml.core.*;
 import org.jclouds.Constants;
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
+import org.jclouds.cloudstack.features.SnapshotApi;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.RunScriptOnNodesException;
 import org.jclouds.compute.domain.*;
+import org.jclouds.compute.domain.Image;
+import org.jclouds.compute.domain.Volume;
 import org.jclouds.domain.Location;
 import org.jclouds.domain.LocationBuilder;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ec2.EC2Api;
 import org.jclouds.ec2.compute.options.EC2TemplateOptions;
-import org.jclouds.ec2.domain.Snapshot;
+import org.jclouds.ec2.domain.*;
+import org.jclouds.ec2.options.CreateImageOptions;
+import org.jclouds.ec2.options.RegisterImageBackedByEbsOptions;
 import org.jclouds.io.Payloads;
 import org.jclouds.logging.config.NullLoggingModule;
 import org.jclouds.ssh.SshClient;
@@ -101,6 +106,7 @@ public class JCloudsConnector implements Connector{
         //loadBalancerCtx=builder.buildView(LoadBalancerServiceContext.class);
         compute=computeContext.getComputeService();
         this.provider = provider;
+        journal.log(Level.INFO, ">> Authenticated ...");
     }
 
     /**
@@ -153,7 +159,7 @@ public class JCloudsConnector implements Connector{
         File f = new File(key);
         if(f.exists() && !f.isDirectory()) {
             try {
-                contentKey = FileUtils.readFileToString(new File(key));
+                contentKey = FileUtils.readFileToString(f);
                 b.user(login);
                 b.noPassword();
                 b.privateKey(contentKey);
@@ -205,6 +211,7 @@ public class JCloudsConnector implements Connector{
         journal.log(Level.INFO, ">> "+ command);
 
         org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        journal.log(Level.INFO, ">> executing command..."+b.build());
         Map<? extends NodeMetadata, ExecResponse> responses = compute.runScriptOnNodesMatching(
                 runningInGroup(group),
                 exec(command),
@@ -236,6 +243,7 @@ public class JCloudsConnector implements Connector{
                         .wrapInInitScript(false));// run command directly
 
         journal.log(Level.INFO, ">> "+response.getOutput());
+        //s.execCommandSsh(command);
     }
 
     /**
@@ -247,7 +255,7 @@ public class JCloudsConnector implements Connector{
         if(cm != null){
             a.setPublicAddress(getVMById(cm.getId()).getPublicAddresses().iterator().next());
             a.setId(cm.getId());
-            a.setStatus(ComponentInstance.State.RUNNING);
+            runtimeInformation.put("publicAddress", a.getPublicAddress());
         }
     }
 
@@ -357,9 +365,23 @@ public class JCloudsConnector implements Connector{
         ElasticBlockStoreApi ebsClient = ec2api.getElasticBlockStoreApi().get();
         journal.log(Level.INFO, ">> Creating snapshot of VM: "+vmi.getName());
         Snapshot snapshot = ebsClient.createSnapshotInRegion("eu-west-1", nm.getHardware().getVolumes().get(0).getId());
+        String status="";
+        while (!status.toLowerCase().equals("completed")){
+            for(Snapshot s:ebsClient.describeSnapshotsInRegion("eu-west-1"))
+                if(s.getId().equals(snapshot.getId())){
+                    status=s.getStatus().name();
+                }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         journal.log(Level.INFO, ">> Snapshot created with ID: "+snapshot.getId());
         return snapshot.getId();
     }
+
+
 
     /**
      * Create an image of a VM
@@ -367,12 +389,13 @@ public class JCloudsConnector implements Connector{
      * @return  id of the image
      */
     public String createImage(VMInstance vmi){
+
         AMIApi ami=ec2api.getAMIApi().get();
         String id="";
         Image img = checkIfImageExist(vmi.getName()+"-image");
         if(img == null){
             journal.log(Level.INFO, ">> Creating an image of VM: "+vmi.getName());
-            id=ami.createImageInRegion(vmi.getId().split("/")[0],vmi.getName()+"-image",vmi.getId().split("/")[1]);
+            id=ami.createImageInRegion(vmi.getId().split("/")[0],vmi.getName()+"-image",vmi.getId().split("/")[1], CreateImageOptions.Builder.noReboot());
             String status="";
             while (!status.toLowerCase().equals("available")){
                 Image i=compute.getImage("eu-west-1/"+id);

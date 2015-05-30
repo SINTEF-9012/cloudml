@@ -24,7 +24,9 @@ package org.cloudml.connectors;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.commons.io.IOUtils;
@@ -55,18 +57,32 @@ public class DockerConnector {
 
     public void startDockerDaemon(String keyPath, String user, String host, String dockerPort){
         SSHConnector connector = new SSHConnector(keyPath,user,host);
-        connector.execCommandSsh("sudo docker -H 0.0.0.0 "+dockerPort+" -d");
+        connector.execCommandSsh("sudo docker -d -H 0.0.0.0:"+dockerPort);
     }
 
     public void commit(String msg){
-        dockerClient.commitCmd(msg);
+        dockerClient.commitCmd(msg).exec();
+    }
+
+    public Info getInfo(){
+        Info info = dockerClient.infoCmd().exec();
+        return info;
     }
 
     public void pullImage(String image){
         dockerClient.pullImageCmd(image).exec();
     }
 
-    public String createContainerWithPorts(String image, String command, int[] ports){
+    public void getImageList(){
+        dockerClient.listImagesCmd().exec();
+    }
+
+    public String createContainerWithPorts(String image, int[] ports, String command){
+        String[] words = command.split("\\s+");
+        return createContainerWithPorts(image, ports, words);
+    }
+
+    public String createContainerWithPorts(String image, int[] ports, String... command){
         ExposedPort[] exposedPorts=new ExposedPort[ports.length];
         for(int i=0;i < ports.length;i++){
             exposedPorts[i]=ExposedPort.tcp(ports[i]);
@@ -79,10 +95,13 @@ public class DockerConnector {
         return container.getId();
     }
 
-    public void BuildImageFromDockerFile(String path){
+    public void BuildImageFromDockerFile(String path, String tag){
         File baseDir = new File(path);
 
-        InputStream response = dockerClient.buildImageCmd(baseDir).exec();
+        InputStream response = dockerClient.buildImageCmd(baseDir)
+                .withNoCache()
+                .withTag(tag)
+                .exec();
 
         StringWriter logwriter = new StringWriter();
 
@@ -101,19 +120,33 @@ public class DockerConnector {
     }
 
     public String createContainer(String image, String command){
+        String[] words = command.split("\\s+");
+        return createContainer(image,words);
+    }
+
+    public String createContainer(String image, String... command){
         CreateContainerResponse container = dockerClient
                 .createContainerCmd(image)
-                .withCmd(command).exec();
+                .withCmd(command)
+                .exec();
         return container.getId();
     }
 
+    public void exec(String id, String... cmd){
+        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(id)
+                .withAttachStdout(true)
+                .withCmd(cmd).exec();
+    }
+
     public void startContainer(String id){
-        dockerClient.startContainerCmd(id);
+        dockerClient.startContainerCmd(id).exec();
     }
 
     public void stopContainer(String id){
-        dockerClient.stopContainerCmd(id);
+        dockerClient.stopContainerCmd(id).exec();
     }
+
+
 
 
 }
