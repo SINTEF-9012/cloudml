@@ -30,6 +30,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +45,11 @@ import org.cloudml.core.Provider;
 import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.credentials.MemoryCredentials;
 import org.cloudml.facade.commands.*;
+import org.cloudml.facade.events.ComponentList;
+import org.cloudml.facade.events.EventHandler;
+import org.cloudml.facade.events.Message;
 import org.cloudml.facade.util.WSClient;
+import org.cloudml.mrt.Coordinator;
 
 /**
  * Created by nicolasf on 17.02.15.
@@ -72,6 +79,16 @@ public class RemoteFacade extends Facade{
 
     public void stop(){
         wsClient.close();
+    }
+
+    @Override
+    public void handle(StartComponent command) {
+        wsClient.send("!extended { name: StartComponent, params: ["+command.getComponentId()+"] }");
+    }
+
+    @Override
+    public void handle(StopComponent command) {
+        wsClient.send("!extended { name: StopComponent, params: ["+command.getComponentId()+"] }");
     }
 
     @Override
@@ -114,6 +131,10 @@ public class RemoteFacade extends Facade{
         }
     }
 
+    @Override
+    public void handle(StoreDeployment command) {
+        dispatch(new Message(command, Message.Category.INFORMATION, "Most relevant approach getSnapshot and then load using codec. Then you can fully exploit the whole model facilities offered by CloudML"));
+    }
 
 
     @Override
@@ -126,5 +147,77 @@ public class RemoteFacade extends Facade{
     public void handle(GetDeployment command) {
         wsClient.send("!getSnapshot\n" +
                 "  path : /");
+    }
+
+    @Override
+    public void handle(ListComponents command) {
+        dispatch(new Message(command, Message.Category.INFORMATION, "Most relevant approach getSnapshot and then load using codec. Then you can fully exploit the whole model facilities offered by CloudML"));
+    }
+
+    @Override
+    public void handle(ListComponentInstances command) {
+        dispatch(new Message(command, Message.Category.INFORMATION, "Most relevant approach getSnapshot and then load using codec. Then you can fully exploit the whole model facilities offered by CloudML"));
+    }
+
+    @Override
+    public void handle(ViewComponent command) {
+        wsClient.send("!getSnapshot\n" +
+                "  path : /component[name='"+command.getComponentId()+"']");
+    }
+
+    @Override
+    public void handle(ViewComponentInstance command) {
+        wsClient.send("!getSnapshot\n" +
+                "  path : /componentInstances[name='"+command.getComponentId()+"']");
+    }
+
+    @Override
+    public void handle(ShotImage command) {
+        dispatch(new Message(command, Message.Category.INFORMATION, "Not relevant for remote server"));
+    }
+
+    @Override
+    public void handle(Snapshot command) {
+        wsClient.send("!extended { name: Snapshot, params: ["+command.getVmId()+"] }");
+    }
+
+    @Override
+    public void handle(ScaleOut command) {
+        wsClient.send("!extended { name: ScaleOut, params: ["+command.getVmId()+"] }");
+    }
+
+    @Override
+    public void handle(Image command) {
+        wsClient.send("!extended { name: Image, params: ["+command.getVmId()+"] }");
+    }
+
+    @Override
+    public void handle(Reset command) {
+        wsClient.send("!extended { name : Reset }");
+    }
+
+    @Override
+    public void handle(ValidateCommand command) {
+        dispatch(new Message(command, Message.Category.INFORMATION, "Not yet available for remote server"));
+    }
+
+    @Override
+    public void handle(DebugMode command) {
+        dispatch(new Message(command, Message.Category.INFORMATION, "Only available in Shell mode"));
+    }
+
+    @Override
+    public void handle(Burst command) {
+        wsClient.send("!extended { name: Burst, params: ["+command.getEcId()+","+command.getProviderID()+"] }");
+    }
+
+    @Override
+    public void handle(offlineMigration command) {
+        wsClient.send("!extended { name: OfflineDataMigration, params: ["+command.getSource()+","+command.getDestination()+","+command.getNbThread()+"] }");
+    }
+
+    @Override
+    public void handle(onlineMigration command) {
+        wsClient.send("!extended { name: OnlineDataMigration, params: ["+command.getSource()+","+command.getDestination()+","+command.getNbThread()+","+command.getVdpSize()+"] }");
     }
 }

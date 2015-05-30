@@ -67,6 +67,9 @@ public class FacadeBridge implements ModelRepo {
         else if("Deploy".equals(name)){
             command = factory.deploy();
         }
+        else if("Reset".equals(name)){
+            command = factory.reset();
+        }
         else if("StartArtefact".equals(name)){
             command = factory.startComponent((List)params);
         }
