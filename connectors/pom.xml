@@ -56,6 +56,8 @@
             <version>1.1.0</version>
         </dependency>-->
 
+
+
         <dependency>
             <groupId>eu.seaclouds</groupId>
             <artifactId>cloudfoundry-client-lib</artifactId>
@@ -81,17 +83,16 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.docker-java</groupId>
-            <artifactId>docker-java</artifactId>
-            <version>0.10.3</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.heroku.platform.api</groupId>
             <artifactId>api_2.10</artifactId>
             <version>0.0.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java</artifactId>
+            <version>1.3.0</version>
+        </dependency>
 
         <!-- CloudML module dependencies -->
         <dependency>
@@ -124,12 +125,6 @@
             <groupId>org.apache.jclouds.labs</groupId>
             <artifactId>cloudsigma2-zrh</artifactId>
             <version>1.8.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.jclouds.labs</groupId>
-            <artifactId>azurecompute</artifactId>
-            <version>1.9.0</version>
         </dependency>
 
         <dependency>
@@ -205,6 +200,23 @@
             <version>1.9.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.2.2</version>
+        </dependency>
 
         <dependency>
             <groupId>com.aragost.javahg</groupId>
@@ -223,6 +235,8 @@
             <artifactId>heroku-api</artifactId>
             <version>0.16</version>
         </dependency>
+
+
 
     </dependencies>
 
