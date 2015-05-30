@@ -26,7 +26,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
-import net.flexiant.extility.Firewall;
 import org.apache.commons.io.FileUtils;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.VM;
@@ -129,19 +128,36 @@ public class CloudSigmaConnector implements Connector {
         VM vm = a.getType();
         runtimeInformation=new HashMap<String, String>();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
-
-        // First of all we're going to select the desired drive from the library
-        FluentIterable<LibraryDrive> drives = cloudSigmaApi.listLibraryDrives().concat();
-        DriveInfo libraryDrive =null;
+        
+        // First try to find the desired template drive in MyDrives
+        DriveInfo driveToClone =null;
+        FluentIterable<DriveInfo> drives = cloudSigmaApi.listDrivesInfo().concat();
         for(DriveInfo d : drives){
-            if(d.getName().contains(vm.getImageId())){
-                libraryDrive =d;
+            if(d.getName().contains(vm.getImageId()) && 
+               d.getStatus() == DriveStatus.UNMOUNTED){
+                driveToClone =d;
                 break;
+            }
+        }
+        
+        if(null == driveToClone) {
+            // We had no luck with MyDrives, so try the market place / library
+            FluentIterable<LibraryDrive> libraryDrives = cloudSigmaApi.listLibraryDrives().concat();
+            for(DriveInfo d : libraryDrives){
+                if(d.getName().contains(vm.getImageId())){
+                    driveToClone =d;
+                    break;
+                }
             }
         }
 
         // Next step is to clone the drive and identify it in our drive list
-        cloudSigmaApi.cloneLibraryDrive(libraryDrive.getUuid(), null);
+        LibraryDrive driveProperties = new LibraryDrive.Builder()
+                .name(a.getName() + "-root")
+                .description("root drive for " + vm.getImageId())
+                .media(MediaType.DISK)
+                .build();
+        cloudSigmaApi.cloneLibraryDrive(driveToClone.getUuid(), driveProperties);
 
         try {//TODO: to be removed
             Thread.sleep(60000);
@@ -153,7 +169,8 @@ public class CloudSigmaConnector implements Connector {
         DriveInfo cloned=null;
 
         for(DriveInfo d : concat){
-            if(d.getName().contains(vm.getImageId()) && d.getStatus() == DriveStatus.UNMOUNTED){
+            if(d.getName().equals(a.getName() + "-root") &&
+               d.getStatus() == DriveStatus.UNMOUNTED){
                 cloned = d;
                 break;
             }
