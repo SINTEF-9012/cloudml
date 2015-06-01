@@ -22,6 +22,7 @@
  */
 package org.cloudml.codecs;
 
+
 import org.cloudml.core.*;
 import org.cloudml.core.RequiredPortInstance;
 
@@ -122,6 +123,11 @@ public class BridgeToKmf {
                 pkr.setRepositoryKey(pr.getRepositoryKey());
                 pkr.setManifestEntry(pr.getManifestEntry());
                 kElement.addPuppetResources(pkr);
+            }else if(r instanceof DockerResource){
+                DockerResource dr=(DockerResource)r;
+                net.cloudml.core.DockerResource dkr=(net.cloudml.core.DockerResource)kr;
+                dkr.setImage(dr.getImage());
+                dkr.setDockerFilePath(dr.getDockerFilePath());
             }else{
                 kElement.addResources(kr);
             }

@@ -624,6 +624,29 @@ public class BridgeToCloudML {
     }
 
 
+
+    private void converDockerResources(net.cloudml.core.CloudMLElementWithProperties kElement, WithResources element){
+        for (net.cloudml.core.DockerResource kr: kElement.getDockerResources()) {
+            DockerResource pr = new DockerResource(kr.getName(), kr.getInstallCommand(), kr.getDownloadCommand(), kr.getConfigureCommand(), kr.getStartCommand(), kr.getStopCommand());
+            pr.setRequireCredentials(kr.getRequireCredentials());
+            pr.setExecuteLocally(kr.getExecuteLocally());
+            Map<String, String> up = new HashMap<String, String>();
+            String kup = kr.getUploadCommand();
+            String[] ups = kup.split(";");
+            for (int i = 0; i < ups.length; i++) {
+                String[] com = ups[i].split(" ");
+                if (com.length >= 2) {
+                    up.put(com[0], com[1]);
+                }
+            }
+            pr.setUploadCommand(up);
+            convertProperties(kr, pr);
+
+            pr.setImage(kr.getImage());
+            pr.setDockerFilePath(kr.getDockerFilePath());
+        }
+    }
+
     private void convertPuppetResources(net.cloudml.core.CloudMLElementWithProperties kElement, WithResources element){
         for (net.cloudml.core.PuppetResource kr: kElement.getPuppetResources()) {
             PuppetResource pr = new PuppetResource(kr.getName(), kr.getInstallCommand(), kr.getDownloadCommand(), kr.getConfigureCommand(), kr.getStartCommand(), kr.getStopCommand());
@@ -673,8 +696,9 @@ public class BridgeToCloudML {
 
             if(kr instanceof net.cloudml.core.PuppetResource){
                 break;
+            }else if(kr instanceof net.cloudml.core.DockerResource){
+                break;
             }else{
-
                 element.getResources().add(r);
             }
         }

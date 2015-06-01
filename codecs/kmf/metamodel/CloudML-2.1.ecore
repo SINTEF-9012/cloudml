@@ -19,6 +19,8 @@
           eType="#//core/Resource" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="puppetResources" upperBound="-1"
           eType="#//core/PuppetResource" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="dockerResources" upperBound="-1"
+          eType="#//core/DockerResource"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Resource" eSuperTypes="#//core/CloudMLElementWithProperties">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="downloadCommand" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -237,6 +239,10 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="replicats" upperBound="-1"
           eType="#//core/VMInstance"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="DockerResource" eSuperTypes="#//core/Resource">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="image" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="dockerFilePath" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>
   </eSubpackages>
 </ecore:EPackage>
