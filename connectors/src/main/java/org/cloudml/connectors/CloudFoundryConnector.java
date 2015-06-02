@@ -96,9 +96,9 @@ public class CloudFoundryConnector implements PaaSConnector {
         }
         List<String> serviceNames = new ArrayList<String>();
         journal.log(Level.INFO, ">> Environment created ... "+staging);
-        if(connectedClient.getApplication(applicationName) != null){
+        /*if(connectedClient.getApplication(applicationName) != null){
             throw new IllegalStateException("Application name already used!");
-        }
+        }*/
         connectedClient.createApplication(applicationName, staging, DEFAULT_MEMORY, uris, serviceNames);
         journal.log(Level.INFO, ">> Environment created ... ");
         CloudApplication app = connectedClient.getApplication(applicationName);
