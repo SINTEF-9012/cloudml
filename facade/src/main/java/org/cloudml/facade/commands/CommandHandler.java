@@ -80,6 +80,8 @@ public interface CommandHandler {
 
     public void handle(DebugMode command);
 
+    public void handle(ExecutionMode command);
+
     public void handle(Burst command);
     
 }

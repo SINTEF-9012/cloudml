@@ -72,7 +72,7 @@ public class ActivityDiagram  {
     ComponentInstanceGroup<ComponentInstance<? extends Component>> alreadyStarted = new ComponentInstanceGroup<ComponentInstance<? extends Component>>();
     private Deployment currentModel;
     private Deployment targetModel;
-    private Coordinator coordinator;
+    private static Coordinator coordinator;
     private boolean statusMonitorActive;
     private StatusMonitor statusMonitor; //always check if active
 
@@ -614,6 +614,7 @@ public class ActivityDiagram  {
                     }
                 }
             }
+            coordinator.updateStatusInternalComponent(x.getType().getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
             jc.closeConnection();
         }
     }
@@ -747,28 +748,28 @@ public class ActivityDiagram  {
     }
 
 
-    private void startExecutes(InternalComponentInstance x){
-        VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
-        VM n = ownerVM.getType();
-
-        Connector jc = ConnectorFactory.createIaaSConnector(n.getProvider());
-
-        ComponentInstance host = x.getHost();
-
-        if (!alreadyStarted.contains(host)) {
-            if (host.isInternal()) {
-                startExecutes(host.asInternal());
-                for (Resource r : host.getType().getResources()) {
-                    String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-                    start(jc, n, ownerVM, startCommand, true);
-                }
-                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
-
-                alreadyStarted.add(host);
-            }
-        }
-        jc.closeConnection();
-    }
+//    private void startExecutes(InternalComponentInstance x){
+//        VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
+//        VM n = ownerVM.getType();
+//
+//        Connector jc = ConnectorFactory.createIaaSConnector(n.getProvider());
+//
+//        ComponentInstance host = x.getHost();
+//
+//        if (!alreadyStarted.contains(host)) {
+//            if (host.isInternal()) {
+//                startExecutes(host.asInternal());
+//                for (Resource r : host.getType().getResources()) {
+//                    String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
+//                    start(jc, n, ownerVM, startCommand, true);
+//                }
+//                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
+//
+//                alreadyStarted.add(host);
+//            }
+//        }
+//        jc.closeConnection();
+//    }
 
     private ActivityEdge buildExecutes(InternalComponentInstance x, ActivityEdge incoming) throws Exception {
         ActivityEdge outgoingFromBuildExecutes = incoming;
@@ -1258,17 +1259,18 @@ public class ActivityDiagram  {
      * @param configurationCommand the command to configure the component,
      *                             parameters are: IP IPDest portDest
      */
-    public static void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean keyRequired, boolean debugMode) {
+    public static void configure(Connector jc, VM n, VMInstance ni, String configurationCommand, Boolean keyRequired, String componentInstanceName, boolean debugMode) {
         if (debugMode){
-            journal.log(Level.INFO, "Configuration of " + ni.getName() + " is done");
+            journal.log(Level.INFO, "Configuration of " + ni.getType().getName() + " is done");
         } else {
-            journal.log(Level.INFO, "Configure " + ni.getName());
+            journal.log(Level.INFO, "Configure " + ni.getType().getName());
             jc = ConnectorFactory.createIaaSConnector(ni.getType().getProvider());
             if (!configurationCommand.equals("")) {
                 if (keyRequired)
                     jc.execCommand(ni.getId(), configurationCommand + " " + ni.getType().getProvider().getCredentials().getLogin() + " " + ni.getType().getProvider().getCredentials().getPassword(), "ubuntu", n.getPrivateKey());
                 else executeCommand(ni, jc, configurationCommand);
             }
+            coordinator.updateStatusInternalComponent(componentInstanceName, State.CONFIGURED.toString(), ActivityDiagram.class.getName());
             jc.closeConnection();
         }
     }
@@ -1281,16 +1283,17 @@ public class ActivityDiagram  {
      * @param ni           a VM instance
      * @param startCommand the command to start the component
      */
-    public static void start(Connector jc, VM n, VMInstance ni, String startCommand, boolean debugMode) {
+    public static void start(Connector jc, VM n, VMInstance ni, String startCommand, String componentInstanceName, boolean debugMode) {
         if (debugMode){
-            journal.log(Level.INFO, ni.getName() + " started");
+            journal.log(Level.INFO, ni.getType().getName() + " started");
         } else {
-            journal.log(Level.INFO, "Start " + ni.getName());
+            journal.log(Level.INFO, "Start " + ni.getType().getName());
             jc = ConnectorFactory.createIaaSConnector(ni.getType().getProvider());
             unlessNotNull("Cannot start without connector", jc, n, ni, startCommand);
             if (!startCommand.equals("")) {
                 executeCommand(ni, jc, startCommand);
             }
+            coordinator.updateStatusInternalComponent(componentInstanceName, State.RUNNING.toString(), ActivityDiagram.class.getName());
             jc.closeConnection();
         }
     }
@@ -1482,19 +1485,19 @@ public class ActivityDiagram  {
         } else {
             Provider p = n.getType().getProvider();
             Connector jc = ConnectorFactory.createIaaSConnector(p);
-//        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), ActivityDaigram.class.getName());
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), ActivityDiagram.class.getName());
             HashMap<String, String> runtimeInformation = jc.createInstance(n);
-//        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), ActivityDaigram.class.getName());
+            coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), ActivityDiagram.class.getName());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            // save IP
+            // save IP to the plan
             action.addOutput(runtimeInformation.get("publicAddress"));
 
-//        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),ActivityDaigram.class.getName());
+            coordinator.updateIP(n.getName(), runtimeInformation.get("publicAddress"), ActivityDiagram.class.getName());
             //enable the monitoring of the new machine
 //        if (statusMonitorActive) {
 //            statusMonitor.attachModule(jc);
@@ -1539,8 +1542,8 @@ public class ActivityDiagram  {
                 String pa = connector.getDBEndPoint(eci.getName(), 600);
                 eci.setPublicAddress(pa);
                 action.addOutput(pa);
-//            coordinator.updateIP(n.getName(),pa,ActivityDaigram.class.getName());
-//            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDaigram.class.getName());
+//            coordinator.updateIP(n.getName(),pa,ActivityDiagram.class.getName());
+//            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), ActivityDiagram.class.getName());
                 //execute the configure command
             /*if (!n.getType().getResources().isEmpty()) {
                 for (Resource r : n.getType().getResources()) {
@@ -1909,29 +1912,29 @@ public class ActivityDiagram  {
      * @param destinationPortNumber port of the server
      * @throws java.net.MalformedURLException
      */
-    private void configureWithIP(Resource r, PortInstance<? extends Port> i, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
-        if(DEBUG){
-            journal.log(Level.INFO, ">> Configure with IP ");
-            return;
-        }
-        Connector jc;
-        if (r != null) {
-            VMInstance ownerVM = (VMInstance) getDestination(i.getOwner().get());//TODO:generalization for PaaS
-            VM n = ownerVM.getType();
-            jc = ConnectorFactory.createIaaSConnector(n.getProvider());
-            //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-            jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
-            if (r.getConfigureCommand() != null) {
-                String configurationCommand = r.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
-            }
-            if (r.getInstallCommand() != null) {
-                String installationCommand = r.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-                configure(jc, n, ownerVM, installationCommand, r.getRequireCredentials(), true);
-            }
-            jc.closeConnection();
-        }
-    }
+//    private void configureWithIP(Resource r, PortInstance<? extends Port> i, String destinationIpAddress, String ipAddress, int destinationPortNumber) {
+//        if(DEBUG){
+//            journal.log(Level.INFO, ">> Configure with IP ");
+//            return;
+//        }
+//        Connector jc;
+//        if (r != null) {
+//            VMInstance ownerVM = (VMInstance) getDestination(i.getOwner().get());//TODO:generalization for PaaS
+//            VM n = ownerVM.getType();
+//            jc = ConnectorFactory.createIaaSConnector(n.getProvider());
+//            //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
+//            jc.execCommand(ownerVM.getId(), r.getRetrieveCommand(), "ubuntu", n.getPrivateKey());
+//            if (r.getConfigureCommand() != null) {
+//                String configurationCommand = r.getConfigureCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
+//            }
+//            if (r.getInstallCommand() != null) {
+//                String installationCommand = r.getInstallCommand() + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
+//                configure(jc, n, ownerVM, installationCommand, r.getRequireCredentials(), true);
+//            }
+//            jc.closeConnection();
+//        }
+//    }
 
     /**
      * Terminates a set of VMs

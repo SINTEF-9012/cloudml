@@ -33,6 +33,7 @@ import org.cloudml.deployer2.workflow.frontend.Browser;
 import org.cloudml.deployer2.workflow.util.ActivityDiagram;
 import org.cloudml.deployer2.workflow.util.ActivityDotCreator;
 import org.cloudml.deployer2.workflow.util.Parallel;
+import org.cloudml.deployer2.workflow.util.ParallelBFS;
 import org.cloudml.mrt.Coordinator;
 
 import java.awt.*;
@@ -47,6 +48,7 @@ public class ConcurrentDeployer {
     private ActivityDiagram diagram = new ActivityDiagram();
     private boolean debugMode = true;
     private boolean browserStarted = false;
+    private boolean parallelMode = false;
 
 //    private Deployment targetModel;
 
@@ -86,9 +88,12 @@ public class ConcurrentDeployer {
         }
 
         // traverse graph (execute deployment plan)
-        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
+        if (parallelMode) {
+            ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), debugMode);
+        } else {
+            Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
+        }
 //        System.out.println(ActivityBuilder.getActivity().toString());
-//        ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), debugMode);
     }
 
     public void deploy(Deployment model, CloudMLModelComparator diff){
@@ -107,7 +112,11 @@ public class ConcurrentDeployer {
         new ActivityDotCreator(ActivityBuilder.getActivity());
 
         // traverse graph (execute deployment plan)
-        Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
+        if (parallelMode) {
+            ParallelBFS bfs = new ParallelBFS(ActivityBuilder.getActivity(), debugMode);
+        } else {
+            Parallel parallel = new Parallel(ActivityBuilder.getActivity(), debugMode);
+        }
     }
 
     public void setCoordinator(Coordinator coordinator){
@@ -147,6 +156,10 @@ public class ConcurrentDeployer {
     public void reset(){
         diagram.reset();
     }
+
+    public void parallelModeOn(){parallelMode = true;}
+
+    public void parlelModeOff(){parallelMode = false;}
 
     // read model from json file
 //    private Deployment getDeployment(String pathToModel) {

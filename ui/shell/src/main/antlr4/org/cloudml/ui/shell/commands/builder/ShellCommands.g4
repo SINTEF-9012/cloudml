@@ -46,6 +46,7 @@ action
     |   'reset deployment'                                  # Reset
     |   'validate' noWarnings='no warnings'?                # Validate
     |   'debug mode' state=BOOL                             # DebugMode
+    |   'parallel mode' state=BOOL                          # ExecutionMode
     ;
 
 BOOL

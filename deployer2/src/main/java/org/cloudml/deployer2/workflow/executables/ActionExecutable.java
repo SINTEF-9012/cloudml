@@ -68,9 +68,7 @@ public class ActionExecutable {
             String externalComponent = null;
             ObjectNode container = null;
             if (methodName.contains("provision")) {
-                //TODO make more generic - in this case I know that I save IP to ObjectNode which goes after Join node or after
                 ActivityNode afterAction = action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
-//                Join dataJoin = (Join) action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.OUT).get(0).getTarget();
                 if (afterAction instanceof Join) {
                     container = (ObjectNode) afterAction.getOutgoing().get(0).getTarget();
                 } else if (afterAction instanceof ObjectNode){
@@ -110,7 +108,7 @@ public class ActionExecutable {
                     String port = command.split("::")[1];
                     String destinationVM = command.split("::")[2];
                     String destinationIP = getProvisionedVMaddress(destinationVM);
-                    String ip = getProvisionedVMaddress(vm.getName());
+                    String ip = vm.getPublicAddress();
                     command = actualCommand + " \"" + ip + "\" \"" + destinationIP + "\" " + port;
                 }
             }
@@ -163,12 +161,12 @@ public class ActionExecutable {
                                               method.invoke(cls, instance, vm, jc, debugMode);
                                               break;
                 case "configure": journal.log(Level.INFO, "Action: Configuring resource on " + componentInstanceName);
-                                  method = cls.getDeclaredMethod(methodName, new Class[]{Connector.class, VM.class, VMInstance.class, String.class, Boolean.class, boolean.class});
-                                  method.invoke(cls, jc, type, vm, command, requireCredentials, debugMode);
+                                  method = cls.getDeclaredMethod(methodName, new Class[]{Connector.class, VM.class, VMInstance.class, String.class, Boolean.class, String.class, boolean.class});
+                                  method.invoke(cls, jc, type, vm, command, requireCredentials, componentInstanceName, debugMode);
                                   break;
                 case "start": journal.log(Level.INFO, "Action: Starting " + componentInstanceName);
-                              method = cls.getDeclaredMethod(methodName, new Class[]{Connector.class, VM.class, VMInstance.class, String.class, boolean.class});
-                              method.invoke(cls, jc, type, vm, command, debugMode);
+                              method = cls.getDeclaredMethod(methodName, new Class[]{Connector.class, VM.class, VMInstance.class, String.class, String.class, boolean.class});
+                              method.invoke(cls, jc, type, vm, command, componentInstanceName, debugMode);
                               break;
                 case "unconfigureWithIP": journal.log(Level.INFO, "Action: unconfiguring relationship " + unconfigureRelationship);
 //                                          method = cls.getDeclaredMethod(methodName, new Class[]{Resource.class, PortInstance.class, boolean.class});

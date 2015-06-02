@@ -23,14 +23,11 @@
 package org.cloudml.ui.shell.commands;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.cloudml.facade.commands.CloudMlCommand;
 import org.cloudml.facade.commands.*;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsBaseVisitor;
 import org.cloudml.ui.shell.commands.builder.ShellCommandsParser;
-import org.cloudml.ui.shell.terminal.Terminal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static org.cloudml.facade.commands.ValidateCommand.REPORT_ONLY_ERRORS;
 import static org.cloudml.facade.commands.ValidateCommand.REPORT_WARNINGS_AND_ERRORS;
@@ -189,6 +186,11 @@ public class CloudMLCommandBuilder extends ShellCommandsBaseVisitor<CloudMlComma
     @Override
     public CloudMlCommand visitDebugMode(ShellCommandsParser.DebugModeContext ctx) {
         return new DebugMode(ctx.state.getText().equals("true"));
+    }
+
+    @Override
+    public CloudMlCommand visitExecutionMode(ShellCommandsParser.ExecutionModeContext ctx) {
+        return new ExecutionMode(ctx.state.getText().equals("true"));
     }
 
     @Override

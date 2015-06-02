@@ -535,6 +535,19 @@ class Facade implements CloudML, CommandHandler {
         dispatch(success);
     }
 
+
+    public void handle(ExecutionMode command){
+        final Message success;
+        if(command.isParallel()) {
+            deployer.parallelModeOn();
+            success = new Message(command, Category.INFORMATION, "Parallel execution mode activated.");
+        }else{
+            deployer.parlelModeOff();
+            success = new Message(command, Category.INFORMATION, "Parallel execution mode stopped. Switched to concurrent execution.");
+        }
+        dispatch(success);
+    }
+
     @Override
     public void handle(Burst command){
         dispatch(new Message(command, Category.INFORMATION, "Bursting out External Component: " + command.getEcId()+" to "+ command.getProviderID()));
