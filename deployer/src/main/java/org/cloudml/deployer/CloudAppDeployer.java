@@ -1301,6 +1301,18 @@ public class CloudAppDeployer {
     }
 
     public void setAllEnvVarComponent(Deployment d){
+        Map<String, String> env = System.getenv();
+        String ip="";
+        String port="";
+        if(env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP")
+                && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")){
+            ip=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
+            port=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+        }
+        for(VMInstance c: d.getComponentInstances().onlyVMs()){
+            setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_IP",ip);
+            setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT",port);
+        }
         for(InternalComponentInstance c: d.getComponentInstances().onlyInternals()){
             for(Property p : c.getProperties()){
                 if(p.getName().contains("_ENV")){
