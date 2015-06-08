@@ -32,6 +32,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.cloudml.mrt.CommandReception;
 import org.cloudml.mrt.Coordinator;
@@ -49,6 +50,7 @@ public class CoordWsReception extends WebSocketServer implements CommandReceptio
 
     Coordinator coord = null;
     List<WebSocket> activeComponents = new ArrayList<WebSocket>();
+    private static final Logger journal = Logger.getLogger(CoordWsReception.class.getName());
 
     public CoordWsReception(int port){
         this(port, null);
@@ -72,6 +74,7 @@ public class CoordWsReception extends WebSocketServer implements CommandReceptio
     @Override
     public void onClose(WebSocket ws, int i, String string, boolean bln) {
         System.out.printf("%s left.\n", ws.getRemoteSocketAddress());
+        coord.removeListener(new WsPeerStub(ws));
         activeComponents.remove(ws);
     }
 
