@@ -96,7 +96,7 @@
 			"resources" : [{
 					"eClass" : "net.cloudml.core:Resource",
 					"name" : "no name",
-					"uploadCommand" : "./install_start_sensapp.sh /home/ubuntu",
+					"downloadCommand" : "wget -P ~ http://ferrynico.com/install_start_sensapp.sh",
 					"installCommand" : "cd ~; sudo bash install_start_sensapp.sh",
 					"startCommand" : "sudo service jetty start",
 					"requireCredentials" : false,
@@ -147,7 +147,7 @@
 			"resources" : [{
 					"eClass" : "net.cloudml.core:Resource",
 					"name" : "no name",
-					"downloadCommand" : "wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh",
+					"downloadCommand" : "wget -P ~ http://ferrynico.com/install_jetty.sh",
 					"installCommand" : "cd ~; sudo bash install_jetty.sh",
 					"stopCommand" : "sudo service jetty stop",
 					"requireCredentials" : false,
