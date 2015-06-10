@@ -61,7 +61,10 @@ public class NodificationCentre {
     void removeListener(Listener listener) {
         listeners.remove(listener);
     }
-    
+
+    void removeListener(PeerStub from){
+        listeners.values().removeAll(Collections.singleton(from));
+    }
     
     public static class ListeningTarget{
         PeerStub peer;

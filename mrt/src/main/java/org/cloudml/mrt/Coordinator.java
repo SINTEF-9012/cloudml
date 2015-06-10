@@ -177,6 +177,10 @@ public class Coordinator {
         notificationCentre.startListening();
     }
 
+    public void removeListener(PeerStub from){
+        notificationCentre.removeListener(from);
+    }
+
     public void setReception(CommandReception reception) {
         this.reception = reception;
     }
