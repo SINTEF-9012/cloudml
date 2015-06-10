@@ -182,10 +182,10 @@ public class FlexiantConnector implements Connector{
                 n.setNetworkName(a.getName());
                 template.getNics().add(n);
 
-				Disk d = new Disk();
-				d.setSize(vm.getMinStorage());
+                Disk d = new Disk();
+                d.setSize(vm.getMinStorage());
                 d.setResourceName(a.getName());
-				template.getDisks().add(d);
+                template.getDisks().add(d);
 
                 //TODO: Add disk
 
@@ -203,7 +203,7 @@ public class FlexiantConnector implements Connector{
 
                 Job startJob=service.changeServerStatus(a.getId(), ServerStatus.RUNNING, true, null, null);
                 service.waitForJob(startJob.getResourceUUID(), false);
-                Thread.sleep(90000);
+                Thread.sleep(100000);
 
                 //System.out.println(((Server) findObjectResourceByName(a.getName(), ResourceType.SERVER)).getInitialPassword());
             }
@@ -240,11 +240,10 @@ public class FlexiantConnector implements Connector{
         Server temp=(Server)findObjectResourceByID(id, ResourceType.SERVER);
         String ip=temp.getNics().get(0).getIpAddresses().get(0).getIpAddress();
         SSHConnector sc=new SSHConnector(keyPath, login, ip);
-        // Because we are using the research platform we need to wait a bit
-        try{
-            Thread.sleep(2000);
-        }catch(Exception ee){
-            journal.log(Level.SEVERE, ee.getMessage());
+        try {
+            Thread.sleep(25000);
+        } catch (InterruptedException e) {
+            journal.log(Level.SEVERE, e.getMessage());
         }
         sc.execCommandSsh(command);
     }

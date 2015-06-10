@@ -161,7 +161,7 @@ public class SSHConnector {
                 }
             }
             try{
-                Thread.sleep(22000);
+                Thread.sleep(25000);
             }catch(Exception ee){
                 journal.log(Level.SEVERE, ee.getMessage());
             }
