@@ -1275,13 +1275,19 @@ public class CloudAppDeployer {
                 value=c.externalHost().asVM().getId();
             }
             if(p.getValue().equals("${this.host.name}")){
-                value=c.externalHost().asVM().getName();
+                value=c.externalHost().getName();
+            }
+            if(p.getValue().equals("${this.host.type.name}")){
+                value=c.externalHost().getType().getName();
             }
             if(p.getValue().equals("${this.provider.id}")){
                 value=c.externalHost().asVM().getType().getProvider().getName();
             }
             if(p.getValue().equals("${this.name}") || p.getValue().equals("${this.id}")){
                 value=c.getName();
+            }
+            if(p.getValue().equals("${this.type.name}")){
+                value=c.getType().getName();
             }
         }else{
             try{
@@ -1296,7 +1302,7 @@ public class CloudAppDeployer {
             }
         }
         if(!value.equals("")){
-            setEnvVar(c.externalHost().asVM(), p.getName(), value);
+            setEnvVar(c.externalHost().asVM(), p.getName().split(":")[1], value);
         }
     }
 
@@ -1308,14 +1314,15 @@ public class CloudAppDeployer {
                 && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")){
             ip=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
             port=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+            for(VMInstance c: d.getComponentInstances().onlyVMs()){
+                setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_IP",ip);
+                setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT",port);
+            }
         }
-        for(VMInstance c: d.getComponentInstances().onlyVMs()){
-            setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_IP",ip);
-            setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT",port);
-        }
+
         for(InternalComponentInstance c: d.getComponentInstances().onlyInternals()){
             for(Property p : c.getProperties()){
-                if(p.getName().contains("_ENV")){
+                if(p.getName().startsWith("env:")){
                     if(c.getHost().asExternal().isVM()){
                         prepareSetEnv(d,c,p);
                     }
@@ -1324,7 +1331,7 @@ public class CloudAppDeployer {
         }
         for(InternalComponent ic: d.getComponents().onlyInternals()){
             for(Property p : ic.getProperties()){
-                if(p.getName().contains("_ENV")){
+                if(p.getName().contains("env:")){
                     for(InternalComponentInstance ici: d.getComponentInstances().ofType(ic.getName()).onlyInternals()){
                         prepareSetEnv(d,ici,p);
                     }
