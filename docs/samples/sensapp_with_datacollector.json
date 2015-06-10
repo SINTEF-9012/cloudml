@@ -96,7 +96,7 @@
 			"resources" : [{
 					"eClass" : "net.cloudml.core:Resource",
 					"name" : "no name",
-					"Command" : "./install_start_sensapp.sh /home/ubuntu",
+					"uploadCommand" : "./install_start_sensapp.sh /home/ubuntu",
 					"installCommand" : "cd ~; sudo bash install_start_sensapp.sh",
 					"startCommand" : "sudo service jetty start",
 					"requireCredentials" : false,
