@@ -23,10 +23,7 @@
 package org.cloudml.deployer;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
+import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1314,10 +1311,17 @@ public class CloudAppDeployer {
                 && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")){
             ip=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
             port=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
-            for(VMInstance c: d.getComponentInstances().onlyVMs()){
-                setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_IP",ip);
-                setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT",port);
+        }else{
+            try {
+                ip= InetAddress.getLocalHost().getHostAddress();
+                port="8170";
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
             }
+        }
+        for(VMInstance c: d.getComponentInstances().onlyVMs()){
+            setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_IP",ip);
+            setEnvVar(c,"MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT",port);
         }
 
         for(InternalComponentInstance c: d.getComponentInstances().onlyInternals()){
