@@ -315,7 +315,7 @@ It is possible to exploit properties in order to export environment variables on
 	"value" : "${this.id}"
 }
 ```
-The value field can be any string, an xpath expression referring to any value from other model's entities, or a specific substituable chain. The list of possible values are:
+The value field can be any string, an xpath expression referring to any value from other model's entities, or a specific substituable chain. The possible substituable chains are:
 * ${this.host.id}
 * ${this.host.name}
 * ${this.host.type.name}
