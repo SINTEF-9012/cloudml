@@ -65,6 +65,7 @@ The table below summarize for each provider supported by CloudML the value to be
 | Beanstalk | "beanstalk" or "ebs" |                                                                                       |
 | Amazon RDS | "rds" |                                                                                       |
 | Amazon SQS | "sqs" |                                                                                       |
+| CloudFoundry | "cloudfoundry" or "cf" | properties: org, space and endpoint                                                                                       |
 
 For instance, in the case of Amazon AWS login corresponds to the your access key id whilst passwd corresponds the secret access key.
 
