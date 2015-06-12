@@ -43,7 +43,7 @@ public class MonitoringPlatformConfiguration {
         private String ipAddress;
 
         public boolean isMonitoringPlatformGiven() {
-            return monitoringPlatformGiven;
+            return false;
         }
 
         public String getIpAddress() {
