@@ -13,9 +13,9 @@
 			"resources" : [{
 					"eClass" : "net.cloudml.core:Resource",
 					"name" : "no name",
-					"downloadCommand" : "wget -P ~ https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0-snapshot/data-collector-2.0-SNAPSHOT.jar; wget -P ~ http://downloads.sourceforge.net/project/sigar/sigar/1.6/hyperic-sigar-1.6.4.zip",
+					"downloadCommand" : "wget -P ~ https://github.com/imperial-modaclouds/modaclouds-data-collectors/releases/download/2.0/data-collector-2.0.jar; wget -P ~ http://downloads.sourceforge.net/project/sigar/sigar/1.6/hyperic-sigar-1.6.4.zip",
 					"installCommand" : "sudo apt-get install -y unzip; unzip hyperic-sigar*.zip; sudo apt-get install -y openjdk-7-jre-headless",
-					"startCommand" : "nohup java -Djava.library.path=~/dcs/hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0-SNAPSHOT.jar tower4clouds",
+					"startCommand" : "nohup java -Djava.library.path=~/dcs/hyperic-sigar-1.6.4/sigar-bin/lib/ -jar data-collector-2.0.jar tower4clouds",
 					"requireCredentials" : false,
 					"executeLocally" : false
 				}
