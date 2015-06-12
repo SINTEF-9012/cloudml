@@ -106,7 +106,6 @@ public class JCloudsConnector implements Connector{
         //loadBalancerCtx=builder.buildView(LoadBalancerServiceContext.class);
         compute=computeContext.getComputeService();
         this.provider = provider;
-        journal.log(Level.INFO, ">> Authenticated ...");
     }
 
     /**

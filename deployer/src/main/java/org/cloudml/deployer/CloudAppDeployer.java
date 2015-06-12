@@ -1348,7 +1348,7 @@ public class CloudAppDeployer {
 
 
     private void setEnvVar(VMInstance vmi, String varName, String value){
-        String command="echo "+varName+"="+value+" >> .bashrc";
+        String command="echo export "+varName+"="+value+" >> .bashrc";
         Connector jc = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
         jc.execCommand(vmi.getId(), command, "ubuntu", vmi.getType().getPrivateKey());
         jc.closeConnection();
