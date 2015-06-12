@@ -65,6 +65,7 @@ The table below summarize for each provider supported by CloudML the value to be
 | Beanstalk | "beanstalk" or "ebs" |                                                                                       |
 | Amazon RDS | "rds" |                                                                                       |
 | Amazon SQS | "sqs" |                                                                                       |
+| CloudFoundry | "cloudfoundry" or "cf" | properties: org, space and endpoint                                                                                       |
 
 For instance, in the case of Amazon AWS login corresponds to the your access key id whilst passwd corresponds the secret access key.
 
@@ -306,3 +307,21 @@ List of Execution bindings
 		}
 	]
 ```
+
+It is possible to exploit properties in order to export environment variables on the provisioned VMs. To do so, the name of the property should start with "env:". Once VMs are provisioned, for each of them, the deployer looks for all environment variables associated to the components hosted on the VM and export them.
+```json
+{
+	"eClass" : "net.cloudml.core:Property",
+	"name" : "env:MODACLOUDS_TOWER4CLOUDS_INTERNAL_COMPONENT_ID",
+	"value" : "${this.id}"
+}
+```
+The value field can be any string, an xpath expression referring to any value from other model's entities, or a specific substituable chain. The possible substituable chains are:
+* ${this.host.id}
+* ${this.host.name}
+* ${this.host.type.name}
+* ${this.provider.id}
+* ${this.name}
+* ${this.id}
+* ${this.type.name} 
+
