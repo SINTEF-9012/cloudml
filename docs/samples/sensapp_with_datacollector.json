@@ -5,16 +5,6 @@
 			"eClass" : "net.cloudml.core:Provider",
 			"name" : "aws-ec2",
 			"credentials" : "./credentials"
-		}, {
-			"eClass" : "net.cloudml.core:Provider",
-			"name" : "openstack-nova",
-			"credentials" : "credentialsOpenstack",
-			"properties" : [{
-					"eClass" : "net.cloudml.core:Property",
-					"name" : "endPoint",
-					"value" : "http://192.168.1.10:5000/v2.0"
-				}
-			]
 		}
 	],
 	"internalComponents" : [{
@@ -250,21 +240,19 @@
 	"vms" : [{
 			"eClass" : "net.cloudml.core:VM",
 			"name" : "ML",
-			"Region" : "RegionOne",
-			"minRam" : "2000",
 			"maxRam" : "0",
-			"minCores" : "2",
+			"minCores" : "1",
 			"maxCores" : "0",
-			"minStorage" : "50",
+			"minStorage" : "20",
 			"maxStorage" : "0",
 			"os" : "ubuntu",
-			"is64os" : true,
-			"imageId" : "RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4",
-			"securityGroup" : "sensapp",
 			"sshKey" : "cloudml",
-			"groupName" : "sensapp",
+			"groupName" : "stormgroup",
 			"privateKey" : "cloudml.pem",
-			"provider" : "providers[openstack-nova]",
+			"is64os" : true,
+			"location" : "eu-west-1b",
+			"securityGroup" : "SensApp",
+			"provider" : "providers[aws-ec2]",
 			"providedExecutionPlatforms" : [{
 					"eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
 					"name" : "m1Provided",
