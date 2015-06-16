@@ -49,7 +49,7 @@ function connect(host){
         socket.onmessage = function(msg){ 
             if(msg.data.indexOf("GetSnapshot") >= 0){
                 var array=msg.data.split("###");
-
+				array[2]=array[2].replace(/\r?\n|\r/g," ");
                 /* *********************
                 TODO refactor this dirty hack - checks if a function loadDeploymentModel is visible 
                  (called from demo.js in case we are running index.html with the low-level graph editor);
