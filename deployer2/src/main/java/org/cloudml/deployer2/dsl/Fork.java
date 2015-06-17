@@ -31,6 +31,8 @@ import java.util.ArrayList;
  */
 public class Fork extends ControlNode {
 
+    boolean isDataFork = false;
+
     public Fork(ActivityEdge incoming, ArrayList<ActivityEdge> outgoing) throws Exception {
         super();
         //validate that all edges are of the same nature - UML semantics
@@ -39,8 +41,16 @@ public class Fork extends ControlNode {
         this.addEdge(incoming, Direction.IN);
     }
 
+    public Fork(boolean isDataFork){
+        this.isDataFork = isDataFork;
+    }
+
     @Override
     public void addEdge(ActivityEdge edge, Direction direction) throws Exception {
+        if (edge.isObjectFlow() != isDataFork) {
+            String forkType = (isDataFork == true) ? "data Fork" : "control Fork";
+            throw new Exception("This fork is " + forkType + ", but edge is not. Connection not possible");
+        }
         if (direction.equals(Direction.IN)) {
             if (getIncoming().size() == 1){
                 throw new Exception("Fork node can not have more than one incoming edge");
@@ -51,5 +61,13 @@ public class Fork extends ControlNode {
             edge.setSource(this);
             getOutgoing().add(edge);
         }
+    }
+
+    public boolean isDataFork() {
+        return isDataFork;
+    }
+
+    public void setDataFork(boolean isDataFork) {
+        this.isDataFork = isDataFork;
     }
 }

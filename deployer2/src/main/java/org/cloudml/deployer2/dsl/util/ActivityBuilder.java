@@ -25,13 +25,13 @@ package org.cloudml.deployer2.dsl.util;
 import org.cloudml.deployer2.dsl.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Maksym on 24.03.2015.
  */
 public class ActivityBuilder {
 
-    public enum Edges {IN, OUT, INOUT, NOEDGES};
     public enum ObjectNodeType {PARAMETER, DATASTORE, EXPANSION, OBJECT};
     private static Activity activity = new Activity(new ArrayList<ActivityEdge>(), new ArrayList<ActivityNode>());
 
@@ -53,219 +53,166 @@ public class ActivityBuilder {
         }
     }
 
+    /*
+    ------------------------------------------ Methods to create different kinds of activity nodes----------------------------------------------
+     */
 
-    // *  initial node
-    // *! final node
-    // ===> control flow
-    // ---> data flow
-    // | fork
-    // |& join
-    // |_| object node
-    // () action
-
-    // returns initial node with an outgoing control edge *===>
+    // creates initial node
     public static ActivityInitialNode controlStart() throws Exception {
         ActivityInitialNode initial = new ActivityInitialNode();
-        ActivityEdge to = new ActivityEdge();
-        initial.addEdge(to, ActivityNode.Direction.OUT);
-        updateActivity(initial);
+//        ActivityEdge to = new ActivityEdge();
+//        initial.addEdge(to, ActivityNode.Direction.OUT);
+        getActivity().addNode(initial);
         return initial;
     }
 
-    // returns final node with incoming control edge ===>*!
+    // creates final node
     public static ActivityFinalNode controlStop() throws Exception {
         ActivityFinalNode finalNode = new ActivityFinalNode();
-        ActivityEdge toFinalNode = new ActivityEdge();
-        finalNode.addEdge(toFinalNode, ActivityNode.Direction.IN);
-        updateActivity(finalNode);
+//        ActivityEdge toFinalNode = new ActivityEdge();
+//        finalNode.addEdge(toFinalNode, ActivityNode.Direction.IN);
+        getActivity().addNode(finalNode);
         return finalNode;
     }
 
-    // returns object node of specific kind with dataflow edges: either --->|_| or |_|---> or --->|_|---> or |_|
-    public static ObjectNode objectNode(String kindOfObjects, Edges flows, ObjectNodeType returnType) throws Exception {
-        ActivityEdge dataFlow = new ActivityEdge(true);
-        ObjectNode node = null;
-        switch (returnType){
-            case PARAMETER: node = new ActivityParameterNode(kindOfObjects);
-                            break;
-            case DATASTORE: node = new DatastoreNode(kindOfObjects);
-                            break;
-            case EXPANSION: node = new ExpansionNode(kindOfObjects);
-                            break;
-            case OBJECT:    node = new ObjectNode(kindOfObjects);
-                            break;
-        }
-        switch (flows){
-            case IN:      node.addEdge(dataFlow, ActivityNode.Direction.IN);
-                          break;
-            case OUT:     node.addEdge(dataFlow, ActivityNode.Direction.OUT);
-                          break;
-            case INOUT:   if(node.getClass().equals(ActivityParameterNode.class)){
-                            throw new Exception("Proper edges fro ActivitiParameterNode are IN, OUT or NOEDGES");
-                          } else {
-                            node.addEdge(dataFlow, ActivityNode.Direction.IN);
-                            node.addEdge(dataFlow, ActivityNode.Direction.OUT);
-                          }
-                          break;
-            case NOEDGES: break;
-        }
-        updateActivity(node);
-        return node;
+    // creates fork node that can have only edges of the specified type
+    public static Fork forkNode(boolean isDataFork){
+        Fork fork =  new Fork(isDataFork);
+        updateActivity(fork);
+        return fork;
     }
 
-    //creates Object node with specific name to save IPs of VMs
-    public static ObjectNode createIPregistry(Edges flows, ObjectNodeType returnType) throws Exception {
-        return objectNode("Public Addresses", flows, returnType);
+    // creates join node that can have only edges of the specified type
+    public static Join joinNode(boolean isDataJoin){
+        Join join = new Join(isDataJoin);
+        updateActivity(join);
+        return join;
     }
 
-    // get node which holds public addresses of VMs and platforms
-    public static ObjectNode getIPregistry(){
-        ObjectNode registry = null;
-        for (ActivityNode node:getActivity().getNodes()){
-            if (node.getName().equals("Public Addresses")){
-                registry = (ObjectNode) node;
-            }
-        }
-        return registry;
-    }
-
-    // returns fork with a given number of outgoing eges (data or control): ===>|===> or --->|--->
-    //                                                                          |===>        |--->
-    // or returns join with the same semantics ===>|===> or --->|--->
-    //                                         ===>|        --->|
-    public static ControlNode forkOrJoin(int parallelEdges, boolean isDataFlow, boolean returnFork) throws Exception {
-        ActivityEdge edge;
-        ArrayList<ActivityEdge> parallel = new ArrayList<ActivityEdge>(parallelEdges);
-        if (isDataFlow) {
-            edge = new ActivityEdge(true);
-            while (parallel.size() < parallelEdges) {
-                parallel.add(new ActivityEdge(true));
-            }
-        } else {
-            edge = new ActivityEdge();
-            while (parallel.size() < parallelEdges) {
-                parallel.add(new ActivityEdge());
-            }
-        }
-        ControlNode node = (returnFork) ? new Fork(edge, parallel) : new Join(parallel, edge);
-        updateActivity(node);
-        return node;
-    }
-
-    // returns action                                                                          ===>()
-    // this action is already connected to data (unless null) and control source               --->()
-    public static Action action(ActivityEdge control, ActivityEdge data, Object input, String methodToCall) throws Exception {
+    // creates action node with an optional set of input data
+    public static Action actionNode(String methodToCall, Object... inputs){
         Action action = new Action(methodToCall);
-        action.addEdge(control, ActivityNode.Direction.IN);
-        getActivity().removeEdge(control); // to avoid duplication of edges
-        if (data != null) {
-            action.addEdge(data, ActivityNode.Direction.IN);
-            getActivity().removeEdge(data); // to avoid duplication of edges
+        if (inputs != null){
+            for (Object data:inputs)
+                action.addInput(data);
         }
-        if (input != null) {
-            action.addInput(input);
-        }
-        // add outgoing control flow. outgoing dataflow and actual objects shall be decided upon inside calling method. //TODO Issue is how to update activity with outgoing data edges
-        //action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
         updateActivity(action);
         return action;
     }
 
-    // sets outgoing edge of initial node as incoming of fork
-    public static void connectInitialToFork(ActivityInitialNode initial, Fork fork) throws Exception {
-        ActivityEdge forkIncoming = fork.getIncoming().get(0);
-        if (forkIncoming.isObjectFlow()){
-            throw new Exception("Initial node may be connected only to Fork with control flow edges, this fork has data flow edges");
-        } else {
-            // when we join initial node and fork we lose one edge, so remove it from activity
-            getActivity().removeEdge(forkIncoming);
-            // actually connect them via edges
-            fork.setIncoming(initial.getOutgoing());
+    // creates object node of the specified type
+    public static ObjectNode objectNode(String name, ObjectNodeType type) throws Exception {
+        ObjectNode node = null;
+        switch (type){
+            case PARAMETER: node = new ActivityParameterNode(name);
+                break;
+            case DATASTORE: node = new DatastoreNode(name);
+                break;
+            case EXPANSION: node = new ExpansionNode(name);
+                break;
+            case OBJECT:    node = new ObjectNode(name);
+                break;
         }
+        updateActivity(node);
+        return node;
     }
 
-    // connect Join to Final node
-    public static void connectJoinToFinal(Join join, ActivityFinalNode node) throws Exception {
-        ActivityEdge joinOutgoing = join.getOutgoing().get(0);
-        if (joinOutgoing.isObjectFlow()){
-            throw new Exception("Final node may be connected only with Join with control flow edges, this join node has data flow edges");
-        } else {
-            // when we join initial node and fork we lose one edge, so remove it from activity
-            getActivity().removeEdge(joinOutgoing);
-            // actually connect them via edges
-            join.setOutgoing(node.getIncoming());
-        }
+    // creates Object node with specific name to save IPs of VMs
+    public static ObjectNode createIPregistry() throws Exception {
+        return objectNode("Public Addresses", ObjectNodeType.OBJECT);
     }
 
-    // connect object node to fork node with data edges
-    public static void connectObjectToFork(ObjectNode node, Fork fork) throws Exception {
-        ActivityEdge forkIncoming = fork.getIncoming().get(0);
-        if (!forkIncoming.isObjectFlow()){
-            throw new Exception("Object node may be connected only to Fork with data flow edges, this fork has control flow edges");
-        } else if (node.getOutgoing().size() > 0){
-            // when we join object node and fork we lose one edge, so remove it from activity
-            getActivity().removeEdge(forkIncoming);
-            // actually connect them via edges
-            fork.setIncoming(node.getOutgoing());
-        } else {
-            node.setOutgoing(fork.getIncoming());
-        }
+    /*
+    ------------------------------------------Activity manipulation: connect, add, remove...----------------------------------------
+     */
+
+    // connect two nodes with data or control flow
+    public static void connect(ActivityNode from, ActivityNode to, boolean isControlFlow) throws Exception {
+        boolean exists = connectionExists(from, to, isControlFlow);
+        if (!exists){
+            ActivityEdge edge = new ActivityEdge(!isControlFlow);
+            from.addEdge(edge, ActivityNode.Direction.OUT);
+            to.addEdge(edge, ActivityNode.Direction.IN);
+            getActivity().getEdges().add(edge);
+        } else
+            throw new Exception("Such connection between the given nodes already exists");
     }
 
-
-    public static void connectJoinToObject(Join join, ObjectNode node) throws Exception {
-        ActivityEdge joinOutgoing = join.getOutgoing().get(0);
-        if (!joinOutgoing.isObjectFlow()){
-            throw new Exception("Object node may be connected only to Join with data flow edges, this join node has control flow edges");
-        } else if (node.getIncoming().size() > 0){
-            // when we connect object node and join node we lose one edge, so remove it from activity
-            getActivity().removeEdge(joinOutgoing);
-            // actually connect them via edges
-            join.setOutgoing(node.getIncoming());
-        } else {
-            node.setIncoming(join.getOutgoing());
-        }
-    }
-
-    // connects a set of actions without outgoing edges to Join nodes (control and maybe data join)
-    public static void connectActionsWithJoinNodes(ArrayList<Action> actions, Join control, Join data) throws Exception {
-        for (Action a:actions){
-            int index = actions.indexOf(a);
-            if (control != null) {
-                if (actions.size() > control.getIncoming().size())
-                    throw new Exception("Number of actions is bigger than the number of incoming control edges.");
-                ActivityEdge controlEdge = control.getIncoming().get(index);
-                a.addEdge(controlEdge, ActivityNode.Direction.OUT);
+    // remove data or control edge between two nodes
+    public static void disconnect(ActivityNode from, ActivityNode to, boolean isControlFlow) throws Exception {
+        boolean exists = connectionExists(from, to, isControlFlow);
+        if (exists){
+            ActivityEdge remove = null;
+            for (ActivityEdge edge:from.getOutgoing()){
+                if ((!edge.isObjectFlow() == isControlFlow) && edge.getTarget().equals(to)){
+                    remove = edge;
+                }
             }
-            if (data != null) {
-                if (actions.size() > data.getIncoming().size())
-                    throw new Exception("Number of actions is bigger than the number of incoming data edges.");
-                ActivityEdge dataEdge = data.getIncoming().get(index);
-                a.addEdge(dataEdge, ActivityNode.Direction.OUT);
+            if (remove != null) {
+                from.removeEdge(remove, ActivityNode.Direction.OUT);
+                to.removeEdge(remove, ActivityNode.Direction.IN);
+                deleteEdge(remove);
+            }
+        } else
+            throw new Exception("There is no connection between the given nodes");
+    }
+
+    // check if control (controlFlow=true) or data (controlFlow=false) connection between specified nodes exists already
+    private static boolean connectionExists(ActivityNode from, ActivityNode to, boolean controlFlow) {
+        boolean result = false;
+        for (ActivityEdge out:from.getOutgoing()){
+            if ((!out.isObjectFlow() == controlFlow) && out.getTarget().equals(to)) {
+                result = true;
+                break;
             }
         }
+        return result;
     }
 
-    // connects data Fork with actions
-    //@param fork - fork with outgoing edges
-    //@param actions - list of actions where each action has
-    public static void connectDataForkWithActions(Fork fork, ArrayList<Action> actions) throws Exception {
-        if (fork.getOutgoing().size() != actions.size()){
-            throw new Exception("Number of outgoing fork edges and number of actions doesn't match, check your code.");
-        }
-        ArrayList<ActivityEdge> forkOutgoing = new ArrayList<ActivityEdge>();
-        for (Action action:actions){
-            ActivityEdge data = action.getControlOrObjectFlowEdges(false, ActivityNode.Direction.IN).get(0);
-            forkOutgoing.add(data);
-        }
-        for (ActivityEdge edge:fork.getOutgoing()){
-            getActivity().removeEdge(edge); //avoid duplication
-        }
-        fork.setOutgoing(forkOutgoing);
+    // adds edge to the activity
+    public static void saveEdge(ActivityEdge edge){
+        getActivity().getEdges().add(edge);
     }
 
+    // removes edge from the activity
+    public static void deleteEdge(ActivityEdge edge){
+        if (getActivity().getEdges().contains(edge))
+            getActivity().getEdges().remove(edge);
+    }
 
-    // return only actions
+    // removes node and its incoming/outgoing edges from the activity
+    public static void deleteNode(ActivityNode node) throws Exception {
+        List<ActivityEdge> sourceEdges = new ArrayList<>();
+        List<ActivityEdge> targetEdges = new ArrayList<>();
+
+        // splitting into two for loops is necessary to avoid ConcurrentModificationException
+        if (node.getIncoming() != null && !node.getIncoming().isEmpty()){
+            for (ActivityEdge in:node.getIncoming())
+                sourceEdges.add(in);
+        }
+        for (ActivityEdge e:sourceEdges){
+            boolean isControlFlow = !e.isObjectFlow();
+            ActivityBuilder.disconnect(e.getSource(), node, isControlFlow);
+        }
+
+
+        if (node.getOutgoing() != null && !node.getOutgoing().isEmpty()){
+            for (ActivityEdge out:node.getOutgoing())
+                targetEdges.add(out);
+        }
+        for (ActivityEdge e:targetEdges){
+            boolean isControlFlow = !e.isObjectFlow();
+            ActivityBuilder.disconnect(node, e.getTarget(), isControlFlow);
+        }
+
+        getActivity().removeNode(node);
+    }
+
+    /*
+    ---------------------------------------------------------------GETTERS----------------------------------------------
+     */
+
+    // return only actions of the activity diagram
     public static ArrayList<Action> getActions(){
         ArrayList<Action> actions = new ArrayList<Action>();
         for (ActivityNode node:getActivity().getNodes()){
@@ -276,7 +223,18 @@ public class ActivityBuilder {
         return actions;
     }
 
-    //return only control nodes
+    // return only object nodes of the activity diagram
+    public static ArrayList<ObjectNode> getObjectNodes(){
+        ArrayList<ObjectNode> dataNodes = new ArrayList<>();
+        for (ActivityNode node:getActivity().getNodes()){
+            if (node instanceof ObjectNode){
+                dataNodes.add((ObjectNode) node);
+            }
+        }
+        return dataNodes;
+    }
+
+    //return only control nodes of the activity diagram
     public static ArrayList<ControlNode> getControlNodes(){
         ArrayList<ControlNode> controls = new ArrayList<ControlNode>();
         for (ActivityNode node:getActivity().getNodes()){
@@ -307,17 +265,15 @@ public class ActivityBuilder {
         return  finalNode;
     }
 
+    // get node which holds public addresses of VMs and platforms
+    public static ObjectNode getIPregistry(){
+        ObjectNode registry = null;
+        for (ActivityNode node:getActivity().getNodes()){
+            if (node.getName().equals("Public Addresses")){
+                registry = (ObjectNode) node;
+            }
+        }
+        return registry;
+    }
 
-//    public static void main (String[] args){
-//        try {
-//            ActivityInitialNode initial = ActivityBuilder.controlStart();
-//            System.out.println(ActivityBuilder.getActivity().toString());
-//            Fork fork = (Fork) ActivityBuilder.forkOrJoin(3,false,true);
-//            System.out.println(ActivityBuilder.getActivity().toString());
-//            ActivityBuilder.connectInitialToFork(initial, fork);
-//            System.out.println(ActivityBuilder.getActivity().toString());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 }

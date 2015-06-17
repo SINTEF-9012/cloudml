@@ -30,6 +30,7 @@ import java.util.ArrayList;
  * Created by Maksym on 13.03.2015.
  */
 public class Join extends ControlNode {
+    boolean isDataJoin = false;
 
     public Join(ArrayList<ActivityEdge> incoming, ActivityEdge outgoing) throws Exception {
         super();
@@ -39,8 +40,16 @@ public class Join extends ControlNode {
         this.addEdge(outgoing, Direction.OUT);
     }
 
+    public Join(boolean isDataJoin){
+        this.isDataJoin = isDataJoin;
+    }
+
     @Override
     public void addEdge(ActivityEdge edge, Direction direction) throws Exception {
+        if (edge.isObjectFlow() != isDataJoin) {
+            String joinType = (isDataJoin == true) ? "data Join" : "control Join";
+            throw new Exception("This join is " + joinType + ", but edge is not. Connection not possible");
+        }
         if (direction.equals(Direction.IN)) {
             edge.setTarget(this);
             getIncoming().add(edge);
@@ -51,6 +60,14 @@ public class Join extends ControlNode {
             edge.setSource(this);
             getOutgoing().add(edge);
         }
+    }
+
+    public boolean isDataJoin() {
+        return isDataJoin;
+    }
+
+    public void setDataJoin(boolean isDataJoin) {
+        this.isDataJoin = isDataJoin;
     }
 
 

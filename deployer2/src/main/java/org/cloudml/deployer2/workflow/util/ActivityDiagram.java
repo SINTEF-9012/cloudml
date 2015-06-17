@@ -145,12 +145,6 @@ public class ActivityDiagram  {
             CloudMLModelComparator diff = new CloudMLModelComparator(currentModel, targetModel);
             diff.compareCloudMLModel();
 
-            // to know what was dpeloyed before we add all old component instance to already deployed and started
-//            for (ComponentInstance component:currentModel.getComponentInstances()){
-//                alreadyDeployed.add(component);
-//                alreadyStarted.add(component);
-//            }
-
             updateCurrentModel(diff);
 
             // when we redeploy, old depoyment plan is in memory, so we save it separately before we add any new nodes
@@ -171,17 +165,16 @@ public class ActivityDiagram  {
 
             removeOldActivityDiagram();
 
-            // in case we only rmove things, our adaptation plan shall start here
+            // in case we only remove components, our adaptation plan shall start here
             if (ActivityBuilder.getStartNode() == null && ActivityBuilder.getFinalNode() == null)
                 ActivityBuilder.controlStart();
 
             //removed stuff
             /*
                 To keep it more or less simple: in each method check if FinalNodeExists.
-                If it does - remove final node and connect remove actions to the previous edge. Leave an outgoing edge from the remove action and
-                    add it to the Activity.
-                If it does not, get last edge from activity and connect actions to it. Again, leave some outgoing edge in the end.
-                Finally, after all remove actions get last outgoing edge and add Final node to it.
+                If it does - remove final node and connect remove actions to the node before last.
+                If it does not, get last node from activity and connect actions to it.
+                Finally, after all remove actions are created, get last node, create Final node, and connect last to final.
              */
             unconfigureRelationships(diff.getRemovedRelationships());
             stopInternalComponents(diff.getRemovedComponents());
@@ -190,13 +183,10 @@ public class ActivityDiagram  {
             // if final node does not exist, it means we have some remove actions, so we get last edge's Source and add Final node
             ActivityFinalNode finalNode = ActivityBuilder.getFinalNode();
             if (finalNode == null){
+                int last = ActivityBuilder.getActivity().getNodes().size() - 1;
+                ActivityNode source = ActivityBuilder.getActivity().getNodes().get(last);
                 ActivityFinalNode stop = ActivityBuilder.controlStop();
-                                                                            // index -2 because controlStop method just added one more edge
-                ActivityEdge lastEdge = ActivityBuilder.getActivity().getEdges().get(ActivityBuilder.getActivity().getEdges().size() - 2);
-                ActivityNode source = lastEdge.getSource();
-                source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
-                ActivityBuilder.getActivity().removeEdge(lastEdge);
-                source.addEdge(stop.getIncoming().get(0), ActivityNode.Direction.OUT);
+                ActivityBuilder.connect(source, stop, true);
             }
 
 
@@ -267,19 +257,23 @@ public class ActivityDiagram  {
             /*
               We need to substract as many edges from the last one, as input node has in total
              */
-            int discountedEdges = node.getIncoming().size() + node.getOutgoing().size();
-            ActivityEdge lastEdge = ActivityBuilder.getActivity().getEdges().get(ActivityBuilder.getActivity().getEdges().size() - 1 - discountedEdges);
-            ActivityNode source = lastEdge.getSource();
-            source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
-            ActivityBuilder.getActivity().removeEdge(lastEdge);
-            source.addEdge(node.getIncoming().get(0), ActivityNode.Direction.OUT);
+//            int discountedEdges = node.getIncoming().size() + node.getOutgoing().size();
+            int previousIndex = ActivityBuilder.getActivity().getNodes().size() - 2; // -2 because node from the parameter is the last one
+//            ActivityEdge lastEdge = ;
+            ActivityNode source = ActivityBuilder.getActivity().getNodes().get(previousIndex);
+            ActivityBuilder.connect(source, node, true);
+//            source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
+//            ActivityBuilder.getActivity().removeEdge(lastEdge);
+//            source.addEdge(node.getIncoming().get(0), ActivityNode.Direction.OUT);
         } else {
             ActivityEdge lastEdge = finalNode.getIncoming().get(0);
-            ActivityNode source = lastEdge.getSource();
-            source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
-            ActivityBuilder.getActivity().removeEdge(lastEdge);
-            ActivityBuilder.getActivity().removeNode(finalNode);
-            source.addEdge(node.getIncoming().get(0), ActivityNode.Direction.OUT);
+            ActivityNode previousNode = lastEdge.getSource();
+            ActivityBuilder.deleteNode(finalNode);
+            ActivityBuilder.connect(previousNode, node, true);
+//            source.removeEdge(lastEdge, ActivityNode.Direction.OUT);
+//            ActivityBuilder.getActivity().removeEdge(lastEdge);
+//            ActivityBuilder.getActivity().removeNode(finalNode);
+//            source.addEdge(node.getIncoming().get(0), ActivityNode.Direction.OUT);
         }
     }
 
@@ -424,106 +418,76 @@ public class ActivityDiagram  {
      */
     private void prepareAnInternalComponent(InternalComponentInstance instance, ComponentInstanceGroup<ComponentInstance<? extends Component>> components, RelationshipInstanceGroup relationships, ArrayList<Action> provisioned) throws Exception {
         unlessNotNull("Cannot deploy null!", instance);
-//        Connector jc;
         if (!alreadyDeployed.contains(instance) && (instance.getRequiredExecutionPlatform() != null)) {
             ExternalComponentInstance host = instance.externalHost();
-
-            // find corresponding action in activity diagram and add outgoing edge to action
-            ActivityEdge controlOut = null;
-            for (Action action:provisioned){
-                if (action.getInputs().get(0).equals(host)){
-                    controlOut = new ActivityEdge();
-                    action.addEdge(controlOut, ActivityNode.Direction.OUT);
-                }
-            }
-
             if (host.isVM()) {
                 VMInstance ownerVM = host.asVM();
                 VM n = ownerVM.getType();
 
-                // TODO maybe I have to call this from actionNodeBean, because it's not just object - it is opened connection
-//                jc = ConnectorFactory.createIaaSConnector(n.getProvider());
+                Action upload = ActivityBuilder.actionNode("executeUploadCommands", ownerVM, instance, null);
+                for (Action action:provisioned){
+                    if (action.getInputs().get(0).equals(host)){
+                        ActivityBuilder.connect(action, upload, true);
+                    }
+                }
 
-
-                Action upload = ActivityBuilder.action(controlOut, null, ownerVM, "executeUploadCommands");
-                upload.addInput(instance);
-                upload.addInput(null);
-                upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-
-                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, ownerVM, "executeRetrieveCommand");
-                retrieve.addInput(instance);
-                retrieve.addInput(null);
-                retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                Action retrieve = ActivityBuilder.actionNode("executeRetrieveCommand", ownerVM, instance, null);
+                ActivityBuilder.connect(upload, retrieve, true);
 
                 alreadyDeployed.add(instance);
 
-                ActivityEdge incoming = retrieve.getOutgoing().get(0);
-                ArrayList<ActivityEdge> outgoingFromPaas = buildPaas(instance, relationships.toList(),incoming);
+                ArrayList<Action> outgoingFromPaas = buildPaas(instance, relationships.toList(),retrieve);
 
                 // if buildPaas  creates some actions we need to find related thread to those actions (e.g. this is supervisor thread, but build pass actions are related to nimbus)
                 // and connect these action to that thread
                 // also we create join node here because we have to synchronize retrieve action from here with actions produced by buildPaas after they
                 // were moved to another thread
                 Join joinBeforeInstall = null;
-                if (outgoingFromPaas.size() > 1 || !outgoingFromPaas.get(0).equals(incoming)){
+                if (outgoingFromPaas.size() > 1 || !outgoingFromPaas.get(0).equals(retrieve)){
 
-                    Action moveToOtherThread = (Action) incoming.getTarget();
+                    Action moveToOtherThread = null;
+                    if (!retrieve.getOutgoing().isEmpty())
+                        moveToOtherThread = (Action) retrieve.getOutgoing().get(0).getTarget();
+
                     if (moveToOtherThread != null) {
                         for (Action action : provisioned) {
                             if (action.getInputs().get(0).equals(moveToOtherThread.getInputs().get(0))) {
-                                // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
-                                retrieve.removeEdge(incoming, ActivityNode.Direction.OUT);
-                                action.addEdge(incoming, ActivityNode.Direction.OUT);
+                                ActivityBuilder.disconnect(retrieve, moveToOtherThread, true);
+                                ActivityBuilder.connect(action, moveToOtherThread, true);
                             }
                         }
-                    } else {
-                        retrieve.removeEdge(incoming, ActivityNode.Direction.OUT);
                     }
+                    // last node represents nodes that are related to actions which were created based on relationships
+                    // other nodes will be related to requiredExecutionPlatforms or buildExecutes() method to say it more precisely
+                    Action lastFromPaas = outgoingFromPaas.get(outgoingFromPaas.size() - 1);
 
-                    // last edge represents edges that is related to actions which were created based on relationships
-                    // other edges will be related to requiredExecutionPlatforms or buildExecutes() method to say it more precisely
-                    ActivityEdge lastInArray = outgoingFromPaas.get(outgoingFromPaas.size() - 1);
-                    Action lastFromPaas = (Action) lastInArray.getSource();
-                    // remove outgoing edge because connectActionsWithJoinNodes() expects actions without ougoing edges
-                    lastFromPaas.removeEdge(lastInArray, ActivityNode.Direction.OUT);
-//                    if (outgoingFromPaas.contains(incoming)){
-//                        joinBeforeInstall = (Join) ActivityBuilder.forkOrJoin(outgoingFromPaas.size(), false, false);
-//                    } else {
-                        joinBeforeInstall = (Join) ActivityBuilder.forkOrJoin(outgoingFromPaas.size() + 1, false, false);
-//                    }
-                    ArrayList<Action> actionsToJoin = new ArrayList<>();
-                    actionsToJoin.add(retrieve);
-                    actionsToJoin.add(lastFromPaas);
+                    joinBeforeInstall = ActivityBuilder.joinNode(false);
+                    ActivityBuilder.connect(retrieve, joinBeforeInstall, true);
+                    ActivityBuilder.connect(lastFromPaas, joinBeforeInstall, true);
+
                     // now after we handled retrieve action and actions based on connections we need to add actions based on buildExecutes
                     // so we traverse through outgoingFromPaas array from first to the one before last
                     if (outgoingFromPaas.size() > 1) {
                         for (int i = 0; i < (outgoingFromPaas.size() - 1); i++) {
-                            Action target = (Action) outgoingFromPaas.get(i).getTarget();
-                            Action source = (Action) outgoingFromPaas.get(i).getSource();
+                            Action target = (Action) outgoingFromPaas.get(i).getOutgoing().get(0).getTarget();
+                            ActivityBuilder.disconnect(outgoingFromPaas.get(i), target, true);
+                            ActivityBuilder.connect(outgoingFromPaas.get(i), joinBeforeInstall, true);
 
-                            // prepare action for join
-                            source.removeEdge(outgoingFromPaas.get(i), ActivityNode.Direction.OUT);
-                            actionsToJoin.add(source);
                             // move actions resulted from dependencies to separate thread
                             for (Action action : provisioned) {
-                                if (action.getInputs().get(0).equals(target.getInputs().get(0))) {
-                                    action.addEdge(target.getIncoming().get(0), ActivityNode.Direction.OUT);
-                                }
+                                if (action.getInputs().get(0).equals(target.getInputs().get(0)))
+                                    ActivityBuilder.connect(action, target, true);
                             }
                         }
                     }
-                    ActivityBuilder.connectActionsWithJoinNodes(actionsToJoin, joinBeforeInstall, null);
                 }
 
-                Action install = null;
-                if (joinBeforeInstall == null) {
-                    install = ActivityBuilder.action(incoming, null, ownerVM, "executeInstallCommand");
-                } else {
-                    install = ActivityBuilder.action(joinBeforeInstall.getOutgoing().get(0), null, ownerVM, "executeInstallCommand");
-                }
-                install.addInput(instance);
-                install.addInput(null);
-                }
+                Action install = ActivityBuilder.actionNode("executeInstallCommand", ownerVM, instance, null);
+                if (joinBeforeInstall == null)
+                    ActivityBuilder.connect(retrieve, install, true);
+                else
+                    ActivityBuilder.connect(joinBeforeInstall, install, true);
+            }
 
 //                coordinator.updateStatusInternalComponent(instance.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
 //                //instance.setStatus(State.INSTALLED);
@@ -771,82 +735,37 @@ public class ActivityDiagram  {
 //        jc.closeConnection();
 //    }
 
-    private ActivityEdge buildExecutes(InternalComponentInstance x, ActivityEdge incoming) throws Exception {
-        ActivityEdge outgoingFromBuildExecutes = incoming;
+    private Action buildExecutes(InternalComponentInstance x, Action incoming) throws Exception {
+        Action outgoingFromBuildExecutes = incoming;
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
-
-//        Connector jc;
-//        jc = ConnectorFactory.createIaaSConnector(n.getProvider());
 
         ComponentInstance host = x.getHost();
 
         if (!alreadyDeployed.contains(host)) {
             if (host.isInternal()) {
-                ActivityEdge outgoingTwo = buildExecutes(host.asInternal(), outgoingFromBuildExecutes);
-                Action upload = ActivityBuilder.action(outgoingTwo, null, ownerVM, "executeUploadCommands");
-                upload.addInput(host.asInternal());
-                upload.addInput(null);
-                upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                Action outgoingTwo = buildExecutes(host.asInternal(), outgoingFromBuildExecutes);
+                Action upload = ActivityBuilder.actionNode("executeUploadCommands", ownerVM, host.asInternal(), null );
+                ActivityBuilder.connect(outgoingTwo, upload, true);
 
-                Action retrieve = ActivityBuilder.action(upload.getOutgoing().get(0), null, ownerVM, "executeRetrieveCommand");
-                retrieve.addInput(host.asInternal());
-                retrieve.addInput(null);
-                retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                Action retrieve = ActivityBuilder.actionNode("executeRetrieveCommand", ownerVM, host.asInternal(), null );
+                ActivityBuilder.connect(upload, retrieve, true);
 
-                Action install = ActivityBuilder.action(retrieve.getOutgoing().get(0), null, ownerVM, "executeInstallCommand");
-                install.addInput(host.asInternal());
-                install.addInput(null);
-                install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                Action install = ActivityBuilder.actionNode("executeInstallCommand", ownerVM, host.asInternal(), null );
+                ActivityBuilder.connect(retrieve, install, true);
 
-//                coordinator.updateStatusInternalComponent(host.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
-                //host.asInternal().setStatus(State.INSTALLED);
+                outgoingFromBuildExecutes = install;
 
-//                Action configure = null;
-//                for (Resource r : host.getType().getResources()) {
-//                    String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
-//                    if (configurationCommand != null && !configurationCommand.isEmpty()) {
-//                        configure = getConfigureAction(r, jc, ownerVM, n, install.getOutgoing().get(0), configurationCommand, host.getName());
-//                    }
-//                }
-//                            if (serverComponent.isInternal()) {
-//                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
-//                            }
-
-//                Action start = null;
-//                for (Resource r : host.getType().getResources()) {
-//                    String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-//                    if (startCommand != null && !startCommand.isEmpty()) {
-//                        ActivityEdge input = configure == null ? install.getOutgoing().get(0) : configure.getOutgoing().get(0);
-//                        start = ActivityBuilder.action(input, null, ownerVM, "start");
-//                        start.addInput(n);
-//                        start.addInput(jc);
-//                        start.addInput(startCommand);
-//                        start.addInput(host.getName());
-//                        start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-//                    }
-//                }
-
-                outgoingFromBuildExecutes = install.getOutgoing().get(0);
-
-//                coordinator.updateStatusInternalComponent(host.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
-                //host.asInternal().setStatus(State.RUNNING);
-
-//                alreadyStarted.add(host);
                 alreadyDeployed.add(host);
             }
         } else {
             for (Action action:ActivityBuilder.getActions()){
                 if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance) action.getInputs().get(1)).getName().equals(host.getName())) {
-//                    if (action.getOutgoing().isEmpty()) {
-                    action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-//                    }
-                    outgoingFromBuildExecutes = action.getOutgoing().get(action.getOutgoing().size() - 1);
+                    outgoingFromBuildExecutes = action;
                     break;
                 }
             }
         }
-//        jc.closeConnection();
         return outgoingFromBuildExecutes;
     }
 
@@ -857,29 +776,24 @@ public class ActivityDiagram  {
      * @param x An component instance
      * @param incoming edge that comes from previous Action
      */
-    private ArrayList<ActivityEdge> buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships, ActivityEdge incoming) {
-        ArrayList<ActivityEdge> result = new ArrayList<ActivityEdge>();
-        ActivityEdge outgoingFromPaasByRelationships = incoming;
+    private ArrayList<Action> buildPaas(InternalComponentInstance x, List<RelationshipInstance> relationships, Action incoming) {
+        ArrayList<Action> result = new ArrayList<Action>();
+        Action outgoingFromPaasByRelationships = incoming;
         unlessNotNull("Cannot deploy null", x, relationships);
         VMInstance ownerVM = x.externalHost().asVM(); //need some tests but if you need to build PaaS then it means that you want to deploy on IaaS
         VM n = ownerVM.getType();
 
-//        Connector jc;
-//        jc = ConnectorFactory.createIaaSConnector(n.getProvider());
-
-        ActivityEdge outgoingFromBuildExecutes = null;
+        Action outgoingFromBuildExecutes = null;
         try {
             outgoingFromBuildExecutes = buildExecutes(x, incoming);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        ActivityEdge toUpload = null;
+        Action toUpload = outgoingFromBuildExecutes;;
         if (!outgoingFromBuildExecutes.equals(incoming)){
             result.add(outgoingFromBuildExecutes);
         }
-
-        toUpload = outgoingFromBuildExecutes;
 
 
         for (RelationshipInstance bi : relationships) {
@@ -895,88 +809,39 @@ public class ActivityDiagram  {
                             Action upload = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 if (r.getUploadCommand() != null && !r.getUploadCommand().isEmpty()) {
-                                    upload = ActivityBuilder.action(toUpload, null, owner, "executeUploadCommands");
-                                    upload.addInput(serverComponent.asInternal());
-                                    upload.addInput(null);
-                                    upload.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                    upload = ActivityBuilder.actionNode("executeUploadCommands", owner, serverComponent.asInternal(), null);
+                                    ActivityBuilder.connect(toUpload, upload, true);
                                 }
                             }
 
                             Action retrieve = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 if (r.getRetrieveCommand() != null && !r.getRetrieveCommand().isEmpty()) {
-                                    ActivityEdge input = upload == null ? toUpload : upload.getOutgoing().get(0);
-                                    retrieve = ActivityBuilder.action(input, null, owner, "executeRetrieveCommand");
-                                    retrieve.addInput(serverComponent.asInternal());
-                                    retrieve.addInput(null);
-                                    retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                    Action input = upload == null ? toUpload : upload;
+                                    retrieve = ActivityBuilder.actionNode("executeRetrieveCommand", owner, serverComponent.asInternal(), null);
+                                    ActivityBuilder.connect(input, retrieve, true);
                                 }
                             }
 
                             Action install = null;
                             for (Resource r : serverComponent.getType().getResources()) {
                                 if (r.getInstallCommand() != null && !r.getInstallCommand().isEmpty()) {
-                                    ActivityEdge input =
+                                    Action input =
                                                 retrieve == null ?
-                                                        (upload == null ? toUpload : upload.getOutgoing().get(0)) :
-                                                        retrieve.getOutgoing().get(0);
-                                    install = ActivityBuilder.action(input, null, owner, "executeInstallCommand");
-                                    install.addInput(serverComponent.asInternal());
-                                    install.addInput(null);
-                                    install.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                                                        (upload == null ? toUpload : upload) :
+                                                        retrieve;
+                                    install = ActivityBuilder.actionNode("executeInstallCommand", owner, serverComponent.asInternal(), null);
+                                    ActivityBuilder.connect(input, install, true);
                                 }
                             }
 
-//                        if (serverComponent.isInternal()) {
-//                            coordinator.updateStatusInternalComponent(serverComponent.getName(), State.INSTALLED.toString(), ActivityDiagram.class.getName());
-//                        }
-//                            Action configure = null;
-//                            for (Resource r : serverComponent.getType().getResources()) {
-//                                String configurationCommand = r.getConfigureCommand();
-//                                if (configurationCommand != null && !configurationCommand.isEmpty()) {
-//                                    ActivityEdge input =
-//                                                install == null ?
-//                                                        (retrieve == null ?
-//                                                                (upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0)) :
-//                                                                retrieve.getOutgoing().get(0)) :
-//                                                        install.getOutgoing().get(0);
-//                                    configure = getConfigureAction(r, jc, owner, n, input, configurationCommand);
-//                                }
-//                            }
-//                            if (serverComponent.isInternal()) {
-//                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
-//                            }
-
-//                            Action start = null;
-//                            for (Resource r : serverComponent.getType().getResources()) {
-//                                String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
-//                                if (startCommand != null && !startCommand.isEmpty()) {
-//                                    ActivityEdge input =
-//                                            configure == null ?
-//                                            (install == null ?
-//                                                    (retrieve == null ?
-//                                                            (upload == null ? outgoingFromBuildExecutes : upload.getOutgoing().get(0)) :
-//                                                            retrieve.getOutgoing().get(0)) :
-//                                                    install.getOutgoing().get(0)) :
-//                                            configure.getOutgoing().get(0);
-//                                    start = ActivityBuilder.action(input, null, owner, "start");
-//                                    start.addInput(n);
-//                                    start.addInput(jc);
-//                                    start.addInput(startCommand);
-//                                    start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-//                                }
-//                            }
-//                               if (serverComponent.isInternal()) {
-//                                coordinator.updateStatusInternalComponent(serverComponent.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
-//                                //serverComponent.asInternal().setStatus(State.RUNNING);
-//                            }
                             outgoingFromPaasByRelationships =
                                     install == null ?
                                     (retrieve == null?
-                                            (upload == null? toUpload : upload.getOutgoing().get(0))
-                                            : retrieve.getOutgoing().get(0)) :
-                                    install.getOutgoing().get(0);
-//                            alreadyStarted.add(serverComponent);
+                                            (upload == null? toUpload : upload)
+                                            : retrieve) :
+                                            install;
+
                             alreadyDeployed.add(serverComponent);
                         } catch (Exception e){
                             e.printStackTrace();
@@ -988,7 +853,6 @@ public class ActivityDiagram  {
         if (result.isEmpty() || !outgoingFromPaasByRelationships.equals(incoming)) {
             result.add(outgoingFromPaasByRelationships);
         }
-//        jc.closeConnection();
         return result;
 
     }
@@ -1004,9 +868,9 @@ public class ActivityDiagram  {
         unlessNotNull("Cannot configure null!", components);
 //        Connector jc;
 
-        ArrayList<ActivityEdge> edgesToFinalJoin = new ArrayList<ActivityEdge>();
+        ArrayList<ActivityNode> nodesToFinalJoin = new ArrayList<ActivityNode>();
 
-        ArrayList<ActivityEdge> lastFromComponents = new ArrayList<ActivityEdge>();
+        ArrayList<ActivityNode> lastFromComponents = new ArrayList<ActivityNode>();
         for (InternalComponentInstance x : components) {
             if (!alreadyStarted.contains(x)) {
                 ExternalComponentInstance owner = x.externalHost();
@@ -1028,15 +892,7 @@ public class ActivityDiagram  {
                         }
                     }
 
-//                    //TODO - check what happens when components are removed
-//                    // this code snippet is related to diff. Currently - works for cases when new components are added
-//                    boolean drawConnections = true;
-//                    for (ComponentInstance component:alreadyStarted){
-//                        if (providers.contains(component.getName())){
-//                            providers.remove(component.getName());
-//                        }
-//                    }
-                    ArrayList<ActivityEdge> edgesFromConfigureConnections = new ArrayList<>();
+                    ArrayList<ActivityNode> configureConnectionsNodes = new ArrayList<>();
 
                     // number of providers will be equal to number of forks after connection configuration
                     ArrayList<Join> joins = new ArrayList<Join>();
@@ -1075,81 +931,59 @@ public class ActivityDiagram  {
 
                             if (drawJoins) {
                                 // create join with specific property to be able to retrieve it precisely
-                                Join connectionJoin = (Join) ActivityBuilder.forkOrJoin(2, false, false);
+                                Join connectionJoin = ActivityBuilder.joinNode(false);
                                 connectionJoin.getProperties().put("missingActionFrom", provider);
-                                // connect configure action and join and update activity
-                                ActivityEdge configureToJoin = connectionJoin.getIncoming().get(0);
-                                // first delete outgoing edge from action.
-                                if (!lastConnectionConfigure.getName().equals("executeInstallCommand")) {
-                                    lastConnectionConfigure.removeEdge(lastConnectionConfigure.getOutgoing().get(0), ActivityNode.Direction.OUT);
-                                }
-                                // add edge from Join node
-                                lastConnectionConfigure.addEdge(configureToJoin, ActivityNode.Direction.OUT);
+                                ActivityBuilder.connect(lastConnectionConfigure, connectionJoin, true);
                                 joins.add(connectionJoin);
                             } else {
-                                edgesFromConfigureConnections.add(lastConnectionConfigure.getOutgoing().get(0));
+                                configureConnectionsNodes.add(lastConnectionConfigure);
                             }
 
                         }
                     }
 
                     // connect all joins into one
-                    ActivityEdge toConfigure = null;
+                    ActivityNode toConfigure = null;
                     if (!joins.isEmpty() && joins != null){
                         if (joins.size() > 1){
-                            Join beforeConfigure = (Join) ActivityBuilder.forkOrJoin(joins.size(), false, false);
-                            // remove outgoing edges from every join from the activity diagram and from joins themselves because creation of Join node adds the same amount of edges to activity
-                            for (Join join:joins){
-                                ActivityBuilder.getActivity().removeEdge(join.getOutgoing().get(0));
-                                join.removeEdge(join.getOutgoing().get(0), ActivityNode.Direction.OUT);
-                            }
-                            // add incoming edges of beforeConfigure as outgoing of every join
-                            for (int i = 0; i < joins.size(); i++){
-                                joins.get(i).addEdge(beforeConfigure.getIncoming().get(i), ActivityNode.Direction.OUT);
-                            }
-                            toConfigure = beforeConfigure.getOutgoing().get(0);
+                            Join beforeConfigure = ActivityBuilder.joinNode(false);
+
+                            for (int i = 0; i < joins.size(); i++)
+                                ActivityBuilder.connect(joins.get(i), beforeConfigure, true);
+
+                            toConfigure = beforeConfigure;
                         } else {
-                            toConfigure = joins.get(0).getOutgoing().get(0);
+                            toConfigure = joins.get(0);
                         }  // this code snippet  " else if (!edgesFromConfigureConnections.isEmpty()) " is related to the diff part
-                    } else if (!edgesFromConfigureConnections.isEmpty()) {
-                        if (edgesFromConfigureConnections.size() > 1){
-                            Join beforeConfigure = (Join) ActivityBuilder.forkOrJoin(edgesFromConfigureConnections.size(), false, false);
-                            ActivityBuilder.getActivity().getEdges().removeAll(beforeConfigure.getIncoming());
-                            ActivityBuilder.getActivity().getEdges().addAll(edgesFromConfigureConnections);
-                            beforeConfigure.setIncoming(edgesFromConfigureConnections);
-                            toConfigure = beforeConfigure.getOutgoing().get(0);
+                    } else if (!configureConnectionsNodes.isEmpty()) {
+                        if (configureConnectionsNodes.size() > 1){
+                            Join beforeConfigure = ActivityBuilder.joinNode(false);
+
+                            for (ActivityNode act:configureConnectionsNodes)
+                                ActivityBuilder.connect(act, beforeConfigure, true);
+
+                            toConfigure = beforeConfigure;
                         } else {
-                            toConfigure = edgesFromConfigureConnections.get(0);
+                            toConfigure = configureConnectionsNodes.get(0);
                         }
                     } else {
                         // if no joins, then there was no connection configuration commands and previous action was executeInstall
                         for (Action action:ActivityBuilder.getActions()){
                             //TODO theoritically, component may not have install command, and previous could be upload or retrieve, but this is highly unlikely
-                            if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance)action.getInputs().get(1)).getName().equals(x.getName())) {
-                                action.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
-                                int size = action.getOutgoing().size();
-                                toConfigure = action.getOutgoing().get(size - 1);
-                            }
+                            if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance)action.getInputs().get(1)).getName().equals(x.getName()))
+                                toConfigure = action;
                         }
                     }
 
                     VM n = ownerVM.getType();
-//                    jc = ConnectorFactory.createIaaSConnector(n.getProvider());
-                    //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
 
                     Action configure = null;
                     for (Resource r : x.getType().getResources()) {
                         String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getConfigureCommand(), r, x);
                         if (configurationCommand != null && !configurationCommand.isEmpty()) {
-                            configure = ActivityBuilder.action(toConfigure, null, ownerVM, "configure");
-                            configure.addInput(n);
-                            configure.addInput(null);
-                            configure.addInput(configurationCommand);
-                            configure.addInput(x.getName());
-                            configure.addInput(r.getRequireCredentials());
-                            configure.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                            configure = ActivityBuilder.actionNode("configure", ownerVM, n, null, configurationCommand, x.getName(), r.getRequireCredentials());
+                            ActivityBuilder.connect(toConfigure, configure, true);
                         }
-//                        configure(jc, n, ownerVM, configurationCommand, r.getRequireCredentials(), true);
                     }
 //                    coordinator.updateStatusInternalComponent(x.getName(), State.CONFIGURED.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.CONFIGURED);
@@ -1158,25 +992,19 @@ public class ActivityDiagram  {
                     for (Resource r : x.getType().getResources()) {
                         String startCommand = CloudMLQueryUtil.cloudmlStringRecover(r.getStartCommand(), r, x);
                         if (startCommand != null && !startCommand.isEmpty()) {
-                            ActivityEdge input = configure == null ? toConfigure : configure.getOutgoing().get(0);
-                            start = ActivityBuilder.action(input, null, ownerVM, "start");
-                            start.addInput(n);
-                            start.addInput(null);
-                            start.addInput(startCommand);
-                            start.addInput(x.getName());
-                            start.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+                            ActivityNode input = configure == null ? toConfigure : configure;
+                            start = ActivityBuilder.actionNode("start", ownerVM, n, null, startCommand, x.getName());
+                            ActivityBuilder.connect(input, start, true);
                         }
-//                        start(jc, n, ownerVM, startCommand, true);
                     }
 //                    coordinator.updateStatusInternalComponent(x.getName(), State.RUNNING.toString(), ActivityDiagram.class.getName());
                     //x.setStatus(State.RUNNING);
-                    ActivityEdge last =
+                    ActivityNode last =
                             start == null?
-                                    (configure == null ? toConfigure : configure.getOutgoing().get(0)) :
-                                    start.getOutgoing().get(0);
+                                    (configure == null ? toConfigure : configure) :
+                                    start;
 
                     lastFromComponents.add(last);
-//                    jc.closeConnection();
                 }
             }//TODO if not InternalComponent
         }
@@ -1188,33 +1016,22 @@ public class ActivityDiagram  {
                 if (owner instanceof VMInstance) {
                     VMInstance ownerVM = (VMInstance) owner;
                     int index = components.toList().indexOf(x);
-                    ActivityEdge last = lastFromComponents.get(index);
+                    ActivityNode last = lastFromComponents.get(index);
 
                     // find any Join nodes that expect edge from this component
                     ArrayList<Join> waitingJoins = new ArrayList<Join>();
-                    ActivityNode lastNode = (ActivityNode) last.getSource();;
                     for (ControlNode control:ActivityBuilder.getControlNodes()){
-                        if (control instanceof Join && !lastNode.equals(control)){
+                        if (control instanceof Join && !last.equals(control)){
                             Join join = (Join) control;
                             if (join.getProperties().get("missingActionFrom") != null && join.getProperties().get("missingActionFrom").equals(x.getName())){
-                                // add join incoming edge without source to this action
-                                if (lastNode instanceof Join){
-                                    lastNode.removeEdge(last, ActivityNode.Direction.OUT);
-                                    ActivityBuilder.getActivity().removeEdge(last);
-                                }
-                                // get(1) because we know that this join has only two incoming edges and first one was connected before
-                                lastNode.addEdge(join.getIncoming().get(1), ActivityNode.Direction.OUT);
+                                ActivityBuilder.connect(last, join, true);
                                 waitingJoins.add(join);
                             }
                         }
                     }
 
-                    // if we have connections to waiting joins, we don't need to do anything with outgoing edge from last component action, otherwise we connect it to final join
-                    if (waitingJoins.isEmpty()) {
-                        edgesToFinalJoin.add(last);
-                    } else if (lastNode.getOutgoing().contains(last)) {
-                        lastNode.removeEdge(last, ActivityNode.Direction.OUT);
-                    }
+                    if (waitingJoins.isEmpty())
+                        nodesToFinalJoin.add(last);
 
                     alreadyStarted.add(x);
                 }
@@ -1223,30 +1040,18 @@ public class ActivityDiagram  {
 
         // if we have more than one edge, join them, otherwise  - just connect it to final node
         ActivityFinalNode finalNode = null;
-        if (edgesToFinalJoin.size() > 1){
-            Join finalJoin = (Join) ActivityBuilder.forkOrJoin(edgesToFinalJoin.size(), false, false);
-            for (ActivityEdge edge:edgesToFinalJoin){
-                ActivityNode source = edge.getSource();
-                // if it is action, then we just remove outgoing edge because it has not been added to activity yet
-                // if Join, then we need to remove edge from activity too to avoid duplication
-                source.removeEdge(edge, ActivityNode.Direction.OUT);
-                int index = edgesToFinalJoin.indexOf(edge);
-                if (source instanceof Join){
-                    ActivityBuilder.getActivity().removeEdge(edge);
-                }
-                source.addEdge(finalJoin.getIncoming().get(index), ActivityNode.Direction.OUT);
-            }
+        if (nodesToFinalJoin.size() > 1){
+            Join finalJoin = ActivityBuilder.joinNode(false);
+
+            for (ActivityNode node:nodesToFinalJoin)
+                ActivityBuilder.connect(node, finalJoin, true);
+
             finalNode = ActivityBuilder.controlStop();
-            ActivityBuilder.connectJoinToFinal(finalJoin, finalNode);
+            ActivityBuilder.connect(finalJoin, finalNode, true);
         } else {
-            ActivityEdge edge = edgesToFinalJoin.get(0);
-            ActivityNode source = edge.getSource();
+            ActivityNode node = nodesToFinalJoin.get(0);
             finalNode = ActivityBuilder.controlStop();
-            source.removeEdge(edge, ActivityNode.Direction.OUT);
-            if (source instanceof Join){
-                ActivityBuilder.getActivity().removeEdge(edge);
-            }
-            source.addEdge(finalNode.getIncoming().get(0), ActivityNode.Direction.OUT);
+            ActivityBuilder.connect(node, finalNode, true);
         }
     }
 
@@ -1298,144 +1103,31 @@ public class ActivityDiagram  {
         }
     }
 
-    /**
-     * Provision the VMs and upload the model with informations about the VM
-     * <p/>
-     * Added: Also deal with PaaS platforms
-     *
-     * @param ems A list of vms
-     */
-    //TODO do not delete - this is expanded version of external components provisioning with all data objects and flows
-//    public void setExternalServices(ExternalComponentInstanceGroup ems) throws Exception {
-//
-//        // *  initial node
-//        // *! final node
-//        // ===> control flow
-//        // ---> data flow
-//        // | fork
-//        // |& join
-//        // |_| object node
-//        // () action
-//        // P parameter
-//
-//        // *===>|
-//        ActivityInitialNode controlStart = ActivityBuilder.controlStart();
-////        System.out.println("Initial: " + ActivityBuilder.getActivity().toString());
-//        // |===>
-//        Fork controlFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), false, true);
-//        ActivityBuilder.connectInitialToFork(controlStart, controlFork);
-////        System.out.println("Control fork: " + ActivityBuilder.getActivity().toString());
-//        // P--->
-//        ActivityParameterNode dataStart = (ActivityParameterNode) ActivityBuilder.objectNode("Model",
-//                                                                ActivityBuilder.Edges.OUT,
-//                                                                ActivityBuilder.ObjectNodeType.PARAMETER);
-//        dataStart.setParameter(getCurrentModel());
-////        System.out.println("Input parameter: " + ActivityBuilder.getActivity().toString());
-//
-//        DatastoreNode datastore = (DatastoreNode) ActivityBuilder.objectNode("Datastore",
-//                                                                            ActivityBuilder.Edges.NOEDGES,
-//                                                                            ActivityBuilder.ObjectNodeType.DATASTORE);
-//        datastore.setIncoming(dataStart.getOutgoing());
-//        datastore.addObject(ems);
-////        System.out.println("Datastore: " + ActivityBuilder.getActivity().toString());
-//
-//        Fork dataStoreFork = (Fork) ActivityBuilder.forkOrJoin(1, true, true);
-//        ActivityBuilder.connectObjectToFork(datastore, dataStoreFork);
-////        System.out.println("Data fork model: " + ActivityBuilder.getActivity().toString());
-//        // |_|--->|
-//        ObjectNode vmObjects = ActivityBuilder.objectNode("ExternalComponents",
-//                                                            ActivityBuilder.Edges.NOEDGES,
-//                                                            ActivityBuilder.ObjectNodeType.OBJECT);
-//        vmObjects.setIncoming(dataStoreFork.getOutgoing());
-////        System.out.println("External components object: " + ActivityBuilder.getActivity().toString());
-//        ArrayList<Object> list = new ArrayList<Object>();
-//        list.addAll(((ExternalComponentInstanceGroup) datastore.getObjects().get(0)).toList());
-//        vmObjects.setObjects(list);
-//        // |--->
-//        Fork dataFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), true, true);
-//        ActivityBuilder.connectObjectToFork(vmObjects, dataFork);
-////        System.out.println("VMs data fork: " + ActivityBuilder.getActivity().toString());
-//        // |--->()
-//
-//
-//
-//        Action action;
-//        ActivityEdge controlEdge;
-//        ActivityEdge dataEdge;
-//        ArrayList<Action> provisioning = new ArrayList<Action>(ems.size());
-////        System.out.println(ems.size());
-//
-//        for (ExternalComponentInstance n : ems) {
-//            controlEdge = controlFork.getOutgoing().get(ems.toList().indexOf(n));
-//            dataEdge = dataFork.getOutgoing().get(ems.toList().indexOf(n));
-//
-//            if (n instanceof VMInstance) {
-//                action = ActivityBuilder.action(controlEdge, dataEdge, n, "provisionAVM");
-//                provisioning.add(action);
-//
-////                provisionAVM((VMInstance) n);
-//            } else {
-//                action = ActivityBuilder.action(controlEdge, dataEdge, n, "provisionAPlatform");
-//                provisioning.add(action);
-//            }
-////            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
-//        }
-//
-//        ObjectNode IPs = ActivityBuilder.objectNode("Public Addresses",
-//                                                    ActivityBuilder.Edges.OUT,
-//                                                    ActivityBuilder.ObjectNodeType.OBJECT);
-//        Join dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
-//        ActivityBuilder.connectJoinToObject(dataJoin, IPs);
-//
-//        ActivityParameterNode dataStop = (ActivityParameterNode) ActivityBuilder.objectNode("End of provisioning",
-//                                                                                ActivityBuilder.Edges.NOEDGES,
-//                                                                                ActivityBuilder.ObjectNodeType.PARAMETER);
-//        dataStop.setParameter(IPs.getObjects());
-//        dataStop.setIncoming(IPs.getOutgoing());
-//
-//        ActivityFinalNode finalNode = ActivityBuilder.controlStop();
-//        Join controlJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), false, false);
-//        ActivityBuilder.connectJoinToFinal(controlJoin, finalNode);
-//
-//        for (Action a:provisioning){
-//            int index = provisioning.indexOf(a);
-//            controlEdge = controlJoin.getIncoming().get(index);
-//            dataEdge = dataJoin.getIncoming().get(index);
-//            a.addEdge(controlEdge, ActivityNode.Direction.OUT);
-//            a.addEdge(dataEdge, ActivityNode.Direction.OUT);
-//        }
-//
-//    }
-
     public void setExternalServices(ExternalComponentInstanceGroup ems) throws Exception{
 
-        // start and fork
-        ActivityInitialNode controlStart = ActivityBuilder.controlStart();   //System.out.println("Initial: " + ActivityBuilder.getActivity().toString());
-        Fork controlFork = null;
-        if (ems.size() > 1) {
-            controlFork = (Fork) ActivityBuilder.forkOrJoin(ems.size(), false, true);
-            ActivityBuilder.connectInitialToFork(controlStart, controlFork);     //System.out.println("Fork: " + ActivityBuilder.getActivity().toString());
-        }
+        ActivityInitialNode controlStart = ActivityBuilder.controlStart();
+        Fork controlFork = ActivityBuilder.forkNode(false);
+        ActivityBuilder.connect(controlStart, controlFork, true);
 
         // list of actions with input data
-        Action action;
-        ActivityEdge controlEdge;
+        Action action = null;
         ArrayList<Action> provisioning = new ArrayList<Action>(ems.size());
 
         for (ExternalComponentInstance n : ems) {
-            controlEdge = controlFork == null ? controlStart.getOutgoing().get(0) : controlFork.getOutgoing().get(ems.toList().indexOf(n));
             if (n instanceof VMInstance) {
-                action = ActivityBuilder.action(controlEdge, null, n, "provisionAVM");
+                action = ActivityBuilder.actionNode("provisionAVM", n);
                 provisioning.add(action);
             } else {
-                action = ActivityBuilder.action(controlEdge, null, n, "provisionAPlatform");
+                action = ActivityBuilder.actionNode("provisionAPlatform", n);
                 provisioning.add(action);
             }
-//            System.out.println("Action n: " + ActivityBuilder.getActivity().toString());
+
+            ActivityBuilder.connect(controlFork, action, true);
         }
 
-        ObjectNode IPs = null;  // System.out.println("Object: " + ActivityBuilder.getActivity().toString());
+        ObjectNode IPs = null;
 
+        // this code snippet is related to diff
         if (oldPlan != null) {
             IPs = ActivityBuilder.getIPregistry();
             IPs.getIncoming().clear();
@@ -1447,28 +1139,18 @@ public class ActivityDiagram  {
         Join dataJoin = null;
         if (ems.size() > 1) {
             if (IPs == null)
-                IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.NOEDGES, ActivityBuilder.ObjectNodeType.OBJECT);
-            dataJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), true, false);
-            // container of all IPs
-            ActivityBuilder.connectJoinToObject(dataJoin, IPs);  //System.out.println("Data join: " + ActivityBuilder.getActivity().toString());
-            // connect actions with control and data join
-            ActivityBuilder.connectActionsWithJoinNodes(provisioning, null, dataJoin);  //System.out.println("Update actions: " + ActivityBuilder.getActivity().toString());
+                IPs = ActivityBuilder.createIPregistry();
+
+            dataJoin = ActivityBuilder.joinNode(true);
+            ActivityBuilder.connect(dataJoin, IPs, false);
+
+            for (Action act:provisioning)
+                ActivityBuilder.connect(act, dataJoin, false);
         } else {
             if (IPs == null)
-                IPs = ActivityBuilder.createIPregistry(ActivityBuilder.Edges.IN, ActivityBuilder.ObjectNodeType.OBJECT);
-            else {
-                ActivityEdge dataFlow = new ActivityEdge(true);
-                IPs.addEdge(dataFlow, ActivityNode.Direction.IN);
-                ActivityBuilder.getActivity().addEdge(dataFlow);
-            }
-            provisioning.get(0).addEdge(IPs.getIncoming().get(0), ActivityNode.Direction.OUT);
+                IPs = ActivityBuilder.createIPregistry();
+            ActivityBuilder.connect(provisioning.get(0), IPs, false);
         }
-//        // control join and finish
-//        ActivityFinalNode finalNode = ActivityBuilder.controlStop();  //System.out.println("Final: " + ActivityBuilder.getActivity().toString());
-//        Join controlJoin = (Join) ActivityBuilder.forkOrJoin(ems.size(), false, false);
-//        ActivityBuilder.connectJoinToFinal(controlJoin, finalNode);   //System.out.println("Control Join n: " + ActivityBuilder.getActivity().toString());
-
-
     }
 
     /**
@@ -1636,7 +1318,7 @@ public class ActivityDiagram  {
 
                         Action retrieve = null;
                         if (clientResource.getRetrieveCommand() != null && !clientResource.getRetrieveCommand().equals("")) {
-                            ActivityEdge last = addEdgeToInstall(clienti.getName());
+                            ActivityNode last = getInstallAction(clienti.getName());
                             // :: sign inside command string will indicate that we have to retrieve real IPs during execution inside ActionExecutable.java
                             String retrieveCommand = clientResource.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM;
                             //finally create retrieve action
@@ -1649,7 +1331,7 @@ public class ActivityDiagram  {
 
                         Action install = null;
                         if (clientResource.getInstallCommand() != null && !clientResource.getInstallCommand().equals("")) {
-                            ActivityEdge last = getLastEdge(clientInternal.getOwner().get().getName(), retrieve, null);
+                            ActivityNode last = getLastEdge(clientInternal.getOwner().get().getName(), retrieve, null);
                             String installationCommand = clientResource.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM;
                             install = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, installationCommand, clientInternal.getOwner().get().getName());
                             connectionActions.add(install);
@@ -1659,7 +1341,7 @@ public class ActivityDiagram  {
 
                         Action configure = null;
                         if (clientResource.getConfigureCommand() != null && !clientResource.getConfigureCommand().equals("")) {
-                            ActivityEdge last = getLastEdge(clientInternal.getOwner().get().getName(), install, retrieve);
+                            ActivityNode last = getLastEdge(clientInternal.getOwner().get().getName(), install, retrieve);
                             String configurationCommand = clientResource.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM;
                             configure = getConfigureAction(clientResource, jcClient, ownerVMClient, VMClient, last, configurationCommand, clientInternal.getOwner().get().getName());
                             connectionActions.add(configure);
@@ -1690,56 +1372,50 @@ public class ActivityDiagram  {
 //            }
 
         }
-        // we put size of fork equal to N of relationships because we may not need all provisioned VMs addresses
-        Fork addressesFork = (Fork) ActivityBuilder.forkOrJoin(connectionActions.size(), true, true);
-        ActivityBuilder.connectObjectToFork(publicAddresses, addressesFork);
-        ActivityBuilder.connectDataForkWithActions(addressesFork, connectionActions);
+        Fork addressesFork = ActivityBuilder.forkNode(true);
+        ActivityBuilder.connect(publicAddresses, addressesFork, false);
+        for (Action act:connectionActions)
+            ActivityBuilder.connect(addressesFork, act, false);
     }
 
     // returns action with outgoing control flow
-    private Action getConfigureAction(Resource resource, Connector jcConnector, VMInstance ownerVMInstance, VM VM, ActivityEdge incomingControl, String retrieveCommand, String componentName) throws Exception {
+    private Action getConfigureAction(Resource resource, Connector jcConnector, VMInstance ownerVMInstance, VM VM, ActivityNode incomingControl, String retrieveCommand, String componentName) throws Exception {
         Action retrieve;
         String connectionCommand = "";
         if (retrieveCommand.split("::").length == 4){
             connectionCommand = ":" + retrieveCommand.split("::")[3];
             retrieveCommand = retrieveCommand.replaceFirst("::" + connectionCommand, "");
         }
-        retrieve = ActivityBuilder.action(incomingControl, new ActivityEdge(true), ownerVMInstance, "configure" + connectionCommand);
-        retrieve.addInput(VM);
-        retrieve.addInput(jcConnector);
-        retrieve.addInput(retrieveCommand);
-        retrieve.addInput(componentName);
-        retrieve.addInput(resource.getRequireCredentials());
-        retrieve.addEdge(new ActivityEdge(), ActivityNode.Direction.OUT);
+        retrieve = ActivityBuilder.actionNode("configure" + connectionCommand, ownerVMInstance, VM, jcConnector, retrieveCommand, componentName,
+                resource.getRequireCredentials());
+        ActivityBuilder.connect(incomingControl, retrieve, true);
         return retrieve;
     }
 
     // order of configuration commands are retrieve, install, configure. When we at configure we have to check both install and retrieve if they equal null
-    private ActivityEdge getLastEdge(String componentName, Action previousAction, Action twoBefore) throws Exception {
-        ActivityEdge last = null;
+    private ActivityNode getLastEdge(String componentName, Action previousAction, Action twoBefore) throws Exception {
+        ActivityNode last = null;
         if (previousAction == null && twoBefore == null) {
-            last = addEdgeToInstall(componentName);
+            last = getInstallAction(componentName);
         } else {
             if (previousAction == null){
-                last = twoBefore.getOutgoing().get(0);
+                last = twoBefore;
             } else {
-                last = previousAction.getOutgoing().get(0);
+                last = previousAction;
             }
         }
         return last;
     }
 
-    private ActivityEdge addEdgeToInstall(String componentName) throws Exception {
-        ActivityEdge last = new ActivityEdge();// get install command that correspond to this connection instance. For example, if require port is nimbusRequired
+    private Action getInstallAction(String componentName) throws Exception {
+        // get install command that correspond to this connection instance. For example, if require port is nimbusRequired
         // then we need to get action "executeInstallCommand" on nimbus VM
-        Action previous = null;
+        Action install = null;
         for (Action action : ActivityBuilder.getActions()) {
             if (action.getName().equals("executeInstallCommand") && ((InternalComponentInstance) action.getInputs().get(1)).getName().equals(componentName))
-                previous = action;
+                install = action;
         }
-        // add outgoing control edge to that action
-        previous.addEdge(last, ActivityNode.Direction.OUT);
-        return last;
+        return install;
     }
 
     private Boolean isPaaS2PaaS(RelationshipInstance ri){
@@ -1757,10 +1433,8 @@ public class ActivityDiagram  {
     private RelationshipInstance bi = null;
 
     public void retrieveIPandConfigure(Resource serverResource, Resource clientResource, PortInstance<? extends Port> server, PortInstance<? extends Port> client, ArrayList<Action> connectionActions) throws Exception {
-//        String destinationIpAddress = getDestination(server.getOwner().get()).getPublicAddress();
         int destinationPortNumber = server.getType().getPortNumber();
         String destinationVM = ((VMInstance) getDestination(server.getOwner().get())).getName();
-//        String ipAddress = getDestination(client.getOwner().get()).getPublicAddress();
         if(clientResource == null && serverResource == null)
             return; // ignore configuration if there is no resource at all
         configureWithIP(serverResource, clientResource, server, client, destinationVM, destinationPortNumber, connectionActions);
@@ -1768,20 +1442,12 @@ public class ActivityDiagram  {
 
     private void configureWithIP(Resource server, Resource client,
                                  PortInstance<? extends Port> pserver, PortInstance<? extends Port> pclient, String destinationVM, int destinationPortNumber, ArrayList<Action> connectionActions) throws Exception {
-//        if(DEBUG){
-//            journal.log(Level.INFO, ">> Configure with IP ");
-//            return;
-//        }
-//        Connector jcServer;
-//        Connector jcClient;
         VMInstance ownerVMServer = (VMInstance) getDestination(pserver.getOwner().get());//TODO:generalization for PaaS
         String serverComponentName = pserver.getOwner().get().getName();
         VM VMserver = ownerVMServer.getType();
         VMInstance ownerVMClient = (VMInstance) getDestination(pclient.getOwner().get());//TODO:generalization for PaaS
         String clientComponentName = pclient.getOwner().get().getName();
         VM VMClient = ownerVMClient.getType();
-//        jcServer = ConnectorFactory.createIaaSConnector(VMserver.getProvider());
-//        jcClient = ConnectorFactory.createIaaSConnector(VMClient.getProvider());
 
         // join from client and server before we start any configuration actions
         Join joinBeforeConnections = null;
@@ -1796,110 +1462,90 @@ public class ActivityDiagram  {
             }
         }
 
-        ActivityEdge clientInstall = addEdgeToInstall(clientComponentName);
+        Action clientInstall = getInstallAction(clientComponentName);
 
         if (drawServerConnection) {
-            joinBeforeConnections = (Join) ActivityBuilder.forkOrJoin(2, false, false);
-            ActivityEdge serverInstall = addEdgeToInstall(serverComponentName);
-            ActivityNode serverNode = serverInstall.getSource();
-            serverNode.removeEdge(serverInstall, ActivityNode.Direction.OUT);
-            serverNode.addEdge(joinBeforeConnections.getIncoming().get(0), ActivityNode.Direction.OUT);
-
-            ActivityNode clientNode = clientInstall.getSource();
-            clientNode.removeEdge(clientInstall, ActivityNode.Direction.OUT);
-            clientNode.addEdge(joinBeforeConnections.getIncoming().get(1), ActivityNode.Direction.OUT);
+            joinBeforeConnections = ActivityBuilder.joinNode(false);
+            Action serverInstall = getInstallAction(serverComponentName);
+            ActivityBuilder.connect(clientInstall, joinBeforeConnections, true);
+            ActivityBuilder.connect(serverInstall, joinBeforeConnections, true);
         }
 
         // if we have resources from client and server, we create another fork for that, otherwise we use outgoing edge from previous join for connection commands
         //TODO never had connections with two resources, maybe this won't work properly, did not test
         Fork forkClientServer = null;
         if (server != null && client != null){
-            forkClientServer = (Fork) ActivityBuilder.forkOrJoin(2, false, true);
-            ActivityEdge joinOutgoing = joinBeforeConnections.getOutgoing().get(0);
-            joinBeforeConnections.removeEdge(joinOutgoing, ActivityNode.Direction.OUT);
-            ActivityBuilder.getActivity().removeEdge(joinOutgoing);
-            joinBeforeConnections.addEdge(forkClientServer.getIncoming().get(0), ActivityNode.Direction.OUT);
+            forkClientServer = ActivityBuilder.forkNode(false);
+            ActivityBuilder.connect(joinBeforeConnections, forkClientServer, true);
         }
 
         // this code snippet is related to diff: "toFirstConfigureAction". Before that joinBeforeConnections.getOutgoing().get(0) was used
-        ActivityEdge toFirstConfigureAction = joinBeforeConnections == null ? clientInstall : joinBeforeConnections.getOutgoing().get(0);
+        ActivityNode toFirstConfigureAction = joinBeforeConnections == null ? clientInstall : joinBeforeConnections;
         Action retrieveServer = null;
         if(server != null){
             if(server.getRetrieveCommand() != null && !server.getRetrieveCommand().equals("")){
-                ActivityEdge last = forkClientServer == null ? toFirstConfigureAction : forkClientServer.getOutgoing().get(0);
+                ActivityNode last = forkClientServer == null ? toFirstConfigureAction : forkClientServer;
                 String retrieveCommand = server.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
                 retrieveServer = getConfigureAction(server, null, ownerVMServer, VMserver, last, retrieveCommand, serverComponentName);
                 retrieveServer.getProperties().put("oppositeConnectionEnd", clientComponentName);
                 connectionActions.add(retrieveServer);
-//                jcServer.execCommand(ownerVMServer.getId(), CloudMLQueryUtil.cloudmlStringRecover(server.getRetrieveCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMserver.getPrivateKey());
             }
         }
 
         Action retrieveClient = null;
         if(client !=null){
             if(client.getRetrieveCommand() != null && !client.getRetrieveCommand().equals("")) {
-                ActivityEdge last = forkClientServer == null ? toFirstConfigureAction : forkClientServer.getOutgoing().get(1);
+                ActivityNode last = forkClientServer == null ? toFirstConfigureAction : forkClientServer;
                 String retrieveCommand = client.getRetrieveCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionRetrieve";
                 retrieveClient = getConfigureAction(client, null, ownerVMClient, VMClient, last, retrieveCommand, clientComponentName);
                 retrieveClient.getProperties().put("oppositeConnectionEnd", serverComponentName);
                 connectionActions.add(retrieveClient);
-//                jcClient.execCommand(ownerVMClient.getId(), CloudMLQueryUtil.cloudmlStringRecover(client.getRetrieveCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber, "ubuntu", VMClient.getPrivateKey());
             }
         }
 
         Action installServer = null;
         if(server != null){
             if(server.getInstallCommand() != null && !server.getInstallCommand().equals("")){
-                ActivityEdge last = getLastEdge(serverComponentName, retrieveServer, null);
+                ActivityNode last = getLastEdge(serverComponentName, retrieveServer, null);
                 String installationCommand = server.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionInstall";
                 installServer = getConfigureAction(server, null, ownerVMServer, VMserver, last, installationCommand, serverComponentName);
                 installServer.getProperties().put("oppositeConnectionEnd", clientComponentName);
                 connectionActions.add(installServer);
-//                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getInstallCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-//                configure(jcServer, VMserver, ownerVMServer, installationCommand, server.getRequireCredentials(), true);
             }
         }
 
         Action installClient = null;
         if(client != null){
             if(client.getInstallCommand() != null && !client.getInstallCommand().equals("")){
-                ActivityEdge last = getLastEdge(clientComponentName, retrieveClient, null);
+                ActivityNode last = getLastEdge(clientComponentName, retrieveClient, null);
                 String installationCommand = client.getInstallCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionInstall";
                 installClient = getConfigureAction(client, null, ownerVMClient, VMClient, last, installationCommand, clientComponentName);
                 installClient.getProperties().put("oppositeConnectionEnd", serverComponentName);
                 connectionActions.add(installClient);
-//                String installationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getInstallCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-//                configure(jcClient, VMClient, ownerVMClient, installationCommand, client.getRequireCredentials(), true);
             }
         }
 
         Action configureServer = null;
         if(server != null){
             if(server.getConfigureCommand() != null && !server.getConfigureCommand().equals("")){
-                ActivityEdge last = getLastEdge(serverComponentName, installServer, retrieveServer);
+                ActivityNode last = getLastEdge(serverComponentName, installServer, retrieveServer);
                 String configurationCommand = server.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionConfigure";
                 configureServer = getConfigureAction(server, null, ownerVMServer, VMserver, last, configurationCommand, serverComponentName);
                 configureServer.getProperties().put("oppositeConnectionEnd", clientComponentName);
                 connectionActions.add(configureServer);
-//                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(server.getConfigureCommand(), server, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-//                configure(jcServer, VMserver, ownerVMServer, configurationCommand, server.getRequireCredentials(), true);
             }
         }
 
         Action configureClient = null;
         if(client != null){
             if(client.getConfigureCommand() != null && !client.getConfigureCommand().equals("")){
-                ActivityEdge last = getLastEdge(clientComponentName, installClient, retrieveClient);
+                ActivityNode last = getLastEdge(clientComponentName, installClient, retrieveClient);
                 String configurationCommand = client.getConfigureCommand() + "::" + destinationPortNumber + "::" + destinationVM + "::connectionConfigure";
                 configureClient = getConfigureAction(client, null, ownerVMClient, VMClient, last, configurationCommand, clientComponentName);
                 configureClient.getProperties().put("oppositeConnectionEnd", serverComponentName);
                 connectionActions.add(configureClient);
-//                String configurationCommand = CloudMLQueryUtil.cloudmlStringRecover(client.getConfigureCommand(), client, bi) + " \"" + ipAddress + "\" \"" + destinationIpAddress + "\" " + destinationPortNumber;
-//                configure(jcClient, VMClient, ownerVMClient, configurationCommand, client.getRequireCredentials(), true);
             }
         }
-//        jcServer.closeConnection();
-//        jcClient.closeConnection();
     }
 
     /**
@@ -1959,24 +1605,27 @@ public class ActivityDiagram  {
         }
 
         if (VMs.size() > 1){
-            Fork forkVMs = (Fork) ActivityBuilder.forkOrJoin(VMs.size(), false, true);
+            Fork forkVMs = ActivityBuilder.forkNode(false);
             connectRemoveToPlan(forkVMs);
 
             ArrayList<Action> actions = new ArrayList<Action>();
             for (VMInstance a : VMs) {
-                int componentIndex = VMs.indexOf(a);
-                Action stop = ActivityBuilder.action(forkVMs.getOutgoing().get(componentIndex), null, a, "terminateVM");
+//                int componentIndex = VMs.indexOf(a);
+                Action stop = ActivityBuilder.actionNode("terminateVM", a);
+                ActivityBuilder.connect(forkVMs, stop, true);
                 actions.add(stop);
             }
 
-            Join joinVMs = (Join) ActivityBuilder.forkOrJoin(VMs.size(), false, false);
-            ActivityBuilder.connectActionsWithJoinNodes(actions, joinVMs, null);
+            Join joinVMs = ActivityBuilder.joinNode(false);
+            for (Action act:actions)
+                ActivityBuilder.connect(act, joinVMs, true);
+//            ActivityBuilder.connectActionsWithJoinNodes(actions, joinVMs, null);
         } else if (!VMs.isEmpty()) {
-            Action stop = ActivityBuilder.action(new ActivityEdge(), null, VMs.get(0), "terminateVM");
+            Action stop = ActivityBuilder.actionNode("terminateVM", VMs.get(0));
             connectRemoveToPlan(stop);
-            ActivityEdge out = new ActivityEdge();
-            stop.addEdge(out, ActivityNode.Direction.OUT);
-            ActivityBuilder.getActivity().addEdge(out);
+//            ActivityEdge out = new ActivityEdge();
+//            stop.addEdge(out, ActivityNode.Direction.OUT);
+//            ActivityBuilder.getActivity().addEdge(out);
         }
 
     }
@@ -2009,24 +1658,27 @@ public class ActivityDiagram  {
      */
     private void stopInternalComponents(List<InternalComponentInstance> components) throws Exception {//TODO: List<InternalComponentInstances>
         if (components.size() > 1) {
-            Fork forkComponents = (Fork) ActivityBuilder.forkOrJoin(components.size(), false, true);
+            Fork forkComponents = ActivityBuilder.forkNode(false);
             connectRemoveToPlan(forkComponents);
 
             ArrayList<Action> actions = new ArrayList<Action>();
             for (InternalComponentInstance a : components) {
                 int componentIndex = components.indexOf(a);
-                Action stop = ActivityBuilder.action(forkComponents.getOutgoing().get(componentIndex), null, a, "stopInternalComponent");
+                Action stop = ActivityBuilder.actionNode("stopInternalComponent", a);
+                ActivityBuilder.connect(forkComponents, stop, true);
                 actions.add(stop);
             }
 
-            Join joinRelationships = (Join) ActivityBuilder.forkOrJoin(components.size(), false, false);
-            ActivityBuilder.connectActionsWithJoinNodes(actions,joinRelationships, null);
+            Join joinRelationships = ActivityBuilder.joinNode(false);
+            for (Action act:actions)
+                ActivityBuilder.connect(act, joinRelationships, true);
+//            ActivityBuilder.connectActionsWithJoinNodes(actions,joinRelationships, null);
         } else if (!components.isEmpty()){
-            Action stop = ActivityBuilder.action(new ActivityEdge(), null, components.get(0), "stopInternalComponent");
+            Action stop = ActivityBuilder.actionNode("stopInternalComponent", components.get(0));
             connectRemoveToPlan(stop);
-            ActivityEdge out = new ActivityEdge();
-            stop.addEdge(out, ActivityNode.Direction.OUT);
-            ActivityBuilder.getActivity().addEdge(out);
+//            ActivityEdge out = new ActivityEdge();
+//            stop.addEdge(out, ActivityNode.Direction.OUT);
+//            ActivityBuilder.getActivity().addEdge(out);
         }
     }
 
@@ -2064,36 +1716,36 @@ public class ActivityDiagram  {
      * @param relationships list of relationships removed
      */
     private void unconfigureRelationships(List<RelationshipInstance> relationships) throws Exception {
-        ArrayList<ActivityEdge> fromUnconfigure = new ArrayList<>();
+        ArrayList<ActivityNode> fromUnconfigure = new ArrayList<>();
 
         if (relationships.size() > 1) {
-            Fork forkRelationships = (Fork) ActivityBuilder.forkOrJoin(relationships.size(), false, true);
+            Fork forkRelationships = ActivityBuilder.forkNode(false);
             connectRemoveToPlan(forkRelationships);
 
             for (RelationshipInstance b : relationships) {
-                int edgeIndex = relationships.indexOf(b);
-                unconfigureRelationship(b, forkRelationships.getOutgoing().get(edgeIndex), fromUnconfigure);
+//                int edgeIndex = relationships.indexOf(b);
+                unconfigureRelationship(b, forkRelationships, fromUnconfigure);
             }
 
-            Join joinRelationships = (Join) ActivityBuilder.forkOrJoin(relationships.size(), false, false);
-            ActivityBuilder.getActivity().getEdges().removeAll(joinRelationships.getIncoming());
-            joinRelationships.getIncoming().clear();
-            for (ActivityEdge edge:fromUnconfigure){
-                joinRelationships.addEdge(edge, ActivityNode.Direction.IN);
-            }
-
+            Join joinRelationships = ActivityBuilder.joinNode(false);
+//            ActivityBuilder.getActivity().getEdges().removeAll(joinRelationships.getIncoming());
+//            joinRelationships.getIncoming().clear();
+            for (ActivityNode node:fromUnconfigure)
+                ActivityBuilder.connect(node, joinRelationships, true);
         } else if (!relationships.isEmpty()){
-            ActivityEdge incoming = new ActivityEdge();
-            unconfigureRelationship(relationships.get(0), incoming, fromUnconfigure);
-            if (fromUnconfigure.get(0) != incoming) {
-                ActivityNode singleAction = incoming.getTarget();
+            //TODO this fake node is bad design, refactor later. I added it during the refactoring of ActivityBuilder to comply with unconfigureRelationship method signature
+            ActivityNode fake = ActivityBuilder.actionNode("Fake node");
+            unconfigureRelationship(relationships.get(0), fake, fromUnconfigure);
+            if (fromUnconfigure.get(0) != fake) {
+                ActivityNode singleAction = fake.getOutgoing().get(0).getTarget();
                 connectRemoveToPlan(singleAction);
             }
+            ActivityBuilder.deleteNode(fake);
         }
 
     }
 
-    private void unconfigureRelationship(RelationshipInstance b, ActivityEdge incomingEdge, ArrayList<ActivityEdge> outgoingEdgesContainer) throws Exception {
+    private void unconfigureRelationship(RelationshipInstance b, ActivityNode incomingNode, ArrayList<ActivityNode> outgoingNodes) throws Exception {
         if (!b.getRequiredEnd().getType().isLocal()) {
             RequiredPortInstance client = b.getRequiredEnd();
             ProvidedPortInstance server = b.getProvidedEnd();
@@ -2102,46 +1754,44 @@ public class ActivityDiagram  {
             Resource serverResource = b.getType().getServerResource();
 
             if (clientResource == null && serverResource == null) {
-                outgoingEdgesContainer.add(incomingEdge);
+                outgoingNodes.add(incomingNode);
                 return;
             } else if (clientResource != null && serverResource != null) {
-                Fork forkResources = (Fork) ActivityBuilder.forkOrJoin(2, false, true);
-                ActivityBuilder.getActivity().removeEdge(forkResources.getIncoming().get(0));
-                forkResources.getIncoming().clear();
-                forkResources.addEdge(incomingEdge, ActivityNode.Direction.IN);
-                ActivityBuilder.getActivity().addEdge(incomingEdge);
+                Fork forkResources = (Fork) ActivityBuilder.forkNode(false);
+                ActivityBuilder.connect(incomingNode, forkResources, true);
+//                ActivityBuilder.getActivity().removeEdge(forkResources.getIncoming().get(0));
+//                forkResources.getIncoming().clear();
+//                forkResources.addEdge(incomingNode, ActivityNode.Direction.IN);
+//                ActivityBuilder.getActivity().addEdge(incomingNode);
 
-                Action clientAction = ActivityBuilder.action(forkResources.getOutgoing().get(0), null, clientResource, "unconfigureWithIP");
-                clientAction.addInput(client);
+                Action clientAction = ActivityBuilder.actionNode("unconfigureWithIP", clientResource, client);
+//                clientAction.addInput(client);
+                ActivityBuilder.connect(forkResources, clientAction, true);
 
+                Action serverAction = ActivityBuilder.actionNode("unconfigureWithIP", serverResource, server);
+//                serverAction.addInput(server);
+                ActivityBuilder.connect(forkResources, serverAction, true);
 
-                Action serverAction = ActivityBuilder.action(forkResources.getOutgoing().get(1), null, serverResource, "unconfigureWithIP");
-                serverAction.addInput(server);
+                Join joinResources = ActivityBuilder.joinNode(false);
+                ActivityBuilder.connect(clientAction, joinResources, true);
+                ActivityBuilder.connect(serverAction, joinResources, true);
+//                clientAction.addEdge(joinResources.getIncoming().get(0), ActivityNode.Direction.OUT);
+//                serverAction.addEdge(joinResources.getIncoming().get(1), ActivityNode.Direction.OUT);
 
-                Join joinResources = (Join) ActivityBuilder.forkOrJoin(2, false, false);
-                clientAction.addEdge(joinResources.getIncoming().get(0), ActivityNode.Direction.OUT);
-                serverAction.addEdge(joinResources.getIncoming().get(1), ActivityNode.Direction.OUT);
-
-                outgoingEdgesContainer.add(joinResources.getOutgoing().get(0));
+                outgoingNodes.add(joinResources);
             } else {
                 //client resources
                 if (clientResource != null) {
-                    Action clientAction = ActivityBuilder.action(incomingEdge, null, clientResource, "unconfigureWithIP");
-                    clientAction.addInput(client);
-                    ActivityEdge out = new ActivityEdge();
-                    clientAction.addEdge(out, ActivityNode.Direction.OUT);
-                    outgoingEdgesContainer.add(out);
-                    ActivityBuilder.getActivity().addEdge(out);
+                    Action clientAction = ActivityBuilder.actionNode("unconfigureWithIP", clientResource, client);
+                    ActivityBuilder.connect(incomingNode, clientAction, true);
+                    outgoingNodes.add(clientAction);
                 }
 
                 //server resources
                 if (serverResource != null) {
-                    Action serverAction = ActivityBuilder.action(incomingEdge, null, serverResource, "unconfigureWithIP");
-                    serverAction.addInput(server);
-                    ActivityEdge out = new ActivityEdge();
-                    serverAction.addEdge(out, ActivityNode.Direction.OUT);
-                    outgoingEdgesContainer.add(out);
-                    ActivityBuilder.getActivity().addEdge(out);
+                    Action serverAction = ActivityBuilder.actionNode("unconfigureWithIP", serverResource, server);
+                    ActivityBuilder.connect(incomingNode, serverAction, true);
+                    outgoingNodes.add(serverAction);
                 }
             }
         }
