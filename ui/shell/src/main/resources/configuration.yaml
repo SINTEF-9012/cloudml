@@ -276,7 +276,7 @@ commands:
    
    
  - name: list types
-   syntax: lits types
+   syntax: list types
    description: |
      List all the artefact types which exists in the deployment model currently
      loaded (cf. command "load deployment").
@@ -286,7 +286,7 @@ commands:
          List all the existing artefacts types.
 
  - name: list instances
-   syntax: lits instances
+   syntax: list instances
    description: |
      List all the artefact instances which exists in the deployment model 
      currently loaded (cf. command "load deployment").
