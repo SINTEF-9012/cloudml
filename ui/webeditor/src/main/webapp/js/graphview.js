@@ -203,7 +203,7 @@ function pushModelToServer(){
         alertMessage("error",'Error pushing model to server - the model is empty.', 20000);
         return;
     }
-
+	
     send("!extended { name : LoadDeployment }");
     send("!additional json-string:"+stringifyRoot()); 
 
@@ -212,6 +212,7 @@ function pushModelToServer(){
     setTimeout(function(){send("!getSnapshot {path : /}");}, 4000);
     alertMessage("success","Sent model to the CloudML server.", 3000);
 }
+
 
 /***********************************************
 * Functions to add CloudML elements in the graph
@@ -441,7 +442,9 @@ Since the json serialization of the metamodel differs from the internal POJO ser
             var array=msg.data.split("###");
             var jObj;
             try{
-                var jObj = jsyaml.load(array[2], { schema: jsyamlSchema });
+				var array2=array[2].split("privateKey");
+				var result=array2[0];
+                var jObj = jsyaml.load(result, { schema: jsyamlSchema });
             } catch (error) {
                 console.log(msg);
                 console.log(error);
@@ -582,6 +585,7 @@ function stringifyRoot(){
         return value;
     });
 
+	
     return result;
 }
 
@@ -1216,7 +1220,9 @@ function refreshNodeState(d,delay){
                 d.socket.onmessage = function(msg){
                     if(msg.data.indexOf("GetSnapshot") >= 0){
                         try{
-                            var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+							var array=msg.data.split("privateKey");
+							var result=array[0];
+                            var json=jsyaml.load(result, {schema : jsyamlSchema});
                         }catch (error) {
                             console.log(error);
                         }
@@ -2130,7 +2136,9 @@ function scaleOutNode(node){
     dedicatedSocket.onmessage = function(msg){
         if(msg.data.indexOf("GetSnapshot") >= 0){
             try{
-                var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+				var array=msg.data.split("privateKey");
+				var result=array[0];
+                var json=jsyaml.load(result, {schema : jsyamlSchema});
             }catch (error) {
                 alertMessage("error",'Error parsing YAML response from CloudML server.', 5000);
                 console.log(error);
@@ -2219,7 +2227,9 @@ function burstNode(node,provider){
     dedicatedSocket2.onmessage = function(msg){
         if(msg.data.indexOf("GetSnapshot") >= 0){
             try{
-                var json=jsyaml.load(msg.data, {schema : jsyamlSchema});
+				var array=msg.data.split("privateKey");
+				var result=array[0];
+                var json=jsyaml.load(result, {schema : jsyamlSchema});
             }catch (error) {
                 alertMessage("error",'Error parsing YAML response from CloudML server.', 5000);
                 console.log(error);
