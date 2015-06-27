@@ -39,6 +39,7 @@
             </excludes>
             <outputDirectory>/</outputDirectory>
             <unpack>true</unpack>
+            <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
 </assembly>
