@@ -241,7 +241,7 @@ public class FlexiantConnector implements Connector{
         String ip=temp.getNics().get(0).getIpAddresses().get(0).getIpAddress();
         SSHConnector sc=new SSHConnector(keyPath, login, ip);
         try {
-            Thread.sleep(25000);
+            Thread.sleep(32000);
         } catch (InterruptedException e) {
             journal.log(Level.SEVERE, e.getMessage());
         }
