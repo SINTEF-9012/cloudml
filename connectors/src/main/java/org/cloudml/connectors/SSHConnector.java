@@ -160,11 +160,6 @@ public class SSHConnector {
                     break;
                 }
             }
-            try{
-                Thread.sleep(25000);
-            }catch(Exception ee){
-                journal.log(Level.SEVERE, ee.getMessage());
-            }
 
         } catch (JSchException e) {
             e.printStackTrace();
