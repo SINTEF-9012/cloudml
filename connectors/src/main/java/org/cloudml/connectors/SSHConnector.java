@@ -60,7 +60,7 @@ public class SSHConnector {
         try {
             session = jsch.getSession(user, host, 22);
             if(!keyPath.equals("")){
-                if(keyPath.endsWith(".pem")){
+                if(checkKeyIsFile(keyPath)){
                     jsch.addIdentity(keyPath);
                 }else{
                     final byte[] prvkey = keyPath.getBytes(); // Private key must be byte array
@@ -110,7 +110,7 @@ public class SSHConnector {
             session = jsch.getSession(user, host, 22);
             if(!keyPath.equals("")){
                 journal.log(Level.INFO, ">> Connection using an ssh key");
-                if(keyPath.endsWith(".pem")){
+                if(checkKeyIsFile(keyPath)){
                     jsch.addIdentity(keyPath);
                 }else{
                     final byte[] prvkey = keyPath.getBytes(); // Private key must be byte array
@@ -224,6 +224,14 @@ public class SSHConnector {
         } catch (SftpException e) {
             e.printStackTrace();
         }
+    }
+
+    private Boolean checkKeyIsFile(String key){
+        File file = new File(key);
+        if (file.exists()){
+            return true;
+        }
+        return false;
     }
 
 }

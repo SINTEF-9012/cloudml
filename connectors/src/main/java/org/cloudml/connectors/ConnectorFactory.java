@@ -42,6 +42,8 @@ public class ConnectorFactory {
                 return new FlexiantConnector(p.getProperties().valueOf("endPoint"), p.getCredentials().getLogin(), p.getCredentials().getPassword());
             if(p.getName().toLowerCase().equals("openstack-nova"))
                 return new OpenStackConnector(p.getProperties().valueOf("endPoint"), p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
+            if(p.getName().toLowerCase().equals("azurecompute"))
+                return new AzureConnector(p.getProperties().valueOf("endPoint"), p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
         } catch (MalformedURLException e) {
             journal.log(Level.SEVERE, e.getMessage());
         }

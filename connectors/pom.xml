@@ -230,6 +230,17 @@
             <version>0.16</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-management</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-management-compute</artifactId>
+            <version>0.7.0</version>
+        </dependency>
 
 
     </dependencies>
