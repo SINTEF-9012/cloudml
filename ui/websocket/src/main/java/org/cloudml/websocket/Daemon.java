@@ -57,7 +57,7 @@ public class Daemon
         Map<String, String> env = System.getenv();
         int port = 9000;
         if(env.containsKey("MODACLOUDS_MODELS_AT_RUNTIME_ENDPOINT_PORT"))
-            port=Integer.parseInt(env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP"));
+            port=Integer.parseInt(env.get("MODACLOUDS_MODELS_AT_RUNTIME_ENDPOINT_PORT"));
 
 
         if(args.length >= 1)
