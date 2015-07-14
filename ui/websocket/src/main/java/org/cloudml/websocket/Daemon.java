@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -53,7 +54,12 @@ public class Daemon
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Map<String, String> env = System.getenv();
         int port = 9000;
+        if(env.containsKey("MODACLOUDS_MODELS_AT_RUNTIME_ENDPOINT_PORT"))
+            port=Integer.parseInt(env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP"));
+
+
         if(args.length >= 1)
             port = Integer.parseInt(args[0]);
         
