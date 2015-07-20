@@ -135,7 +135,7 @@ public class CloudAppDeployer {
 
             //Added stuff
             setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
-            setAllEnvVarComponent(targetModel);
+            setAllEnvVarComponent(currentModel);
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
