@@ -762,11 +762,11 @@ class Facade implements CloudML, CommandHandler {
             } else {
                 success=deployer.scaleOut(vmi);
             }
-            if(!success){
+            /*if(!success){
                 if (coordinator != null) {
                     coordinator.ack("MaxVMsReached", command.getClass().getName());
                 }
-            }
+            }*/
         }
     }
 

@@ -770,6 +770,11 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
         HashMap<String,String> runtimeInformation = jc.createInstance(n);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
         try {
             Thread.sleep(1000);
@@ -1364,7 +1369,12 @@ public class CloudAppDeployer {
             int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
             if (currentModel.getComponentInstances().onlyVMs().size()+1 < max) {
                 scaler.scaleOut(vmi);
-            }else return false;
+            }else{
+                if (coordinator != null) {
+                    coordinator.ack("MaxVMsReached", this.getClass().getName());
+                }
+                return false;
+            }
 
         }else{
             scaler.scaleOut(vmi);
@@ -1378,7 +1388,12 @@ public class CloudAppDeployer {
             int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
             if (currentModel.getComponentInstances().onlyVMs().size()+nb < max) {
                 scaler.scaleOut(vmi,nb);
-            }else return false;
+            }else{
+                if (coordinator != null) {
+                    coordinator.ack("MaxVMsReached", this.getClass().getName());
+                }
+                return false;
+            }
         }else {
             scaler.scaleOut(vmi, nb);
         }
