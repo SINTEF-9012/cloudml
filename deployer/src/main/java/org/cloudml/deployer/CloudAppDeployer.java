@@ -796,7 +796,9 @@ public class CloudAppDeployer {
         ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
         ExternalComponent ec = eci.getType();
         Provider p = eci.getType().getProvider();
-        PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
+        PaaSConnector connector = null;
+        if(!ec.getServiceType().toLowerCase().equals("loadbalancer")) //LoadBalancer need a special connector...
+            connector = ConnectorFactory.createPaaSConnector(p);
 
         if (ec.getServiceType() == null)
             return;

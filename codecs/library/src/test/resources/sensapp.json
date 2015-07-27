@@ -175,14 +175,14 @@
  "type":"internalComponents[JettySC]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"sc853731720",
+ "name":"sc-1070912085",
  "owner":"internalComponentInstances[jettySC1]",
  "type":"internalComponents[JettySC]/providedExecutionPlatforms[sc]"}
 ]
 ,
 "requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"ml-504242581",
+ "name":"ml463620085",
  "owner":"internalComponentInstances[jettySC1]",
  "type":"internalComponents[JettySC]/requiredExecutionPlatform[ml]"}
 }
@@ -192,19 +192,19 @@
  "type":"internalComponents[sensapp]",
 "providedPortInstances": [
 { "eClass":"net.cloudml.core:ProvidedPortInstance" ,
- "name":"rest153218319",
+ "name":"rest-1207235297",
  "type":"internalComponents[sensapp]/providedPorts[rest]"}
 ]
 ,
 "requiredPortInstances": [
 { "eClass":"net.cloudml.core:RequiredPortInstance" ,
- "name":"mongoDBRequired1499337812",
+ "name":"mongoDBRequired1671308262",
  "type":"internalComponents[sensapp]/requiredPorts[mongoDBRequired]"}
 ]
 ,
 "requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"scRequired-2125590345",
+ "name":"scRequired-283562027",
  "owner":"internalComponentInstances[sensApp1]",
  "type":"internalComponents[sensapp]/requiredExecutionPlatform[scRequired]"}
 }
@@ -214,13 +214,13 @@
  "type":"internalComponents[mongoDB]",
 "providedPortInstances": [
 { "eClass":"net.cloudml.core:ProvidedPortInstance" ,
- "name":"mongoDB-900662210",
+ "name":"mongoDB1069138639",
  "type":"internalComponents[mongoDB]/providedPorts[mongoDB]"}
 ]
 ,
 "requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"sl1243496244",
+ "name":"sl-82593391",
  "owner":"internalComponentInstances[mongoDB1]",
  "type":"internalComponents[mongoDB]/requiredExecutionPlatform[sl]"}
 }
@@ -230,14 +230,14 @@
  "type":"internalComponents[JettySC]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"sc610004528",
+ "name":"sc911839921",
  "owner":"internalComponentInstances[jettySC2]",
  "type":"internalComponents[JettySC]/providedExecutionPlatforms[sc]"}
 ]
 ,
 "requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"ml1943511728",
+ "name":"ml-245073587",
  "owner":"internalComponentInstances[jettySC2]",
  "type":"internalComponents[JettySC]/requiredExecutionPlatform[ml]"}
 }
@@ -247,13 +247,13 @@
  "type":"internalComponents[SensAppAdmin]",
 "requiredPortInstances": [
 { "eClass":"net.cloudml.core:RequiredPortInstance" ,
- "name":"restRequired524776208",
+ "name":"restRequired1226454537",
  "type":"internalComponents[SensAppAdmin]/requiredPorts[restRequired]"}
 ]
 ,
 "requiredExecutionPlatformInstance":
 { "eClass":"net.cloudml.core:RequiredExecutionPlatformInstance" ,
- "name":"scRequired-1011613651",
+ "name":"scRequired-814396271",
  "owner":"internalComponentInstances[sensAppAdmin1]",
  "type":"internalComponents[SensAppAdmin]/requiredExecutionPlatform[scRequired]"}
 }
@@ -320,11 +320,12 @@
 "vmInstances": [
 { "eClass":"net.cloudml.core:VMInstance" ,
  "name":"sensapp-sl1",
+ "status":"STOPPED",
  "publicAddress":"no address given",
  "type":"vms[SL]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"s1Provided930696954",
+ "name":"s1Provided733858066",
  "owner":"vmInstances[sensapp-sl1]",
  "type":"vms[SL]/providedExecutionPlatforms[s1Provided]"}
 ]
@@ -332,11 +333,12 @@
 ,
 { "eClass":"net.cloudml.core:VMInstance" ,
  "name":"sensapp-ml1",
+ "status":"STOPPED",
  "publicAddress":"no address given",
  "type":"vms[ML]",
 "providedExecutionPlatformInstances": [
 { "eClass":"net.cloudml.core:ProvidedExecutionPlatformInstance" ,
- "name":"m1Provided1178430284",
+ "name":"m1Provided82231197",
  "owner":"vmInstances[sensapp-ml1]",
  "type":"vms[ML]/providedExecutionPlatforms[m1Provided]"}
 ]
@@ -366,40 +368,40 @@
 { "eClass":"net.cloudml.core:RelationshipInstance" ,
  "name":"sensAppAdminSensApp1",
  "type":"relationships[SensAppAdminSensApp]",
- "requiredPortInstance":"internalComponentInstances[sensAppAdmin1]/requiredPortInstances[restRequired524776208]",
- "providedPortInstance":"internalComponentInstances[sensApp1]/providedPortInstances[rest153218319]"}
+ "requiredPortInstance":"internalComponentInstances[sensAppAdmin1]/requiredPortInstances[restRequired1226454537]",
+ "providedPortInstance":"internalComponentInstances[sensApp1]/providedPortInstances[rest-1207235297]"}
 ,
 { "eClass":"net.cloudml.core:RelationshipInstance" ,
  "name":"sensAppMongoDB1",
  "type":"relationships[SensAppMongoDB]",
- "requiredPortInstance":"internalComponentInstances[sensApp1]/requiredPortInstances[mongoDBRequired1499337812]",
- "providedPortInstance":"internalComponentInstances[mongoDB1]/providedPortInstances[mongoDB-900662210]"}
+ "requiredPortInstance":"internalComponentInstances[sensApp1]/requiredPortInstances[mongoDBRequired1671308262]",
+ "providedPortInstance":"internalComponentInstances[mongoDB1]/providedPortInstances[mongoDB1069138639]"}
 ]
 ,
 "executesInstances": [
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn-1597152589",
- "providedExecutionPlatformInstance":"vmInstances[sensapp-sl1]/providedExecutionPlatformInstances[s1Provided930696954]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC2]/requiredExecutionPlatformInstance[ml1943511728]"}
+ "name":"runOn-479586471",
+ "providedExecutionPlatformInstance":"vmInstances[sensapp-sl1]/providedExecutionPlatformInstances[s1Provided733858066]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC2]/requiredExecutionPlatformInstance[ml-245073587]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn-478806223",
- "providedExecutionPlatformInstance":"internalComponentInstances[jettySC2]/providedExecutionPlatformInstances[sc610004528]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[sensAppAdmin1]/requiredExecutionPlatformInstance[scRequired-1011613651]"}
+ "name":"runOn-703663398",
+ "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided82231197]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[mongoDB1]/requiredExecutionPlatformInstance[sl-82593391]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn1195975524",
- "providedExecutionPlatformInstance":"internalComponentInstances[jettySC1]/providedExecutionPlatformInstances[sc853731720]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[sensApp1]/requiredExecutionPlatformInstance[scRequired-2125590345]"}
+ "name":"runOn-318021111",
+ "providedExecutionPlatformInstance":"internalComponentInstances[jettySC2]/providedExecutionPlatformInstances[sc911839921]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[sensAppAdmin1]/requiredExecutionPlatformInstance[scRequired-814396271]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn1344781653",
- "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided1178430284]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC1]/requiredExecutionPlatformInstance[ml-504242581]"}
+ "name":"runOn268562280",
+ "providedExecutionPlatformInstance":"internalComponentInstances[jettySC1]/providedExecutionPlatformInstances[sc-1070912085]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[sensApp1]/requiredExecutionPlatformInstance[scRequired-283562027]"}
 ,
 { "eClass":"net.cloudml.core:ExecuteInstance" ,
- "name":"runOn1555716098",
- "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided1178430284]",
- "requiredExecutionPlatformInstance":"internalComponentInstances[mongoDB1]/requiredExecutionPlatformInstance[sl1243496244]"}
+ "name":"runOn452133193",
+ "providedExecutionPlatformInstance":"vmInstances[sensapp-ml1]/providedExecutionPlatformInstances[m1Provided82231197]",
+ "requiredExecutionPlatformInstance":"internalComponentInstances[jettySC1]/requiredExecutionPlatformInstance[ml463620085]"}
 ]
 }
