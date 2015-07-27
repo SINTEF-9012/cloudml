@@ -1360,8 +1360,8 @@ public class CloudAppDeployer {
 
     public Boolean scaleOut(VMInstance vmi){
         Scaler scaler = new Scaler(currentModel, coordinator, this);
-        if(vmi.getType().getProvider().getProperties().get("MaxVM") != null) {
-            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVM"));
+        if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
+            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
             if (currentModel.getComponentInstances().onlyVMs().size()+1 < max) {
                 scaler.scaleOut(vmi);
             }else return false;
@@ -1375,7 +1375,7 @@ public class CloudAppDeployer {
     public Boolean scaleOut(VMInstance vmi, int nb){
         Scaler scaler = new Scaler(currentModel, coordinator, this);
         if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
-            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVM"));
+            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
             if (currentModel.getComponentInstances().onlyVMs().size()+nb < max) {
                 scaler.scaleOut(vmi,nb);
             }else return false;
