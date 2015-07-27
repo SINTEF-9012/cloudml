@@ -1362,7 +1362,7 @@ public class CloudAppDeployer {
         Scaler scaler = new Scaler(currentModel, coordinator, this);
         if(vmi.getType().getProvider().getProperties().get("MaxVM") != null) {
             int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVM"));
-            if (currentModel.getComponentInstances().onlyVMs().size() < max) {
+            if (currentModel.getComponentInstances().onlyVMs().size()+1 < max) {
                 scaler.scaleOut(vmi);
             }else return false;
 
