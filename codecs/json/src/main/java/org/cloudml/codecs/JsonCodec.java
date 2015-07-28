@@ -70,11 +70,17 @@ public class JsonCodec implements Codec {
 
     public void save(NamedElement model, OutputStream content) {
         ModelSerializer serializer = new JSONModelSerializer();
+        if(bridge == null)
+            throw new IllegalArgumentException("KMF Bridge not initiated");
+        if(model == null)
+            throw new IllegalArgumentException("Cannot serialize null!");
+        if(content == null)
+            throw new IllegalArgumentException("Cannot serialize into null!");
         try {
             serializer.serialize(bridge.toKMF((Deployment)model), content);
         } catch (Exception e) {
-            System.err.println(e.getLocalizedMessage());
-            journal.log(Level.SEVERE, e.getLocalizedMessage());
+            System.err.println(e.getStackTrace());
+            journal.log(Level.SEVERE, e.getLocalizedMessage(),e);
             throw new RuntimeException(e);
         }
     }
