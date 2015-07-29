@@ -1319,7 +1319,7 @@ public class CloudAppDeployer {
             ip = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
             port = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
         }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP") &&
-        env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT")){
+                env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT")){
             ip = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP");
             port = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT");
         }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_IP") &&
@@ -1408,9 +1408,22 @@ public class CloudAppDeployer {
         return true;
     }
 
-    public void scaleOut(VMInstance vmi,Provider provider){
-        Scaler scaler=new Scaler(currentModel,coordinator,this);
-        scaler.scaleOut(vmi,provider);
+    public Boolean scaleOut(VMInstance vmi,Provider provider){
+        Scaler scaler = new Scaler(currentModel, coordinator, this);
+        if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
+            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
+            if (currentModel.getComponentInstances().onlyVMs().size() + 1 < max) {
+                scaler.scaleOut(vmi, provider);
+            } else {
+                if (coordinator != null) {
+                    coordinator.ack("MaxVMsReached", this.getClass().getName());
+                }
+                return false;
+            }
+        }else {
+            scaler.scaleOut(vmi,provider);
+        }
+        return true;
     }
 
     public Deployment scaleOut(ExternalComponentInstance eci,Provider provider){
