@@ -1315,9 +1315,17 @@ public class CloudAppDeployer {
         String ip="";
         String port="";
         if(env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP")
-                && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")){
-            ip=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
-            port=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+                && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")) {
+            ip = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+        }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP") &&
+        env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT")){
+            ip = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT");
+        }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_IP") &&
+                env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_PORT")){
+            ip = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_PORT");
         }else{
             try {
                 ip= InetAddress.getLocalHost().getHostAddress();
