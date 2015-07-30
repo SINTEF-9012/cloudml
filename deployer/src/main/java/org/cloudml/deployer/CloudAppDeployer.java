@@ -837,6 +837,7 @@ public class CloudAppDeployer {
         if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
             String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
         }
         if(ec.getServiceType().toLowerCase().equals("loadbalancer")){
             String endpoint = ec.getEndPoint();
@@ -867,6 +868,7 @@ public class CloudAppDeployer {
             journal.log(Level.INFO, ">>Add pool:" + pConnector.addPool(eci.getName() + "Back", testPool));
 
             journal.log(Level.INFO, ">> " + pConnector.addGateway(gateway));
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
         }
         if (statusMonitorActive) {
             statusMonitor.attachModule(connector);
