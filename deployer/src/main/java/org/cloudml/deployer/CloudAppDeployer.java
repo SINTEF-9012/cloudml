@@ -1375,7 +1375,7 @@ public class CloudAppDeployer {
         Scaler scaler = new Scaler(currentModel, coordinator, this);
         if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
             int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
-            if (currentModel.getComponentInstances().onlyVMs().size()+1 < max) {
+            if (nbVMFromProvider(vmi.getType().getProvider()) +1 < max) {
                 scaler.scaleOut(vmi);
             }else{
                 if (coordinator != null) {
@@ -1394,7 +1394,7 @@ public class CloudAppDeployer {
         Scaler scaler = new Scaler(currentModel, coordinator, this);
         if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
             int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
-            if (currentModel.getComponentInstances().onlyVMs().size()+nb < max) {
+            if (nbVMFromProvider(vmi.getType().getProvider()) + nb < max) {
                 scaler.scaleOut(vmi,nb);
             }else{
                 if (coordinator != null) {
@@ -1408,11 +1408,20 @@ public class CloudAppDeployer {
         return true;
     }
 
+    private int nbVMFromProvider(Provider p){
+        int n=0;
+        for(VMInstance v: currentModel.getComponentInstances().onlyVMs()){
+            if(v.getType().getProvider().equals(p))
+                n++;
+        }
+        return n;
+    }
+
     public Boolean scaleOut(VMInstance vmi,Provider provider){
         Scaler scaler = new Scaler(currentModel, coordinator, this);
         if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
-            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
-            if (currentModel.getComponentInstances().onlyVMs().size() + 1 < max) {
+            int max = Integer.parseInt(provider.getProperties().valueOf("MaxVMs"));
+            if (nbVMFromProvider(vmi.getType().getProvider()) + 1 < max) {
                 scaler.scaleOut(vmi, provider);
             } else {
                 if (coordinator != null) {
