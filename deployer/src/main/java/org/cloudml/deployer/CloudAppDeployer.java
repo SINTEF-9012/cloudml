@@ -988,6 +988,7 @@ public class CloudAppDeployer {
                 journal.log(Level.INFO, ">>Modify backend: "+connector.addPool(serveri.getName()+"Back", backend));
                 journal.log(Level.INFO, ">>Delete Target: "+connector.deleteTarget(serveri.getName()+"Back", "targetOneHold"));
                 connector.start();
+                coordinator.updateStatus(serveri.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
             }
             else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
