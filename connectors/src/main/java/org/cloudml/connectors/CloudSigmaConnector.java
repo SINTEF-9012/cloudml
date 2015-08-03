@@ -60,7 +60,7 @@ public class CloudSigmaConnector implements Connector {
     private ComputeServiceContext computeContext;
     private ComputeService compute;
     private String provider;
-    private HashMap<String,String> runtimeInformation;
+    private HashMap<String,Object> runtimeInformation;
     private CloudSigma2Api cloudSigmaApi;
 
 
@@ -124,9 +124,9 @@ public class CloudSigmaConnector implements Connector {
 
 
     @Override
-    public HashMap<String, String> createInstance(VMInstance a) {
+    public HashMap<String, Object> createInstance(VMInstance a) {
         VM vm = a.getType();
-        runtimeInformation=new HashMap<String, String>();
+        runtimeInformation=new HashMap<String, Object>();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         
         // First try to find the desired template drive in MyDrives
@@ -230,7 +230,7 @@ public class CloudSigmaConnector implements Connector {
         }
 
 
-        runtimeInformation.put("status", state.toString());
+        runtimeInformation.put("status", state);
         return runtimeInformation;
     }
 

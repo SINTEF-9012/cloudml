@@ -203,11 +203,11 @@ public class Scaler {
                 public void run() {
                     //once this is done we can work in parallel
                     Connector c2 = ConnectorFactory.createIaaSConnector(vm.getProvider());
-                    HashMap<String, String> result = c2.createInstance(ci);
+                    HashMap<String, Object> result = c2.createInstance(ci);
                     c2.closeConnection();
-                    coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
-                    coordinator.updateStatus(name, ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
-                    coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
+                    coordinator.updateStatusInternalComponent(ci.getName(), result.get("status").toString(), CloudAppDeployer.class.getName());
+                    coordinator.updateStatus(name, ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
+                    coordinator.updateIP(ci.getName(),result.get("publicAddress").toString(),CloudAppDeployer.class.getName());
 
                     dep.setAllEnvVarComponent(currentModel);
 
@@ -266,12 +266,12 @@ public class Scaler {
         }
 
         Connector c2=ConnectorFactory.createIaaSConnector(v.getProvider());
-        HashMap<String,String> result=c2.createInstance(ci);
+        HashMap<String,Object> result=c2.createInstance(ci);
 
         c2.closeConnection();
-        coordinator.updateStatusInternalComponent(ci.getName(), result.get("status"), CloudAppDeployer.class.getName());
-        coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
-        coordinator.updateIP(ci.getName(),result.get("publicAddress"),CloudAppDeployer.class.getName());
+        coordinator.updateStatusInternalComponent(ci.getName(), result.get("status").toString(), CloudAppDeployer.class.getName());
+        coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
+        coordinator.updateIP(ci.getName(),result.get("publicAddress").toString(),CloudAppDeployer.class.getName());
 
         dep.setAllEnvVarComponent(currentModel);
 

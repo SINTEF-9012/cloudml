@@ -62,7 +62,7 @@ public class AzureConnector implements Connector{
 
     private ComputeManagementClient computeManagementClient;
     private HostedServiceOperations hostedServicesOperations;
-    private HashMap<String,String> runtimeInformation;
+    private HashMap<String,Object> runtimeInformation;
 
     public AzureConnector(String endpoint, String provider,String login,String secretKey){
         journal.log(Level.INFO, ">> Connecting to "+provider+" ...");
@@ -98,8 +98,8 @@ public class AzureConnector implements Connector{
     }
 
     @Override
-    public HashMap<String, String> createInstance(VMInstance a) {
-        runtimeInformation=new HashMap<String, String>();
+    public HashMap<String, Object> createInstance(VMInstance a) {
+        runtimeInformation=new HashMap<String, Object>();
         VM vm = a.getType();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
 
@@ -199,7 +199,7 @@ public class AzureConnector implements Connector{
         }
 
         state = ComponentInstance.State.RUNNING;
-        runtimeInformation.put("status", state.toString());
+        runtimeInformation.put("status", state);
         return runtimeInformation;
     }
 

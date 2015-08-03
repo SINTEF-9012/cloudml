@@ -55,7 +55,7 @@ public class Daemon
             e.printStackTrace();
         }
         Map<String, String> env = System.getenv();
-        int port = 9000;
+        int port = 9030;
         if(env.containsKey("MODACLOUDS_MODELS_AT_RUNTIME_ENDPOINT_PORT"))
             port=Integer.parseInt(env.get("MODACLOUDS_MODELS_AT_RUNTIME_ENDPOINT_PORT"));
 

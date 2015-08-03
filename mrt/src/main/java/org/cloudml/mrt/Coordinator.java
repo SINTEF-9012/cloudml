@@ -37,6 +37,7 @@ import org.cloudml.codecs.JsonCodec;
 import org.cloudml.core.ComponentInstance;
 import org.cloudml.core.Deployment;
 import org.cloudml.core.InternalComponentInstance;
+import org.cloudml.core.VMInstance;
 import org.cloudml.mrt.cmd.CmdWrapper;
 import org.cloudml.mrt.cmd.abstracts.Change;
 import org.cloudml.mrt.cmd.abstracts.Instruction;
@@ -49,7 +50,7 @@ import org.cloudml.mrt.sample.SystemOutPeerStub;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- * @author Hui Song
+ * @author Hui Song & Nicolas Ferry
  */
 public class Coordinator {
 
@@ -94,28 +95,41 @@ public class Coordinator {
         }
     }
 
-    public void updateStatus(String name, String newState, String identity) {
+    public void updateStatus(String name, ComponentInstance.State newState, String identity) {
         //A PeerStub identifies who launches the modifications
         PeerStub committer = new SystemOutPeerStub(identity);
 
         //A wrapper hides the complexity of invoking the coordinator
         CmdWrapper wrapper = new CmdWrapper(this, committer);
 
+        journal.log(Level.INFO, ">> Prepare to update status of: "+name);
         //Update the value of status
         try {
             Thread.sleep(1500);
             Object res = wrapper.eGet("/componentInstances[name='" + name + "']/status");
+            ComponentInstance res2=(ComponentInstance)wrapper.eGet("/componentInstances[name='" + name + "']");
             if (res !=null) {
-                if (!res.toString().equals(newState)) {
+                if (!res.toString().equals(newState.toString())) {
                     journal.log(Level.INFO, ">> Updating the model..");
                     wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
                     journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
+                    if(res2 instanceof VMInstance)
+                        ((VMInstance)res2).setStatus(newState);
                 }
+            }else{
+                if(res2 instanceof VMInstance)
+                    ((VMInstance)res2).setStatus(ComponentInstance.State.PENDING);
+                journal.log(Level.INFO, ">> No former status, updating the model..");
+                wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
+                journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");
+                if(res2 instanceof VMInstance)
+                    ((VMInstance)res2).setStatus(newState);
             }
-
         } catch (org.apache.commons.jxpath.JXPathNotFoundException e) {
             journal.log(Level.INFO, "Machine: " + name + " not in this model");
         } catch (InterruptedException e) {
+            journal.log(Level.SEVERE, ">> Could not update status!");
+            journal.log(Level.SEVERE, e.getLocalizedMessage(), e);
             e.printStackTrace();
         }
     }

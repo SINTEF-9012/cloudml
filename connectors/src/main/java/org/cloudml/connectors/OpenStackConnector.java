@@ -73,7 +73,7 @@ public class OpenStackConnector implements Connector{
     private ComputeService novaComputeService;
     private final String endpoint;
     private NovaApi serverApi;
-    private HashMap<String,String> runtimeInformation=new HashMap<String, String>();
+    private HashMap<String,Object> runtimeInformation=new HashMap<String, Object>();
 
     public OpenStackConnector(String endPoint,String provider,String login,String secretKey){
         this.endpoint=endPoint;
@@ -338,7 +338,7 @@ public class OpenStackConnector implements Connector{
      * @param a description of the VM to be created
      * @return
      */
-    public HashMap<String,String> createInstance(VMInstance a){
+    public HashMap<String,Object> createInstance(VMInstance a){
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         VM vm = a.getType();
         ComputeMetadata cm= getVMByName(a.getName());
@@ -439,7 +439,7 @@ public class OpenStackConnector implements Connector{
 
             state = ComponentInstance.State.RUNNING;
         }
-        runtimeInformation.put("status",state.toString());
+        runtimeInformation.put("status",state);
         return runtimeInformation;
     }
 

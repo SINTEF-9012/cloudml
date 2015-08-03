@@ -41,7 +41,7 @@ public class NotificationSender {
      * @param coord     to interact with mrt
      */
     public static void updateUsingFacade(String name, ComponentInstance.State newStatus, Coordinator coord) {
-        coord.updateStatus(name, newStatus.toString(), StatusMonitor.class.getName());
+        coord.updateStatus(name, newStatus, StatusMonitor.class.getName());
     }
 
     //this method simply print the changes of the status and can be removed if no longer useful for any demo

@@ -364,7 +364,7 @@ public class CloudAppDeployer {
                 }*/
 
                 for(InternalComponentInstance ici: host.hostedComponents()){
-                    coordinator.updateStatus(ici.getName(), InternalComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                    coordinator.updateStatusInternalComponent(ici.getName(), InternalComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
                 }
                 coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
             }
@@ -768,20 +768,21 @@ public class CloudAppDeployer {
         }
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
-        HashMap<String,String> runtimeInformation = jc.createInstance(n);
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING, CloudAppDeployer.class.getName());
+        HashMap<String,Object> runtimeInformation = jc.createInstance(n);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
+        journal.log(Level.INFO, ">> Status: "+runtimeInformation.get("status"));
+        coordinator.updateStatus(n.getName(), (ComponentInstance.State)runtimeInformation.get("status"), CloudAppDeployer.class.getName());
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),CloudAppDeployer.class.getName());
+        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress").toString(),CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         if (statusMonitorActive) {
             statusMonitor.attachModule(jc);
@@ -822,7 +823,7 @@ public class CloudAppDeployer {
             String pa=connector.getDBEndPoint(eci.getName(), 600);
             eci.setPublicAddress(pa);
             coordinator.updateIP(n.getName(),pa,CloudAppDeployer.class.getName());
-            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
             //execute the configure command
             /*if (!n.getType().getResources().isEmpty()) {
                 for (Resource r : n.getType().getResources()) {
@@ -837,7 +838,7 @@ public class CloudAppDeployer {
         if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
             String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
-            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
         }
         if(ec.getServiceType().toLowerCase().equals("loadbalancer")){
             String endpoint = ec.getEndPoint();
@@ -868,7 +869,7 @@ public class CloudAppDeployer {
             journal.log(Level.INFO, ">>Add pool:" + pConnector.addPool(eci.getName() + "Back", testPool));
 
             journal.log(Level.INFO, ">> " + pConnector.addGateway(gateway));
-            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
         }
         if (statusMonitorActive) {
             statusMonitor.attachModule(connector);
@@ -895,13 +896,13 @@ public class CloudAppDeployer {
                     if (valet != null)
                         valet.config();
                     else if(res.hasProperty("db-binding-alias")){
-                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
+                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING, CloudAppDeployer.class.getName());
                         try{
                             Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
                             PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
                             String alias = res.getProperties().valueOf("db-binding-alias");
                             connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
-                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
                         }catch(Exception ex){
                             ex.printStackTrace();
                             journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
@@ -988,7 +989,7 @@ public class CloudAppDeployer {
                 journal.log(Level.INFO, ">>Modify backend: "+connector.addPool(serveri.getName()+"Back", backend));
                 journal.log(Level.INFO, ">>Delete Target: "+connector.deleteTarget(serveri.getName()+"Back", "targetOneHold"));
                 connector.start();
-                coordinator.updateStatus(serveri.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                coordinator.updateStatus(serveri.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
             }
             else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
@@ -1154,7 +1155,7 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED, CloudAppDeployer.class.getName());
         //old way without using mrt
         //n.setStatusAsStopped();
     }
