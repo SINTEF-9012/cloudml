@@ -77,6 +77,7 @@ public class ConnectorFactory {
     public static PyHrapiConnector createLoadBalancerProvider(String endpoint){
         if(loadbalancerConnector == null)
             loadbalancerConnector = new PyHrapiConnector(endpoint, PyHrapiConnector.Version.V1);
+        loadbalancerConnector.setEndpoint(endpoint);
         return loadbalancerConnector;
     }
 }
