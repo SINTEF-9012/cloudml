@@ -94,6 +94,10 @@ public class PyHrapiConnector {
         
     }
     
+    public void setEndpoint(String endpoint){
+        this.endpoint = endpoint;
+    }
+    
     private String invoke(URI uri, String method, String body) throws UnsupportedEncodingException, IOException{
         HttpUriRequest request = null;
         
