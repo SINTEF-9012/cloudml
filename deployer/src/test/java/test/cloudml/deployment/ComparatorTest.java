@@ -22,19 +22,7 @@
  */
 package test.cloudml.deployment;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-
-import net.cloudml.core.VM;
-import org.cloudml.codecs.JsonCodec;
-import org.cloudml.codecs.commons.Codec;
-import org.cloudml.connectors.FlexiantConnector;
-import org.cloudml.connectors.PowerShellConnector;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.VMInstance;
 import org.cloudml.core.builders.VMBuilder;
-import org.cloudml.deployer.CloudMLModelComparator;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -42,7 +30,6 @@ import junit.framework.TestSuite;
 
 import static org.cloudml.core.builders.Commons.aProvidedExecutionPlatform;
 import static org.cloudml.core.builders.Commons.aVM;
-import static org.cloudml.core.builders.Commons.aVMInstance;
 
 public class ComparatorTest extends TestCase {
 	

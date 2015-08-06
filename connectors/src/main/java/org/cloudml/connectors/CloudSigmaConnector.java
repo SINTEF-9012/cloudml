@@ -56,7 +56,7 @@ import java.util.logging.Logger;
  */
 public class CloudSigmaConnector implements Connector {
 
-    private static final Logger journal = Logger.getLogger(JCloudsConnector.class.getName());
+    private static final Logger journal = Logger.getLogger(CloudSigmaConnector.class.getName());
     private ComputeServiceContext computeContext;
     private ComputeService compute;
     private String provider;
@@ -125,6 +125,7 @@ public class CloudSigmaConnector implements Connector {
 
     @Override
     public HashMap<String, String> createInstance(VMInstance a) {
+        
         VM vm = a.getType();
         runtimeInformation=new HashMap<String, String>();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
@@ -218,12 +219,22 @@ public class CloudSigmaConnector implements Connector {
                 runtimeInformation.put("publicAddress", ip.getUuid());
 
                 //wait for the VM to be accessible
-                SSHConnector sc=new SSHConnector(vm.getPrivateKey(), "ubuntu", ip.getUuid());
-                while(!sc.checkConnectivity()){
-                    try {
-                        Thread.sleep(15000);
-                    } catch (InterruptedException e) {
-                        journal.log(Level.SEVERE, e.getMessage());
+                if (vm.getOs().toLowerCase().contains("windows")) {
+                    while(!PowerShellConnector.checkConnectivity(ip.getUuid())){
+                        try {
+                            Thread.sleep(15000);
+                        } catch (InterruptedException e) {
+                            journal.log(Level.SEVERE, e.getMessage());
+                        }
+                    }
+                } else {
+                    SSHConnector sc=new SSHConnector(vm.getPrivateKey(), "ubuntu", ip.getUuid());
+                    while(!sc.checkConnectivity()){
+                        try {
+                            Thread.sleep(15000);
+                        } catch (InterruptedException e) {
+                            journal.log(Level.SEVERE, e.getMessage());
+                        }
                     }
                 }
             }

@@ -58,18 +58,18 @@ public class PuppetMarionnetteConnector {
 
     private void startPuppetAgent(String key, String user, String passwd, String host, String ip){
         if(isWindows){
-            //startPuppetOnWindows(passwd, ip);
+            startPuppetOnWindows(user, passwd, ip);
         }else{
             SSHConnector sc=new SSHConnector(key,user,ip, passwd);
             sc.execCommandSsh("puppet agent -t");
         }
     }
 
-    private void startPuppetOnWindows(String passwd, String ip){
+    private void startPuppetOnWindows(String user, String passwd, String ip){
         PowerShellConnector run = null;
         try {
             journal.log(Level.INFO, ">> Running: puppet agent -t");
-            String command = "powershell  \".\\startPuppet.ps1 " + passwd + " " + ip + "\"";
+            String command = "powershell  \".\\startPuppet.ps1 " + user + " " + passwd + " " + ip + "\"";
             run = new PowerShellConnector(command);
             journal.log(Level.INFO, ">> STDOUT: " + run.getStandardOutput());
             journal.log(Level.INFO, ">> STDERR: " + run.getStandardError());
@@ -80,13 +80,13 @@ public class PuppetMarionnetteConnector {
         }
     }
 
-    private void configureHostnameWindows(String passwd, String ip, String masterEndpoint,String hostname){
+    private void configureHostnameWindows(String user, String passwd, String ip, String masterEndpoint,String hostname){
         PowerShellConnector run = null;
         try {
             journal.log(Level.INFO, ">> Configuring hostname and installing Puppet ...");
             //manage the certificates
             manageCertificates(hostname);
-            String command = "powershell  \".\\connect.ps1 " + passwd + " " + ip +" "+ hostname+" "+masterEndpoint+ "\"";
+            String command = "powershell  \".\\connect.ps1 " +  user + " " + passwd + " " + ip + " " + hostname + " " + masterEndpoint + "\"";
             run = new PowerShellConnector(command);
             journal.log(Level.INFO, ">> STDOUT: " + run.getStandardOutput());
             journal.log(Level.INFO, ">> STDERR: " + run.getStandardError());
@@ -120,7 +120,7 @@ public class PuppetMarionnetteConnector {
 
     public void configureHostname(String key, String user, String passwd, String ip, String masterEndpoint,String hostname, String cmd){
         if(isWindows)
-            configureHostnameWindows(passwd,ip,masterEndpoint,hostname);
+            configureHostnameWindows(user,passwd,ip,masterEndpoint,hostname);
         else configureHostnameLinux(key,user,passwd,ip,masterEndpoint,hostname,cmd);
     }
 
