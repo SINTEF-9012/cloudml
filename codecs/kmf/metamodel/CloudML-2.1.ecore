@@ -185,6 +185,7 @@
           eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="provide" upperBound="-1"
           eType="#//core/VMPortInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="status" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ExecutionPlatform" abstract="true"
         eSuperTypes="#//core/CloudMLElementWithProperties">

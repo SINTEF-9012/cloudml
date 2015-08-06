@@ -254,7 +254,7 @@ class Facade implements CloudML, CommandHandler {
                             Provider provider = vmi.getType().getProvider();
                             Connector c = ConnectorFactory.createIaaSConnector(provider);
                             c.startVM(vmi);
-                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING.toString(), Facade.class.getName());
+                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.RUNNING, Facade.class.getName());
                             for(InternalComponentInstance ici : vmi.hostedComponents()){
                                 InternalComponent ic=ici.getType();
                                 for(Resource r : ic.getResources()){
@@ -317,7 +317,7 @@ class Facade implements CloudML, CommandHandler {
                                 }
                             }
                             c.stopVM(vmi);
-                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.STOPPED.toString(), Facade.class.getName());
+                            coordinator.updateStatus(vmi.getName(), ComponentInstance.State.STOPPED, Facade.class.getName());
                             c.closeConnection();
                         }
                     }
@@ -756,9 +756,17 @@ class Facade implements CloudML, CommandHandler {
         if (vmi == null) {
             dispatch(new Message(command, Category.ERROR, "Cannot find a VM with this ID!"));
         } else {
-            if(command.getNb() > 1)
-                deployer.scaleOut(vmi,command.getNb());
-            else deployer.scaleOut(vmi);
+            Boolean success=true;
+            if(command.getNb() > 1) {
+                success=deployer.scaleOut(vmi, command.getNb());
+            } else {
+                success=deployer.scaleOut(vmi);
+            }
+            /*if(!success){
+                if (coordinator != null) {
+                    coordinator.ack("MaxVMsReached", command.getClass().getName());
+                }
+            }*/
         }
     }
 

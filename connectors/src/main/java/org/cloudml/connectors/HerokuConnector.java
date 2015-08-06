@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import com.heroku.api.*;
 import com.heroku.api.connection.ConnectionFactory;
-import com.heroku.platform.api.AppTransfer;
 
 /**
  * Created by ferrynico on 06/03/15.

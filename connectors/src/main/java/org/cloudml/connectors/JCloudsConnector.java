@@ -81,7 +81,7 @@ public class JCloudsConnector implements Connector{
     private String provider;
     private ComputeServiceContext computeContext;
     private EC2Api ec2api;
-    private HashMap<String,String> runtimeInformation;
+    private HashMap<String,Object> runtimeInformation;
 
     public JCloudsConnector(String provider,String login,String secretKey){
         journal.log(Level.INFO, ">> Connecting to "+provider+" ...");
@@ -263,8 +263,8 @@ public class JCloudsConnector implements Connector{
      * @param a description of the VM to be created
      * @return
      */
-    public HashMap<String,String> createInstance(VMInstance a){
-        runtimeInformation=new HashMap<String, String>();
+    public HashMap<String,Object> createInstance(VMInstance a){
+        runtimeInformation=new HashMap<String, Object>();
         VM vm = a.getType();
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         NodeMetadata cm= (NodeMetadata)getVMByName(a.getName());
@@ -342,7 +342,7 @@ public class JCloudsConnector implements Connector{
             state = ComponentInstance.State.RUNNING;
 
         }
-        runtimeInformation.put("status", state.toString());
+        runtimeInformation.put("status", state);
         return runtimeInformation;
     }
 

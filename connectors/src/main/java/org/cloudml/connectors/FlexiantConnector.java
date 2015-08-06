@@ -49,7 +49,7 @@ public class FlexiantConnector implements Connector{
     private final String endpoint;
     private UserService service;
     private BindingProvider portBP;
-    private HashMap<String,String> runtimeInformation=new HashMap<String, String>();
+    private HashMap<String,Object> runtimeInformation=new HashMap<String, Object>();
 
     @SuppressWarnings("restriction")
     public FlexiantConnector(String endPoint, String login, String secretKey) throws MalformedURLException{
@@ -150,7 +150,7 @@ public class FlexiantConnector implements Connector{
         }
     }
 
-    public HashMap<String,String> createInstance(VMInstance a){
+    public HashMap<String,Object> createInstance(VMInstance a){
         ComponentInstance.State state = ComponentInstance.State.UNRECOGNIZED;
         try {
             Server template = new Server();
@@ -160,7 +160,7 @@ public class FlexiantConnector implements Connector{
 
                 template.setResourceType(ResourceType.SERVER);
 
-                journal.log(Level.INFO, ">> Provisioning a vm ..."+vm.getGroupName());
+                journal.log(Level.INFO, ">> Provisioning a vm ...");
 
                 if (vm.getMinCores() > 0 && vm.getMinRam() > 0)
                     template.setProductOfferUUID(findProduct(((double) vm.getMinRam()), vm.getMinCores()));
@@ -226,7 +226,7 @@ public class FlexiantConnector implements Connector{
             //a.setStatusAsError();
             state = ComponentInstance.State.ERROR;
         }
-        runtimeInformation.put("status", state.toString());
+        runtimeInformation.put("status", state);
         return runtimeInformation;
     }
 
@@ -237,11 +237,19 @@ public class FlexiantConnector implements Connector{
 
 
     public void execCommand(String id, String command, String login, String keyPath){
+
         Server temp=(Server)findObjectResourceByID(id, ResourceType.SERVER);
         String ip=temp.getNics().get(0).getIpAddresses().get(0).getIpAddress();
         SSHConnector sc=new SSHConnector(keyPath, login, ip);
+        while (!sc.checkConnectivity()){
+            try {
+                Thread.sleep(32000);
+            } catch (InterruptedException e) {
+                journal.log(Level.SEVERE, e.getMessage());
+            }
+        }
         try {
-            Thread.sleep(25000);
+            Thread.sleep(32000);
         } catch (InterruptedException e) {
             journal.log(Level.SEVERE, e.getMessage());
         }

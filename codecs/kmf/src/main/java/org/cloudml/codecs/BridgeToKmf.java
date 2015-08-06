@@ -496,6 +496,8 @@ public class BridgeToKmf {
                 kni.setPublicAddress(ni.getPublicAddress());
                 kni.setId(ni.getId());
                 kni.setType(vms.get(ni.getType().getName()));
+                if(ni.getStatus() != null)
+                    kni.setStatus(ni.getStatus().name());
                 convertProperties(ni, kni, factory);
 
                 VMInstances.put(kni.getName(), kni);

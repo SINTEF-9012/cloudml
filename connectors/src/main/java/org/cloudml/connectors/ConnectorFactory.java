@@ -42,6 +42,8 @@ public class ConnectorFactory {
                 return new FlexiantConnector(p.getProperties().valueOf("endPoint"), p.getCredentials().getLogin(), p.getCredentials().getPassword());
             if(p.getName().toLowerCase().equals("openstack-nova"))
                 return new OpenStackConnector(p.getProperties().valueOf("endPoint"), p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
+            if(p.getName().toLowerCase().equals("azurecompute"))
+                return new AzureConnector(p.getProperties().valueOf("endPoint"), p.getName(), p.getCredentials().getLogin(), p.getCredentials().getPassword());
         } catch (MalformedURLException e) {
             journal.log(Level.SEVERE, e.getMessage());
         }
@@ -73,8 +75,9 @@ public class ConnectorFactory {
      * @return 
      */
     public static PyHrapiConnector createLoadBalancerProvider(String endpoint){
-        if(loadbalancerConnector == null)
-            loadbalancerConnector = new PyHrapiConnector(endpoint, PyHrapiConnector.Version.V1);
+        
+        PyHrapiConnector loadbalancerConnector = new PyHrapiConnector(endpoint, PyHrapiConnector.Version.V1);
+        //loadbalancerConnector.setEndpoint(endpoint);
         return loadbalancerConnector;
     }
 }

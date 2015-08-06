@@ -32,17 +32,12 @@ import java.io.File;
 
 import org.cloudml.core.Provider;
 
-import eu.cloud4soa.adapter.rest.response.model.Application;
-import eu.cloud4soa.adapter.rest.response.model.Database;
 import eu.cloud4soa.api.datamodel.governance.ApplicationInstance;
 import eu.cloud4soa.api.datamodel.governance.Credentials;
 import eu.cloud4soa.api.datamodel.governance.DatabaseInfo;
 import eu.cloud4soa.api.datamodel.governance.DeployApplicationParameters;
 import eu.cloud4soa.api.datamodel.governance.PaasInstance;
-import eu.cloud4soa.api.datamodel.governance.StartStopCommand;
 import eu.cloud4soa.api.util.exception.adapter.Cloud4SoaException;
-import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule;
-import eu.cloud4soa.governance.ems.ExecutionManagementServiceModule.Paas;
 import eu.cloud4soa.governance.ems.IExecutionManagementService;
 import java.util.Collections;
 import java.util.HashMap;

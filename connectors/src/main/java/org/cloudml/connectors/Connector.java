@@ -31,7 +31,7 @@ public interface Connector {
 	
 	public void execCommand(String id, String command, String login, String key);
 	
-	public HashMap<String,String> createInstance(VMInstance a);
+	public HashMap<String,Object> createInstance(VMInstance a);
 	
 	public void destroyVM(String id);
 	

@@ -99,6 +99,7 @@
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeScope>runtime</includeScope>
                         </configuration>
                     </execution>
                 </executions>

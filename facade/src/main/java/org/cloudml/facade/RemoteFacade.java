@@ -38,10 +38,8 @@ import java.util.logging.Logger;
 
 import com.amazonaws.util.StringInputStream;
 import org.apache.commons.io.FileUtils;
-import org.cloudml.core.VM;
+import org.cloudml.core.*;
 import org.cloudml.codecs.JsonCodec;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.Provider;
 import org.cloudml.core.credentials.FileCredentials;
 import org.cloudml.core.credentials.MemoryCredentials;
 import org.cloudml.facade.commands.*;
@@ -119,6 +117,7 @@ public class RemoteFacade extends Facade{
                     v.setPrivateKey(contentKey);
                 }
             }
+
             JsonCodec jsonCodec=new JsonCodec();
             ByteArrayOutputStream baos=new ByteArrayOutputStream();
             jsonCodec.save(temp,baos);

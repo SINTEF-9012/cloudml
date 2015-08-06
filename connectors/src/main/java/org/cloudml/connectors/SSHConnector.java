@@ -60,7 +60,7 @@ public class SSHConnector {
         try {
             session = jsch.getSession(user, host, 22);
             if(!keyPath.equals("")){
-                if(keyPath.endsWith(".pem")){
+                if(checkKeyIsFile(keyPath)){
                     jsch.addIdentity(keyPath);
                 }else{
                     final byte[] prvkey = keyPath.getBytes(); // Private key must be byte array
@@ -110,7 +110,7 @@ public class SSHConnector {
             session = jsch.getSession(user, host, 22);
             if(!keyPath.equals("")){
                 journal.log(Level.INFO, ">> Connection using an ssh key");
-                if(keyPath.endsWith(".pem")){
+                if(checkKeyIsFile(keyPath)){
                     jsch.addIdentity(keyPath);
                 }else{
                     final byte[] prvkey = keyPath.getBytes(); // Private key must be byte array
@@ -140,17 +140,17 @@ public class SSHConnector {
             in = channel.getInputStream();
             InputStream extIn=channel.getExtInputStream();
             channel.connect();
-            byte[] tmp=new byte[2048];
-            byte[] tmp2=new byte[2048];
+            byte[] tmp=new byte[4096];
+            byte[] tmp2=new byte[4096];
             while(true){
                 while(in.available()>0 || extIn.available()>0){
                     if(in.available()>0){
-                        int i=in.read(tmp, 0, 2048);
+                        int i=in.read(tmp, 0, 4096);
                         if(i<0)break;
                         journal.log(Level.INFO, ">> "+ new String(tmp, 0, i));
                     }
                     if(extIn.available()>0){
-                        int i=extIn.read(tmp2, 0, 2048);
+                        int i=extIn.read(tmp2, 0, 4096);
                         if(i<0)break;
                         journal.log(Level.INFO, ">> "+ new String(tmp2, 0, i));
                     }
@@ -159,11 +159,6 @@ public class SSHConnector {
                     journal.log(Level.INFO, ">> exit-status: "+channel.getExitStatus());
                     break;
                 }
-            }
-            try{
-                Thread.sleep(25000);
-            }catch(Exception ee){
-                journal.log(Level.SEVERE, ee.getMessage());
             }
 
         } catch (JSchException e) {
@@ -224,6 +219,14 @@ public class SSHConnector {
         } catch (SftpException e) {
             e.printStackTrace();
         }
+    }
+
+    private Boolean checkKeyIsFile(String key){
+        File file = new File(key);
+        if (file.exists()){
+            return true;
+        }
+        return false;
     }
 
 }

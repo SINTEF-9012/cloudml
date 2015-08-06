@@ -135,7 +135,7 @@ public class CloudAppDeployer {
 
             //Added stuff
             setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
-            setAllEnvVarComponent(targetModel);
+            setAllEnvVarComponent(currentModel);
             prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
@@ -364,7 +364,7 @@ public class CloudAppDeployer {
                 }*/
 
                 for(InternalComponentInstance ici: host.hostedComponents()){
-                    coordinator.updateStatus(ici.getName(), InternalComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                    coordinator.updateStatusInternalComponent(ici.getName(), InternalComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
                 }
                 coordinator.updateStatusInternalComponent(host.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
             }
@@ -768,15 +768,21 @@ public class CloudAppDeployer {
         }
         Provider p = n.getType().getProvider();
         Connector jc = ConnectorFactory.createIaaSConnector(p);
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
-        HashMap<String,String> runtimeInformation = jc.createInstance(n);
-        coordinator.updateStatus(n.getName(), runtimeInformation.get("status"), CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.PENDING, CloudAppDeployer.class.getName());
+        HashMap<String,Object> runtimeInformation = jc.createInstance(n);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress"),CloudAppDeployer.class.getName());
+        journal.log(Level.INFO, ">> Status: "+runtimeInformation.get("status"));
+        coordinator.updateStatus(n.getName(), (ComponentInstance.State)runtimeInformation.get("status"), CloudAppDeployer.class.getName());
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        coordinator.updateIP(n.getName(),runtimeInformation.get("publicAddress").toString(),CloudAppDeployer.class.getName());
         //enable the monitoring of the new machine
         if (statusMonitorActive) {
             statusMonitor.attachModule(jc);
@@ -796,7 +802,9 @@ public class CloudAppDeployer {
         ExternalComponentInstance<? extends ExternalComponent> eci = (ExternalComponentInstance<? extends ExternalComponent>) n;
         ExternalComponent ec = eci.getType();
         Provider p = eci.getType().getProvider();
-        PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
+        PaaSConnector connector = null;
+        if(!ec.getServiceType().toLowerCase().equals("loadbalancer")) //LoadBalancer need a special connector...
+            connector = ConnectorFactory.createPaaSConnector(p);
 
         if (ec.getServiceType() == null)
             return;
@@ -815,7 +823,7 @@ public class CloudAppDeployer {
             String pa=connector.getDBEndPoint(eci.getName(), 600);
             eci.setPublicAddress(pa);
             coordinator.updateIP(n.getName(),pa,CloudAppDeployer.class.getName());
-            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
             //execute the configure command
             /*if (!n.getType().getResources().isEmpty()) {
                 for (Resource r : n.getType().getResources()) {
@@ -830,6 +838,7 @@ public class CloudAppDeployer {
         if (ec.getServiceType().toLowerCase().equals("messagequeue")) {
             String url = connector.createQueue(n.getName());
             eci.setPublicAddress(url);
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
         }
         if(ec.getServiceType().toLowerCase().equals("loadbalancer")){
             String endpoint = ec.getEndPoint();
@@ -860,6 +869,7 @@ public class CloudAppDeployer {
             journal.log(Level.INFO, ">>Add pool:" + pConnector.addPool(eci.getName() + "Back", testPool));
 
             journal.log(Level.INFO, ">> " + pConnector.addGateway(gateway));
+            coordinator.updateStatus(n.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
         }
         if (statusMonitorActive) {
             statusMonitor.attachModule(connector);
@@ -886,13 +896,13 @@ public class CloudAppDeployer {
                     if (valet != null)
                         valet.config();
                     else if(res.hasProperty("db-binding-alias")){
-                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING.toString(), CloudAppDeployer.class.getName());
+                        coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.PENDING, CloudAppDeployer.class.getName());
                         try{
                             Provider p = ((ExternalComponent) bi.getProvidedEnd().getOwner().get().getType()).getProvider();
                             PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
                             String alias = res.getProperties().valueOf("db-binding-alias");
                             connector.bindDbToApp(bi.getRequiredEnd().getOwner().getName(), bi.getProvidedEnd().getOwner().getName(), alias);
-                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING.toString(), CloudAppDeployer.class.getName());
+                            coordinator.updateStatus(bi.getProvidedEnd().getOwner().get().getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
                         }catch(Exception ex){
                             ex.printStackTrace();
                             journal.log(Level.INFO, ">> db-binding only works for PaaS databases" );
@@ -979,6 +989,7 @@ public class CloudAppDeployer {
                 journal.log(Level.INFO, ">>Modify backend: "+connector.addPool(serveri.getName()+"Back", backend));
                 journal.log(Level.INFO, ">>Delete Target: "+connector.deleteTarget(serveri.getName()+"Back", "targetOneHold"));
                 connector.start();
+                coordinator.updateStatus(serveri.getName(), ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
             }
             else if (bi.getRequiredEnd().getType().isRemote()) {
                 RequiredPortInstance client = bi.getRequiredEnd();
@@ -1144,7 +1155,7 @@ public class CloudAppDeployer {
         Connector jc = ConnectorFactory.createIaaSConnector(p);
         jc.destroyVM(n.getId());
         jc.closeConnection();
-        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED.toString(), CloudAppDeployer.class.getName());
+        coordinator.updateStatus(n.getName(), ComponentInstance.State.STOPPED, CloudAppDeployer.class.getName());
         //old way without using mrt
         //n.setStatusAsStopped();
     }
@@ -1308,9 +1319,17 @@ public class CloudAppDeployer {
         String ip="";
         String port="";
         if(env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP")
-                && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")){
-            ip=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
-            port=env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+                && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")) {
+            ip = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+        }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP") &&
+                env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT")){
+            ip = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT");
+        }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_IP") &&
+                env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_PORT")){
+            ip = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_PORT");
         }else{
             try {
                 ip= InetAddress.getLocalHost().getHostAddress();
@@ -1348,10 +1367,10 @@ public class CloudAppDeployer {
 
 
     private void setEnvVar(VMInstance vmi, String varName, String value){
-        if (!vmi.getType().getOs().toLowerCase().contains("windows")) {
-            String command="echo export "+varName+"="+value+" >> ~/.bashrc";
+	if (!vmi.getType().getOs().toLowerCase().contains("windows")) {
+            //String command="echo export "+varName+"="+value+" >> ~/.bashrc";
             Connector jc = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-            jc.execCommand(vmi.getId(), command, "ubuntu", vmi.getType().getPrivateKey());
+            //jc.execCommand(vmi.getId(), command, "ubuntu", vmi.getType().getPrivateKey());
             String command3="sudo sh -c 'echo export "+varName+"="+value+" >> /etc/environment'";
             jc.execCommand(vmi.getId(), command3, "ubuntu", vmi.getType().getPrivateKey());
             jc.closeConnection();
@@ -1360,19 +1379,68 @@ public class CloudAppDeployer {
         }
     }
 
-    public void scaleOut(VMInstance vmi){
-        Scaler scaler=new Scaler(currentModel,coordinator,this);
-        scaler.scaleOut(vmi);
+    public Boolean scaleOut(VMInstance vmi){
+        Scaler scaler = new Scaler(currentModel, coordinator, this);
+        if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
+            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
+            if (nbVMFromProvider(vmi.getType().getProvider()) +1 < max) {
+                scaler.scaleOut(vmi);
+            }else{
+                if (coordinator != null) {
+                    coordinator.ack("MaxVMsReached", this.getClass().getName());
+                }
+                return false;
+            }
+
+        }else{
+            scaler.scaleOut(vmi);
+        }
+        return true;
     }
 
-    public void scaleOut(VMInstance vmi, int nb){
-        Scaler scaler=new Scaler(currentModel,coordinator,this);
-        scaler.scaleOut(vmi,nb);
+    public Boolean scaleOut(VMInstance vmi, int nb){
+        Scaler scaler = new Scaler(currentModel, coordinator, this);
+        if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
+            int max = Integer.parseInt(vmi.getType().getProvider().getProperties().valueOf("MaxVMs"));
+            if (nbVMFromProvider(vmi.getType().getProvider()) + nb < max) {
+                scaler.scaleOut(vmi,nb);
+            }else{
+                if (coordinator != null) {
+                    coordinator.ack("MaxVMsReached", this.getClass().getName());
+                }
+                return false;
+            }
+        }else {
+            scaler.scaleOut(vmi, nb);
+        }
+        return true;
     }
 
-    public void scaleOut(VMInstance vmi,Provider provider){
-        Scaler scaler=new Scaler(currentModel,coordinator,this);
-        scaler.scaleOut(vmi,provider);
+    private int nbVMFromProvider(Provider p){
+        int n=0;
+        for(VMInstance v: currentModel.getComponentInstances().onlyVMs()){
+            if(v.getType().getProvider().equals(p))
+                n++;
+        }
+        return n;
+    }
+
+    public Boolean scaleOut(VMInstance vmi,Provider provider){
+        Scaler scaler = new Scaler(currentModel, coordinator, this);
+        if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
+            int max = Integer.parseInt(provider.getProperties().valueOf("MaxVMs"));
+            if (nbVMFromProvider(vmi.getType().getProvider()) + 1 < max) {
+                scaler.scaleOut(vmi, provider);
+            } else {
+                if (coordinator != null) {
+                    coordinator.ack("MaxVMsReached", this.getClass().getName());
+                }
+                return false;
+            }
+        }else {
+            scaler.scaleOut(vmi,provider);
+        }
+        return true;
     }
 
     public Deployment scaleOut(ExternalComponentInstance eci,Provider provider){
