@@ -754,6 +754,69 @@ public class CloudAppDeployer {
             else
                 provisionAPlatform(n);
         }
+        for (ExternalComponentInstance n : ems){
+            try{
+            if("loadbalancer".equals(n.getType().asExternal().getServiceType().toLowerCase()))
+                configSubLoadBalancers(n);
+            }
+            catch(Exception e){
+                continue;
+            }
+        }
+    }
+    
+    /**
+     * For each load balancer instance, found the sub load balancers, and
+     * configure the backend targets with their endpoints.
+     * 
+     * A separate method is used and called after "provisionAPlatform" is
+     * finished on all the external components, so that the super instances 
+     * have been properly configured.
+     * 
+     * @param eci A load balancer instance
+     */
+    private void configSubLoadBalancers(ExternalComponentInstance eci){
+        ExternalComponent ec = eci.getType().asExternal();
+        PyHrapiConnector connector = ConnectorFactory.createLoadBalancerProvider(ec.getEndPoint());
+        String substext = null;
+        try{
+            Property p = eci.getProperties().get("subLoadBalancers");
+            substext = p.getValue();            
+        }
+        catch(NullPointerException e){
+            return;
+        }
+
+        String[] subs = substext.split(",");
+        Map backend = connector.getBackEnd(eci.getName()+"Back");
+        
+        for(int i = 0; i<subs.length; ++i){
+            String sub = subs[i].trim();
+            ExternalComponentInstance subEci = 
+                    ((Deployment)eci.getOwner().get())
+                    .getComponentInstances()
+                    .firstNamed(sub)
+                    .asExternal();
+            ExternalComponent subEc = subEci.getType().asExternal();
+            String subEndPoint = subEc.getEndPoint();
+            if(subEndPoint.startsWith("https://"))
+                subEndPoint = subEndPoint.substring(8);
+            if(subEndPoint.startsWith("http://"))
+                subEndPoint = subEndPoint.substring(7);
+            
+            String accessPort = subEci.hasProperty("port") ? subEci.getProperties().valueOf("port") : "8080";
+            subEndPoint = subEndPoint.split(":")[0].trim()+":"+accessPort;
+                //((Map)backend.get("targets")).remove("targetOneHold");
+            ((Map)backend.get("targets")).put(
+                    subEci.getName(),
+                    subEndPoint);
+                
+        }
+        journal.log(Level.INFO, ">>Modify backend: " +
+                connector.addPool(eci.getName()+"Back", backend));
+        journal.log(Level.INFO, ">>Delete Target: "+
+                connector.deleteTarget(eci.getName()+"Back", "targetOneHold"));
+        connector.start();
     }
 
     /**
@@ -856,7 +919,8 @@ public class CloudAppDeployer {
             gateway.put("protocol", "http");
             gateway.put("defaultBack", eci.getName()+"Back");
             Map<String, String> endpoints = new HashMap<String, String>();
-            endpoints.put("endOne", "0.0.0.0:8080");   //TODO: Now only support one load balancer
+            String accessPort = eci.hasProperty("port") ? eci.getProperties().valueOf("port") : "8080";
+            endpoints.put("endOne", "0.0.0.0:"+accessPort);   //TODO: Now only support one load balancer
             gateway.put("endpoints", endpoints);
             gateway.put("enable", "True");
 
