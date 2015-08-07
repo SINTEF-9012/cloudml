@@ -27,11 +27,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by nicolasf on 21.05.14.
  */
 public class PowerShellConnector {
+
+    private static final Logger journal = Logger.getLogger(PowerShellConnector.class.getName());
     private final OutputCollector standardOutput;
     private final OutputCollector standardError;
     private final Process p;
@@ -69,6 +74,21 @@ public class PowerShellConnector {
         standardOutput.join();
         standardError.join();
         p.waitFor();
+    }
+
+    public static boolean checkConnectivity(String host) {
+        return checkConnectivity(host, 5985);
+    }
+
+    private static boolean checkConnectivity(String host, int port) {
+        try {
+            Socket sock = new Socket(host, port);
+            sock.close();
+            return true;
+        } catch (IOException ex) {
+            journal.log(Level.SEVERE, "Connection not yet available or refused");
+            return false;
+        }
     }
 
     public void destroy(){

@@ -1431,12 +1431,16 @@ public class CloudAppDeployer {
 
 
     private void setEnvVar(VMInstance vmi, String varName, String value){
-        //String command="echo export "+varName+"="+value+" >> ~/.bashrc";
-        Connector jc = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-        //jc.execCommand(vmi.getId(), command, "ubuntu", vmi.getType().getPrivateKey());
-        String command3="sudo sh -c 'echo export "+varName+"="+value+" >> /etc/environment'";
-        jc.execCommand(vmi.getId(), command3, "ubuntu", vmi.getType().getPrivateKey());
-        jc.closeConnection();
+	if (!vmi.getType().getOs().toLowerCase().contains("windows")) {
+            //String command="echo export "+varName+"="+value+" >> ~/.bashrc";
+            Connector jc = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+            //jc.execCommand(vmi.getId(), command, "ubuntu", vmi.getType().getPrivateKey());
+            String command3="sudo sh -c 'echo export "+varName+"="+value+" >> /etc/environment'";
+            jc.execCommand(vmi.getId(), command3, "ubuntu", vmi.getType().getPrivateKey());
+            jc.closeConnection();
+        } else {
+            //TODO: should we do something for Windows as well?
+        }
     }
 
     public Boolean scaleOut(VMInstance vmi){
