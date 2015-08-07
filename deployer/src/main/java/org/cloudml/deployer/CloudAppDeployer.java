@@ -1491,7 +1491,7 @@ public class CloudAppDeployer {
 
     public Boolean scaleOut(VMInstance vmi,Provider provider){
         Scaler scaler = new Scaler(currentModel, coordinator, this);
-        if(vmi.getType().getProvider().getProperties().get("MaxVMs") != null) {
+        if(provider.getProperties().get("MaxVMs") != null) {
             int max = Integer.parseInt(provider.getProperties().valueOf("MaxVMs"));
             if (nbVMFromProvider(vmi.getType().getProvider()) + 1 < max) {
                 scaler.scaleOut(vmi, provider);
