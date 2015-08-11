@@ -201,7 +201,7 @@ public class CloudSigmaConnector implements Connector {
                 .name(a.getName())
                 .memory(BigInteger.valueOf(vm.getMinRam()).multiply(BigInteger.valueOf(1024*1024)))
                 .vncPassword("cloudml")
-                .cpu(vm.getMinCores())
+                .cpu(vm.getMinCores() * 2500)
                 .nics(ImmutableList.of(nic))
                 .meta(m)
                 .drives(ImmutableList.of(drive))
