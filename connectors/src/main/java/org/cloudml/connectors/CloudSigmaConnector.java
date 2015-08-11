@@ -199,7 +199,7 @@ public class CloudSigmaConnector implements Connector {
 
         org.jclouds.cloudsigma2.domain.ServerInfo serverToCreate = new org.jclouds.cloudsigma2.domain.ServerInfo.Builder()
                 .name(a.getName())
-                .memory(BigInteger.valueOf(vm.getMinRam() * 1000000))
+                .memory(BigInteger.valueOf(vm.getMinRam()).multiply(BigInteger.valueOf(1024*1024)))
                 .vncPassword("cloudml")
                 .cpu(vm.getMinCores())
                 .nics(ImmutableList.of(nic))
