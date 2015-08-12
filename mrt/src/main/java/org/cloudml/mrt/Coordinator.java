@@ -34,10 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cloudml.codecs.JsonCodec;
-import org.cloudml.core.ComponentInstance;
-import org.cloudml.core.Deployment;
-import org.cloudml.core.InternalComponentInstance;
-import org.cloudml.core.VMInstance;
+import org.cloudml.core.*;
 import org.cloudml.mrt.cmd.CmdWrapper;
 import org.cloudml.mrt.cmd.abstracts.Change;
 import org.cloudml.mrt.cmd.abstracts.Instruction;
@@ -117,8 +114,8 @@ public class Coordinator {
                         ((VMInstance)res2).setStatus(newState);
                 }
             }else{
-                if(res2 instanceof VMInstance)
-                    ((VMInstance)res2).setStatus(ComponentInstance.State.PENDING);
+                if(res2 instanceof ExternalComponentInstance)
+                    ((ExternalComponentInstance)res2).setStatus(ComponentInstance.State.PENDING);
                 journal.log(Level.INFO, ">> No former status, updating the model..");
                 wrapper.eSet("/componentInstances[name='" + name + "']", wrapper.makePair("status", "" + newState + ""));
                 journal.log(Level.INFO, ">> Status of: " + name + " changed in: " + newState + "");

@@ -131,6 +131,7 @@ public class SSHConnector {
 
             channel = session.openChannel("exec");
             ChannelExec channelExec=((ChannelExec)channel);
+            channelExec.setPty(true);
             channelExec.setCommand(command);
             channelExec.setErrStream(System.err);
             channel.setInputStream(null);
