@@ -436,7 +436,8 @@ public class OpenStackConnector implements Connector{
                 a.setCore((int)nodeInstance.getHardware().getProcessors().iterator().next().getCores());
 
             a.setId(nodeInstance.getId());
-
+            a.getProperties().add(new Property("ProviderSpecificType", nodeInstance.getHardware().getId()));
+            a.setProviderSpecificType(template.getHardware().getId());
             state = ComponentInstance.State.RUNNING;
         }
         runtimeInformation.put("status",state);

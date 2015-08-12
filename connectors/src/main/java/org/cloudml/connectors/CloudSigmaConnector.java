@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Module;
 import org.apache.commons.io.FileUtils;
 import org.cloudml.core.ComponentInstance;
+import org.cloudml.core.Property;
 import org.cloudml.core.VM;
 import org.cloudml.core.VMInstance;
 import org.jclouds.ContextBuilder;
@@ -199,7 +200,7 @@ public class CloudSigmaConnector implements Connector {
 
         org.jclouds.cloudsigma2.domain.ServerInfo serverToCreate = new org.jclouds.cloudsigma2.domain.ServerInfo.Builder()
                 .name(a.getName())
-                .memory(BigInteger.valueOf(vm.getMinRam()).multiply(BigInteger.valueOf(1024*1024)))
+                .memory(BigInteger.valueOf(vm.getMinRam()).multiply(BigInteger.valueOf(1024 * 1024)))
                 .vncPassword("cloudml")
                 .cpu(vm.getMinCores() * 2600)
                 .nics(ImmutableList.of(nic))
@@ -239,7 +240,6 @@ public class CloudSigmaConnector implements Connector {
                 }
             }
         }
-
 
         runtimeInformation.put("status", state);
         return runtimeInformation;

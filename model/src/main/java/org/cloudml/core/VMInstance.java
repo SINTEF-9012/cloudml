@@ -32,6 +32,16 @@ public class VMInstance extends ExternalComponentInstance<VM> {
 
     public int core=0;
 
+    public String getProviderSpecificType() {
+        return providerSpecificType;
+    }
+
+    public void setProviderSpecificType(String providerSpecificType) {
+        this.providerSpecificType = providerSpecificType;
+    }
+
+    private String providerSpecificType="";
+
     public VMInstance(VM type) {
         this(NamedElement.DEFAULT_NAME, type);
     }

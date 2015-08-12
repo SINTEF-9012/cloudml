@@ -309,7 +309,8 @@ public class JCloudsConnector implements Connector{
 
             template = templateBuilder.build();
             journal.log(Level.INFO, ">> vm type: "+template.getHardware().getId()+" on location: "+template.getLocation().getId());
-            a.getProperties().add(new Property("ProviderInstanceType", template.getHardware().getId()));
+            a.getProperties().add(new Property("ProviderSpecificInstanceType", template.getHardware().getId()));
+            a.setProviderSpecificType(template.getHardware().getId());
             a.getProperties().add(new Property("location", template.getLocation().getId()));
 
             if(provider.equals("aws-ec2")){
