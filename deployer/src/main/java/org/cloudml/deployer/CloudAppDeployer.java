@@ -325,6 +325,7 @@ public class CloudAppDeployer {
                 ExternalComponent ownerType = (ExternalComponent) host.getType();
                 Provider p = ownerType.getProvider();
                 PaaSConnector connector = ConnectorFactory.createPaaSConnector(p);
+                int minRam=0;
                 String stack = "";
                 if(instance.getType().hasProperty("stack"))
                     stack = instance.getType().getProperties().valueOf("stack");
@@ -334,11 +335,14 @@ public class CloudAppDeployer {
                     stack = instance.getType().getProperties().valueOf("buildpack");
                 if(instance.hasProperty("buildpack"))
                     stack = instance.getProperties().valueOf("buildpack");
+                if(instance.hasProperty("minRAM"))
+                    minRam = Integer.parseInt(instance.getProperties().valueOf("minRAM"));
                 String url=connector.createEnvironmentWithWar(
                         instance.getName(),
                         instance.getName(),
                         host.getName(),
                         stack,
+                        minRam,
                         instance.getType().getProperties().valueOf("warfile"),
                         instance.getType().hasProperty("version") ? instance.getType().getProperties().valueOf("version") : "default-cloudml"
                 );

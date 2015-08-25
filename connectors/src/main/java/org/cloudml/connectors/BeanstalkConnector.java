@@ -83,7 +83,7 @@ import java.util.Map;
 /**
  * PaasConnector for BeansTalk and RDS
  *
- * @author Nicolas Ferry for beanstalk
+ * @author Nicolas Ferry for beanstalk,SQS
  * @author Hui Song for rds
  */
 public class BeanstalkConnector implements PaaSConnector {
@@ -169,7 +169,7 @@ public class BeanstalkConnector implements PaaSConnector {
     }
 
 
-    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, int minRam, String warFile, String versionLabel) {
         String endPoint="";
         prepareWar(new File(warFile), versionLabel, applicationName);
         CreateEnvironmentRequest cr = new CreateEnvironmentRequest();

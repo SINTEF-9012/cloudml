@@ -40,7 +40,7 @@ public class HerokuConnector implements PaaSConnector {
     }
 
     @Override
-    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, int minRam, String warFile, String versionLabel) {
         if(api.isAppNameAvailable(applicationName)){
             App application=new App().named(applicationName);
             App a=api.createApp(application);
