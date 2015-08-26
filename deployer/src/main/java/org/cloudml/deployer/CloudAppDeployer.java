@@ -335,8 +335,8 @@ public class CloudAppDeployer {
                     stack = instance.getType().getProperties().valueOf("buildpack");
                 if(instance.hasProperty("buildpack"))
                     stack = instance.getProperties().valueOf("buildpack");
-                if(instance.hasProperty("minRAM"))
-                    minRam = Integer.parseInt(instance.getProperties().valueOf("minRAM"));
+                if(instance.getType().hasProperty("minRAM"))
+                    minRam = Integer.parseInt(instance.getType().getProperties().valueOf("minRAM"));
                 String url=connector.createEnvironmentWithWar(
                         instance.getName(),
                         instance.getName(),
