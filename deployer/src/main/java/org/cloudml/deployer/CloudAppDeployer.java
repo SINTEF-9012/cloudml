@@ -1434,7 +1434,7 @@ public class CloudAppDeployer {
 
 
 
-    private void setEnvVar(VMInstance vmi, String varName, String value){
+    public void setEnvVar(VMInstance vmi, String varName, String value){
 	if (!vmi.getType().getOs().toLowerCase().contains("windows")) {
             //String command="echo export "+varName+"="+value+" >> ~/.bashrc";
             Connector jc = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());

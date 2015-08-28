@@ -23,6 +23,8 @@
 package org.cloudml.deployer;
 
 import com.amazonaws.util.StringInputStream;
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.JXPathNotFoundException;
 import org.cloudml.codecs.JsonCodec;
 import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
@@ -36,6 +38,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -209,7 +213,7 @@ public class Scaler {
                     coordinator.updateStatus(name, ComponentInstance.State.RUNNING, CloudAppDeployer.class.getName());
                     coordinator.updateIP(ci.getName(),result.get("publicAddress").toString(),CloudAppDeployer.class.getName());
 
-                    dep.setAllEnvVarComponent(currentModel);
+                    setAllEnvVarComponent(ci,currentModel);
 
                     //4. configure the new VM
                     //execute the configuration bindings
@@ -238,6 +242,114 @@ public class Scaler {
         }
 
         journal.log(Level.INFO, ">> Multiple scaling completed!");
+    }
+
+    private void setAllEnvVarComponent(VMInstance ci, Deployment d){
+        Map<String, String> env = System.getenv();
+        String ip="";
+        String port="";
+        if(env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP")
+                && env.containsKey("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT")) {
+            ip = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_MONITORING_MANAGER_ENDPOINT_PORT");
+        }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP") &&
+                env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT")){
+            ip = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_ENDPOINT_PORT");
+        }else if(env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_IP") &&
+                env.containsKey("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_PORT")){
+            ip = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_IP");
+            port = env.get("MODACLOUDS_TOWER4CLOUDS_MANAGER_PUBLIC_ENDPOINT_PORT");
+        }else{
+            try {
+                ip= InetAddress.getLocalHost().getHostAddress();
+                port="8170";
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+        String cmd="";
+        cmd+=setEnvVarCommand(ci, "MODACLOUDS_TOWER4CLOUDS_MANAGER_IP", ip);
+        cmd+=setEnvVarCommand(ci, "MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT", port);
+        for(InternalComponentInstance ici: ci.hostedComponents()){
+            for(Property p : ici.getProperties()){
+                if(p.getName().startsWith("env:")){
+                    cmd+=prepareSetEnv(d, ici, p);
+                }
+            }
+            InternalComponent ic = ici.getType();
+            for(Property p : ic.getProperties()){
+                if(p.getName().contains("env:")){
+                    cmd+=prepareSetEnv(d, ici, p);
+                }
+            }
+        }
+        setEnvVar(ci,cmd);
+
+    }
+
+    //TODO: All this code is replicated and should be refactored in the deployer
+    private String setEnvVarCommand(VMInstance vmi, String varName, String value){
+        if (!vmi.getType().getOs().toLowerCase().contains("windows")) {
+            //String command="echo export "+varName+"="+value+" >> ~/.bashrc";
+            //jc.execCommand(vmi.getId(), command, "ubuntu", vmi.getType().getPrivateKey());
+            return "sudo sh -c 'echo export "+varName+"="+value+" >> /etc/environment';";
+
+        } else {
+            //TODO: should we do something for Windows as well?
+        }
+        return "";
+    }
+
+    private void setEnvVar(VMInstance vmi, String cmd){
+        if (!vmi.getType().getOs().toLowerCase().contains("windows")) {
+            //String command="echo export "+varName+"="+value+" >> ~/.bashrc";
+            Connector jc = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
+            jc.execCommand(vmi.getId(), cmd, "ubuntu", vmi.getType().getPrivateKey());
+            jc.closeConnection();
+        } else {
+            //TODO: should we do something for Windows as well?
+        }
+    }
+
+
+    private String prepareSetEnv(Deployment d, InternalComponentInstance c, Property p){
+        String value="";
+        if(p.getValue().startsWith("$")){
+            if(p.getValue().equals("${this.host.id}")){
+                value=c.externalHost().asVM().getId();
+            }
+            if(p.getValue().equals("${this.host.name}")){
+                value=c.externalHost().getName();
+            }
+            if(p.getValue().equals("${this.host.type.name}")){
+                value=c.externalHost().getType().getName();
+            }
+            if(p.getValue().equals("${this.provider.id}")){
+                value=c.externalHost().asVM().getType().getProvider().getName();
+            }
+            if(p.getValue().equals("${this.name}") || p.getValue().equals("${this.id}")){
+                value=c.getName();
+            }
+            if(p.getValue().equals("${this.type.name}")){
+                value=c.getType().getName();
+            }
+        }else{
+            try{
+                JXPathContext jxpc = JXPathContext.newContext(d);
+                Object o=jxpc.getValue(p.getValue());
+                value=o.toString();
+            }catch(NullPointerException e){
+                journal.log(Level.INFO, ">> Environment variable cannot be defined, xpath expression not valid");
+            }
+            catch(JXPathNotFoundException e){
+                journal.log(Level.INFO, ">> Environment variable cannot be defined, xpath expression not valid");
+            }
+        }
+        if(!value.equals("")){
+            return setEnvVarCommand(c.externalHost().asVM(), p.getName().split(":")[1], value);
+        }
+        return "";
     }
 
     /**
