@@ -168,8 +168,13 @@ public class FlexiantConnector implements Connector{
                 if (!vm.getGroupName().equals(""))
                     template.setVdcUUID(findResourceByName(vm.getGroupName(),ResourceType.VDC));
 
-                if(!vm.getImageId().equals(""))
-                    template.setImageUUID(findResourceByName(vm.getImageId(),ResourceType.IMAGE)); //TODO: find by OS
+                if(!vm.getImageId().equals("")){
+                    String imId=findResourceByName(vm.getImageId(), ResourceType.IMAGE);
+                    if(!imId.equals("")) {
+                        template.setImageUUID(imId); //TODO: find by OS
+                    }
+                }
+
 
                 if(!vm.getSshKey().equals(""))
                     sshKeyList.add(findResourceByName(vm.getSshKey(),ResourceType.SSHKEY));

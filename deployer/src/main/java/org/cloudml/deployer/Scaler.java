@@ -30,6 +30,7 @@ import org.cloudml.connectors.Connector;
 import org.cloudml.connectors.ConnectorFactory;
 import org.cloudml.core.*;
 import org.cloudml.core.actions.StandardLibrary;
+import org.cloudml.core.collections.InternalComponentInstanceGroup;
 import org.cloudml.core.collections.ProvidedExecutionPlatformGroup;
 import org.cloudml.core.collections.RelationshipInstanceGroup;
 import org.cloudml.mrt.Coordinator;
@@ -190,7 +191,13 @@ public class Scaler {
             cis.add(ci);
             if (temp == null) {
                 Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-                String ID = c.createImage(vmi);
+                String ID = "";
+                if(!vmi.getType().getProvider().getName().toLowerCase().equals("flexiant"))
+                    ID=c.createImage(vmi);
+                else {
+                    ID=c.createImage(vmi);
+                    restartHostedComponents(vmi);
+                }
                 c.closeConnection();
                 v.setImageId(ID);
             } else {
@@ -370,7 +377,13 @@ public class Scaler {
         //3. For synchronization purpose we provision once the model has been fully updated
         if(temp == null){
             Connector c = ConnectorFactory.createIaaSConnector(vmi.getType().getProvider());
-            String ID=c.createImage(vmi);
+            String ID="";
+            if(!vmi.getType().getProvider().getName().toLowerCase().equals("flexiant"))
+                ID=c.createImage(vmi);
+            else{
+                ID=c.createImage(vmi);
+                restartHostedComponents(vmi);
+            }
             c.closeConnection();
             v.setImageId(ID);
         }else{
@@ -404,12 +417,25 @@ public class Scaler {
         journal.log(Level.INFO, ">> Scaling completed!");
     }
 
+    private ArrayList<InternalComponentInstance> allHostedComponents(ComponentInstance ci){
+        ArrayList<InternalComponentInstance> list=new ArrayList<InternalComponentInstance>();
+        InternalComponentInstanceGroup icig=ci.hostedComponents();
+        if(icig !=null){
+            list.addAll(icig);
+            for(InternalComponentInstance ici: icig){
+                list.addAll(allHostedComponents(ici));
+            }
+        }
+        return list;
+    }
+
     protected void restartHostedComponents(VMInstance ci){
-        for(InternalComponentInstance ici: ci.hostedComponents().onlyInternals()){
+        journal.log(Level.INFO, ">> Restarting Hosted components of: "+ci.getName());
+        for(InternalComponentInstance ici: allHostedComponents(ci)){
             Provider p=ci.getType().getProvider();
             Connector c2=ConnectorFactory.createIaaSConnector(p);
             for(Resource r: ici.getType().getResources()){
-                dep.start(c2,ci.getType(),ici.asInternal().externalHost().asVM(),r.getStartCommand());
+                dep.start(c2,ci.getType(),ci,r.getStartCommand());
             }
             c2.closeConnection();
         }
