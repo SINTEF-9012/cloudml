@@ -27,7 +27,6 @@ import com.aragost.javahg.commands.AddCommand;
 import com.aragost.javahg.commands.CommitCommand;
 import com.aragost.javahg.commands.PushCommand;
 import org.apache.commons.io.FileUtils;
-import org.cloudml.connectors.FlexiantConnector;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -65,7 +64,7 @@ public class MercurialConnector {
     }
 
     public void clone(String pathDest){
-        checkIfExist(directory);
+        checkIfExist(pathDest);
         rc=new RepositoryConfiguration();
         if(System.getProperty("os.name").toLowerCase().contains("windows")){
             configureMercurial();
@@ -82,14 +81,12 @@ public class MercurialConnector {
         }
     }
 
-    private void checkIfExist(String pathDest){
+    private Boolean checkIfExist(String pathDest){
         File directory = new File(pathDest);
-        try {
-            FileUtils.deleteDirectory(directory);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //return deleteDirectory(directory);
+        return FileUtils.deleteQuietly(directory);
     }
+
 
     public void commit(String username, String message){
         CommitCommand cc=new CommitCommand(br);
