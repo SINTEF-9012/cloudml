@@ -83,7 +83,7 @@ public class CloudFoundryConnector implements PaaSConnector {
     }
 
     @Override
-    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, int minRam, String warFile, String versionLabel) {
         journal.log(Level.INFO, ">> Creating application ... ");
         List<String> uris = new ArrayList<String>();
         uris.add(computeAppUrl(applicationName, domainName));
@@ -94,12 +94,15 @@ public class CloudFoundryConnector implements PaaSConnector {
         }else{
             staging= new Staging();
         }
+        int mem=DEFAULT_MEMORY;
+        if(minRam > 0)
+            mem=minRam;
         List<String> serviceNames = new ArrayList<String>();
         journal.log(Level.INFO, ">> Environment created ... "+staging);
         /*if(connectedClient.getApplication(applicationName) != null){
             throw new IllegalStateException("Application name already used!");
         }*/
-        connectedClient.createApplication(applicationName, staging, DEFAULT_MEMORY, uris, serviceNames);
+        connectedClient.createApplication(applicationName, staging, mem, uris, serviceNames);
         journal.log(Level.INFO, ">> Environment created ... ");
         CloudApplication app = connectedClient.getApplication(applicationName);
         journal.log(Level.INFO, ">> Application details: "+ app.getName() + ", URI: " + app.getUris().get(0)+ ", Memory: " +app.getMemory());

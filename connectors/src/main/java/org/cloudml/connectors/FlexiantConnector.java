@@ -168,8 +168,13 @@ public class FlexiantConnector implements Connector{
                 if (!vm.getGroupName().equals(""))
                     template.setVdcUUID(findResourceByName(vm.getGroupName(),ResourceType.VDC));
 
-                if(!vm.getImageId().equals(""))
-                    template.setImageUUID(findResourceByName(vm.getImageId(),ResourceType.IMAGE)); //TODO: find by OS
+                if(!vm.getImageId().equals("")){
+                    String imId=findResourceByName(vm.getImageId(), ResourceType.IMAGE);
+                    if(!imId.equals("")) {
+                        template.setImageUUID(imId); //TODO: find by OS
+                    }
+                }
+
 
                 if(!vm.getSshKey().equals(""))
                     sshKeyList.add(findResourceByName(vm.getSshKey(),ResourceType.SSHKEY));
@@ -188,18 +193,18 @@ public class FlexiantConnector implements Connector{
                 template.getDisks().add(d);
 
                 //TODO: Add disk
-
                 Job job=service.createServer(template, sshKeyList, null);
                 service.waitForJob(job.getResourceUUID(), false);
 
-                a.getProperties().add(new Property("ProviderInstanceType",template.getProductOfferName()));
+                a.getProperties().add(new Property("ProviderSpecificInstanceType", findProductName(((double) vm.getMinRam()), vm.getMinCores())));
+                a.setProviderSpecificType(findProductName(((double) vm.getMinRam()), vm.getMinCores()));
                 a.setId(findResourceByName(a.getName(), ResourceType.SERVER));
 
 				/*Job nicJob=service.createNetworkInterface(n, null);
 				service.waitForJob(nicJob.getResourceUUID(), false);
 
 				service.attachNetworkInterface(job.getItemUUID(), nicJob.getItemUUID(), 0, null);*/
-                journal.log(Level.INFO, ">> vm type: "+ template.getProductOfferName() +  " named " + template.getResourceName());
+                journal.log(Level.INFO, ">> vm type: "+ findProductName(((double) vm.getMinRam()), vm.getMinCores()) +  " named " + template.getResourceName());
 
                 Job startJob=service.changeServerStatus(a.getId(), ServerStatus.RUNNING, true, null, null);
                 service.waitForJob(startJob.getResourceUUID(), false);
@@ -356,6 +361,58 @@ public class FlexiantConnector implements Connector{
             return null;
         }
     }
+
+    public String findProductName(double ram, int CPU){
+        try {
+            // Create an FQL filter and a filter condition
+            SearchFilter sf = new SearchFilter();
+            FilterCondition fc = new FilterCondition();
+
+            // the field to be matched
+            fc.setField("ResourceName");
+
+            // set the condition type
+            fc.setCondition(Condition.CONTAINS);
+
+            // Add the filter condition to the query
+            sf.getFilterConditions().add(fc);
+
+            // and a list of values
+            fc.getValue().add(CPU+" CPU");
+
+            // Set a limit to the number of results
+            QueryLimit lim = new QueryLimit();
+            lim.setMaxRecords(50);
+
+            // Call the service to execute the query
+            ListResult result = service.listResources(sf,lim, ResourceType.PRODUCTOFFER);
+
+            if(result.getList().size() > 0){
+                ProductOffer p=(ProductOffer)result.getList().get(0);
+                Double min=5000.0;
+                for(Object o : result.getList()) {
+                    ProductOffer s = ((ProductOffer)o);
+                    for(ProductComponent t : s.getComponentConfig()){
+                        for(Value v: t.getProductConfiguredValues()){
+                            if(v.getKey().equals("ram")){
+                                double productRam=Double.parseDouble(v.getValue()); //RAM value
+                                if(productRam >= ram && productRam <= min){
+                                    min=productRam;
+                                    p=s;
+                                }
+                            }
+                        }
+                    }
+                }
+                return p.getResourceName();
+            }
+            return "";
+        } catch (Exception e) {
+            journal.log(Level.SEVERE, e.getMessage());
+            return "";
+        }
+    }
+
 
     public String findProduct(double ram, int CPU){
         try {

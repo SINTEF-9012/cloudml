@@ -88,7 +88,7 @@ public class Cloud4soaConnector implements PaaSConnector {
         this.platform = platform;
     }
 
-    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, String warFile, String versionLabel) {
+    public String createEnvironmentWithWar(String applicationName, String domainName, String envName, String stackName, int minRam, String warFile, String versionLabel) {
         String tmp2="";
         if(stackName == null || stackName.length()==0){
             try {
