@@ -15,7 +15,7 @@ Invoke-Command -Session $session -Scriptblock {Write-Host "Hello, World (from $e
 Invoke-Command -Session $session -Scriptblock {
 	$client = new-object System.Net.WebClient
 	$client.DownloadFile( "http://downloads.puppetlabs.com/windows/puppet-3.6.2.msi", "C:\Users\administrator\Desktop\puppet-3.6.2.msi" )
-	& cmd /c "msiexec.exe /l*v install.txt /qn /i C:\Users\administrator\Desktop\puppet-3.6.2.msi PUPPET_MASTER_SERVER=puppet-master-01" 
+	& cmd /c "msiexec.exe /l*v install.txt /qn /i C:\Users\administrator\Desktop\puppet-3.6.2.msi PUPPET_MASTER_SERVER=puppet-master-01 PUPPET_AGENT_STARTUP_MODE=Disabled" 
 	Write-Host "Puppet has been sucessfully installed"
 	Write-Host "Restarting $($args[1])"
 	$computer = Get-WmiObject Win32_ComputerSystem -computername $env:COMPUTERNAME

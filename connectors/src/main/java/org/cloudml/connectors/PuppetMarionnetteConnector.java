@@ -126,8 +126,11 @@ public class PuppetMarionnetteConnector {
 
     public void manageCertificates(String id){
         StringBuffer sb=listCertificates();
-        if(sb.indexOf(id) >= 0)
+        if(sb.indexOf(id) >= 0) {
             removeCertificate(id);
+        } else if(sb.indexOf(id.toLowerCase()) >= 0) {
+            removeCertificate(id.toLowerCase());
+        }
         Boolean notDone=true;
         while(notDone){
             StringBuffer temp=listCertificates();
