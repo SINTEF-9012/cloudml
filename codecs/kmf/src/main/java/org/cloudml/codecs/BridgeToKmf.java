@@ -94,27 +94,29 @@ public class BridgeToKmf {
         }
     }
 
+    private void setResourceProperties(Resource r, net.cloudml.core.Resource kr){
+        kr.setName(r.getName());
+        kr.setInstallCommand(r.getInstallCommand());
+        kr.setDownloadCommand(r.getRetrieveCommand());
+        kr.setConfigureCommand(r.getConfigureCommand());
+        kr.setStartCommand(r.getStartCommand());
+        kr.setStopCommand(r.getStopCommand());
+        kr.setRequireCredentials(r.getRequireCredentials());
+        kr.setExecuteLocally(r.getExecuteLocally());
+        convertProperties(r,kr,factory);
+        String kup = "";
+        for (Map.Entry<String, String> up: r.getUploadCommand().entrySet()) {
+            kup += up.getKey() + " " + up.getValue() + ";";
+        }
+        kr.setUploadCommand(kup);
+    }
+
     private void convertResources(WithResources element, net.cloudml.core.CloudMLElementWithProperties kElement, net.cloudml.core.CoreFactory factory) {
         for (Resource r: element.getResources()) {
-            net.cloudml.core.Resource kr = factory.createResource();
-            kr.setName(r.getName());
-            kr.setInstallCommand(r.getInstallCommand());
-            kr.setDownloadCommand(r.getRetrieveCommand());
-            kr.setConfigureCommand(r.getConfigureCommand());
-            kr.setStartCommand(r.getStartCommand());
-            kr.setStopCommand(r.getStopCommand());
-            kr.setRequireCredentials(r.getRequireCredentials());
-            kr.setExecuteLocally(r.getExecuteLocally());
-            convertProperties(r,kr,factory);
-            String kup = "";
-            for (Map.Entry<String, String> up: r.getUploadCommand().entrySet()) {
-                kup += up.getKey() + " " + up.getValue() + ";";
-            }
-            kr.setUploadCommand(kup);
-
             if(r instanceof PuppetResource){
                 PuppetResource pr=(PuppetResource)r;
-                net.cloudml.core.PuppetResource pkr=(net.cloudml.core.PuppetResource)kr;
+                net.cloudml.core.PuppetResource pkr=factory.createPuppetResource();
+                setResourceProperties(r,pkr);
                 pkr.setConfigureHostnameCommand(pr.getConfigureHostnameCommand());
                 pkr.setMasterEndpoint(pr.getMaster());
                 pkr.setRepositoryEndpoint(pr.getRepo());
@@ -125,10 +127,13 @@ public class BridgeToKmf {
                 kElement.addPuppetResources(pkr);
             }else if(r instanceof DockerResource){
                 DockerResource dr=(DockerResource)r;
-                net.cloudml.core.DockerResource dkr=(net.cloudml.core.DockerResource)kr;
+                net.cloudml.core.DockerResource dkr=factory.createDockerResource();
+                setResourceProperties(r,dkr);
                 dkr.setImage(dr.getImage());
                 dkr.setDockerFilePath(dr.getDockerFilePath());
             }else{
+                net.cloudml.core.Resource kr = factory.createResource();
+                setResourceProperties(r,kr);
                 kElement.addResources(kr);
             }
         }
