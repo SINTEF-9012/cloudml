@@ -6,4 +6,5 @@ For more details on how to use CloudML please have a look at our [Wiki page](htt
 
 ##License##
 Licensed under the GNU LESSER GENERAL PUBLIC LICENSE
+
 [1] http://www.gnu.org/licenses/lgpl-3.0.fr.html
