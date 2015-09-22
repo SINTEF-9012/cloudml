@@ -305,7 +305,7 @@ Where ```xyz``` is the id of a Virtual Machine,  and is the sole parameter requi
 
 Where vm1 is the id of a Virtual Machine
 
-If the last params is too long (or too structural) for yaml, you can send a supplimentary command just after an extended command, started with a ```!additional```. The content following this tag is treated as plain text, not yaml.
+If the last params is too long (or too structural) for yaml, you can send a supplimentary command just after an extended command, started with a ```!additional```. The content following this tag is treated as plain text, not yaml. *These supplementary commands do not send message back (ack).*
 
 For example: the following two commands together load a deployment model from the input json string:
 ```
