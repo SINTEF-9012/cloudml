@@ -270,6 +270,8 @@ public class BridgeToKmf {
                     kec.setRegion(ec.getRegion());
                 if(ec.getServiceType() != null)
                     kec.setServiceType(ec.getServiceType());
+                if(ec.getEndPoint() != null)
+                    kec.setEndPoint(ec.getEndPoint());
                 initProvidedExecutionPlatforms(ec, kec);
                 convertAndAddProvidedPorts(ec.getProvidedPorts().toList(),kec);
                 this.externalComponents.put(kec.getName(), kec);
