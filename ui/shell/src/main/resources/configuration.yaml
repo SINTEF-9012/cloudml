@@ -248,7 +248,7 @@ commands:
  
  
  - name: store
-   syntax: store deployment in <file>
+   syntax: store deployment to <file>
    description: |
      Store the deployment model actually loaded in memory into the given file.
      If the given file already exists, it will be overridden, and its original 
@@ -256,7 +256,7 @@ commands:
      chosen to write the file: ".json" for a JSON file or ".xmi" for an XMI
      file.
    examples:
-     - syntax: store deployment in apps/foo.json
+     - syntax: store deployment to apps/foo.json
        description: |
          Serialise the current deployment model into the file "apps/foo.json" 
          (i.e., as a JSON file as specified by the extension of the file).
