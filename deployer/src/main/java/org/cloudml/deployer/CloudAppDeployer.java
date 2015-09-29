@@ -93,7 +93,6 @@ public class CloudAppDeployer {
         this.targetModel = targetModel;
         //set up the monitoring
         StatusConfiguration.StatusMonitorProperties statusMonitorProperties = StatusConfiguration.load();
-        MonitoringPlatformConfiguration.MonitoringPlatformProperties monitoringPlatformProperties = MonitoringPlatformConfiguration.load();
         if (currentModel == null) {
             journal.log(Level.INFO, ">> First deployment...");
             this.currentModel = targetModel;
@@ -122,10 +121,6 @@ public class CloudAppDeployer {
             configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
             generatePuppetManifestAndConfigure();
 
-            //send the current deployment to the monitoring platform
-            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
-                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
-            }
         } else {
             journal.log(Level.INFO, ">> Updating a deployment...");
             CloudMLModelComparator diff = new CloudMLModelComparator(currentModel, targetModel);
@@ -147,14 +142,6 @@ public class CloudAppDeployer {
             terminateExternalServices(diff.getRemovedECs());
 
 
-            //send the changes to the monitoring platform
-            if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
-                MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-                boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
-                if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
-                    MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
-                }
-            }
         }
 
         //start the monitoring of VMs
