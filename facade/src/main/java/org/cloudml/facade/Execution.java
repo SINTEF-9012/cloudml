@@ -37,7 +37,6 @@ public class Execution implements Runnable {
     private final CommandHandler handler;
     private boolean completed;
     private final long timeout;
-    Coordinator coordinator;
 
     public Execution(CloudMlCommand command, CommandHandler handler) {
         this(command, handler, NO_TIMEOUT);
@@ -50,15 +49,13 @@ public class Execution implements Runnable {
         this.timeout = timeout;
     }
 
-    public void setCoordinator(Coordinator coordinator){
-        this.coordinator=coordinator;
-    }
 
     public synchronized boolean isCompleted() {
         return completed;
     }
 
     private synchronized void markAsCompleted() {
+        Coordinator coordinator=handler.getCoordinator();
         if(coordinator != null) {
             coordinator.ack("completed", command.getClass().getName());
         }

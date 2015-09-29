@@ -74,6 +74,11 @@ class Facade implements CloudML, CommandHandler {
     private boolean stopOnTimeout = false;
     private final CloudAppDeployer deployer;
     private CloudMLModelComparator diff = null;
+
+    public Coordinator getCoordinator() {
+        return coordinator;
+    }
+
     private Coordinator coordinator;
 
     private static final String JSON_STRING_PREFIX = "json-string:";
@@ -99,7 +104,6 @@ class Facade implements CloudML, CommandHandler {
     @Override
     public Execution fireAndForget(CloudMlCommand command) {
         final Execution execution = new Execution(command, this);
-        execution.setCoordinator(coordinator);
         executor.submit(execution);
         return execution;
     }
@@ -107,7 +111,6 @@ class Facade implements CloudML, CommandHandler {
     @Override
     public Execution fireAndWait(CloudMlCommand command) {
         final Execution execution = new Execution(command, this);
-        execution.setCoordinator(coordinator);
         final Future<Boolean> done = executor.submit(execution, true);
         try {
             if (execution.getTimeout() > -1) {

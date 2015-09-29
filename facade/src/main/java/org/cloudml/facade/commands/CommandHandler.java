@@ -22,6 +22,8 @@
  */
 package org.cloudml.facade.commands;
 
+import org.cloudml.mrt.Coordinator;
+
 /**
  * Interface of object able to implements the commands supported by the CloudML
  * facade
@@ -87,5 +89,7 @@ public interface CommandHandler {
     public void handle(onlineMigration command);
 
     public void handle(GetDeployment command);
+
+    public Coordinator getCoordinator();
     
 }

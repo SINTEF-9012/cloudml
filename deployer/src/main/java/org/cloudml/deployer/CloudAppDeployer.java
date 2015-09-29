@@ -502,6 +502,7 @@ public class CloudAppDeployer {
         PuppetMarionnetteConnector puppet=new PuppetMarionnetteConnector(pr.getMaster(),n);
         //check if the configuration file is in the repo and manage the repo
         MercurialConnector mc=new MercurialConnector(pr.getRepo(),pr.getRepositoryKey());
+        journal.log(Level.INFO, ">> Mercurial connector created");
         mc.addFile(path, pr.getUsername());
         //Touch the site.pp file
         puppet.touchSiteFile();
