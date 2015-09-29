@@ -4,7 +4,7 @@ CloudML comes along with a Websocket server, which allows you to load, modify an
 The CloudML WebSocket Server is a Java application distributed as an executable jar together with a lib folder that contains all required dependencies.
 
 # Starting CloudML WebSocket Server
-The server can be started by simply executing the following command. There is no deployment model loaded when the server start. By default the server listen on port 9000.
+The server can be started by simply executing the following command. There is no deployment model loaded when the server start. By default the server listen on port 9030.
 ```shell
 java -jar cloudml-WebSocket.jar
 ```
