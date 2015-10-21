@@ -88,6 +88,18 @@
             // Parse the local DOT file into a graphlib object.
             var g = graphlibDot.read(oRequest.responseText);
 
+			g.nodes().forEach(function(v) {
+			  var node = g.node(v);
+			  // Round the corners of the nodes
+			  console.log(JSON.stringify(node));
+			  if(node.style !== 'undefined'){
+				if(node.style != "fill: black"){
+					node.ry=node.rx;
+				}
+			  }
+			});
+
+			
             // setup zoom support
             var svg = d3.select("svg");
             inner = svg.select("g");
