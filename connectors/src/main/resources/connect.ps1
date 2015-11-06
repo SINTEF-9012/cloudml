@@ -6,12 +6,6 @@ $masterIp=$args[4]
 $securePassword = ConvertTo-SecureString -AsPlainText -Force $password
 $cred = New-Object System.Management.Automation.PSCredential $user, $securePassword
 
-Write-Host "user:     $($user)"
-Write-Host "password: $($password)"
-Write-Host "ip:       $($ip)"
-Write-Host "hostname: $($hostname)"
-Write-Host "masterIp: $($masterIp)"
-
 Enable-PSRemoting -force
 set-item WSMan:\localhost\Client\TrustedHosts -Value * -Force
 
