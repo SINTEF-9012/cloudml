@@ -135,6 +135,7 @@ public class CloudAppDeployer {
             configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
             configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
             configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+            generatePuppetManifestAndConfigure();
 
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
@@ -203,6 +204,7 @@ public class CloudAppDeployer {
         configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
         configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
         configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
+        generatePuppetManifestAndConfigure();
 
         //removed stuff
         unconfigureRelationships(diff.getRemovedRelationships());
@@ -463,6 +465,16 @@ public class CloudAppDeployer {
         }
     }
 
+
+    private void generatePuppetManifestAndConfigure(VMInstanceGroup group){
+        for(VMInstance vmi : group){
+            PuppetManifestGenerator pmg = new PuppetManifestGenerator(vmi, currentModel);
+            String path=pmg.generate();
+            if(path != null){
+                managePuppet(pmg.getSkeleton(), vmi, vmi.getName(), path);
+            }
+        }
+    }
 
     /**
      * Generate the manifest file for each VM from the manifestEntry of each puppet resource and start puppet.
