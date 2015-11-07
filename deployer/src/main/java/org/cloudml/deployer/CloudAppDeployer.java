@@ -142,7 +142,10 @@ public class CloudAppDeployer {
             stopInternalComponents(diff.getRemovedComponents());
             terminateExternalServices(diff.getRemovedECs());
 
-
+            journal.log(Level.INFO, ">> Adaptation completed!");
+            if(coordinator != null) {
+                coordinator.ack("Adaptation completed", this.getClass().getName());
+            }
         }
 
         //start the monitoring of VMs
@@ -200,6 +203,7 @@ public class CloudAppDeployer {
 
         //Added stuff
         setExternalServices(new ExternalComponentInstanceGroup(diff.getAddedECs()).onlyExternals());
+        setAllEnvVarComponent(targetModel);
         prepareComponents(new ComponentInstanceGroup(diff.getAddedComponents()), targetModel.getRelationshipInstances());
         configureWithRelationships(new RelationshipInstanceGroup(diff.getAddedRelationships()));
         configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
@@ -212,13 +216,9 @@ public class CloudAppDeployer {
         terminateExternalServices(diff.getRemovedECs());
 
 
-        //send the changes to the monitoring platform
-        if (monitoringPlatformProperties.isMonitoringPlatformGiven()) {
-            MonitoringSynch.sendAddedComponents(monitoringPlatformProperties.getIpAddress(), diff.getAddedECs(), diff.getAddedComponents());
-            boolean result = MonitoringSynch.sendRemovedComponents(monitoringPlatformProperties.getIpAddress(), diff.getRemovedECs().keySet(), diff.getRemovedComponents());
-            if (!result && monitoringPlatformProperties.isMonitoringPlatformGiven()){
-                MonitoringSynch.sendCurrentDeployment(monitoringPlatformProperties.getIpAddress(), currentModel);
-            }
+        journal.log(Level.INFO, ">> Adaptation completed!");
+        if(coordinator != null) {
+            coordinator.ack("Adaptation completed", this.getClass().getName());
         }
     }
 
