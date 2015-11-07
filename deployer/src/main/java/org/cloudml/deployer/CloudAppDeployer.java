@@ -137,6 +137,8 @@ public class CloudAppDeployer {
             configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
             generatePuppetManifestAndConfigure();
 
+            journal.log(Level.INFO, ">> All components have been added");
+
             //removed stuff
             unconfigureRelationships(diff.getRemovedRelationships());
             stopInternalComponents(diff.getRemovedComponents());
@@ -209,6 +211,8 @@ public class CloudAppDeployer {
         configureSaas(new ComponentInstanceGroup<InternalComponentInstance>(diff.getAddedComponents()));
         configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
         generatePuppetManifestAndConfigure();
+
+        journal.log(Level.INFO, ">> All components have been added");
 
         //removed stuff
         unconfigureRelationships(diff.getRemovedRelationships());
