@@ -212,11 +212,13 @@ public class CloudAppDeployer {
         configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
         generatePuppetManifestAndConfigure();
 
-        journal.log(Level.INFO, ">> All components have been added");
+        journal.log(Level.INFO, ">> +++++++++++++++++++++++++++++++++All components have been added");
 
         //removed stuff
         unconfigureRelationships(diff.getRemovedRelationships());
+        journal.log(Level.INFO, ">> Removed relationships unconfigured");
         stopInternalComponents(diff.getRemovedComponents());
+        journal.log(Level.INFO, ">> Removed components uninstalled");
         terminateExternalServices(diff.getRemovedECs());
 
 
@@ -1240,7 +1242,7 @@ public class CloudAppDeployer {
      */
     private void stopInternalComponents(List<InternalComponentInstance> components) {//TODO: List<InternalComponentInstances>
         for (InternalComponentInstance a : components) {
-            stopInternalComponent((InternalComponentInstance) a);
+            stopInternalComponent(a);
         }
     }
 
@@ -1258,7 +1260,8 @@ public class CloudAppDeployer {
 
             for (Resource r : a.getType().getResources()) {
                 String stopCommand = r.getStopCommand();
-                jc.execCommand(ownerVM.getId(), stopCommand, "ubuntu", n.getPrivateKey());
+                //jc.execCommand(ownerVM.getId(), stopCommand, "ubuntu", n.getPrivateKey());
+                executeCommand(ownerVM, jc, stopCommand);
             }
 
             jc.closeConnection();
@@ -1302,8 +1305,8 @@ public class CloudAppDeployer {
             VM n = ownerVM.getType();
             jc = ConnectorFactory.createIaaSConnector(n.getProvider());
             //jc=new JCloudsConnector(n.getProvider().getName(), n.getProvider().getLogin(), n.getProvider().getPasswd());
-            jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());
-            ;
+            //jc.execCommand(ownerVM.getId(), r.getStopCommand(), "ubuntu", n.getPrivateKey());
+            executeCommand(ownerVM, jc, r.getStopCommand());
             jc.closeConnection();
         }
     }

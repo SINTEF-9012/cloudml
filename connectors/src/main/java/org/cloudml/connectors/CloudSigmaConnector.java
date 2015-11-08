@@ -247,7 +247,7 @@ public class CloudSigmaConnector implements Connector {
 
     @Override
     public void destroyVM(String id) {
-        compute.destroyNode(id);
+        cloudSigmaApi.deleteServer(id);
     }
 
     @Override

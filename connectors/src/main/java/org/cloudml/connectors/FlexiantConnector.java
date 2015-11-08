@@ -27,11 +27,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
@@ -470,8 +474,12 @@ public class FlexiantConnector implements Connector{
     }
 
     public void destroyVM(String id) {
-        // TODO Auto-generated method stub
-        journal.log(Level.INFO, ">> Not yet implemented ");
+        try {
+            Job job=service.deleteResource(id,true, null);
+            service.waitForJob(job.getResourceUUID(), false);
+        } catch (ExtilityException e) {
+            e.printStackTrace();
+        }
     }
 
 
