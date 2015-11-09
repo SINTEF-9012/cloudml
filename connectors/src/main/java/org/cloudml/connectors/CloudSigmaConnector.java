@@ -247,6 +247,17 @@ public class CloudSigmaConnector implements Connector {
 
     @Override
     public void destroyVM(String id) {
+        journal.log(Level.INFO, ">> Stopping VM: "+id);
+        cloudSigmaApi.stopServer(id);
+        while(cloudSigmaApi.getServerInfo(id).getStatus() != ServerStatus.STOPPED) {
+            try {
+                journal.log(Level.INFO, ">> Waiting for VM: "+id+ " being stopped");
+                Thread.sleep(15000);
+            } catch (InterruptedException e) {
+                journal.log(Level.SEVERE, e.getMessage());
+            }
+        }
+        journal.log(Level.INFO, ">> Terminating VM: "+id);
         cloudSigmaApi.deleteServer(id);
     }
 

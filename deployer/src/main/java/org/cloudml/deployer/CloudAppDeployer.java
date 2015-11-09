@@ -212,7 +212,7 @@ public class CloudAppDeployer {
         configureWithPuppet(targetModel.getComponentInstances().onlyInternals());
         generatePuppetManifestAndConfigure();
 
-        journal.log(Level.INFO, ">> +++++++++++++++++++++++++++++++++All components have been added");
+        journal.log(Level.INFO, ">> All components have been added");
 
         //removed stuff
         unconfigureRelationships(diff.getRemovedRelationships());
@@ -220,7 +220,7 @@ public class CloudAppDeployer {
         stopInternalComponents(diff.getRemovedComponents());
         journal.log(Level.INFO, ">> Removed components uninstalled");
         terminateExternalServices(diff.getRemovedECs());
-
+        journal.log(Level.INFO, ">> Removed external components terminated");
 
         journal.log(Level.INFO, ">> Adaptation completed!");
         if(coordinator != null) {
