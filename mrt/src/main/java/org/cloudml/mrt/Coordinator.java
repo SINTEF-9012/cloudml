@@ -60,7 +60,7 @@ public class Coordinator {
     CommandExecutor executor = null;
     List<Change> changeList = new ArrayList<Change>();
     NodificationCentre notificationCentre = new NodificationCentre();
-    JsonCodec jsonCodec = new JsonCodec();
+
 
     Instruction lastInstruction = null;
 
@@ -244,6 +244,7 @@ public class Coordinator {
         if (object instanceof Deployment) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                JsonCodec jsonCodec = new JsonCodec();
                 jsonCodec.save((Deployment) object, baos);
                 return baos.toString("UTF-8");
             } catch (UnsupportedEncodingException ex) {

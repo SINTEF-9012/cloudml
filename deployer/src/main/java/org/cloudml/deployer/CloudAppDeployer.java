@@ -226,6 +226,18 @@ public class CloudAppDeployer {
         if(coordinator != null) {
             coordinator.ack("Adaptation completed", this.getClass().getName());
         }
+
+        //MODAClouds specific code
+        if(targetModel.getProperties().get("sla_url") != null && targetModel.getProperties().get("agreement_id") != null){
+            Boolean status=startSLA(targetModel.getProperties().get("sla_url").getValue(),targetModel.getProperties().get("agreement_id").getValue());
+            if(status){
+                journal.log(Level.INFO, ">> SLA management started");
+            }else{
+                journal.log(Level.INFO, ">> SLA management not started");
+            }
+        }
+
+
     }
 
     private void unlessNotNull(String message, Object... obj) {

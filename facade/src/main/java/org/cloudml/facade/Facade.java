@@ -420,6 +420,8 @@ class Facade implements CloudML, CommandHandler {
             diff = new CloudMLModelComparator(deploy, deploy2);
             diff.compareCloudMLModel();
 
+            deploy.setName(deploy2.getName());
+
             deploy.getComponents().addAll(deploy2.getComponents());
             deploy.getRelationships().addAll(deploy2.getRelationships());
 
