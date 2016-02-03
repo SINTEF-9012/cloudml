@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <jclouds.version>1.7.3</jclouds.version>
+        <jclouds.version>1.9.2</jclouds.version>
         <org.springframework.security.version>3.2.5.RELEASE</org.springframework.security.version>
         <org.springframework.version>4.0.5.RELEASE</org.springframework.version>
     </properties>
@@ -55,7 +55,6 @@
             <artifactId>cloudfoundry-client-lib</artifactId>
             <version>1.1.0</version>
         </dependency>-->
-
 
 
         <dependency>
@@ -155,7 +154,7 @@
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
-            <version>0.1.48</version>
+            <version>0.1.53</version>
         </dependency>
 
         <dependency>

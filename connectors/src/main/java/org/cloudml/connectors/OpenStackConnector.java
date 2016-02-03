@@ -236,7 +236,7 @@ public class OpenStackConnector implements Connector{
      * @param key key to connect
      */
     public void uploadFile(String sourcePath, String destinationPath, String VMId, String login, String key){
-        org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        /*org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
         SshClient ssh = novaComputeService.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getVMById(VMId)).credentials(b.build()).build());
         try {
             ssh.connect();
@@ -245,6 +245,11 @@ public class OpenStackConnector implements Connector{
             if (ssh != null)
                 ssh.disconnect();
             journal.log(Level.INFO, ">> File uploaded!");
+        }*/
+        NodeMetadata n = novaComputeService.getNodeMetadata(VMId);
+        if(n != null) {
+            SSHConnector sc = new SSHConnector(key, login, n.getPublicAddresses().iterator().next());
+            sc.upload(sourcePath, destinationPath);
         }
 
     }
@@ -285,7 +290,7 @@ public class OpenStackConnector implements Connector{
         journal.log(Level.INFO, ">> executing command...");
         journal.log(Level.INFO, ">> "+ command);
 
-        org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        /*org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
         ExecResponse response = novaComputeService.runScriptOnNode(
                 id,
                 exec(command),
@@ -294,6 +299,13 @@ public class OpenStackConnector implements Connector{
                         .wrapInInitScript(false));// run command directly
 
         journal.log(Level.INFO, ">> "+response.getOutput());
+        */
+        NodeMetadata n = novaComputeService.getNodeMetadata(id);
+        if(n != null) {
+            SSHConnector sc = new SSHConnector(key, login, n.getPublicAddresses().iterator().next());
+            sc.execCommandSsh(command);
+        }
+
     }
 
     /**

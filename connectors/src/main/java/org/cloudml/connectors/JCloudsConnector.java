@@ -121,6 +121,7 @@ public class JCloudsConnector implements Connector{
         return null;
     }
 
+
     /**
      * retrieve the list of VMs
      * @return a list of information about each VM
@@ -183,7 +184,7 @@ public class JCloudsConnector implements Connector{
      */
     public void uploadFile(String sourcePath, String destinationPath, String VMId, String login, String key){
         journal.log(Level.INFO, ">> Uploading "+sourcePath);
-        org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        /*org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
         SshClient ssh = compute.getContext().utils().sshForNode().apply(NodeMetadataBuilder.fromNodeMetadata(getVMById(VMId)).credentials(b.build()).build());
         try {
             ssh.connect();
@@ -192,6 +193,11 @@ public class JCloudsConnector implements Connector{
             if (ssh != null)
                 ssh.disconnect();
             journal.log(Level.INFO, ">> File uploaded!");
+        }*/
+        NodeMetadata n = compute.getNodeMetadata(VMId);
+        if(n != null) {
+            SSHConnector sc = new SSHConnector(key, login, n.getPublicAddresses().iterator().next());
+            sc.upload(sourcePath, destinationPath);
         }
 
     }
@@ -233,7 +239,21 @@ public class JCloudsConnector implements Connector{
         journal.log(Level.INFO, ">> executing command...");
         journal.log(Level.INFO, ">> "+ command);
 
-        org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
+        NodeMetadata n = compute.getNodeMetadata(id);
+        if(n != null) {
+            System.out.println(n.getPublicAddresses().iterator().next() + key);
+            SSHConnector sc = new SSHConnector(key, login, n.getPublicAddresses().iterator().next());
+            sc.execCommandSsh(command);
+            while (!sc.checkConnectivity()){
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    journal.log(Level.SEVERE, e.getMessage());
+                }
+            }
+        }
+
+        /*org.jclouds.domain.LoginCredentials.Builder b=initCredentials(login, key);
         ExecResponse response = compute.runScriptOnNode(
                 id,
                 exec(command),
@@ -242,7 +262,7 @@ public class JCloudsConnector implements Connector{
                         .wrapInInitScript(false));// run command directly
 
         journal.log(Level.INFO, ">> "+response.getOutput());
-        //s.execCommandSsh(command);
+        //s.execCommandSsh(command);*/
     }
 
     /**
