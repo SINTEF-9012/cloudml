@@ -236,12 +236,9 @@ public class JCloudsConnector implements Connector{
      * @param key sshkey for connection
      */
     public void execCommand(String id, String command, String login, String key){
-        journal.log(Level.INFO, ">> executing command...");
-        journal.log(Level.INFO, ">> "+ command);
 
         NodeMetadata n = compute.getNodeMetadata(id);
         if(n != null) {
-            System.out.println(n.getPublicAddresses().iterator().next() + key);
             SSHConnector sc = new SSHConnector(key, login, n.getPublicAddresses().iterator().next());
             sc.execCommandSsh(command);
             while (!sc.checkConnectivity()){
