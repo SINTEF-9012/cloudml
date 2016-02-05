@@ -81,6 +81,7 @@ public class JCloudsConnector implements Connector{
     private String provider;
     private ComputeServiceContext computeContext;
     private EC2Api ec2api;
+    private ElasticBlockStoreApi ebsapi;
     private HashMap<String,Object> runtimeInformation;
 
     public JCloudsConnector(String provider,String login,String secretKey){
@@ -104,6 +105,7 @@ public class JCloudsConnector implements Connector{
         computeContext=builder.buildView(ComputeServiceContext.class);
         ec2api=builder.buildApi(EC2Api.class);
         //loadBalancerCtx=builder.buildView(LoadBalancerServiceContext.class);
+
         compute=computeContext.getComputeService();
         this.provider = provider;
     }
@@ -314,6 +316,7 @@ public class JCloudsConnector implements Connector{
                     templateBuilder.minRam(vm.getMinRam());
                 if (vm.getMinCores() > 0)
                     templateBuilder.minCores(vm.getMinCores());
+
             }else{
                 templateBuilder.hardwareId(vm.getProviderSpecificTypeName());
             }
@@ -330,8 +333,8 @@ public class JCloudsConnector implements Connector{
             a.setProviderSpecificType(template.getHardware().getId());
             a.getProperties().add(new Property("location", template.getLocation().getId()));
 
-            if(provider.equals("aws-ec2")){
-                template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sdm", vm.getMinStorage(), true);
+            if (provider.equals("aws-ec2")){
+                template.getOptions().as(EC2TemplateOptions.class).mapNewVolumeToDeviceName("/dev/sda1", vm.getMinStorage(), true);
                 template.getOptions().as(EC2TemplateOptions.class).securityGroups(vm.getSecurityGroup());
                 template.getOptions().as(EC2TemplateOptions.class).keyPair(vm.getSshKey());
                 template.getOptions().as(EC2TemplateOptions.class).userMetadata("Name", a.getName());
