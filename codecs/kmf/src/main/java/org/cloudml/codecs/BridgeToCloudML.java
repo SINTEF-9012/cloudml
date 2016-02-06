@@ -428,6 +428,7 @@ public class BridgeToCloudML {
         assert vms.containsKey(kVM.getType().getName());
         VMInstance ni = new VMInstance(kVM.getName(), vms.get(kVM.getType().getName()));
         ni.setPublicAddress(kVM.getPublicAddress());
+        ni.setHostname(kVM.getHostname());
         convertProperties(kVM, ni);
 
         initProvidedExecutionPlatformInstances(kVmInstance, ni);
