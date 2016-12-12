@@ -1,0 +1,102 @@
+{
+  "eClass": "net.cloudml.core:CloudMLModel",
+  "name": "ScalingSDATests",
+  "providers": [
+    {
+      "eClass": "net.cloudml.core:Provider",
+      "credentials": "./credentials",
+      "name": "aws-ec2"
+    }
+  ],
+  "internalComponents": [
+    {
+      "eClass": "net.cloudml.core:InternalComponent",
+      "name": "WCompContainer",
+      "resources": [
+        {
+          "eClass": "net.cloudml.core:Resource",
+          "name": "startWComp",
+	  "uploadCommand": "",
+	  "downloadCommand": "wget http://cloudml.org/scripts/linux/ubuntu/mono/install_mono.sh",
+	  "installCommand" : "bash ./install_mono.sh; sudo apt-get install -y unzip; unzip ContainerWComp*",
+          "startCommand" : ""
+        }
+      ],
+      "requiredExecutionPlatform": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatform",
+        "name": "WCompoContainerRequired",
+        "owner": "internalComponents[WCompContainer]"
+      }
+    }
+  ],
+  "internalComponentInstances": [
+    {
+      "eClass": "net.cloudml.core:InternalComponentInstance",
+      "name": "WCompContainerInstance",
+      "type": "internalComponents[WCompContainer]",
+      "requiredExecutionPlatformInstance": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatformInstance",
+        "name": "WCompContainerRequiredInstance",
+        "owner": "internalComponentInstances[WCompContainerInstance]",
+        "type": "internalComponents[WCompContainer]/requiredExecutionPlatform[WCompContainerRequired]"
+      }
+    }
+  ],
+  "vms": [
+    {
+      "eClass": "net.cloudml.core:VM",
+      "is64os": true,
+      "location": "eu-west-1",
+      "providerSpecificTypeName": "m3.medium",
+      "minRam": "7680",
+      "maxRam": "0",
+      "minCores": "2",
+      "maxCores": "0",
+      "minStorage": "8",
+      "maxStorage": "0",
+      "name": "VMWComp",
+      "os": "ubuntu",
+      "privateKey": "./cloudml.pem",
+      "provider": "providers[aws-ec2]",
+      "securityGroup": "default",
+      "sshKey": "cloudml",
+      "providedExecutionPlatforms": [
+        {
+          "eClass": "net.cloudml.core:ProvidedExecutionPlatform",
+          "name": "HTTPAgentTIERAmazon",
+          "owner": "vms[VMWComp]",
+          "offers": [
+            {
+              "eClass": "net.cloudml.core:Property",
+              "name": "OS",
+              "value": "Ubuntu"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "vmInstances": [
+    {
+      "eClass": "net.cloudml.core:NodeInstance",
+      "name": "VMInstanceWComp",
+      "type": "vms[VMWComp]",
+      "providedExecutionPlatformInstances": [
+        {
+          "eClass": "net.cloudml.core:ProvidedExecutionPlatformInstance",
+          "name": "HTTPAgentTier",
+          "owner": "vmInstances[VMInstanceWComp]",
+          "type": "vms[VMWComp]/providedExecutionPlatforms[HTTPAgentTIERAmazon]"
+        }
+      ]
+    }
+  ],
+  "executesInstances": [
+    {
+      "eClass": "net.cloudml.core:ExecuteInstance",
+      "name": "runWComp",
+      "providedExecutionPlatformInstance": "vmInstances[VMInstanceWComp]/providedExecutionPlatformInstances[HTTPAgentTier]",
+      "requiredExecutionPlatformInstance": "internalComponentInstances[WCompContainerInstance]/requiredExecutionPlatformInstance[WCompContainerRequiredInstance]"
+    }
+  ]
+}
