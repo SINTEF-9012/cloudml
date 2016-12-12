@@ -1,6 +1,6 @@
 {
   "eClass": "net.cloudml.core:CloudMLModel",
-  "name": "ScalingSDATests",
+  "name": "DeploymentWCompContainer",
   "providers": [
     {
       "eClass": "net.cloudml.core:Provider",
