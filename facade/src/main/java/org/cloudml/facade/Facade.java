@@ -440,6 +440,32 @@ class Facade implements CloudML, CommandHandler {
         }
     }
 
+    public Deployment merge(String path){
+        InputStream instream = null;
+        try {
+            instream = new FileInputStream(path);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        Deployment target = (Deployment) new JsonCodec().load(instream);
+
+        if (isDeploymentLoaded()) {
+            deploy.getComponents().replaceAll(target.getComponents());
+            deploy.getRelationships().replaceAll(target.getRelationships());
+
+            //TODO: Check if names are unique
+            deploy.getComponentInstances().replaceAll(target.getComponentInstances());
+            deploy.getExecuteInstances().replaceAll(target.getExecuteInstances());
+            deploy.getProviders().replaceAll(target.getProviders());
+            deploy.getRelationshipInstances().replaceAll(target.getRelationshipInstances());
+
+        }else{
+            deploy=target;
+        }
+        initCoordinator();
+        return deploy;
+    }
+
     @Override
     public void handle(LoadDeployment command) {
         String path = command.getPathToModel();

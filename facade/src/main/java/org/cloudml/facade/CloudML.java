@@ -70,6 +70,6 @@ public interface CloudML extends CommandHandler{
      */
     public Deployment getDeploymentModel();
 
-
+    public Deployment merge(String path);
     
 }
