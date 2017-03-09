@@ -1,0 +1,429 @@
+{
+  "eClass": "net.cloudml.core:CloudMLModel",
+  "name": "storm-deployment",
+  "providers": [{
+      "eClass": "net.cloudml.core:Provider",
+      "credentials": "./credentials",
+      "name": "aws-ec2"
+    },{
+			"eClass" : "net.cloudml.core:Provider",
+			"name" : "openstack-nova",
+			"credentials" : "credentialsOpenstack",
+			"properties" : [{
+					"eClass" : "net.cloudml.core:Property",
+					"name" : "endPoint",
+					"value" : "http://192.168.1.10:5000/v2.0"
+				}
+			]}],
+  "vms": [
+    {
+      "eClass": "net.cloudml.core:VM",
+      "name": "storm (Maksym)",
+      "maxRam" : "0",
+      "minCores" : "1",
+      "maxCores" : "0",
+      "minStorage" : "20",
+      "maxStorage" : "0",
+      "os" : "ubuntu",
+      "sshKey" : "cloudml",
+      "groupName" : "stormgroup",
+      "privateKey" : "cloudml.pem",
+      "is64os" : true,
+      "location" : "eu-west-1b",
+      "securityGroup" : "Fiesta",
+      "provider" : "providers[aws-ec2]",
+      "providedExecutionPlatforms" : [{
+          "eClass" : "net.cloudml.core:ProvidedExecutionPlatform",
+          "name" : "stormProvided",
+          "owner" : "vms[storm (Maksym)]",
+          "offers" : [{
+              "eClass" : "net.cloudml.core:Property",
+              "name" : "OS",
+              "value" : "Ubuntu"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "internalComponents": [
+    {
+      "eClass": "net.cloudml.core:InternalComponent",
+      "name": "zookeeper",
+      "resources": [
+        {
+          "eClass": "net.cloudml.core:Resource",
+          "name": "no name",
+          "uploadCommand": "zookeeper.sh /home/ubuntu/zookeeper.sh;storm_config.sh /home/ubuntu/storm_config.sh",
+          "downloadCommand": "wget http://www.us.apache.org/dist/kafka/0.8.2.2/kafka_2.9.2-0.8.2.2.tgz ; tar xvzf kafka_2.9.2-0.8.2.2.tgz --strip 1",
+          "installCommand": "cd ~;sudo bash zookeeper.sh",
+          "startCommand": "sudo nohup bash ~/kafka/bin/kafka-server-start.sh ~/kafka/config/server.properties"
+        }
+      ],
+      "providedPorts": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "zookeeperPortProvided",
+          "isLocal": false,
+          "portNumber": "2181",
+          "component": "internalComponents[zookeeper]"
+        }
+      ],
+      "requiredExecutionPlatform": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatform",
+        "name": "ubuntuZookeeper",
+        "owner": "internalComponents[zookeeper]",
+        "demands": [
+          {
+            "eClass": "net.cloudml.core:Property",
+            "name": "OS",
+            "value": "Ubuntu"
+          }
+        ]
+      }
+    },
+    {
+      "eClass": "net.cloudml.core:InternalComponent",
+      "name": "nimbus",
+      "resources": [
+        {
+          "eClass": "net.cloudml.core:Resource",
+          "name": "no name",
+          "uploadCommand": "install-nimbus_or_supervisor.sh /home/ubuntu/install-nimbus_or_supervisor.sh;configure-nimbus.sh /home/ubuntu/configure-nimbus.sh;storm_config.sh /home/ubuntu/storm_config.sh",
+          "installCommand": "cd ~; sudo bash install-nimbus_or_supervisor.sh; sudo bash configure-nimbus.sh"
+        }
+      ],
+      "requiredPorts": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "zookeeperPortRequired",
+          "isLocal": false,
+          "portNumber": "2181",
+          "isMandatory":true,
+          "component": "internalComponents[nimbus]"
+        }
+      ],
+      "providedPorts": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "nimbusPortProvided",
+          "isLocal": false,
+          "portNumber": "8080",
+          "component": "internalComponents[nimbus]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "nimbusFakePortProvided",
+          "isLocal": false,
+          "portNumber": "0",
+          "component": "internalComponents[nimbus]"
+        }
+      ],
+      "requiredExecutionPlatform": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatform",
+        "name": "ubuntuNimbus",
+        "owner": "internalComponents[nimbus]",
+        "demands": [
+          {
+            "eClass": "net.cloudml.core:Property",
+            "name": "OS",
+            "value": "Ubuntu"
+          }
+        ]
+      }
+    },
+    {
+      "eClass": "net.cloudml.core:InternalComponent",
+      "name": "supervisor",
+      "resources": [
+        {
+          "eClass": "net.cloudml.core:Resource",
+          "name": "no name",
+          "uploadCommand": "install-nimbus_or_supervisor.sh /home/ubuntu/install-nimbus_or_supervisor.sh;configure-supervisor.sh /home/ubuntu/configure-supervisor.sh;storm_config.sh /home/ubuntu/storm_config.sh",
+          "installCommand": "cd ~; sudo bash install-nimbus_or_supervisor.sh; sudo bash configure-supervisor.sh",
+          "startCommand": "sudo bash storm_config.sh"
+        }
+      ],
+      "requiredPorts": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "supervisor_zookeeperPortRequired",
+          "isLocal": false,
+          "portNumber": "2181",
+          "isMandatory":true,
+          "component": "internalComponents[supervisor]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "supervisorFakePortRequired",
+          "isLocal": false,
+          "portNumber": "0",
+          "isMandatory":true,
+          "component": "internalComponents[supervisor]"
+        }
+      ],
+      "providedPorts": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "supervisor_worker1",
+          "isLocal": false,
+          "portNumber": "6700",
+          "component": "internalComponents[supervisor]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "supervisor_worker2",
+          "isLocal": false,
+          "portNumber": "6701",
+          "component": "internalComponents[supervisor]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "supervisor_worker3",
+          "isLocal": false,
+          "portNumber": "6702",
+          "component": "internalComponents[supervisor]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPort",
+          "name": "supervisor_worker4",
+          "isLocal": false,
+          "portNumber": "6700",
+          "component": "internalComponents[supervisor]"
+        }
+      ],
+      "requiredExecutionPlatform": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatform",
+        "name": "ubuntuSupervisor",
+        "owner": "internalComponents[supervisor]",
+        "demands": [
+          {
+            "eClass": "net.cloudml.core:Property",
+            "name": "OS",
+            "value": "Ubuntu"
+          }
+        ]
+      }
+    }
+  ],
+  "vmInstances": [
+    {
+      "eClass": "net.cloudml.core:VMInstance",
+      "name": "zookeeper (Maksym)",
+      "publicAddress": "no address given",
+      "type": "vms[storm (Maksym)]",
+      "providedExecutionPlatformInstances": [
+        {
+          "eClass": "net.cloudml.core:ProvidedExecutionPlatformInstance",
+          "name": "zookeeperProvided",
+          "owner": "vmInstances[zookeeper (Maksym)]",
+          "type": "vms[storm (Maksym)]/providedExecutionPlatforms[stormProvided]"
+        }
+      ]
+    },
+    {
+      "eClass": "net.cloudml.core:VMInstance",
+      "name": "nimbus (Maksym)",
+      "publicAddress": "no address given",
+      "type": "vms[storm (Maksym)]",
+      "providedExecutionPlatformInstances": [
+        {
+          "eClass": "net.cloudml.core:ProvidedExecutionPlatformInstance",
+          "name": "nimbusProvided",
+          "owner": "vmInstances[nimbus (Maksym)]",
+          "type": "vms[storm (Maksym)]/providedExecutionPlatforms[stormProvided]"
+        }
+      ]
+    },
+    {
+      "eClass": "net.cloudml.core:VMInstance",
+      "name": "supervisor1 (Maksym)",
+      "publicAddress": "no address given",
+      "type": "vms[storm (Maksym)]",
+      "providedExecutionPlatformInstances": [
+        {
+          "eClass": "net.cloudml.core:ProvidedExecutionPlatformInstance",
+          "name": "supervisor1Provided",
+          "owner": "vmInstances[supervisor1 (Maksym)]",
+          "type": "vms[storm (Maksym)]/providedExecutionPlatforms[stormProvided]"
+        }
+      ]
+    }
+  ],
+  "internalComponentInstances": [
+    {
+      "eClass": "net.cloudml.core:InternalComponentInstance",
+      "name": "zookeeper-i",
+      "type": "internalComponents[zookeeper]",
+      "providedPortInstances": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPortInstance",
+          "name": "zookeeperPortProvided-i",
+          "type": "internalComponents[zookeeper]/providedPorts[zookeeperPortProvided]"
+        }
+      ],
+      "requiredExecutionPlatformInstance": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatformInstance",
+        "name": "ubuntuZookeeper-i",
+        "owner": "internalComponentInstances[zookeeper-i]",
+        "type": "internalComponents[zookeeper]/requiredExecutionPlatform[ubuntuZookeeper]"
+      }
+    },
+    {
+      "eClass": "net.cloudml.core:InternalComponentInstance",
+      "name": "nimbus-i",
+      "type": "internalComponents[nimbus]",
+      "providedPortInstances": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPortInstance",
+          "name": "nimbusPortProvided-i",
+          "type": "internalComponents[nimbus]/providedPorts[nimbusPortProvided]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPortInstance",
+          "name": "nimbusFakePortProvided-i",
+          "type": "internalComponents[nimbus]/providedPorts[nimbusFakePortProvided]"
+        }
+      ],
+      "requiredPortInstances": [
+        {
+          "eClass": "net.cloudml.core:RequiredPortInstance",
+          "name": "zookeeperPortRequired-i",
+          "type": "internalComponents[nimbus]/requiredPorts[zookeeperPortRequired]"
+        }
+      ],
+      "requiredExecutionPlatformInstance": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatformInstance",
+        "name": "ubuntuNimbus-i",
+        "owner": "internalComponentInstances[nimbus-i]",
+        "type": "internalComponents[nimbus]/requiredExecutionPlatform[ubuntuNimbus]"
+      }
+    },
+    {
+      "eClass": "net.cloudml.core:InternalComponentInstance",
+      "name": "supervisor1-i",
+      "type": "internalComponents[supervisor]",
+      "providedPortInstances": [
+        {
+          "eClass": "net.cloudml.core:ProvidedPortInstance",
+          "name": "supervisor1_worker1-i",
+          "type": "internalComponents[supervisor]/providedPorts[supervisor_worker1]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPortInstance",
+          "name": "supervisor1_worker2-i",
+          "type": "internalComponents[supervisor]/providedPorts[supervisor_worker2]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPortInstance",
+          "name": "supervisor1_worker3-i",
+          "type": "internalComponents[supervisor]/providedPorts[supervisor_worker3]"
+        },
+        {
+          "eClass": "net.cloudml.core:ProvidedPortInstance",
+          "name": "supervisor1_worker4-i",
+          "type": "internalComponents[supervisor]/providedPorts[supervisor_worker4]"
+        }
+      ],
+      "requiredPortInstances": [
+        {
+          "eClass": "net.cloudml.core:RequiredPortInstance",
+          "name": "supervisor1_zookeeperPortRequired-i",
+          "type": "internalComponents[supervisor]/requiredPorts[supervisor_zookeeperPortRequired]"
+        },
+        {
+          "eClass": "net.cloudml.core:RequiredPortInstance",
+          "name": "supervisor1_FakePortRequired-i",
+          "type": "internalComponents[supervisor]/requiredPorts[supervisorFakePortRequired]"
+        }
+      ],
+      "requiredExecutionPlatformInstance": {
+        "eClass": "net.cloudml.core:RequiredExecutionPlatformInstance",
+        "name": "ubuntuSupervisor1-i",
+        "owner": "internalComponentInstances[supervisor1-i]",
+        "type": "internalComponents[supervisor]/requiredExecutionPlatform[ubuntuSupervisor]"
+      }
+    }
+  ],
+  "relationships" : [
+    {
+      "eClass" : "net.cloudml.core:Relationship",
+      "name" : "nimbusToZookeeper",
+      "requiredPort" : "internalComponents[nimbus]/requiredPorts[zookeeperPortRequired]",
+      "providedPort" : "internalComponents[zookeeper]/providedPorts[zookeeperPortProvided]",
+      "requiredPortResource" :
+      {
+        "eClass" : "net.cloudml.core:Resource",
+        "name" : "no name",
+        "configureCommand" : "cd ~; sed -i \"s/\\$ZOOKEEPER_IP/\\$2/g\" storm_config.sh; sed -i \"s/\\$NIMBUS_IP/\\$1/g\" storm_config.sh; sed -i \"s/\\$LOCAL_IP/\\$1/g\" storm_config.sh; sudo bash storm_config.sh"
+      }
+    },
+    {
+      "eClass" : "net.cloudml.core:Relationship",
+      "name" : "supervisorToZookeeper",
+      "requiredPort" : "internalComponents[supervisor]/requiredPorts[supervisor_zookeeperPortRequired]",
+      "providedPort" : "internalComponents[zookeeper]/providedPorts[zookeeperPortProvided]",
+      "requiredPortResource" :
+      {
+        "eClass" : "net.cloudml.core:Resource",
+        "name" : "no name",
+        "configureCommand" : "cd ~; echo '#!bin/bash'>set_var_zookeeper.sh; echo 'sed -i \"s/\\$ZOOKEEPER_IP/$2/g\" storm_config.sh'>>set_var_zookeeper.sh; chmod +x set_var_zookeeper.sh; sudo bash set_var_zookeeper.sh"
+      }
+    },
+    {
+      "eClass" : "net.cloudml.core:Relationship",
+      "name" : "supervisorToNimbus",
+      "requiredPort" : "internalComponents[supervisor]/requiredPorts[supervisorFakePortRequired]",
+      "providedPort" : "internalComponents[nimbus]/providedPorts[nimbusFakePortProvided]",
+      "requiredPortResource" :
+      {
+        "eClass" : "net.cloudml.core:Resource",
+        "name" : "no name",
+        "configureCommand" : "cd ~; echo '#!bin/bash'>set_var_nimbus.sh; echo 'sed -i \"s/\\$NIMBUS_IP/$2/g\" storm_config.sh'>>set_var_nimbus.sh; echo 'sed -i \"s/\\$LOCAL_IP/$1/g\" storm_config.sh'>>set_var_nimbus.sh; chmod +x set_var_nimbus.sh; sudo bash set_var_nimbus.sh"
+      }
+    }
+  ],
+  "relationshipInstances" : [
+    {
+      "eClass" : "net.cloudml.core:RelationshipInstance",
+      "name" : "nimbusToZookeeper-i",
+      "type" : "relationships[nimbusToZookeeper]",
+      "requiredPortInstance" : "internalComponentInstances[nimbus-i]/requiredPortInstances[zookeeperPortRequired-i]",
+      "providedPortInstance" : "internalComponentInstances[zookeeper-i]/providedPortInstances[zookeeperPortProvided-i]"
+    },
+    {
+      "eClass" : "net.cloudml.core:RelationshipInstance",
+      "name" : "supervisor1_ToZookeeper-i",
+      "type" : "relationships[supervisorToZookeeper]",
+      "requiredPortInstance" : "internalComponentInstances[supervisor1-i]/requiredPortInstances[supervisor1_zookeeperPortRequired-i]",
+      "providedPortInstance" : "internalComponentInstances[zookeeper-i]/providedPortInstances[zookeeperPortProvided-i]"
+    },
+    {
+      "eClass" : "net.cloudml.core:RelationshipInstance",
+      "name" : "supervisor1_ToNimbus-i",
+      "type" : "relationships[supervisorToNimbus]",
+      "requiredPortInstance" : "internalComponentInstances[supervisor1-i]/requiredPortInstances[supervisor1_FakePortRequired-i]",
+      "providedPortInstance" : "internalComponentInstances[nimbus-i]/providedPortInstances[nimbusFakePortProvided-i]"
+    }
+  ],
+  "executesInstances": [
+    {
+      "eClass": "net.cloudml.core:ExecuteInstance",
+      "name": "runOnZookeeper",
+      "providedExecutionPlatformInstance": "vmInstances[zookeeper (Maksym)]/providedExecutionPlatformInstances[zookeeperProvided]",
+      "requiredExecutionPlatformInstance": "internalComponentInstances[zookeeper-i]/requiredExecutionPlatformInstance[ubuntuZookeeper-i]"
+    },
+    {
+      "eClass": "net.cloudml.core:ExecuteInstance",
+      "name": "runOnNimbus",
+      "providedExecutionPlatformInstance": "vmInstances[nimbus (Maksym)]/providedExecutionPlatformInstances[nimbusProvided]",
+      "requiredExecutionPlatformInstance": "internalComponentInstances[nimbus-i]/requiredExecutionPlatformInstance[ubuntuNimbus-i]"
+    },
+    {
+      "eClass": "net.cloudml.core:ExecuteInstance",
+      "name": "runOnSupervisor1",
+      "providedExecutionPlatformInstance": "vmInstances[supervisor1 (Maksym)]/providedExecutionPlatformInstances[supervisor1Provided]",
+      "requiredExecutionPlatformInstance": "internalComponentInstances[supervisor1-i]/requiredExecutionPlatformInstance[ubuntuSupervisor1-i]"
+    }
+  ]
+}
