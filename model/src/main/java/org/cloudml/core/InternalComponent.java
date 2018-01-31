@@ -67,10 +67,6 @@ public class InternalComponent extends Component {
         visitor.visitInternalComponent(this);
     }
 
-    @Override
-    public String toString() {
-        return "Type " + getName();
-    }
 
     @Override
     public boolean equals(Object other) {

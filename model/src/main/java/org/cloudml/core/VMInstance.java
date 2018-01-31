@@ -30,6 +30,16 @@ public class VMInstance extends ExternalComponentInstance<VM> {
     private String id = "";
     private final CloudGroup clouds;
 
+    public String getHostname() {
+        return hostname;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    private String hostname = "";
+
     public int core=0;
 
     public String getProviderSpecificType() {
